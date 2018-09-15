@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name" translatable="false">Aggregator</string>
+
+    <string name="title_my_feed">My Feed</string>
+    <string name="title_tags">Tags</string>
+    <string name="title_feeds">Feeds</string>
+</resources>
