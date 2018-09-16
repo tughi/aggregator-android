@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="16"
+   height="16"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="favicon_placeholder.svg"
+   inkscape:export-filename="/Users/tughi/Projects/Aggregator/aggregator-android/app/src/main/res/drawable-xxxhdpi/ic_launcher.png"
+   inkscape:export-xdpi="360"
+   inkscape:export-ydpi="360">
+  <defs
+     id="defs12" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#212121"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="52.281708"
+     inkscape:cx="1.7568176"
+     inkscape:cy="7.8758726"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer3"
+     showgrid="true"
+     inkscape:showpageshadow="false"
+     borderlayer="true"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:window-width="2493"
+     inkscape:window-height="1376"
+     inkscape:window-x="67"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:pagecheckerboard="true">
+    <inkscape:grid
+       type="xygrid"
+       id="grid3070"
+       empspacing="5"
+       visible="true"
+       enabled="true"
+       snapvisiblegridlinesonly="true" />
+    <sodipodi:guide
+       orientation="1,0"
+       position="2,2"
+       id="guide3072"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       orientation="1,0"
+       position="14,14"
+       id="guide3074"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="2,2"
+       id="guide3076"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="14,14"
+       id="guide3078"
+       inkscape:locked="false" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="Emblem"
+     style="display:inline">
+    <path
+       style="fill:#ff6600;fill-opacity:1"
+       d="M 2,0 C 0.9,0 0,0.9 0,2 v 12 c 0,1.1 0.9,2 2,2 h 12 c 1.1,0 2,-0.9 2,-2 V 2 C 16,0.9 15.1,0 14,0 Z"
+       id="path1454" />
+    <path
+       style="fill:#ffffff;fill-opacity:1"
+       d="M 3,3 C 8.521065,3 13,7.4796287 13,13 H 11.179688 C 11.179688,8.482164 7.518404,4.8183594 3,4.8183594 Z"
+       id="path1452" />
+    <path
+       style="fill:#ffffff;fill-opacity:1"
+       d="M 3,6.6386719 C 6.515743,6.6386719 9.363281,9.4847 9.363281,13 H 7.542969 C 7.542969,10.493662 5.506654,8.455078 3,8.455078 Z"
+       id="path1450" />
+    <path
+       style="fill:#ffffff;fill-opacity:1"
+       d="m 4.400391,10.199219 a 1.4011551,1.4009792 0 0 1 1.40039,1.40039 A 1.4011551,1.4009792 0 0 1 4.400391,13 1.4011551,1.4009792 0 0 1 3,11.599609 1.4011551,1.4009792 0 0 1 4.400391,10.199219 Z"
+       id="path2303" />
+  </g>
+</svg>

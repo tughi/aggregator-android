@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import com.tughi.aggregator.R
 import com.tughi.aggregator.data.Feed
@@ -20,11 +21,13 @@ class FeedListAdapter : ListAdapter<Feed, FeedListAdapter.ViewHolder>(FeedDiffCa
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val feed = getItem(position)
 
+        holder.favicon.setImageResource(R.drawable.favicon_placeholder)
         holder.title.text = feed.title
         holder.url.text = feed.url
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val favicon: ImageView = itemView.findViewById(R.id.favicon)
         val title: TextView = itemView.findViewById(R.id.title)
         val url: TextView = itemView.findViewById(R.id.url)
     }
