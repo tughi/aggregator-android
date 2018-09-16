@@ -3,17 +3,17 @@
 
     <item
         android:id="@+id/navigation_my_feeds"
-        android:icon="@drawable/ic_my_feed_black_24dp"
+        android:icon="@drawable/action_my_feed"
         android:title="@string/title_my_feed" />
 
     <item
         android:id="@+id/navigation_tags"
-        android:icon="@drawable/ic_tags_black_24dp"
+        android:icon="@drawable/action_tags"
         android:title="@string/title_tags" />
 
     <item
         android:id="@+id/navigation_feeds"
-        android:icon="@drawable/ic_feeds_black_24dp"
+        android:icon="@drawable/action_feeds"
         android:title="@string/title_feeds" />
 
 </menu>
