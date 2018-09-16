@@ -48,25 +48,25 @@ abstract class AppDatabase : RoomDatabase() {
     class Seeder : Worker() {
         override fun doWork(): Result {
             val database = AppDatabase.getInstance(applicationContext)
-            val feeDao = database.feedDao();
+            val feeDao = database.feedDao()
 
             try {
                 database.beginTransaction()
 
                 feeDao.addFeed(Feed(
-                        url = "",
+                        url = "url1",
                         title = "Aggregator News"
                 ))
                 feeDao.addFeed(Feed(
-                        url = "",
+                        url = "url2",
                         title = "MarsTechnico"
                 ))
                 feeDao.addFeed(Feed(
-                        url = "",
+                        url = "url3",
                         title = "Slashdok"
                 ))
                 feeDao.addFeed(Feed(
-                        url = "",
+                        url = "url4",
                         title = "The Virge"
                 ))
 

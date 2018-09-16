@@ -11,7 +11,7 @@ class MainActivity : AppCompatActivity() {
         val fragment = when (item.itemId) {
             R.id.navigation_my_feeds -> MyFeedFragment.newInstance()
             R.id.navigation_tags -> TagsFragment.newInstance()
-            R.id.navigation_feeds -> FeedsFragment.newInstance()
+            R.id.navigation_feeds -> FeedListFragment.newInstance()
             else -> null
         } ?: return@OnNavigationItemSelectedListener false
 
