@@ -12,7 +12,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 28
 
-        versionName = '2.84.000-devel'
+        versionName = '2.99.000-devel'
         versionCode = Integer.valueOf(versionName.split('-')[0].replace('.', ''))
     }
 
