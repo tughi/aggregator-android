@@ -27,7 +27,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.main_activity)
 
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
-        navigation.selectedItemId = R.id.navigation_my_feeds
+
+        if (savedInstanceState == null) {
+            navigation.selectedItemId = R.id.navigation_my_feeds
+        }
     }
 
 }
