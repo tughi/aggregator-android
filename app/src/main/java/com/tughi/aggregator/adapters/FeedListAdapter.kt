@@ -23,13 +23,16 @@ class FeedListAdapter : ListAdapter<Feed, FeedListAdapter.ViewHolder>(FeedDiffCa
 
         holder.favicon.setImageResource(R.drawable.favicon_placeholder)
         holder.title.text = feed.title
-        holder.url.text = feed.url
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val favicon: ImageView = itemView.findViewById(R.id.favicon)
         val title: TextView = itemView.findViewById(R.id.title)
-        val url: TextView = itemView.findViewById(R.id.url)
+        val count: TextView = itemView.findViewById(R.id.count)
+
+        init {
+            count.visibility = View.GONE
+        }
     }
 
     class FeedDiffCallback : DiffUtil.ItemCallback<Feed>() {

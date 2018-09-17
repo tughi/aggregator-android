@@ -1,28 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    style="@style/Widget.MaterialComponents.CardView"
+    android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="8dp"
-    android:layout_marginTop="8dp"
-    android:layout_marginEnd="8dp">
+    android:background="?selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
 
-    <android.support.constraint.ConstraintLayout
-        android:id="@+id/coordinatorLayout"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="12dp">
+        android:baselineAligned="true"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        app:layout_constraintEnd_toStartOf="@+id/toggle"
+        app:layout_constraintStart_toStartOf="parent">
 
         <ImageView
             android:id="@+id/favicon"
-            android:layout_width="16dp"
-            android:layout_height="16dp"
-            android:baseline="14dp"
-            app:layout_constraintBaseline_toBaselineOf="@id/title"
-            app:layout_constraintStart_toStartOf="parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:baseline="13dp"
             tools:ignore="ContentDescription"
             tools:src="@drawable/favicon_placeholder" />
 
@@ -30,26 +31,39 @@
             android:id="@+id/title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="36dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
             android:textColor="?android:textColorPrimary"
             android:textSize="16sp"
-            app:layout_constraintBottom_toTopOf="@id/url"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/favicon"
-            app:layout_constraintTop_toTopOf="parent"
             tools:text="Aggregator News" />
 
         <TextView
-            android:id="@+id/url"
-            android:layout_width="0dp"
+            android:id="@+id/count"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="?android:textColorSecondary"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/pill"
+            android:textColor="@android:color/white"
             android:textSize="14sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            tools:text="https://aggregator.tughi.com/feed" />
+            android:textStyle="bold"
+            tools:text="42" />
 
-    </android.support.constraint.ConstraintLayout>
+    </LinearLayout>
 
-</android.support.design.card.MaterialCardView>
+    <ImageView
+        android:id="@+id/toggle"
+        android:layout_width="56dp"
+        android:layout_height="0dp"
+        android:background="?selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:scaleType="center"
+        android:src="@drawable/action_show_more"
+        android:tint="#888"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription" />
+
+</android.support.constraint.ConstraintLayout>
