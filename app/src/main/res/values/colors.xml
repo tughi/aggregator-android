@@ -3,4 +3,6 @@
     <color name="primary">#263238</color>
     <color name="primary_dark">#000a12</color>
     <color name="accent">#ff5722</color>
+
+    <color name="action_bar_icon">#ffffff</color>
 </resources>

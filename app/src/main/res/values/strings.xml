@@ -4,4 +4,7 @@
     <string name="title_my_feed">My Feed</string>
     <string name="title_tags">Tags</string>
     <string name="title_feeds">Feeds</string>
+
+    <string name="action_subscribe">Subscribe</string>
+    <string name="action_unsubscribe">Unsubscribe</string>
 </resources>
