@@ -1,21 +1,19 @@
 package com.tughi.aggregator.data
 
-import android.arch.persistence.db.SupportSQLiteDatabase
-import android.arch.persistence.room.Database
-import android.arch.persistence.room.Room
-import android.arch.persistence.room.RoomDatabase
+import android.content.ContentValues
 import android.content.Context
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.Worker
+import android.database.sqlite.SQLiteDatabase
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.tughi.aggregator.utilities.DATABASE_NAME
 
 @Database(
         entities = [
             Feed::class
         ],
-        version = 1,
-        exportSchema = true
+        version = 1
 )
 abstract class AppDatabase : RoomDatabase() {
 
@@ -26,57 +24,41 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var instance: AppDatabase? = null
 
-        fun getInstance(context: Context): AppDatabase {
+        fun get(context: Context): AppDatabase {
             return instance ?: synchronized(this) {
-                instance ?: buildDatabase(context).also { instance = it }
+                instance ?: create(context).also { instance = it }
             }
         }
 
-        private fun buildDatabase(context: Context): AppDatabase {
+        private fun create(context: Context): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, DATABASE_NAME)
                     .addCallback(object : RoomDatabase.Callback() {
-                        override fun onCreate(db: SupportSQLiteDatabase) {
-                            val request = OneTimeWorkRequestBuilder<Seeder>().build()
-                            WorkManager.getInstance().enqueue(request)
+                        override fun onCreate(database: SupportSQLiteDatabase) {
+                            arrayOf(
+                                    ContentValues().apply {
+                                        put("url", "url1")
+                                        put("title", "Aggregator News")
+                                    },
+                                    ContentValues().apply {
+                                        put("url", "url2")
+                                        put("title", "MarsTechnico")
+                                    },
+                                    ContentValues().apply {
+                                        put("url", "url3")
+                                        put("title", "Slashdok")
+                                    },
+                                    ContentValues().apply {
+                                        put("url", "url4")
+                                        put("title", "The Virge")
+                                    }
+                            ).forEach { values ->
+                                database.insert("feeds", SQLiteDatabase.CONFLICT_REPLACE, values)
+                            }
                         }
                     })
                     .build()
         }
 
-    }
-
-    class Seeder : Worker() {
-        override fun doWork(): Result {
-            val database = AppDatabase.getInstance(applicationContext)
-            val feeDao = database.feedDao()
-
-            try {
-                database.beginTransaction()
-
-                feeDao.addFeed(Feed(
-                        url = "url1",
-                        title = "Aggregator News"
-                ))
-                feeDao.addFeed(Feed(
-                        url = "url2",
-                        title = "MarsTechnico"
-                ))
-                feeDao.addFeed(Feed(
-                        url = "url3",
-                        title = "Slashdok"
-                ))
-                feeDao.addFeed(Feed(
-                        url = "url4",
-                        title = "The Virge"
-                ))
-
-                database.setTransactionSuccessful()
-            } finally {
-                database.endTransaction()
-            }
-
-            return Result.SUCCESS
-        }
     }
 
 }
