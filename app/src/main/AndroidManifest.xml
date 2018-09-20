@@ -22,7 +22,8 @@
 
         <activity
             android:name=".SubscribeActivity"
-            android:label="@string/action_subscribe">
+            android:label="@string/action_subscribe"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />

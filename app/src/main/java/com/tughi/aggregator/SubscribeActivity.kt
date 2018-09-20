@@ -2,12 +2,25 @@ package com.tughi.aggregator
 
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.Button
+import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 
 class SubscribeActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_VIA_ACTION = "via_action"
+    }
+
+    private val urlEditText by lazy { findViewById<EditText>(R.id.url) }
+    private val searchButton by lazy { findViewById<Button>(R.id.search) }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        setContentView(R.layout.subscribe_activity)
+
+        // TODO: handle keyboard action and search button events
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {

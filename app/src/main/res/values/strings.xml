@@ -7,4 +7,6 @@
 
     <string name="action_subscribe">Subscribe</string>
     <string name="action_unsubscribe">Unsubscribe</string>
+    <string name="subscribe_url">URL</string>
+    <string name="subscribe_action_search">Find feeds</string>
 </resources>
