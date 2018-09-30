@@ -63,7 +63,9 @@ class SubscribeActivity : AppCompatActivity() {
             }
         }
 
-        urlEditText.requestFocus()
+        if (viewModel.busy.value != true) {
+            urlEditText.requestFocus()
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
