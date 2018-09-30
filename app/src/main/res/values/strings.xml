@@ -7,6 +7,7 @@
 
     <string name="action_subscribe">Subscribe</string>
     <string name="action_unsubscribe">Unsubscribe</string>
-    <string name="subscribe_url">URL</string>
+    <string name="subscribe_url">Feed or site URL</string>
     <string name="subscribe_action_search">Find feeds</string>
+    <string name="subscribe_action_opml">Open OPML file</string>
 </resources>
