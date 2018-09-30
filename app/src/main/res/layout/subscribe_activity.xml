@@ -16,6 +16,7 @@
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:hint="@string/subscribe_url"
+        app:errorEnabled="true"
         app:hintAnimationEnabled="false">
 
         <com.google.android.material.textfield.TextInputEditText

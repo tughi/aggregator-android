@@ -83,6 +83,8 @@ class SubscribeActivity : AppCompatActivity() {
     }
 
     private fun updateUI() {
+        urlTextInputLayout.error = viewModel.errorMessage
+
         if (viewModel.busy.value == true) {
             urlTextInputLayout.isEnabled = false
             messageTextView.visibility = View.GONE
