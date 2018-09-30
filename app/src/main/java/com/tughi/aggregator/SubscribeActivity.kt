@@ -1,5 +1,6 @@
 package com.tughi.aggregator
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
@@ -44,7 +45,12 @@ class SubscribeActivity : AppCompatActivity() {
             return@setOnEditorActionListener false
         }
 
-        updateUI()
+        if (savedInstanceState == null && intent.action == Intent.ACTION_SEND) {
+            urlEditText.setText(intent.getStringExtra(Intent.EXTRA_TEXT))
+            findFeeds()
+        } else {
+            updateUI()
+        }
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
@@ -83,10 +89,10 @@ class SubscribeActivity : AppCompatActivity() {
             urlTextInputLayout.isEnabled = true
             progressBar.visibility = View.GONE
 
-            val feeds = viewModel.feeds.value
-            if (feeds == null) {
+            val feeds = viewModel.feeds
+            if (feeds.isEmpty()) {
                 messageTextView.visibility = View.VISIBLE
-                messageTextView.text = viewModel.message.value
+                messageTextView.text = viewModel.message
             }
         }
     }

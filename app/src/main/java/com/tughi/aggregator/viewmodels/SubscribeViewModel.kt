@@ -13,8 +13,8 @@ import org.jetbrains.anko.AnkoLogger
 class SubscribeViewModel : ViewModel(), AnkoLogger {
 
     val busy = MutableLiveData<Boolean>()
-    val message = MutableLiveData<String>()
-    val feeds = MutableLiveData<List<Feed>>()
+    var message: String? = null
+    val feeds = emptyList<Feed>()
 
     private var currentFindTask: FindTask? = null
 
@@ -72,7 +72,7 @@ class SubscribeViewModel : ViewModel(), AnkoLogger {
             val content = content
 
             if (success == true && content != null) {
-                viewModel.message.value = content
+                viewModel.message = content
             }
 
             viewModel.busy.value = false
