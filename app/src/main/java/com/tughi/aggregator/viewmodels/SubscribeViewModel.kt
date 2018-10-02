@@ -4,6 +4,7 @@ import android.os.AsyncTask
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.tughi.aggregator.data.Feed
+import com.tughi.aggregator.feeds.FeedsFinder
 import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -85,12 +86,10 @@ class SubscribeViewModel : ViewModel(), AnkoLogger {
 
                 if (!isCancelled) {
                     val body = response.body()
-                    // val contentType = body?.contentType()
-                    val content = body?.string()
-
-                    viewModel.message = content
-
-                    // TODO: parse response content
+                    val content = body?.charStream()
+                    if (content != null) {
+                        viewModel.feeds = FeedsFinder(content, body.contentType(), response.request().url().toString()).find()
+                    }
                 }
             }
 
