@@ -38,7 +38,7 @@ class SubscribeActivity : AppCompatActivity() {
         })
 
         urlEditText.setOnEditorActionListener { view, actionId, event ->
-            if (actionId == EditorInfo.IME_ACTION_DONE) {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 findFeeds()
                 return@setOnEditorActionListener true
             }
