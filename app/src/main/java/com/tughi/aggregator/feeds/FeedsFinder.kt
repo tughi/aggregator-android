@@ -18,7 +18,8 @@ class FeedsFinder(private val content: Reader, private val contentType: MediaTyp
             val type = "${type()}/${subtype()}"
             when (type) {
                 "application/json" -> {
-                    TODO("Validate JSON feed")
+                    // TODO: add JSON feed support
+                    throw IllegalStateException("JSON feeds are not supported yet")
                 }
                 "text/html" -> {
                     searchHtmlForFeeds(content)

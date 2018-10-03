@@ -11,6 +11,7 @@ import okhttp3.Request
 import okhttp3.Response
 import org.jetbrains.anko.AnkoLogger
 import java.io.IOException
+import java.lang.Exception
 import java.net.NoRouteToHostException
 import java.net.SocketTimeoutException
 
@@ -88,7 +89,11 @@ class SubscribeViewModel : ViewModel(), AnkoLogger {
                     val body = response.body()
                     val content = body?.charStream()
                     if (content != null) {
-                        viewModel.feeds = FeedsFinder(content, body.contentType(), response.request().url().toString()).find()
+                        try {
+                            viewModel.feeds = FeedsFinder(content, body.contentType(), response.request().url().toString()).find()
+                        } catch (exception: Exception) {
+                            viewModel.errorMessage = exception.localizedMessage
+                        }
                     }
                 }
             }
