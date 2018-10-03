@@ -73,13 +73,12 @@ class FeedsFinder(private val content: Reader, private val contentType: MediaTyp
         val buffer = CharArrayWriter(500)
 
         var state = 0
+        val chars = CharArray(1)
         loop@ do {
-            val char = content.read().let {
-                when (it) {
-                    -1 -> return null
-                    else -> it.toChar()
-                }
+            if (content.read(chars, 0, 1) == -1) {
+                return null
             }
+            val char = chars[0]
 
             when (state) {
                 0 -> {
