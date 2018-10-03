@@ -5,8 +5,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.tughi.aggregator.data.Feed
 import com.tughi.aggregator.feeds.FeedsFinder
+import com.tughi.aggregator.utilities.Http
 import okhttp3.Call
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import org.jetbrains.anko.AnkoLogger
@@ -63,7 +63,7 @@ class SubscribeViewModel : ViewModel(), AnkoLogger {
             if (!isCancelled) {
                 val response: Response?
                 try {
-                    response = OkHttpClient().newCall(request).also { requestCall = it }.execute()
+                    response = Http.client.newCall(request).also { requestCall = it }.execute()
                 } catch (exception: IOException) {
                     when (exception) {
                         is NoRouteToHostException -> {
