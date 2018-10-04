@@ -2,16 +2,19 @@ package com.tughi.aggregator
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
-import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputLayout
+import com.tughi.aggregator.data.Feed
 import com.tughi.aggregator.viewmodels.SubscribeViewModel
 
 class SubscribeActivity : AppCompatActivity() {
@@ -22,8 +25,10 @@ class SubscribeActivity : AppCompatActivity() {
 
     private val urlTextInputLayout by lazy { findViewById<TextInputLayout>(R.id.url_wrapper) }
     private val urlEditText by lazy { urlTextInputLayout.findViewById<EditText>(R.id.url) }
-    private val messageTextView by lazy { findViewById<TextView>(R.id.message) }
-    private val progressBar by lazy { findViewById<ProgressBar>(R.id.progress) }
+    private val explanationTextView by lazy { findViewById<TextView>(R.id.explanation) }
+    private val feedsRecyclerView by lazy { findViewById<RecyclerView>(R.id.feeds) }
+
+    private val adapter = Adapter()
 
     private lateinit var viewModel: SubscribeViewModel
 
@@ -33,8 +38,8 @@ class SubscribeActivity : AppCompatActivity() {
         setContentView(R.layout.subscribe_activity)
 
         viewModel = ViewModelProviders.of(this).get(SubscribeViewModel::class.java)
-        viewModel.busy.observe(this, Observer {
-            updateUI()
+        viewModel.state.observe(this, Observer {
+            updateUI(it)
         })
 
         urlEditText.setOnEditorActionListener { view, actionId, event ->
@@ -45,11 +50,11 @@ class SubscribeActivity : AppCompatActivity() {
             return@setOnEditorActionListener false
         }
 
+        feedsRecyclerView.adapter = adapter
+
         if (savedInstanceState == null && intent.action == Intent.ACTION_SEND) {
             urlEditText.setText(intent.getStringExtra(Intent.EXTRA_TEXT))
             findFeeds()
-        } else {
-            updateUI()
         }
     }
 
@@ -63,7 +68,7 @@ class SubscribeActivity : AppCompatActivity() {
             }
         }
 
-        if (viewModel.busy.value != true) {
+        if (viewModel.state.value?.loading != true) {
             urlEditText.requestFocus()
         }
     }
@@ -82,22 +87,84 @@ class SubscribeActivity : AppCompatActivity() {
         viewModel.findFeeds(urlEditText.text.toString())
     }
 
-    private fun updateUI() {
-        urlTextInputLayout.error = viewModel.errorMessage
+    private fun updateUI(state: SubscribeViewModel.State) {
+        if (state.loading || !state.feeds.isEmpty() || state.message != null) {
+            explanationTextView.visibility = View.GONE
+            feedsRecyclerView.visibility = View.VISIBLE
 
-        if (viewModel.busy.value == true) {
-            urlTextInputLayout.isEnabled = false
-            messageTextView.visibility = View.GONE
-            progressBar.visibility = View.VISIBLE
-        } else {
-            urlTextInputLayout.isEnabled = true
-            progressBar.visibility = View.GONE
-
-            val feeds = viewModel.feeds
-            if (feeds.isEmpty()) {
-                messageTextView.visibility = View.VISIBLE
-                messageTextView.text = viewModel.message
+            adapter.items = mutableListOf<Any>().apply {
+                addAll(state.feeds)
+                if (state.message != null) {
+                    add(state.message)
+                }
+                if (state.loading) {
+                    add(true)
+                }
             }
+        } else {
+            explanationTextView.visibility = View.VISIBLE
+            feedsRecyclerView.visibility = View.GONE
+        }
+    }
+
+    private open class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        open fun onBind(item: Any) {}
+    }
+
+    private class FeedViewHolder(itemView: View) : ViewHolder(itemView) {
+        private val titleTextView = itemView.findViewById<TextView>(R.id.title)
+        private val urlTextView = itemView.findViewById<TextView>(R.id.url)
+
+        override fun onBind(item: Any) {
+            val feed = item as Feed
+
+            titleTextView.text = feed.title
+            urlTextView.text = feed.url
+        }
+    }
+
+    private class LoadingViewHolder(itemView: View) : ViewHolder(itemView)
+
+    private class MessageViewHolder(itemView: View) : ViewHolder(itemView) {
+        private val textView = itemView as TextView
+
+        override fun onBind(item: Any) {
+            textView.text = item as String
+        }
+    }
+
+    private class Adapter : RecyclerView.Adapter<ViewHolder>() {
+        var items: List<Any> = emptyList()
+            set(items) {
+                field = items
+                notifyDataSetChanged()
+            }
+
+        override fun getItemCount(): Int {
+            return items.size
+        }
+
+        override fun getItemViewType(position: Int): Int {
+            return when (items[position]) {
+                is Feed -> R.layout.subscribe_feed_item
+                is Boolean -> R.layout.subscribe_loading_item
+                is String -> R.layout.subscribe_message_item
+                else -> throw IllegalStateException("Unsupported item")
+            }
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val itemView = LayoutInflater.from(parent.context).inflate(viewType, parent, false)
+            return when (viewType) {
+                R.layout.subscribe_feed_item -> FeedViewHolder(itemView)
+                R.layout.subscribe_loading_item -> LoadingViewHolder(itemView)
+                R.layout.subscribe_message_item -> MessageViewHolder(itemView)
+                else -> throw IllegalStateException("Unsupported item view type")
+            }
+        }
+
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            holder.onBind(items[position])
         }
     }
 

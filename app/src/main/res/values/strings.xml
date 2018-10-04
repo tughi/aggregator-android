@@ -10,4 +10,9 @@
     <string name="subscribe_url">Feed or site URL</string>
     <string name="subscribe_action_search">Find feeds</string>
     <string name="subscribe_action_opml">Open OPML file</string>
+    <string name="subscribe_explanation">Content providers, like news sites and blogs, often
+        use feeds as an alternative way to inform readers about new or updated articles.
+        \n\n<b>Aggregator</b> is able to detect if a website, you are interested in, is providing
+        such feeds.
+    </string>
 </resources>

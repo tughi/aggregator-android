@@ -1,40 +1,19 @@
 package com.tughi.aggregator.feeds
 
 import com.tughi.aggregator.data.Feed
-import okhttp3.MediaType
 import java.io.CharArrayWriter
 import java.io.Reader
 import java.util.*
 import java.util.regex.Pattern
 
-class FeedsFinder(private val content: Reader, private val contentType: MediaType?, private val url: String?) {
+class FeedsFinder(private val listener: Listener) {
 
-    private val feeds = ArrayList<Feed>()
-
-    fun find(): List<Feed> {
+    fun find(url: String, content: Reader) {
         assert(content.markSupported())
 
-        with(contentType ?: detectContentType(content)) {
-            val type = "${type()}/${subtype()}"
-            when (type) {
-                "application/json" -> {
-                    // TODO: add JSON feed support
-                    throw IllegalStateException("JSON feeds are not supported yet")
-                }
-                "text/html" -> {
-                    searchHtmlForFeeds(content)
-                }
-                else -> {
-                    throw IllegalStateException("Unsupported content type: $type")
-                }
-            }
-        }
+        // TODO: try parsing as feed xml
 
-        return feeds
-    }
-
-    private fun detectContentType(content: Reader): MediaType {
-        TODO("Detect content type")
+        searchHtmlForFeeds(content)
     }
 
     private fun searchHtmlForFeeds(content: Reader) {
@@ -59,11 +38,11 @@ class FeedsFinder(private val content: Reader, private val contentType: MediaTyp
                 if (type == "application/rss+xml" || type == "application/atom+xml") {
                     val href = attributes["href"]
                     if (href != null) {
-                        feeds.add(Feed(
+                        val feed = Feed(
                                 url = href,
-                                title = attributes["title"] ?: "Feed"
-                        ))
-                        // TODO: addFeed(attributes.get("title"), fixLink(attributes.get("href")), link)
+                                title = attributes["title"] ?: "Untitled feed"
+                        )
+                        listener.onFeedFound(feed)
                     }
                 }
             }
@@ -121,21 +100,8 @@ class FeedsFinder(private val content: Reader, private val contentType: MediaTyp
         return if (state != 6) null else buffer.toString()
     }
 
-/*
-    private fun addFeed(title: String?, href: String?) {
-        var title = title
-        if (href == null) {
-            return
-        }
-
-        if (title == null) {
-            val start = href.indexOf("://") + 3
-            val end = href.indexOf('/', start)
-            title = href.substring(start, end)
-        }
-
-        feeds.add(Feed(href, Html.fromHtml(title).toString()))
+    interface Listener {
+        fun onFeedFound(feed: Feed)
     }
-*/
 
 }

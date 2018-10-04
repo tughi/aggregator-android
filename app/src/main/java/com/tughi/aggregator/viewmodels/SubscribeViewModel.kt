@@ -11,26 +11,21 @@ import okhttp3.Request
 import okhttp3.Response
 import org.jetbrains.anko.AnkoLogger
 import java.io.IOException
-import java.lang.Exception
 import java.net.NoRouteToHostException
 import java.net.SocketTimeoutException
 
 class SubscribeViewModel : ViewModel(), AnkoLogger {
 
-    val busy = MutableLiveData<Boolean>()
-    var message: String? = null
-    var feeds = emptyList<Feed>()
-    var errorMessage: String? = null
+    val state = MutableLiveData<State>().apply {
+        value = SubscribeViewModel.State(false, emptyList(), null)
+    }
 
     private var currentFindTask: FindTask? = null
 
     fun findFeeds(url: String) {
         currentFindTask?.cancel()
 
-        message = null
-        feeds = emptyList()
-        errorMessage = null
-        busy.value = true
+        state.value = SubscribeViewModel.State(true, emptyList(), null)
 
         FindTask(this).also { currentFindTask = it }.execute(url)
     }
@@ -39,8 +34,20 @@ class SubscribeViewModel : ViewModel(), AnkoLogger {
         currentFindTask?.cancel()
     }
 
-    class FindTask(private val viewModel: SubscribeViewModel) : AsyncTask<Any, Void, Boolean>() {
+    data class State(val loading: Boolean, val feeds: List<Feed>, val message: String?) {
+        fun cloneWith(loading: Boolean? = null, feeds: List<Feed>? = null, message: String? = null): State {
+            return SubscribeViewModel.State(
+                    loading = loading ?: this.loading,
+                    feeds = feeds ?: this.feeds,
+                    message = message ?: this.message
+            )
+        }
+    }
 
+    class FindTask(private val viewModel: SubscribeViewModel) : AsyncTask<Any, State, State>(), FeedsFinder.Listener {
+
+        private val feeds = arrayListOf<Feed>()
+        private var state = viewModel.state.value!!.cloneWith(feeds = feeds)
         private var requestCall: Call? = null
 
         fun cancel() {
@@ -48,7 +55,7 @@ class SubscribeViewModel : ViewModel(), AnkoLogger {
             requestCall?.cancel()
         }
 
-        override fun doInBackground(vararg params: Any?): Boolean {
+        override fun doInBackground(vararg params: Any?): State {
             val url = params[0] as String
 
 
@@ -56,8 +63,7 @@ class SubscribeViewModel : ViewModel(), AnkoLogger {
                 try {
                     url(url)
                 } catch (exception: IllegalArgumentException) {
-                    viewModel.errorMessage = "Invalid URL"
-                    return false
+                    return state.cloneWith(loading = false, message = "Invalid URL")
                 }
             }.build()
 
@@ -66,23 +72,21 @@ class SubscribeViewModel : ViewModel(), AnkoLogger {
                 try {
                     response = Http.client.newCall(request).also { requestCall = it }.execute()
                 } catch (exception: IOException) {
-                    when (exception) {
+                    return when (exception) {
                         is NoRouteToHostException -> {
-                            viewModel.errorMessage = "Could not open a connection"
+                            state.cloneWith(loading = false, message = "Could not open a connection")
                         }
                         is SocketTimeoutException -> {
-                            viewModel.errorMessage = "Timeout error... Please try again"
+                            state.cloneWith(loading = false, message = "Timeout error... Please try again")
                         }
                         else -> {
-                            viewModel.errorMessage = "Unexpected error: ${exception::class.java.simpleName}"
+                            state.cloneWith(loading = false, message = "Unexpected error: ${exception::class.java.simpleName}")
                         }
                     }
-                    return false
                 }
 
                 if (!response.isSuccessful) {
-                    viewModel.errorMessage = "Server response: ${response.code()} ${response.message()}"
-                    return false
+                    return state.cloneWith(loading = false, message = "Server response: ${response.code()} ${response.message()}")
                 }
 
                 if (!isCancelled) {
@@ -90,21 +94,30 @@ class SubscribeViewModel : ViewModel(), AnkoLogger {
                     val content = body?.charStream()
                     if (content != null) {
                         try {
-                            viewModel.feeds = FeedsFinder(content, body.contentType(), response.request().url().toString()).find()
+                            FeedsFinder(this).find(response.request().url().toString(), content)
                         } catch (exception: Exception) {
-                            viewModel.errorMessage = exception.localizedMessage
+                            publishProgress(state.cloneWith(message = exception.localizedMessage))
                         }
                     }
                 }
             }
 
-            return true
+            val state = state
+            return state.cloneWith(loading = false, message = if (state.feeds.isEmpty()) "No feeds found" else null)
         }
 
-        override fun onPostExecute(success: Boolean?) {
-            viewModel.busy.value = false
+        override fun onProgressUpdate(vararg values: State?) {
+            viewModel.state.value = values[0].also { state = it!! }
         }
 
+        override fun onPostExecute(result: State?) {
+            onProgressUpdate(result)
+        }
+
+        override fun onFeedFound(feed: Feed) {
+            feeds.add(feed)
+            publishProgress(state.cloneWith())
+        }
     }
 
 }
