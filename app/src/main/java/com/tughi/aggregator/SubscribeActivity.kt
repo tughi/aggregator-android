@@ -12,6 +12,8 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputLayout
 import com.tughi.aggregator.data.Feed
@@ -92,7 +94,7 @@ class SubscribeActivity : AppCompatActivity() {
             explanationTextView.visibility = View.GONE
             feedsRecyclerView.visibility = View.VISIBLE
 
-            adapter.items = mutableListOf<Any>().apply {
+            adapter.submitList(mutableListOf<Any>().apply {
                 addAll(state.feeds)
                 if (state.message != null) {
                     add(state.message)
@@ -100,7 +102,7 @@ class SubscribeActivity : AppCompatActivity() {
                 if (state.loading) {
                     add(true)
                 }
-            }
+            })
         } else {
             explanationTextView.visibility = View.VISIBLE
             feedsRecyclerView.visibility = View.GONE
@@ -133,19 +135,24 @@ class SubscribeActivity : AppCompatActivity() {
         }
     }
 
-    private class Adapter : RecyclerView.Adapter<ViewHolder>() {
-        var items: List<Any> = emptyList()
-            set(items) {
-                field = items
-                notifyDataSetChanged()
+    private class DiffUtilCallback : DiffUtil.ItemCallback<Any>() {
+        override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean {
+            return when (oldItem) {
+                is Feed -> newItem is Feed && oldItem.url == newItem.url
+                is Boolean -> newItem is Boolean
+                is String -> newItem is String
+                else -> throw IllegalStateException("Unsupported old item")
             }
-
-        override fun getItemCount(): Int {
-            return items.size
         }
 
+        override fun areContentsTheSame(oldItem: Any, newItem: Any): Boolean {
+            return oldItem == newItem
+        }
+    }
+
+    private class Adapter : ListAdapter<Any, ViewHolder>(DiffUtilCallback()) {
         override fun getItemViewType(position: Int): Int {
-            return when (items[position]) {
+            return when (getItem(position)) {
                 is Feed -> R.layout.subscribe_feed_item
                 is Boolean -> R.layout.subscribe_loading_item
                 is String -> R.layout.subscribe_message_item
@@ -164,7 +171,7 @@ class SubscribeActivity : AppCompatActivity() {
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            holder.onBind(items[position])
+            holder.onBind(getItem(position))
         }
     }
 
