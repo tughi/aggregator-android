@@ -7,6 +7,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -46,7 +47,13 @@ class SubscribeActivity : AppCompatActivity() {
 
         urlEditText.setOnEditorActionListener { view, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                val inputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+
+                view.clearFocus()
+
                 findFeeds()
+
                 return@setOnEditorActionListener true
             }
             return@setOnEditorActionListener false
