@@ -1,9 +1,14 @@
 package com.tughi.aggregator
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import com.tughi.aggregator.data.AppDatabase
+import com.tughi.aggregator.data.Feed
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
 
 class SubscribeFeedFragment : Fragment() {
 
@@ -49,6 +54,30 @@ class SubscribeFeedFragment : Fragment() {
         super.onResume()
 
         activity?.setTitle(R.string.title_add_feed)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item?.itemId) {
+            R.id.add -> {
+                val title = arguments!!.getString(ARG_TITLE)!!
+                val customTitle = titleTextView.text.toString()
+                doAsync {
+                    val feedId = AppDatabase.get(context!!).feedDao().addFeed(Feed(
+                            url = urlTextView.text.toString(),
+                            title = title,
+                            customTitle = if (customTitle != title) customTitle else null
+                    ))
+
+                    // TODO: update new feed
+                    Log.d(javaClass.name, "Feed $feedId added...")
+
+                    uiThread {
+                        activity?.finish()
+                    }
+                }
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
 }
