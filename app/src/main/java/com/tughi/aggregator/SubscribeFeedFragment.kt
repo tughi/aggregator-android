@@ -9,4 +9,10 @@ class SubscribeFeedFragment : Fragment() {
         const val ARG_URL = "url"
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        activity?.setTitle(R.string.title_add_feed)
+    }
+
 }
