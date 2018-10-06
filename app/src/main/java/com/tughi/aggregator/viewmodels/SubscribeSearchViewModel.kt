@@ -14,10 +14,10 @@ import java.io.IOException
 import java.net.NoRouteToHostException
 import java.net.SocketTimeoutException
 
-class SubscribeViewModel : ViewModel(), AnkoLogger {
+class SubscribeSearchViewModel : ViewModel(), AnkoLogger {
 
     val state = MutableLiveData<State>().apply {
-        value = SubscribeViewModel.State(false, emptyList(), null)
+        value = SubscribeSearchViewModel.State(null, false, emptyList(), null)
     }
 
     private var currentFindTask: FindTask? = null
@@ -25,7 +25,7 @@ class SubscribeViewModel : ViewModel(), AnkoLogger {
     fun findFeeds(url: String) {
         currentFindTask?.cancel()
 
-        state.value = SubscribeViewModel.State(true, emptyList(), null)
+        state.value = SubscribeSearchViewModel.State(url, true, emptyList(), null)
 
         FindTask(this).also { currentFindTask = it }.execute(url)
     }
@@ -34,9 +34,10 @@ class SubscribeViewModel : ViewModel(), AnkoLogger {
         currentFindTask?.cancel()
     }
 
-    data class State(val loading: Boolean, val feeds: List<Feed>, val message: String?) {
+    data class State(val url: String?, val loading: Boolean, val feeds: List<Feed>, val message: String?) {
         fun cloneWith(loading: Boolean? = null, feeds: List<Feed>? = null, message: String? = null): State {
-            return SubscribeViewModel.State(
+            return SubscribeSearchViewModel.State(
+                    url = this.url,
                     loading = loading ?: this.loading,
                     feeds = feeds ?: this.feeds,
                     message = message ?: this.message
@@ -44,7 +45,7 @@ class SubscribeViewModel : ViewModel(), AnkoLogger {
         }
     }
 
-    class FindTask(private val viewModel: SubscribeViewModel) : AsyncTask<Any, State, State>(), FeedsFinder.Listener {
+    class FindTask(private val viewModel: SubscribeSearchViewModel) : AsyncTask<Any, State, State>(), FeedsFinder.Listener {
 
         private val feeds = arrayListOf<Feed>()
         private var state = viewModel.state.value!!.cloneWith(feeds = feeds)

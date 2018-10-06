@@ -14,10 +14,9 @@ class SubscribeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction().apply {
-                replace(android.R.id.content, SubscribeSearchFragment())
-                commit()
-            }
+            supportFragmentManager.beginTransaction()
+                    .replace(android.R.id.content, SubscribeSearchFragment())
+                    .commit()
         }
     }
 

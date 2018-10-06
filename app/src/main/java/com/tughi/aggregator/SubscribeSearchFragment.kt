@@ -10,7 +10,6 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -19,7 +18,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputLayout
 import com.tughi.aggregator.data.Feed
-import com.tughi.aggregator.viewmodels.SubscribeViewModel
+import com.tughi.aggregator.viewmodels.SubscribeSearchViewModel
 
 class SubscribeSearchFragment : Fragment() {
 
@@ -30,7 +29,7 @@ class SubscribeSearchFragment : Fragment() {
 
     private val adapter = Adapter()
 
-    private lateinit var viewModel: SubscribeViewModel
+    private lateinit var viewModel: SubscribeSearchViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.subscribe_search_fragment, container, false)
@@ -40,7 +39,8 @@ class SubscribeSearchFragment : Fragment() {
         explanationTextView = view.findViewById(R.id.explanation)
         feedsRecyclerView = view.findViewById(R.id.feeds)
 
-        viewModel = ViewModelProviders.of(this).get(SubscribeViewModel::class.java)
+        val activity = activity as SubscribeActivity
+        viewModel = ViewModelProviders.of(activity).get(SubscribeSearchViewModel::class.java)
         viewModel.state.observe(this, Observer {
             updateUI(it)
         })
@@ -60,10 +60,11 @@ class SubscribeSearchFragment : Fragment() {
         feedsRecyclerView.adapter = adapter
 
         if (savedInstanceState == null) {
-            val activityIntent = (activity as SubscribeActivity).intent
-            if (activityIntent.action == Intent.ACTION_SEND) {
-                urlEditText.setText(activityIntent.getStringExtra(Intent.EXTRA_TEXT))
-                findFeeds()
+            if (activity.intent.action == Intent.ACTION_SEND) {
+                if (viewModel.state.value?.url == null) {
+                    urlEditText.setText(activity.intent.getStringExtra(Intent.EXTRA_TEXT))
+                    findFeeds()
+                }
             } else {
                 urlEditText.requestFocus()
             }
@@ -76,7 +77,7 @@ class SubscribeSearchFragment : Fragment() {
         viewModel.findFeeds(urlEditText.text.toString())
     }
 
-    private fun updateUI(state: SubscribeViewModel.State) {
+    private fun updateUI(state: SubscribeSearchViewModel.State) {
         urlEditText.isEnabled = !state.loading
 
         if (state.loading || !state.feeds.isEmpty() || state.message != null) {
@@ -144,7 +145,15 @@ class SubscribeSearchFragment : Fragment() {
         }
 
         override fun onClick(v: View?) {
-            val activity = itemView.context as AppCompatActivity
+            val activity = itemView.context as SubscribeActivity
+            val arguments = Bundle().apply {
+                putString(SubscribeFeedFragment.ARG_TITLE, feed.title)
+                putString(SubscribeFeedFragment.ARG_URL, feed.url)
+            }
+            activity.supportFragmentManager.beginTransaction()
+                    .replace(android.R.id.content, SubscribeFeedFragment().also { it.arguments = arguments })
+                    .addToBackStack(null)
+                    .commit()
         }
     }
 
