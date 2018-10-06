@@ -120,15 +120,24 @@ class SubscribeActivity : AppCompatActivity() {
         open fun onBind(item: Any) {}
     }
 
-    private class FeedViewHolder(itemView: View) : ViewHolder(itemView) {
+    private class FeedViewHolder(itemView: View) : ViewHolder(itemView), View.OnClickListener {
         private val titleTextView = itemView.findViewById<TextView>(R.id.title)
         private val urlTextView = itemView.findViewById<TextView>(R.id.url)
 
-        override fun onBind(item: Any) {
-            val feed = item as Feed
+        private lateinit var feed: Feed
 
+        init {
+            itemView.setOnClickListener(this)
+        }
+
+        override fun onBind(item: Any) {
+            feed = item as Feed
             titleTextView.text = feed.title
             urlTextView.text = feed.url
+        }
+
+        override fun onClick(v: View?) {
+            val activity = itemView.context as AppCompatActivity
         }
     }
 
