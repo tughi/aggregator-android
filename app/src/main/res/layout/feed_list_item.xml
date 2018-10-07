@@ -45,27 +45,18 @@
         app:layout_constraintTop_toBottomOf="@+id/title"
         tools:text="since yesterday, 15:43" />
 
-    <FrameLayout
+    <ImageView
         android:id="@+id/toggle"
         style="?actionButtonStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
+        android:layout_width="56dp"
+        android:layout_height="40dp"
         android:clickable="true"
         android:focusable="true"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:src="@drawable/action_show_more"
+        android:tint="#888"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal|top"
-            android:layout_marginTop="8dp"
-            android:src="@drawable/action_show_more"
-            android:tint="#888"
-            tools:ignore="ContentDescription" />
-
-    </FrameLayout>
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/count"
