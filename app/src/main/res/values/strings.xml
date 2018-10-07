@@ -10,6 +10,9 @@
     <string name="label_update_mode">Update mode</string>
     <string name="label_url">URL</string>
 
+    <string name="last_successful_update__never">never updated</string>
+    <string name="last_successful_update__since">since $1%s</string>
+
     <string name="subscribe_url">Website or feed URL</string>
     <string name="subscribe_explanation">Content providers, like news sites and blogs, often
         use feeds as an alternative way to inform readers about new or updated articles.

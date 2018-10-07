@@ -22,13 +22,15 @@ class FeedListAdapter : ListAdapter<Feed, FeedListAdapter.ViewHolder>(FeedDiffCa
         val feed = getItem(position)
 
         holder.favicon.setImageResource(R.drawable.favicon_placeholder)
-        holder.title.text = feed.title
+        holder.title.text = feed.customTitle ?: feed.title
+        holder.lastSuccessfulUpdateTextView.setText(R.string.last_successful_update__never)
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val favicon: ImageView = itemView.findViewById(R.id.favicon)
         val title: TextView = itemView.findViewById(R.id.title)
         val count: TextView = itemView.findViewById(R.id.count)
+        val lastSuccessfulUpdateTextView: TextView = itemView.findViewById(R.id.last_successful_update)
 
         init {
             count.visibility = View.GONE
