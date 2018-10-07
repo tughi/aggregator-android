@@ -4,6 +4,8 @@
     <string name="action_subscribe">Subscribe</string>
     <string name="action_unsubscribe">Unsubscribe</string>
 
+    <string name="feeds_empty_message">You don\'t have any feeds yet.</string>
+
     <string name="label_title">Title</string>
     <string name="label_update_mode">Update mode</string>
     <string name="label_url">URL</string>
@@ -11,8 +13,7 @@
     <string name="subscribe_url">Website or feed URL</string>
     <string name="subscribe_explanation">Content providers, like news sites and blogs, often
         use feeds as an alternative way to inform readers about new or updated articles.
-        \n\n<b>Aggregator</b> is able to detect if a website, you are interested in, is providing
-        such feeds.
+        \n\n<b>Aggregator</b> is able to detect if a website is providing such feeds.
     </string>
 
     <string name="title_add_feed">Add feed</string>

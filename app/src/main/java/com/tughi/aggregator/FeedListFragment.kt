@@ -3,6 +3,7 @@ package com.tughi.aggregator
 import android.content.Intent
 import android.os.Bundle
 import android.view.*
+import android.widget.Button
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -27,18 +28,34 @@ class FeedListFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.feed_list_fragment, container, false)
+        val fragmentView = inflater.inflate(R.layout.feed_list_fragment, container, false)
 
         viewModel = ViewModelProviders.of(this).get(FeedListViewModel::class.java)
 
-        val feeds = view.findViewById<RecyclerView>(R.id.feeds)
-        feeds.adapter = FeedListAdapter().also { adapter ->
-            viewModel.feeds.observe(this, Observer { list ->
-                adapter.submitList(list)
+        val feedsRecyclerView = fragmentView.findViewById<RecyclerView>(R.id.feeds)
+        val emptyView = fragmentView.findViewById<View>(R.id.empty)
+        val progressBar = fragmentView.findViewById<View>(R.id.progress)
+
+        feedsRecyclerView.adapter = FeedListAdapter().also { adapter ->
+            viewModel.feeds.observe(this, Observer { feeds ->
+                adapter.submitList(feeds)
+
+                progressBar.visibility = View.GONE
+                if (feeds.isEmpty()) {
+                    emptyView.visibility = View.VISIBLE
+                    feedsRecyclerView.visibility = View.GONE
+                } else {
+                    emptyView.visibility = View.GONE
+                    feedsRecyclerView.visibility = View.VISIBLE
+                }
             })
         }
 
-        return view
+        fragmentView.findViewById<Button>(R.id.add).setOnClickListener {
+            startActivity(Intent(activity, SubscribeActivity::class.java))
+        }
+
+        return fragmentView
     }
 
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
