@@ -9,9 +9,9 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.R
-import com.tughi.aggregator.data.Feed
+import com.tughi.aggregator.data.UiFeed
 
-class FeedListAdapter : ListAdapter<Feed, FeedListAdapter.ViewHolder>(FeedDiffCallback()) {
+class FeedListAdapter : ListAdapter<UiFeed, FeedListAdapter.ViewHolder>(FeedDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.feed_list_item, parent, false)
@@ -22,7 +22,9 @@ class FeedListAdapter : ListAdapter<Feed, FeedListAdapter.ViewHolder>(FeedDiffCa
         val feed = getItem(position)
 
         holder.favicon.setImageResource(R.drawable.favicon_placeholder)
-        holder.title.text = feed.customTitle ?: feed.title
+        holder.title.text = feed.title
+        holder.count.text = feed.entryCount.toString()
+        holder.count.visibility = if (feed.entryCount == 0) View.GONE else View.VISIBLE
         holder.lastSuccessfulUpdateTextView.setText(R.string.last_successful_update__never)
     }
 
@@ -31,19 +33,15 @@ class FeedListAdapter : ListAdapter<Feed, FeedListAdapter.ViewHolder>(FeedDiffCa
         val title: TextView = itemView.findViewById(R.id.title)
         val count: TextView = itemView.findViewById(R.id.count)
         val lastSuccessfulUpdateTextView: TextView = itemView.findViewById(R.id.last_successful_update)
-
-        init {
-            count.visibility = View.GONE
-        }
     }
 
-    class FeedDiffCallback : DiffUtil.ItemCallback<Feed>() {
+    class FeedDiffCallback : DiffUtil.ItemCallback<UiFeed>() {
 
-        override fun areItemsTheSame(oldFeed: Feed, newFeed: Feed): Boolean {
+        override fun areItemsTheSame(oldFeed: UiFeed, newFeed: UiFeed): Boolean {
             return oldFeed.id == newFeed.id
         }
 
-        override fun areContentsTheSame(oldFeed: Feed, newFeed: Feed): Boolean {
+        override fun areContentsTheSame(oldFeed: UiFeed, newFeed: UiFeed): Boolean {
             return oldFeed == newFeed
         }
 

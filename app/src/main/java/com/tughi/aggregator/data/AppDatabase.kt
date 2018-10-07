@@ -8,12 +8,14 @@ import com.tughi.aggregator.utilities.DATABASE_NAME
 
 @Database(
         entities = [
+            Entry::class,
             Feed::class
         ],
         version = 1
 )
 abstract class AppDatabase : RoomDatabase() {
 
+    abstract fun entryDao(): EntryDao
     abstract fun feedDao(): FeedDao
 
     companion object {

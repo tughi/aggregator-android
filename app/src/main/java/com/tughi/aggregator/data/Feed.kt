@@ -17,3 +17,10 @@ data class Feed(
 
         @ColumnInfo(name = "last_successful_update") val lastSuccessfulUpdate: Long? = null
 )
+
+data class UiFeed(
+        val id: Long,
+        val title: String,
+
+        @ColumnInfo(name = "entry_count") val entryCount: Int
+)
