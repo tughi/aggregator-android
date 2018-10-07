@@ -1,6 +1,7 @@
 package com.tughi.aggregator.data
 
 import androidx.lifecycle.LiveData
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
@@ -22,5 +23,24 @@ interface FeedDao {
             title
     """)
     fun getUiFeeds(): LiveData<List<UiFeed>>
+
+}
+
+data class UiFeed(
+        @ColumnInfo
+        val id: Long,
+
+        @ColumnInfo
+        val title: String,
+
+        @ColumnInfo(name = "entry_count")
+        val entryCount: Int
+)
+
+@Dao
+interface EntryDao {
+
+    @Insert
+    fun addEntry(entry: Entry): Long
 
 }

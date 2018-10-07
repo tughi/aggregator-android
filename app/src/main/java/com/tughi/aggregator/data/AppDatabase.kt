@@ -11,7 +11,7 @@ import com.tughi.aggregator.utilities.DATABASE_NAME
             Entry::class,
             Feed::class
         ],
-        version = 1
+        version = 3
 )
 abstract class AppDatabase : RoomDatabase() {
 
@@ -31,6 +31,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         private fun create(context: Context): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, DATABASE_NAME)
+                    .fallbackToDestructiveMigration()
                     .build()
         }
 
