@@ -8,6 +8,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="In development..."
-        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+        android:textAppearance="?textAppearanceBody1" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
