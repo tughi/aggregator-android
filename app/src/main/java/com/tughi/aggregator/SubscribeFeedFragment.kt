@@ -5,7 +5,7 @@ import android.util.Log
 import android.view.*
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import com.tughi.aggregator.data.AppDatabase
+import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.Feed
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
@@ -62,7 +62,7 @@ class SubscribeFeedFragment : Fragment() {
                 val title = arguments!!.getString(ARG_TITLE)!!
                 val customTitle = titleTextView.text.toString()
                 doAsync {
-                    val feedId = AppDatabase.get(context!!).feedDao().addFeed(Feed(
+                    val feedId = Database.get(context!!).feedDao().addFeed(Feed(
                             url = urlTextView.text.toString(),
                             title = title,
                             customTitle = if (customTitle != title) customTitle else null

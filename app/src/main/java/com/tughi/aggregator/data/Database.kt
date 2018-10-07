@@ -1,19 +1,18 @@
 package com.tughi.aggregator.data
 
 import android.content.Context
-import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.tughi.aggregator.utilities.DATABASE_NAME
 
-@Database(
+@androidx.room.Database(
         entities = [
             Entry::class,
             Feed::class
         ],
-        version = 3
+        version = 4
 )
-abstract class AppDatabase : RoomDatabase() {
+abstract class Database : RoomDatabase() {
 
     abstract fun entryDao(): EntryDao
     abstract fun feedDao(): FeedDao
@@ -21,16 +20,16 @@ abstract class AppDatabase : RoomDatabase() {
     companion object {
 
         @Volatile
-        private var instance: AppDatabase? = null
+        private var instance: Database? = null
 
-        fun get(context: Context): AppDatabase {
+        fun get(context: Context): Database {
             return instance ?: synchronized(this) {
                 instance ?: create(context).also { instance = it }
             }
         }
 
-        private fun create(context: Context): AppDatabase {
-            return Room.databaseBuilder(context, AppDatabase::class.java, DATABASE_NAME)
+        private fun create(context: Context): Database {
+            return Room.databaseBuilder(context, Database::class.java, DATABASE_NAME)
                     .fallbackToDestructiveMigration()
                     .build()
         }
