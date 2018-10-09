@@ -57,8 +57,11 @@ class SubscribeSearchViewModel : ViewModel(), AnkoLogger {
         }
 
         override fun doInBackground(vararg params: Any?): State {
-            val url = params[0] as String
+            var url = params[0] as String
 
+            if (!url.contains(Regex("^\\w+://"))) {
+                url = "http://$url"
+            }
 
             val request = Request.Builder().apply {
                 try {
