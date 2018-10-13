@@ -1,6 +1,8 @@
 package com.tughi.aggregator.feeds
 
+import android.util.Xml
 import com.tughi.aggregator.data.Feed
+import java.io.BufferedReader
 import java.io.CharArrayWriter
 import java.io.Reader
 import java.util.*
@@ -11,9 +13,29 @@ class FeedsFinder(private val listener: Listener) {
     fun find(url: String, content: Reader) {
         assert(content.markSupported())
 
-        // TODO: try parsing as feed xml
+        val feedParser = FeedParser(url, object : FeedParser.Listener() {
+            override fun onParsedFeed(
+                    feedLink: String?,
+                    feedTitle: String?,
+                    feedLanguage: String?
+            ) {
+                listener.onFeedFound(Feed(
+                        url = url,
+                        title = feedTitle ?: "Untitled feed",
+                        language = feedLanguage
+                ))
+            }
+        })
 
-        searchHtmlForFeeds(content)
+        val bufferSize = 4096
+        val reader = NotClosableReader(content, bufferSize)
+        try {
+            reader.mark(bufferSize)
+            Xml.parse(reader, feedParser.feedContentHandler)
+        } catch (exception: Exception) {
+            reader.reset()
+            searchHtmlForFeeds(reader)
+        }
     }
 
     private fun searchHtmlForFeeds(content: Reader) {
@@ -102,6 +124,12 @@ class FeedsFinder(private val listener: Listener) {
 
     interface Listener {
         fun onFeedFound(feed: Feed)
+    }
+
+    private class NotClosableReader(reader: Reader, bufferSize: Int) : BufferedReader(reader, bufferSize) {
+        override fun close() {
+            // ignored
+        }
     }
 
 }

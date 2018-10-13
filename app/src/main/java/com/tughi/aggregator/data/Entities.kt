@@ -15,7 +15,13 @@ data class Feed(
         val url: String,
 
         @ColumnInfo
+        val link: String? = null,
+
+        @ColumnInfo
         val title: String,
+
+        @ColumnInfo
+        val language: String? = null,
 
         @ColumnInfo(name = "custom_title")
         val customTitle: String? = null,
@@ -52,10 +58,16 @@ data class Entry(
         val uid: String,
 
         @ColumnInfo
-        val url: String,
+        val link: String? = null,
 
         @ColumnInfo
-        val title: String,
+        val title: String? = null,
+
+        @ColumnInfo
+        val content: String? = null,
+
+        @ColumnInfo
+        val author: String? = null,
 
         @ColumnInfo
         val createTime: Long,
