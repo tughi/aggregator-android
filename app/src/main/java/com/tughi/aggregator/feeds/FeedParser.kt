@@ -339,6 +339,8 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
                 description = description.replace("[hH][rR][eE][fF]\\s*=\\s*\"/".toRegex(), "href=\"$feedBaseUrl")
                 description = description.replace("[sS][rR][cC]\\s*=\\s*'/".toRegex(), "src='$feedBaseUrl")
                 description = description.replace("[sS][rR][cC]\\s*=\\s*\"/".toRegex(), "src=\"$feedBaseUrl")
+                // T O D O: check this optimization
+                description = description.replace("([hH][rR][eE][fF]|[sS][rR][cC])\\s*=\\s*(['\"])/".toRegex(), "\$1=\$2$feedBaseUrl")
             }
             return description
         }
