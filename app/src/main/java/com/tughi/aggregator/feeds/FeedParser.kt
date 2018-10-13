@@ -149,6 +149,12 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
                 super.start(namespace, name, attributes)
                 handleFeedLanguage(attributes!!.getValue("lang"))
             }
+
+            override fun end(namespace: String?, name: String?) {
+                super.end(namespace, name)
+
+                listener.onParsedFeed(feedLink, feedTitle, feedLanguage)
+            }
         })
         feedElement.addChild(object : TypedTextElement("title", *atomUris) {
             override fun handleText(text: String?, type: String) {
