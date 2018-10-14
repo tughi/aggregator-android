@@ -1,6 +1,7 @@
 package com.tughi.aggregator.feeds
 
 import android.util.Xml
+import com.tughi.aggregator.utilities.toAbsoluteUrl
 import java.io.BufferedReader
 import java.io.CharArrayWriter
 import java.io.Reader
@@ -9,12 +10,12 @@ import java.util.regex.Pattern
 
 class FeedsFinder(private val listener: Listener) {
 
-    fun find(url: String, content: Reader) {
+    fun find(content: Reader, contentUrl: String) {
         assert(content.markSupported())
 
-        val feedParser = FeedParser(url, object : FeedParser.Listener() {
+        val feedParser = FeedParser(contentUrl, object : FeedParser.Listener() {
             override fun onParsedFeed(title: String, link: String?, language: String?) {
-                listener.onFeedFound(url, title)
+                listener.onFeedFound(contentUrl, title)
             }
         })
 
@@ -25,11 +26,11 @@ class FeedsFinder(private val listener: Listener) {
             Xml.parse(reader, feedParser.feedContentHandler)
         } catch (exception: Exception) {
             reader.reset()
-            searchHtmlForFeeds(reader)
+            searchHtmlForFeeds(reader, contentUrl)
         }
     }
 
-    private fun searchHtmlForFeeds(content: Reader) {
+    private fun searchHtmlForFeeds(content: Reader, contentUrl: String) {
         val attributePattern = Pattern.compile("(\\b\\w+\\b)\\s*=\\s*(\"[^\"]*\"|'[^']*'|[^\"'<>\\s]+)")
 
         do {
@@ -51,8 +52,10 @@ class FeedsFinder(private val listener: Listener) {
                 if (type == "application/rss+xml" || type == "application/atom+xml") {
                     val href = attributes["href"]
                     if (href != null) {
-                        val title = attributes["title"] ?: "Untitled feed"
-                        listener.onFeedFound(href, title)
+                        listener.onFeedFound(
+                                href.toAbsoluteUrl(contentUrl),
+                                attributes["title"] ?: "Untitled feed"
+                        )
                     }
                 }
             }

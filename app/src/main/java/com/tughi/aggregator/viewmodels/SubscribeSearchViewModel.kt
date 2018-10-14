@@ -98,7 +98,7 @@ class SubscribeSearchViewModel : ViewModel(), AnkoLogger {
                     val content = body?.charStream()
                     if (content != null) {
                         try {
-                            FeedsFinder(this).find(response.request().url().toString(), content)
+                            FeedsFinder(this).find(content, response.request().url().toString())
                         } catch (exception: Exception) {
                             publishProgress(state.cloneWith(message = exception.localizedMessage))
                         }
