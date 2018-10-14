@@ -7,49 +7,75 @@
     android:layout_height="wrap_content"
     android:background="?selectableItemBackground"
     android:clickable="true"
-    android:focusable="true">
-
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="72dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="96dp"
-        android:textColor="?android:textColorPrimary"
-        android:textSize="16sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="Aggregator News" />
+    android:focusable="true"
+    android:minHeight="56dp">
 
     <ImageView
         android:id="@+id/favicon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="36dp"
-        android:baseline="13dp"
-        app:layout_constraintBaseline_toBaselineOf="@+id/title"
-        app:layout_constraintEnd_toStartOf="@+id/title"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="32dp"
+        android:background="@android:color/white"
+        android:baseline="18sp"
+        android:padding="4dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription"
         tools:src="@drawable/favicon_placeholder" />
 
     <TextView
-        android:id="@+id/last_update_time"
+        android:id="@+id/count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="56dp"
         android:textColor="?android:textColorSecondary"
-        android:textSize="14sp"
+        android:textSize="16sp"
+        android:textStyle="normal"
+        app:layout_constraintBaseline_toBaselineOf="@id/favicon"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="42" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="72dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:textColor="?android:textColorPrimary"
+        android:textSize="16sp"
+        app:layout_constraintBaseline_toBaselineOf="@id/favicon"
+        app:layout_constraintEnd_toStartOf="@id/count"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:text="Aggregator News" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/count"
         app:layout_constraintStart_toStartOf="@+id/title"
-        app:layout_constraintTop_toBottomOf="@+id/title"
-        tools:text="@string/last_update_time__since" />
+        app:layout_constraintTop_toBottomOf="@+id/title">
+
+        <TextView
+            android:id="@+id/last_update_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:textColor="?android:textColorSecondary"
+            android:textSize="14sp"
+            tools:text="@string/last_update_time__since" />
+
+    </LinearLayout>
 
     <ImageView
         android:id="@+id/toggle"
         style="?actionButtonStyle"
         android:layout_width="48dp"
-        android:layout_height="40dp"
+        android:layout_height="56dp"
         android:clickable="true"
         android:focusable="true"
         android:src="@drawable/action_show_more"
@@ -57,18 +83,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
-
-    <TextView
-        android:id="@+id/count"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:background="@drawable/pill"
-        android:textColor="@android:color/white"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        app:layout_constraintBaseline_toBaselineOf="@+id/title"
-        app:layout_constraintEnd_toStartOf="@+id/toggle"
-        tools:text="42" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

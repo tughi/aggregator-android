@@ -96,14 +96,19 @@ private class Adapter : ListAdapter<UiFeed, ViewHolder>(DiffCallback()) {
 
         holder.favicon.setImageResource(R.drawable.favicon_placeholder)
         holder.title.text = feed.title
-        holder.count.text = feed.entryCount.toString()
-        holder.count.visibility = if (feed.entryCount == 0) View.GONE else View.VISIBLE
+        if (feed.entryCount == 0) {
+            holder.count.text = ""
+            holder.count.visibility = View.INVISIBLE
+        } else {
+            holder.count.text = feed.entryCount.toString()
+            holder.count.visibility = View.VISIBLE
+        }
         if (feed.updateTime == 0L) {
-            holder.lastUpdateTimeTextView.setText(R.string.last_update_time__never)
+            holder.lastUpdateTime.setText(R.string.last_update_time__never)
         } else {
             val context = holder.itemView.context
             DateUtils.getRelativeDateTimeString(context, feed.updateTime, DateUtils.DAY_IN_MILLIS, DateUtils.DAY_IN_MILLIS, 0).let {
-                holder.lastUpdateTimeTextView.text = context.getString(R.string.last_update_time__since, it)
+                holder.lastUpdateTime.text = context.getString(R.string.last_update_time__since, it)
             }
         }
     }
@@ -115,7 +120,7 @@ private class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val favicon: ImageView = itemView.findViewById(R.id.favicon)
     val title: TextView = itemView.findViewById(R.id.title)
     val count: TextView = itemView.findViewById(R.id.count)
-    val lastUpdateTimeTextView: TextView = itemView.findViewById(R.id.last_update_time)
+    val lastUpdateTime: TextView = itemView.findViewById(R.id.last_update_time)
 
 }
 
