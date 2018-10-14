@@ -9,6 +9,7 @@ import org.apache.commons.codec.binary.Hex
 import org.apache.commons.codec.digest.DigestUtils
 import org.xml.sax.Attributes
 import org.xml.sax.ContentHandler
+import org.xml.sax.SAXException
 import java.util.*
 
 /**
@@ -34,6 +35,7 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
 
     init {
         val document = Document()
+        val defaultFeedTitle = "Feed"
 
         // create RSS elements
 
@@ -42,7 +44,7 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
             override fun end(namespace: String?, name: String?) {
                 super.end(namespace, name)
 
-                listener.onParsedFeed(feedLink, feedTitle, feedLanguage)
+                listener.onParsedFeed(feedLink, feedTitle ?: defaultFeedTitle, feedLanguage)
             }
         })
         val channelLinkElement = channelElement.addChild(object : TextElement("link", *rssUris) {
@@ -130,7 +132,7 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
             override fun end(namespace: String?, name: String?) {
                 super.end(namespace, name)
 
-                listener.onParsedFeed(feedLink, feedTitle, feedLanguage)
+                listener.onParsedFeed(feedLink, feedTitle ?: defaultFeedTitle, feedLanguage)
             }
         })
         channelElement.addChild(channelLinkElement)
@@ -153,7 +155,7 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
             override fun end(namespace: String?, name: String?) {
                 super.end(namespace, name)
 
-                listener.onParsedFeed(feedLink, feedTitle, feedLanguage)
+                listener.onParsedFeed(feedLink, feedTitle ?: defaultFeedTitle, feedLanguage)
             }
         })
         feedElement.addChild(object : TypedTextElement("title", *atomUris) {
@@ -262,20 +264,20 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
 
     open class Listener {
         open fun onParsedFeed(
-                feedLink: String?,
-                feedTitle: String?,
-                feedLanguage: String?
+                link: String?,
+                title: String,
+                language: String?
         ) {
         }
 
         open fun onParsedEntry(
-                entryUid: String?,
-                entryLink: String?,
-                entryTitle: String?,
-                entryContent: String?,
-                entryAuthor: String?,
-                entryPublishDate: Date?,
-                entryPublishDateText: String?
+                uid: String,
+                link: String?,
+                title: String?,
+                content: String?,
+                author: String?,
+                publishDate: Date?,
+                publishDateText: String?
         ) {
         }
     }
@@ -395,15 +397,28 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
             entryUid = String(Hex.encodeHex(digest))
         }
 
-        listener.onParsedEntry(
-                entryUid,
-                entryLink,
-                entryTitle,
-                entryContent,
-                entryAuthor,
-                entryPublishDate,
-                entryPublishDateText
-        )
+        val entryUid = entryUid
+        if (entryUid != null) {
+            listener.onParsedEntry(
+                    entryUid,
+                    entryLink,
+                    entryTitle,
+                    entryContent,
+                    entryAuthor,
+                    entryPublishDate,
+                    entryPublishDateText
+            )
+        } else {
+            throw SAXException("Could not generate UID for an entry")
+        }
+
+        this.entryUid = null
+        this.entryLink = null
+        this.entryTitle = null
+        this.entryContent = null
+        this.entryAuthor = null
+        this.entryPublishDate = null
+        this.entryPublishDateText = null
     }
 
 }

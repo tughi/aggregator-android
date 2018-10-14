@@ -10,7 +10,7 @@ import com.tughi.aggregator.utilities.DATABASE_NAME
             Entry::class,
             Feed::class
         ],
-        version = 6
+        version = 8
 )
 abstract class Database : RoomDatabase() {
 
@@ -22,7 +22,7 @@ abstract class Database : RoomDatabase() {
         @Volatile
         private var instance: Database? = null
 
-        fun get(context: Context): Database {
+        fun from(context: Context): Database {
             return instance ?: synchronized(this) {
                 instance ?: create(context).also { instance = it }
             }

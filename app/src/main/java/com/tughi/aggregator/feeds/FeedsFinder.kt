@@ -15,14 +15,14 @@ class FeedsFinder(private val listener: Listener) {
 
         val feedParser = FeedParser(url, object : FeedParser.Listener() {
             override fun onParsedFeed(
-                    feedLink: String?,
-                    feedTitle: String?,
-                    feedLanguage: String?
+                    link: String?,
+                    title: String,
+                    language: String?
             ) {
                 listener.onFeedFound(Feed(
                         url = url,
-                        title = feedTitle ?: "Untitled feed",
-                        language = feedLanguage
+                        title = title,
+                        language = language
                 ))
             }
         })

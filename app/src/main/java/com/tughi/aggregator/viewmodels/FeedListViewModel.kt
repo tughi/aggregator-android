@@ -8,7 +8,7 @@ import com.tughi.aggregator.data.UiFeed
 
 class FeedListViewModel(application: Application) : AndroidViewModel(application) {
 
-    val feeds: LiveData<List<UiFeed>> = Database.get(application)
+    val feeds: LiveData<List<UiFeed>> = Database.from(application)
             .feedDao()
             .getUiFeeds()
 

@@ -1,16 +1,22 @@
 package com.tughi.aggregator.data
 
 import androidx.lifecycle.LiveData
-import androidx.room.ColumnInfo
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
+import androidx.room.*
 
 @Dao
 interface FeedDao {
 
     @Insert
-    fun addFeed(feed: Feed): Long
+    fun insertFeed(feed: Feed): Long
+
+    @Update
+    fun updateFeed(feed: Feed): Int
+
+    @Query("SELECT id FROM feeds")
+    fun queryFeedIds(): LongArray
+
+    @Query("SELECT * FROM feeds WHERE id = :id")
+    fun queryFeed(id: Long): Feed
 
     @Query("""
         SELECT
@@ -41,6 +47,12 @@ data class UiFeed(
 interface EntryDao {
 
     @Insert
-    fun addEntry(entry: Entry): Long
+    fun insertEntry(entry: Entry): Long
+
+    @Update
+    fun updateEntry(entry: Entry): Int
+
+    @Query("SELECT * FROM entries WHERE feed_id = :feedId AND uid = :uid")
+    fun queryEntry(feedId: Long, uid: String): Entry?
 
 }

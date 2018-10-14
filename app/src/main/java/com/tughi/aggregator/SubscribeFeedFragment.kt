@@ -62,7 +62,7 @@ class SubscribeFeedFragment : Fragment() {
                 val title = arguments!!.getString(ARG_TITLE)!!
                 val customTitle = titleTextView.text.toString()
                 doAsync {
-                    val feedId = Database.get(context!!).feedDao().addFeed(Feed(
+                    val feedId = Database.from(context!!).feedDao().insertFeed(Feed(
                             url = urlTextView.text.toString(),
                             title = title,
                             customTitle = if (customTitle != title) customTitle else null

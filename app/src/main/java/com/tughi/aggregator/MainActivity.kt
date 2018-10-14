@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.preference.PreferenceManager
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.tughi.aggregator.services.FeedUpdater
 
 private const val PREF_ACTIVE_TAB = "active-tab"
 
@@ -44,6 +45,8 @@ class MainActivity : AppCompatActivity() {
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
 
         if (savedInstanceState == null) {
+            FeedUpdater(this).update()
+
             navigation.selectedItemId = when (preferences.getString(PREF_ACTIVE_TAB, TAB_FEEDS)) {
                 TAB_FEEDS -> R.id.navigation_feeds
                 TAB_MY_FEED -> R.id.navigation_my_feeds
