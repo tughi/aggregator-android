@@ -99,11 +99,11 @@ private class Adapter : ListAdapter<UiFeed, ViewHolder>(DiffCallback()) {
         holder.count.text = feed.entryCount.toString()
         holder.count.visibility = if (feed.entryCount == 0) View.GONE else View.VISIBLE
         if (feed.updateTime == 0L) {
-            holder.lastSuccessfulUpdateTextView.setText(R.string.last_update_time__never)
+            holder.lastUpdateTimeTextView.setText(R.string.last_update_time__never)
         } else {
             val context = holder.itemView.context
             DateUtils.getRelativeDateTimeString(context, feed.updateTime, DateUtils.DAY_IN_MILLIS, DateUtils.DAY_IN_MILLIS, 0).let {
-                holder.lastSuccessfulUpdateTextView.text = context.getString(R.string.last_update_time__since, it)
+                holder.lastUpdateTimeTextView.text = context.getString(R.string.last_update_time__since, it)
             }
         }
     }
@@ -115,7 +115,7 @@ private class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val favicon: ImageView = itemView.findViewById(R.id.favicon)
     val title: TextView = itemView.findViewById(R.id.title)
     val count: TextView = itemView.findViewById(R.id.count)
-    val lastSuccessfulUpdateTextView: TextView = itemView.findViewById(R.id.last_successful_update)
+    val lastUpdateTimeTextView: TextView = itemView.findViewById(R.id.last_update_time)
 
 }
 

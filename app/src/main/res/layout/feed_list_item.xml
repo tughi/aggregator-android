@@ -34,7 +34,7 @@
         tools:src="@drawable/favicon_placeholder" />
 
     <TextView
-        android:id="@+id/last_successful_update"
+        android:id="@+id/last_update_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
