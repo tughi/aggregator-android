@@ -48,15 +48,15 @@ class FeedUpdater(context: Context) {
             if (responseBody != null) {
                 val feedParser = FeedParser(feed.url, object : FeedParser.Listener() {
                     override fun onParsedFeed(
-                            link: String?,
                             title: String,
+                            link: String?,
                             language: String?
                     ) {
                         val now = System.currentTimeMillis()
                         val updated = feedDao.updateFeed(feed.updated(
                                 url = feed.url, // TODO: save URL for permanently redirected feed
-                                link = link,
                                 title = title,
+                                link = link,
                                 language = language,
                                 updateTime = now
                         ))
@@ -67,8 +67,8 @@ class FeedUpdater(context: Context) {
 
                     override fun onParsedEntry(
                             uid: String,
-                            link: String?,
                             title: String?,
+                            link: String?,
                             content: String?,
                             author: String?,
                             publishDate: Date?,
@@ -85,8 +85,8 @@ class FeedUpdater(context: Context) {
                                 val entryId = entryDao.insertEntry(Entry(
                                         feedId = feedId,
                                         uid = uid,
-                                        link = link,
                                         title = title,
+                                        link = link,
                                         content = content,
                                         author = author,
                                         insertTime = now,
@@ -96,11 +96,11 @@ class FeedUpdater(context: Context) {
                                 if (entryId == -1L) {
                                     // TODO: report that an entry couldn't be inserted
                                 }
-                            } else if (entry.link != link || entry.title != title || entry.content != content || entry.author != author) {
+                            } else if (entry.title != title || entry.link != link || entry.content != content || entry.author != author) {
                                 val now = System.currentTimeMillis()
                                 val updated = entryDao.updateEntry(entry.updated(
-                                        link = link,
                                         title = title,
+                                        link = link,
                                         content = content,
                                         author = author,
                                         publishTime = publishDate?.time,

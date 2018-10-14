@@ -15,10 +15,10 @@ data class Feed(
         val url: String,
 
         @ColumnInfo
-        val link: String? = null,
+        val title: String,
 
         @ColumnInfo
-        val title: String,
+        val link: String? = null,
 
         @ColumnInfo
         val language: String? = null,
@@ -34,15 +34,15 @@ data class Feed(
 ) {
     fun updated(
             url: String,
-            link: String?,
             title: String,
+            link: String?,
             language: String?,
             updateTime: Long
     ) = Feed(
             id = this.id,
             url = url,
-            link = link,
             title = title,
+            link = link,
             language = language,
             customTitle = this.customTitle,
             updateMode = this.updateMode,
@@ -75,10 +75,10 @@ data class Entry(
         val uid: String,
 
         @ColumnInfo
-        val link: String? = null,
+        val title: String? = null,
 
         @ColumnInfo
-        val title: String? = null,
+        val link: String? = null,
 
         @ColumnInfo
         val content: String? = null,
@@ -96,8 +96,8 @@ data class Entry(
         val updateTime: Long
 ) {
     fun updated(
-            link: String?,
             title: String?,
+            link: String?,
             content: String?,
             author: String?,
             publishTime: Long?,
@@ -106,8 +106,8 @@ data class Entry(
             id = this.id,
             feedId = this.feedId,
             uid = this.uid,
-            link = link,
             title = title,
+            link = link,
             content = content,
             author = author,
             insertTime = this.insertTime,

@@ -44,7 +44,7 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
             override fun end(namespace: String?, name: String?) {
                 super.end(namespace, name)
 
-                listener.onParsedFeed(feedLink, feedTitle ?: defaultFeedTitle, feedLanguage)
+                listener.onParsedFeed(feedTitle ?: defaultFeedTitle, feedLink, feedLanguage)
             }
         })
         val channelLinkElement = channelElement.addChild(object : TextElement("link", *rssUris) {
@@ -132,7 +132,7 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
             override fun end(namespace: String?, name: String?) {
                 super.end(namespace, name)
 
-                listener.onParsedFeed(feedLink, feedTitle ?: defaultFeedTitle, feedLanguage)
+                listener.onParsedFeed(feedTitle ?: defaultFeedTitle, feedLink, feedLanguage)
             }
         })
         channelElement.addChild(channelLinkElement)
@@ -155,7 +155,7 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
             override fun end(namespace: String?, name: String?) {
                 super.end(namespace, name)
 
-                listener.onParsedFeed(feedLink, feedTitle ?: defaultFeedTitle, feedLanguage)
+                listener.onParsedFeed(feedTitle ?: defaultFeedTitle, feedLink, feedLanguage)
             }
         })
         feedElement.addChild(object : TypedTextElement("title", *atomUris) {
@@ -264,16 +264,16 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
 
     open class Listener {
         open fun onParsedFeed(
-                link: String?,
                 title: String,
+                link: String?,
                 language: String?
         ) {
         }
 
         open fun onParsedEntry(
                 uid: String,
-                link: String?,
                 title: String?,
+                link: String?,
                 content: String?,
                 author: String?,
                 publishDate: Date?,
