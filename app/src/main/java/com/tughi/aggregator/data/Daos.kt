@@ -20,8 +20,9 @@ interface FeedDao {
 
     @Query("""
         SELECT
-            f.id AS id,
+            f.id,
             COALESCE(f.custom_title, f.title) AS title,
+            f.update_time,
             (SELECT COUNT(1) FROM entries e WHERE f.id = e.feed_id) AS entry_count
         FROM
             feeds f
@@ -38,6 +39,9 @@ data class UiFeed(
 
         @ColumnInfo
         val title: String,
+
+        @ColumnInfo(name = "update_time")
+        val updateTime: Long,
 
         @ColumnInfo(name = "entry_count")
         val entryCount: Int

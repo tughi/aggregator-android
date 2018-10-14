@@ -2,6 +2,7 @@ package com.tughi.aggregator
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.format.DateUtils
 import android.view.*
 import android.widget.Button
 import android.widget.ImageView
@@ -97,7 +98,14 @@ private class Adapter : ListAdapter<UiFeed, ViewHolder>(DiffCallback()) {
         holder.title.text = feed.title
         holder.count.text = feed.entryCount.toString()
         holder.count.visibility = if (feed.entryCount == 0) View.GONE else View.VISIBLE
-        holder.lastSuccessfulUpdateTextView.setText(R.string.last_successful_update__never)
+        if (feed.updateTime == 0L) {
+            holder.lastSuccessfulUpdateTextView.setText(R.string.last_update_time__never)
+        } else {
+            val context = holder.itemView.context
+            DateUtils.getRelativeDateTimeString(context, feed.updateTime, DateUtils.DAY_IN_MILLIS, DateUtils.DAY_IN_MILLIS, 0).let {
+                holder.lastSuccessfulUpdateTextView.text = context.getString(R.string.last_update_time__since, it)
+            }
+        }
     }
 
 }

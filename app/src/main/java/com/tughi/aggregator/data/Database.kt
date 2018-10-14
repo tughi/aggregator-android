@@ -10,7 +10,7 @@ import com.tughi.aggregator.utilities.DATABASE_NAME
             Entry::class,
             Feed::class
         ],
-        version = 8
+        version = 9
 )
 abstract class Database : RoomDatabase() {
 

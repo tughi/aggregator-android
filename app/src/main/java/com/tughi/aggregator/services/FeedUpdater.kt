@@ -58,7 +58,7 @@ class FeedUpdater(context: Context) {
                                 link = link,
                                 title = title,
                                 language = language,
-                                lastSuccessfulUpdate = now
+                                updateTime = now
                         ))
                         if (updated != 1) {
                             // TODO: report that the feed couldn't be updated

@@ -29,15 +29,15 @@ data class Feed(
         @ColumnInfo(name = "update_mode")
         val updateMode: String = DEFAULT_UPDATE_MODE,
 
-        @ColumnInfo(name = "last_successful_update")
-        val lastSuccessfulUpdate: Long? = null
+        @ColumnInfo(name = "update_time")
+        val updateTime: Long = 0
 ) {
     fun updated(
             url: String,
             link: String?,
             title: String,
             language: String?,
-            lastSuccessfulUpdate: Long
+            updateTime: Long
     ) = Feed(
             id = this.id,
             url = url,
@@ -46,7 +46,7 @@ data class Feed(
             language = language,
             customTitle = this.customTitle,
             updateMode = this.updateMode,
-            lastSuccessfulUpdate = lastSuccessfulUpdate
+            updateTime = updateTime
     )
 }
 
