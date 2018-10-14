@@ -43,7 +43,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="@+id/title"
         app:layout_constraintTop_toBottomOf="@+id/title"
-        tools:text="since yesterday, 15:43" />
+        tools:text="@string/last_update_time__since" />
 
     <ImageView
         android:id="@+id/toggle"
