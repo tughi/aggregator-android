@@ -1,6 +1,7 @@
 package com.tughi.aggregator.data
 
 import androidx.lifecycle.LiveData
+import androidx.paging.DataSource
 import androidx.room.*
 
 @Dao
@@ -59,4 +60,33 @@ interface EntryDao {
     @Query("SELECT * FROM entries WHERE feed_id = :feedId AND uid = :uid")
     fun queryEntry(feedId: Long, uid: String): Entry?
 
+    @Query("""
+        SELECT
+            e.id,
+            COALESCE(f.custom_title, f.title) AS feed_title,
+            e.title,
+            e.author
+        FROM
+            entries e
+            LEFT JOIN feeds f ON f.id = e.feed_id
+        ORDER BY
+            e.publish_time
+    """)
+    fun getUiEntries(): DataSource.Factory<Int, UiEntry>
+
 }
+
+data class UiEntry(
+        @ColumnInfo
+        val id: Long,
+
+        @ColumnInfo(name = "feed_title")
+        val feedTitle: String,
+
+        @ColumnInfo
+        val title: String,
+
+        @ColumnInfo
+        val author: String?
+)
+
