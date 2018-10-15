@@ -26,8 +26,8 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
     private var feedLanguage: String? = null
 
     private var entryUid: String? = null
-    private var entryLink: String? = null
     private var entryTitle: String? = null
+    private var entryLink: String? = null
     private var entryContent: String? = null
     private var entryAuthor: String? = null
     private var entryPublishDate: Date? = null
@@ -35,7 +35,6 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
 
     init {
         val document = Document()
-        val defaultFeedTitle = "Feed"
 
         // create RSS elements
 
@@ -44,7 +43,7 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
             override fun end(namespace: String?, name: String?) {
                 super.end(namespace, name)
 
-                listener.onParsedFeed(feedTitle ?: defaultFeedTitle, feedLink, feedLanguage)
+                handleFeedEnd()
             }
         })
         val channelLinkElement = channelElement.addChild(object : TextElement("link", *rssUris) {
@@ -132,7 +131,7 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
             override fun end(namespace: String?, name: String?) {
                 super.end(namespace, name)
 
-                listener.onParsedFeed(feedTitle ?: defaultFeedTitle, feedLink, feedLanguage)
+                handleFeedEnd()
             }
         })
         channelElement.addChild(channelLinkElement)
@@ -155,7 +154,7 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
             override fun end(namespace: String?, name: String?) {
                 super.end(namespace, name)
 
-                listener.onParsedFeed(feedTitle ?: defaultFeedTitle, feedLink, feedLanguage)
+                handleFeedEnd()
             }
         })
         feedElement.addChild(object : TypedTextElement("title", *atomUris) {
@@ -400,25 +399,37 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
         val entryUid = entryUid
         if (entryUid != null) {
             listener.onParsedEntry(
-                    entryUid,
-                    entryLink,
-                    entryTitle,
-                    entryContent,
-                    entryAuthor,
-                    entryPublishDate,
-                    entryPublishDateText
+                    uid = entryUid,
+                    title = entryTitle,
+                    link = entryLink,
+                    content = entryContent,
+                    author = entryAuthor,
+                    publishDate = entryPublishDate,
+                    publishDateText = entryPublishDateText
             )
         } else {
             throw SAXException("Could not generate UID for an entry")
         }
 
         this.entryUid = null
-        this.entryLink = null
         this.entryTitle = null
+        this.entryLink = null
         this.entryContent = null
         this.entryAuthor = null
         this.entryPublishDate = null
         this.entryPublishDateText = null
+    }
+
+    private fun handleFeedEnd() {
+        listener.onParsedFeed(
+                title = feedTitle ?: "Feed",
+                link = feedLink,
+                language = feedLanguage
+        )
+
+        this.feedTitle = null
+        this.feedLink = null
+        this.feedLanguage = null
     }
 
 }
