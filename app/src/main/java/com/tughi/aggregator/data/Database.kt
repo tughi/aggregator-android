@@ -3,6 +3,7 @@ package com.tughi.aggregator.data
 import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.tughi.aggregator.utilities.DATABASE_NAME
 
 @androidx.room.Database(
@@ -12,6 +13,7 @@ import com.tughi.aggregator.utilities.DATABASE_NAME
         ],
         version = 9
 )
+@TypeConverters(CustomTypeConverters::class)
 abstract class Database : RoomDatabase() {
 
     abstract fun entryDao(): EntryDao
