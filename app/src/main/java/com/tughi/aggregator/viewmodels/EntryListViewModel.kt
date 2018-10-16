@@ -15,7 +15,7 @@ class EntryListViewModel(application: Application) : AndroidViewModel(applicatio
     init {
         val entryDao = Database.from(application).entryDao()
         val config = PagedList.Config.Builder()
-                .setEnablePlaceholders(false)
+                .setEnablePlaceholders(true)
                 .setInitialLoadSizeHint(100)
                 .setPageSize(50)
                 .build()
