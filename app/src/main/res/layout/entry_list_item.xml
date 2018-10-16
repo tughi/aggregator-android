@@ -10,20 +10,41 @@
     android:focusable="true">
 
     <TextView
-        android:id="@+id/title"
+        android:id="@+id/time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:textAppearance="?textAppearanceBody2"
+        android:textColor="?android:textColorSecondary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="03:42" />
+
+    <TextView
+        android:id="@+id/feed_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="72dp"
-        android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginBottom="16dp"
-        android:textColor="?android:textColorPrimary"
-        android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:textAppearance="?textAppearanceBody2"
+        android:textColor="?android:textColorSecondary"
+        app:layout_constraintEnd_toStartOf="@id/time"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toTopOf="@id/time"
         tools:text="Aggregator News" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:textAppearance="?textAppearanceBody1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/time"
+        app:layout_constraintStart_toStartOf="@id/feed_title"
+        app:layout_constraintTop_toBottomOf="@id/feed_title"
+        tools:text="Aggregator 3.0 will be the best news reader out there!" />
 
     <ImageView
         android:id="@+id/favicon"
@@ -32,7 +53,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="32dp"
         android:background="@android:color/white"
-        android:baseline="18sp"
+        android:baseline="17sp"
         android:padding="4dp"
         app:layout_constraintBaseline_toBaselineOf="@id/title"
         app:layout_constraintStart_toStartOf="parent"

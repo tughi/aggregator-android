@@ -57,8 +57,10 @@ private class EntriesAdapter : PagedListAdapter<UiEntry, EntryViewHolder>(EntryD
         if (entry != null) {
             holder.itemView.visibility = View.VISIBLE
 
+            holder.feedTitle.text = entry.feedTitle
             holder.title.text = entry.title
             holder.favicon.setImageResource(R.drawable.favicon_placeholder)
+            holder.time.text = entry.formattedTime.toString()
         } else {
             holder.itemView.visibility = View.INVISIBLE
         }
@@ -68,6 +70,8 @@ private class EntriesAdapter : PagedListAdapter<UiEntry, EntryViewHolder>(EntryD
 private class EntryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val favicon: ImageView = itemView.findViewById(R.id.favicon)
     val title: TextView = itemView.findViewById(R.id.title)
+    val feedTitle: TextView = itemView.findViewById(R.id.feed_title)
+    val time: TextView = itemView.findViewById(R.id.time)
 }
 
 private object EntryDiffUtil : DiffUtil.ItemCallback<UiEntry>() {
