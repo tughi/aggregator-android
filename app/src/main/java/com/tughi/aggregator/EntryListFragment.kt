@@ -20,7 +20,7 @@ import com.tughi.aggregator.viewmodels.EntryListViewModel
 abstract class EntryListFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.my_feed_fragment, container, false)
+        val view = inflater.inflate(R.layout.entry_list_fragment, container, false)
 
         val viewModelFactory = EntryListViewModel.Factory(getUiEntriesGetter())
         val viewModel = ViewModelProviders.of(this, viewModelFactory).get(EntryListViewModel::class.java)
