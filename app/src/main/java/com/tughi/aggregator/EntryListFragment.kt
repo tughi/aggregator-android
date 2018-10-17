@@ -43,7 +43,7 @@ abstract class EntryListFragment : Fragment() {
 
 }
 
-private class EntriesAdapter : PagedListAdapter<UiEntry, EntryViewHolder>(EntryDiffUtil) {
+private class EntriesAdapter : PagedListAdapter<UiEntry, EntryViewHolder>(EntriesDiffUtil) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EntryViewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(R.layout.entry_list_item, parent, false)
         return EntryViewHolder(itemView)
@@ -72,7 +72,7 @@ private class EntryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView
     val time: TextView = itemView.findViewById(R.id.time)
 }
 
-private object EntryDiffUtil : DiffUtil.ItemCallback<UiEntry>() {
+private object EntriesDiffUtil : DiffUtil.ItemCallback<UiEntry>() {
 
     override fun areItemsTheSame(oldItem: UiEntry, newItem: UiEntry): Boolean {
         return oldItem.id == newItem.id

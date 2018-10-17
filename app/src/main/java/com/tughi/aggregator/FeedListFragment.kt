@@ -41,7 +41,7 @@ class FeedListFragment : Fragment() {
         val emptyView = fragmentView.findViewById<View>(R.id.empty)
         val progressBar = fragmentView.findViewById<View>(R.id.progress)
 
-        feedsRecyclerView.adapter = Adapter().also { adapter ->
+        feedsRecyclerView.adapter = FeedsAdapter().also { adapter ->
             viewModel.feeds.observe(this, Observer { feeds ->
                 adapter.submitList(feeds)
 
@@ -84,14 +84,14 @@ class FeedListFragment : Fragment() {
 
 }
 
-private class Adapter : ListAdapter<UiFeed, ViewHolder>(DiffCallback()) {
+private class FeedsAdapter : ListAdapter<UiFeed, FeedViewHolder>(FeedsDiffCallback()) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FeedViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.feed_list_item, parent, false)
-        return ViewHolder(view)
+        return FeedViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: FeedViewHolder, position: Int) {
         val feed = getItem(position)
 
         holder.feed = feed
@@ -116,7 +116,7 @@ private class Adapter : ListAdapter<UiFeed, ViewHolder>(DiffCallback()) {
 
 }
 
-private class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
+private class FeedViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
     val favicon: ImageView = itemView.findViewById(R.id.favicon)
     val title: TextView = itemView.findViewById(R.id.title)
     val count: TextView = itemView.findViewById(R.id.count)
@@ -135,7 +135,7 @@ private class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), Vi
     }
 }
 
-private class DiffCallback : DiffUtil.ItemCallback<UiFeed>() {
+private class FeedsDiffCallback : DiffUtil.ItemCallback<UiFeed>() {
 
     override fun areItemsTheSame(oldFeed: UiFeed, newFeed: UiFeed): Boolean {
         return oldFeed.id == newFeed.id
