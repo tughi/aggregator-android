@@ -1,5 +1,7 @@
 package com.tughi.aggregator
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -53,6 +55,8 @@ private class EntriesAdapter : PagedListAdapter<UiEntry, EntryViewHolder>(Entrie
         val entry = getItem(position)
 
         if (entry != null) {
+            holder.entry = entry
+
             holder.itemView.visibility = View.VISIBLE
 
             holder.feedTitle.text = entry.feedTitle
@@ -65,11 +69,23 @@ private class EntriesAdapter : PagedListAdapter<UiEntry, EntryViewHolder>(Entrie
     }
 }
 
-private class EntryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+private class EntryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
     val favicon: ImageView = itemView.findViewById(R.id.favicon)
     val title: TextView = itemView.findViewById(R.id.title)
     val feedTitle: TextView = itemView.findViewById(R.id.feed_title)
     val time: TextView = itemView.findViewById(R.id.time)
+
+    lateinit var entry: UiEntry
+
+    init {
+        itemView.setOnClickListener(this)
+    }
+
+    override fun onClick(view: View?) {
+        itemView.context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(entry.link)))
+
+        // TODO: mark entry as read
+    }
 }
 
 private object EntriesDiffUtil : DiffUtil.ItemCallback<UiEntry>() {

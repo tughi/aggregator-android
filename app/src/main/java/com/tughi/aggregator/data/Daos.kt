@@ -65,6 +65,7 @@ interface EntryDao {
             e.id,
             COALESCE(f.custom_title, f.title) AS feed_title,
             e.title,
+            e.link,
             e.author,
             e.publish_time as formatted_date,
             e.publish_time as formatted_time
@@ -81,6 +82,7 @@ interface EntryDao {
             e.id,
             COALESCE(f.custom_title, f.title) AS feed_title,
             e.title,
+            e.link,
             e.author,
             e.publish_time as formatted_date,
             e.publish_time as formatted_time
@@ -105,6 +107,9 @@ data class UiEntry(
 
         @ColumnInfo
         val title: String,
+
+        @ColumnInfo
+        val link: String,
 
         @ColumnInfo
         val author: String?,
