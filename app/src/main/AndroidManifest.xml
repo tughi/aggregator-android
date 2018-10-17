@@ -26,6 +26,10 @@
         </activity>
 
         <activity
+            android:name=".FeedEntryListActivity"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
             android:name=".SubscribeActivity"
             android:label="@string/title_find_feeds"
             android:windowSoftInputMode="adjustResize">

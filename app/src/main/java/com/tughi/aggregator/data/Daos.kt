@@ -74,7 +74,25 @@ interface EntryDao {
         ORDER BY
             e.publish_time
     """)
-    fun getUiEntries(): DataSource.Factory<Int, UiEntry>
+    fun getMyFeedUiEntries(): DataSource.Factory<Int, UiEntry>
+
+    @Query("""
+        SELECT
+            e.id,
+            COALESCE(f.custom_title, f.title) AS feed_title,
+            e.title,
+            e.author,
+            e.publish_time as formatted_date,
+            e.publish_time as formatted_time
+        FROM
+            entries e
+            LEFT JOIN feeds f ON f.id = e.feed_id
+        WHERE
+            e.feed_id = :feedId
+        ORDER BY
+            e.publish_time
+    """)
+    fun getFeedUiEntries(feedId: Long): DataSource.Factory<Int, UiEntry>
 
 }
 
@@ -97,3 +115,19 @@ data class UiEntry(
         @ColumnInfo(name = "formatted_time")
         val formattedTime: FormattedTime
 )
+
+sealed class UiEntriesGetter {
+    abstract fun getUiEntries(entryDao: EntryDao): DataSource.Factory<Int, UiEntry>
+}
+
+class FeedUiEntriesGetter(private val feedId: Long) : UiEntriesGetter() {
+    override fun getUiEntries(entryDao: EntryDao): DataSource.Factory<Int, UiEntry> {
+        return entryDao.getFeedUiEntries(feedId)
+    }
+}
+
+object MyFeedUiEntriesGetter : UiEntriesGetter() {
+    override fun getUiEntries(entryDao: EntryDao): DataSource.Factory<Int, UiEntry> {
+        return entryDao.getMyFeedUiEntries()
+    }
+}

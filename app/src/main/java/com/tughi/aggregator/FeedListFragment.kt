@@ -94,6 +94,7 @@ private class Adapter : ListAdapter<UiFeed, ViewHolder>(DiffCallback()) {
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val feed = getItem(position)
 
+        holder.feed = feed
         holder.favicon.setImageResource(R.drawable.favicon_placeholder)
         holder.title.text = feed.title
         if (feed.entryCount == 0) {
@@ -115,13 +116,23 @@ private class Adapter : ListAdapter<UiFeed, ViewHolder>(DiffCallback()) {
 
 }
 
-private class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
+private class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
     val favicon: ImageView = itemView.findViewById(R.id.favicon)
     val title: TextView = itemView.findViewById(R.id.title)
     val count: TextView = itemView.findViewById(R.id.count)
     val lastUpdateTime: TextView = itemView.findViewById(R.id.last_update_time)
 
+    lateinit var feed: UiFeed
+
+    init {
+        itemView.setOnClickListener(this)
+    }
+
+    override fun onClick(view: View?) {
+        itemView.context.apply {
+            startActivity(Intent(this, FeedEntryListActivity::class.java).putExtra(FeedEntryListActivity.EXTRA_FEED_ID, feed.id))
+        }
+    }
 }
 
 private class DiffCallback : DiffUtil.ItemCallback<UiFeed>() {
