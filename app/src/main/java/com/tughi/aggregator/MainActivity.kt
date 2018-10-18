@@ -2,6 +2,7 @@ package com.tughi.aggregator
 
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -49,9 +50,9 @@ class MainActivity : AppCompatActivity() {
         supportFragmentManager.let {
             it.addOnBackStackChangedListener {
                 if (it.backStackEntryCount > 0) {
-                    // TODO: show back button
+                    supportActionBar?.setHomeAsUpIndicator(R.drawable.action_back)
                 } else {
-                    // TODO: hide back button
+                    supportActionBar?.setHomeAsUpIndicator(R.drawable.action_menu)
                     setTitle(R.string.app_name)
                 }
             }
@@ -67,6 +68,27 @@ class MainActivity : AppCompatActivity() {
                 else -> R.id.navigation_feeds
             }
         }
+    }
+
+    override fun onPostCreate(savedInstanceState: Bundle?) {
+        super.onPostCreate(savedInstanceState)
+
+        supportActionBar?.let {
+            it.setDisplayHomeAsUpEnabled(true)
+            it.setHomeAsUpIndicator(R.drawable.action_menu)
+        }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        if (item?.itemId == android.R.id.home) {
+            if (supportFragmentManager.backStackEntryCount > 0) {
+                supportFragmentManager.popBackStack()
+            } else {
+                // TODO: option navigation drawer
+            }
+        }
+
+        return super.onOptionsItemSelected(item)
     }
 
 }
