@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.data.UiFeed
 import com.tughi.aggregator.viewmodels.FeedListViewModel
 
-class FeedListFragment : Fragment() {
+class FeedListFragment : Fragment(), OnFeedClickedListener {
 
     companion object {
         fun newInstance(): FeedListFragment {
@@ -41,7 +41,7 @@ class FeedListFragment : Fragment() {
         val emptyView = fragmentView.findViewById<View>(R.id.empty)
         val progressBar = fragmentView.findViewById<View>(R.id.progress)
 
-        feedsRecyclerView.adapter = FeedsAdapter().also { adapter ->
+        feedsRecyclerView.adapter = FeedsAdapter(this).also { adapter ->
             viewModel.feeds.observe(this, Observer { feeds ->
                 adapter.submitList(feeds)
 
@@ -82,13 +82,17 @@ class FeedListFragment : Fragment() {
         return true
     }
 
+    override fun onFeedClicked(feed: UiFeed) {
+        context?.startActivity(Intent(context, FeedEntryListActivity::class.java).putExtra(FeedEntryListActivity.EXTRA_FEED_ID, feed.id))
+    }
+
 }
 
-private class FeedsAdapter : ListAdapter<UiFeed, FeedViewHolder>(FeedsDiffCallback()) {
+private class FeedsAdapter(private val listener: OnFeedClickedListener) : ListAdapter<UiFeed, FeedViewHolder>(FeedsDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FeedViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.feed_list_item, parent, false)
-        return FeedViewHolder(view)
+        return FeedViewHolder(view, listener)
     }
 
     override fun onBindViewHolder(holder: FeedViewHolder, position: Int) {
@@ -116,25 +120,6 @@ private class FeedsAdapter : ListAdapter<UiFeed, FeedViewHolder>(FeedsDiffCallba
 
 }
 
-private class FeedViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
-    val favicon: ImageView = itemView.findViewById(R.id.favicon)
-    val title: TextView = itemView.findViewById(R.id.title)
-    val count: TextView = itemView.findViewById(R.id.count)
-    val lastUpdateTime: TextView = itemView.findViewById(R.id.last_update_time)
-
-    lateinit var feed: UiFeed
-
-    init {
-        itemView.setOnClickListener(this)
-    }
-
-    override fun onClick(view: View?) {
-        itemView.context.apply {
-            startActivity(Intent(this, FeedEntryListActivity::class.java).putExtra(FeedEntryListActivity.EXTRA_FEED_ID, feed.id))
-        }
-    }
-}
-
 private class FeedsDiffCallback : DiffUtil.ItemCallback<UiFeed>() {
 
     override fun areItemsTheSame(oldFeed: UiFeed, newFeed: UiFeed): Boolean {
@@ -147,3 +132,25 @@ private class FeedsDiffCallback : DiffUtil.ItemCallback<UiFeed>() {
 
 }
 
+private class FeedViewHolder(itemView: View, private val listener: OnFeedClickedListener) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
+
+    val favicon: ImageView = itemView.findViewById(R.id.favicon)
+    val title: TextView = itemView.findViewById(R.id.title)
+    val count: TextView = itemView.findViewById(R.id.count)
+    val lastUpdateTime: TextView = itemView.findViewById(R.id.last_update_time)
+
+    lateinit var feed: UiFeed
+
+    init {
+        itemView.setOnClickListener(this)
+    }
+
+    override fun onClick(view: View?) {
+        listener.onFeedClicked(feed)
+    }
+
+}
+
+private interface OnFeedClickedListener {
+    fun onFeedClicked(feed: UiFeed)
+}
