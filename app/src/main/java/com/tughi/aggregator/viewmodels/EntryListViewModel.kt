@@ -11,6 +11,7 @@ import com.tughi.aggregator.data.UiEntriesGetter
 import com.tughi.aggregator.data.UiEntry
 
 class EntryListViewModel(entriesGetter: UiEntriesGetter) : ViewModel() {
+
     private val context = Application.instance.applicationContext
     private val database = Database.from(context)
 
@@ -28,6 +29,7 @@ class EntryListViewModel(entriesGetter: UiEntriesGetter) : ViewModel() {
     }
 
     class Factory(private val entriesGetter: UiEntriesGetter) : ViewModelProvider.Factory {
+
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(EntryListViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
@@ -35,6 +37,7 @@ class EntryListViewModel(entriesGetter: UiEntriesGetter) : ViewModel() {
             }
             throw UnsupportedOperationException()
         }
+
     }
 
 }

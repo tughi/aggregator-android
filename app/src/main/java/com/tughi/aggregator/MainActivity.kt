@@ -3,6 +3,7 @@ package com.tughi.aggregator
 import android.os.Bundle
 import android.preference.PreferenceManager
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.tughi.aggregator.services.FeedUpdater
 
@@ -26,6 +27,7 @@ class MainActivity : AppCompatActivity() {
             else -> null
         } ?: return@OnNavigationItemSelectedListener false
 
+        supportFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
         supportFragmentManager.beginTransaction()
                 .replace(R.id.content, fragment)
                 .commit()
@@ -43,6 +45,17 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.main_activity)
 
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
+
+        supportFragmentManager.let {
+            it.addOnBackStackChangedListener {
+                if (it.backStackEntryCount > 0) {
+                    // TODO: show back button
+                } else {
+                    // TODO: hide back button
+                    setTitle(R.string.app_name)
+                }
+            }
+        }
 
         if (savedInstanceState == null) {
             FeedUpdater(this).update()

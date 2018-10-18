@@ -83,7 +83,10 @@ class FeedListFragment : Fragment(), OnFeedClickedListener {
     }
 
     override fun onFeedClicked(feed: UiFeed) {
-        context?.startActivity(Intent(context, FeedEntryListActivity::class.java).putExtra(FeedEntryListActivity.EXTRA_FEED_ID, feed.id))
+        fragmentManager!!.beginTransaction()
+                .replace(id, FeedEntryListFragment.newInstance(feedId = feed.id))
+                .addToBackStack(null)
+                .commit()
     }
 
 }

@@ -19,6 +19,9 @@ interface FeedDao {
     @Query("SELECT * FROM feeds WHERE id = :id")
     fun queryFeed(id: Long): Feed
 
+    @Query("SELECT * FROM feeds WHERE id = :id")
+    fun getFeed(id: Long): LiveData<Feed>
+
     @Query("""
         SELECT
             f.id,
