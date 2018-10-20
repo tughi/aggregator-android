@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 
-class SubscribeActivity : AppCompatActivity() {
+class SubscribeActivity : AppActivity() {
 
     companion object {
         const val EXTRA_VIA_ACTION = "via_action"

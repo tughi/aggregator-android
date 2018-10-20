@@ -1,12 +1,14 @@
 package com.tughi.aggregator
 
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.view.MenuItem
-import androidx.appcompat.app.AppCompatActivity
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.navigation.NavigationView
 import com.tughi.aggregator.services.FeedUpdater
+import com.tughi.aggregator.utilities.APP_THEME_DARK
+import com.tughi.aggregator.utilities.APP_THEME_LIGHT
 
 private const val PREF_ACTIVE_TAB = "active-tab"
 
@@ -14,10 +16,11 @@ private const val TAB_FEEDS = "feeds"
 private const val TAB_MY_FEED = "my-feed"
 private const val TAB_TAGS = "tags"
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppActivity() {
 
-    private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
-    private val navigation by lazy { findViewById<BottomNavigationView>(R.id.navigation) }
+    private lateinit var bottomNavigationView: BottomNavigationView
+    private lateinit var drawerView: DrawerLayout
+    private lateinit var drawerNavigationView: NavigationView
 
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         var tabName: String = TAB_FEEDS
@@ -33,7 +36,7 @@ class MainActivity : AppCompatActivity() {
                 .replace(R.id.content, fragment)
                 .commit()
 
-        preferences.edit()
+        Application.preferences.edit()
                 .putString(PREF_ACTIVE_TAB, tabName)
                 .apply()
 
@@ -45,7 +48,19 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.main_activity)
 
-        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
+        drawerView = findViewById(R.id.drawer)
+
+        bottomNavigationView = drawerView.findViewById(R.id.bottom_navigation)
+        bottomNavigationView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
+
+        drawerNavigationView = drawerView.findViewById(R.id.drawer_navigation)
+        drawerNavigationView.setNavigationItemSelectedListener {
+            when (it.itemId) {
+                R.id.dark_theme -> Application.theme.value = APP_THEME_DARK
+                R.id.light_theme -> Application.theme.value = APP_THEME_LIGHT
+            }
+            return@setNavigationItemSelectedListener true
+        }
 
         supportFragmentManager.let {
             it.addOnBackStackChangedListener {
@@ -61,7 +76,7 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState == null) {
             FeedUpdater(this).update()
 
-            navigation.selectedItemId = when (preferences.getString(PREF_ACTIVE_TAB, TAB_FEEDS)) {
+            bottomNavigationView.selectedItemId = when (Application.preferences.getString(PREF_ACTIVE_TAB, TAB_FEEDS)) {
                 TAB_FEEDS -> R.id.navigation_feeds
                 TAB_MY_FEED -> R.id.navigation_my_feeds
                 TAB_TAGS -> R.id.navigation_tags
@@ -84,7 +99,11 @@ class MainActivity : AppCompatActivity() {
             if (supportFragmentManager.backStackEntryCount > 0) {
                 supportFragmentManager.popBackStack()
             } else {
-                // TODO: option navigation drawer
+                if (drawerView.isDrawerOpen(drawerNavigationView)) {
+                    drawerView.closeDrawer(drawerNavigationView)
+                } else {
+                    drawerView.openDrawer(drawerNavigationView)
+                }
             }
         }
 

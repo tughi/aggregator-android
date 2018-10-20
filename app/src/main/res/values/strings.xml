@@ -19,6 +19,10 @@
         \n\n<b>Aggregator</b> is able to detect if a website is providing such feeds.
     </string>
 
+    <string name="theme_title">Theme</string>
+    <string name="theme__dark">Dark</string>
+    <string name="theme__light">Light</string>
+
     <string name="title_add_feed">Add feed</string>
     <string name="title_my_feed">My Feed</string>
     <string name="title_feeds">Feeds</string>
