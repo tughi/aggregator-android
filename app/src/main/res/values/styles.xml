@@ -2,6 +2,7 @@
 
     <style name="DarkTheme" parent="Base.Theme.MaterialComponents">
         <item name="android:colorBackground">@color/dark_theme__background</item>
+        <item name="android:colorEdgeEffect">?colorAccent</item>
         <item name="colorPrimary">@color/dark_theme__primary</item>
         <item name="colorPrimaryDark">@color/dark_theme__primary_dark</item>
         <item name="colorAccent">@color/dark_theme__accent</item>
@@ -12,6 +13,7 @@
 
     <style name="LightTheme" parent="Base.Theme.MaterialComponents.Light">
         <item name="android:colorBackground">@color/light_theme__background</item>
+        <item name="android:colorEdgeEffect">?colorAccent</item>
         <item name="colorPrimary">@color/light_theme__primary</item>
         <item name="colorPrimaryDark">@color/light_theme__primary_dark</item>
         <item name="colorAccent">@color/light_theme__accent</item>
