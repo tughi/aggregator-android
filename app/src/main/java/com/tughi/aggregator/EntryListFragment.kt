@@ -20,9 +20,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.data.UiEntriesGetter
 import com.tughi.aggregator.data.UiEntry
 import com.tughi.aggregator.viewmodels.EntryListViewModel
+import org.jetbrains.anko.displayMetrics
 import kotlin.math.min
 
 abstract class EntryListFragment : Fragment() {
+
+    private val toolbarElevationMax by lazy { context!!.displayMetrics.density * 4 }
 
     private lateinit var toolbar: Toolbar
 
@@ -52,7 +55,7 @@ abstract class EntryListFragment : Fragment() {
 
         entriesRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                toolbar.elevation = min(recyclerView.computeVerticalScrollOffset().toFloat(), 8f)
+                toolbar.elevation = min(recyclerView.computeVerticalScrollOffset().toFloat(), toolbarElevationMax)
             }
         })
 
