@@ -82,8 +82,20 @@ class MainActivity : AppActivity() {
         }
     }
 
+    override fun onBackPressed() {
+        if (drawerView.isDrawerOpen(drawerNavigationView)) {
+            closeDrawer()
+        } else {
+            super.onBackPressed()
+        }
+    }
+
     fun openDrawer() {
         drawerView.openDrawer(drawerNavigationView)
+    }
+
+    fun closeDrawer() {
+        drawerView.closeDrawer(drawerNavigationView)
     }
 
 }
