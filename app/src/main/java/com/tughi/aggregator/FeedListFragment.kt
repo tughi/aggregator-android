@@ -3,7 +3,9 @@ package com.tughi.aggregator
 import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateUtils
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
@@ -20,19 +22,7 @@ import kotlin.math.min
 
 class FeedListFragment : Fragment(), OnFeedClickedListener {
 
-    companion object {
-        fun newInstance(): FeedListFragment {
-            return FeedListFragment()
-        }
-    }
-
     private lateinit var viewModel: FeedListViewModel
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        setHasOptionsMenu(true)
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val fragmentView = inflater.inflate(R.layout.feed_list_fragment, container, false)
@@ -67,6 +57,19 @@ class FeedListFragment : Fragment(), OnFeedClickedListener {
             val activity = activity as MainActivity
             activity.openDrawer()
         }
+        toolbar.inflateMenu(R.menu.feed_list_fragment)
+        toolbar.setOnMenuItemClickListener {
+            when (it.itemId) {
+                R.id.add -> {
+                    startActivity(Intent(activity, SubscribeActivity::class.java).putExtra(SubscribeActivity.EXTRA_VIA_ACTION, true))
+                }
+                else -> {
+                    return@setOnMenuItemClickListener false
+                }
+            }
+
+            return@setOnMenuItemClickListener true
+        }
 
         feedsRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -77,30 +80,17 @@ class FeedListFragment : Fragment(), OnFeedClickedListener {
         return fragmentView
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
-        super.onCreateOptionsMenu(menu, inflater)
-
-        inflater?.inflate(R.menu.feed_list_fragment, menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item?.itemId) {
-            R.id.add ->
-                Intent(activity, SubscribeActivity::class.java)
-                        .apply { putExtra(SubscribeActivity.EXTRA_VIA_ACTION, true) }
-                        .run { startActivity(this) }
-            else ->
-                return super.onOptionsItemSelected(item)
-        }
-
-        return true
-    }
-
     override fun onFeedClicked(feed: UiFeed) {
         fragmentManager!!.beginTransaction()
                 .replace(id, FeedEntryListFragment.newInstance(feedId = feed.id))
                 .addToBackStack(null)
                 .commit()
+    }
+
+    companion object {
+        fun newInstance(): FeedListFragment {
+            return FeedListFragment()
+        }
     }
 
 }
