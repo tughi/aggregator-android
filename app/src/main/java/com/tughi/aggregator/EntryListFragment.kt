@@ -9,6 +9,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.annotation.StringRes
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -18,17 +20,20 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.data.UiEntriesGetter
 import com.tughi.aggregator.data.UiEntry
 import com.tughi.aggregator.viewmodels.EntryListViewModel
+import kotlin.math.min
 
 abstract class EntryListFragment : Fragment() {
 
+    private lateinit var toolbar: Toolbar
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(getLayout(), container, false)
+        val fragmentView = inflater.inflate(R.layout.entry_list_fragment, container, false)
 
         val viewModelFactory = EntryListViewModel.Factory(getUiEntriesGetter())
         val viewModel = ViewModelProviders.of(this, viewModelFactory).get(EntryListViewModel::class.java)
 
-        val entriesRecyclerView = view.findViewById<RecyclerView>(R.id.entries)
-        val progressBar = view.findViewById<ProgressBar>(R.id.progress)
+        val entriesRecyclerView = fragmentView.findViewById<RecyclerView>(R.id.entries)
+        val progressBar = fragmentView.findViewById<ProgressBar>(R.id.progress)
 
         entriesRecyclerView.adapter = EntriesAdapter().also { adapter ->
             viewModel.entries.observe(this, Observer { entries ->
@@ -38,12 +43,33 @@ abstract class EntryListFragment : Fragment() {
             })
         }
 
-        return view
+        toolbar = fragmentView.findViewById<Toolbar>(R.id.toolbar)
+        toolbar.setNavigationIcon(when (this) {
+            is MyFeedFragment -> R.drawable.action_menu
+            else -> R.drawable.action_back
+        })
+        toolbar.setNavigationOnClickListener { onNavigationClick() }
+
+        entriesRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                toolbar.elevation = min(recyclerView.computeVerticalScrollOffset().toFloat(), 8f)
+            }
+        })
+
+        return fragmentView
     }
 
-    abstract fun getLayout(): Int
-
     abstract fun getUiEntriesGetter(): UiEntriesGetter
+
+    abstract fun onNavigationClick()
+
+    protected fun setTitle(@StringRes title: Int) {
+        toolbar.setTitle(title)
+    }
+
+    protected fun setTitle(title: String) {
+        toolbar.title = title
+    }
 
 }
 

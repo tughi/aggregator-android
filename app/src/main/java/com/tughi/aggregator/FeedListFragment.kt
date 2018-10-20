@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.data.UiFeed
 import com.tughi.aggregator.viewmodels.FeedListViewModel
+import kotlin.math.min
 
 class FeedListFragment : Fragment(), OnFeedClickedListener {
 
@@ -66,6 +67,12 @@ class FeedListFragment : Fragment(), OnFeedClickedListener {
             val activity = activity as MainActivity
             activity.openDrawer()
         }
+
+        feedsRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                toolbar.elevation = min(recyclerView.computeVerticalScrollOffset().toFloat(), 8f)
+            }
+        })
 
         return fragmentView
     }

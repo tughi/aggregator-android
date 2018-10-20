@@ -17,16 +17,16 @@ class FeedEntryListFragment : EntryListFragment() {
         val viewModelFactory = FeedViewModel.Factory(feedId)
         val viewModel = ViewModelProviders.of(this, viewModelFactory).get(FeedViewModel::class.java)
         viewModel.feed.observe(this, Observer { feed ->
-            activity?.title = feed.title
+            setTitle(feed.title)
         })
-    }
-
-    override fun getLayout(): Int {
-        return R.layout.entry_list_fragment
     }
 
     override fun getUiEntriesGetter(): UiEntriesGetter {
         return FeedUiEntriesGetter(feedId)
+    }
+
+    override fun onNavigationClick() {
+        fragmentManager?.popBackStack()
     }
 
     companion object {

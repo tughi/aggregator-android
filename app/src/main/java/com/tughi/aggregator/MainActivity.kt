@@ -1,7 +1,6 @@
 package com.tughi.aggregator
 
 import android.os.Bundle
-import android.view.MenuItem
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -62,17 +61,6 @@ class MainActivity : AppActivity() {
             return@setNavigationItemSelectedListener true
         }
 
-        supportFragmentManager.let {
-            it.addOnBackStackChangedListener {
-                if (it.backStackEntryCount > 0) {
-                    supportActionBar?.setHomeAsUpIndicator(R.drawable.action_back)
-                } else {
-                    supportActionBar?.setHomeAsUpIndicator(R.drawable.action_menu)
-                    setTitle(R.string.app_name)
-                }
-            }
-        }
-
         if (savedInstanceState == null) {
             FeedUpdater(this).update()
 
@@ -92,16 +80,6 @@ class MainActivity : AppActivity() {
             it.setDisplayHomeAsUpEnabled(true)
             it.setHomeAsUpIndicator(R.drawable.action_menu)
         }
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        if (item?.itemId == android.R.id.home) {
-            if (supportFragmentManager.backStackEntryCount > 0) {
-                supportFragmentManager.popBackStack()
-            }
-        }
-
-        return super.onOptionsItemSelected(item)
     }
 
     fun openDrawer() {
