@@ -1,9 +1,20 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="AppTheme" parent="Base.Theme.MaterialComponents.Light.DarkActionBar">
-        <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
+    <style name="DarkTheme" parent="Base.Theme.MaterialComponents">
+        <item name="android:windowLightStatusBar" tools:targetApi="23">false</item>
+        <item name="android:colorBackground">@color/dark_theme__background</item>
+        <item name="colorPrimary">@color/dark_theme__primary</item>
+        <item name="colorPrimaryDark">@color/dark_theme__primary_dark</item>
+        <item name="colorAccent">@color/dark_theme__accent</item>
+        <item name="android:keepScreenOn">@bool/debug</item>
+    </style>
+
+    <style name="LightTheme" parent="Base.Theme.MaterialComponents.Light">
+        <item name="android:windowLightStatusBar" tools:targetApi="23">true</item>
+        <item name="android:colorBackground">@color/light_theme__background</item>
+        <item name="colorPrimary">@color/light_theme__primary</item>
+        <item name="colorPrimaryDark">@color/light_theme__primary_dark</item>
+        <item name="colorAccent">@color/light_theme__accent</item>
         <item name="android:keepScreenOn">@bool/debug</item>
     </style>
 

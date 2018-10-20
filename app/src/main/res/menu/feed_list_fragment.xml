@@ -6,7 +6,6 @@
         android:id="@+id/add"
         android:icon="@drawable/action_add"
         android:title="@string/action_subscribe"
-        app:iconTint="@color/action_bar_icon"
         app:showAsAction="ifRoom" />
 
 </menu>
