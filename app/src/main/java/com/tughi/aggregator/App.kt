@@ -1,5 +1,6 @@
 package com.tughi.aggregator
 
+import android.app.Application
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
 import androidx.lifecycle.MutableLiveData
@@ -7,7 +8,7 @@ import com.tughi.aggregator.utilities.APP_THEME_DARK
 import com.tughi.aggregator.utilities.APP_THEME_LIGHT
 import com.tughi.aggregator.utilities.PREF_APP_THEME
 
-class Application : android.app.Application() {
+class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
@@ -16,7 +17,7 @@ class Application : android.app.Application() {
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this)
 
-        Application.theme.value = when (preferences.getString(PREF_APP_THEME, null)) {
+        App.theme.value = when (preferences.getString(PREF_APP_THEME, null)) {
             APP_THEME_LIGHT -> APP_THEME_LIGHT
             else -> APP_THEME_DARK
         }
@@ -24,7 +25,7 @@ class Application : android.app.Application() {
     }
 
     companion object {
-        lateinit var instance: Application
+        lateinit var instance: App
             private set
 
         lateinit var preferences: SharedPreferences

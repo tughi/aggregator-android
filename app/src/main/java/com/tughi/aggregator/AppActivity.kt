@@ -10,7 +10,7 @@ abstract class AppActivity : AppCompatActivity() {
     private lateinit var activityTheme: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        when (Application.theme.value.also { activityTheme = it!! }) {
+        when (App.theme.value.also { activityTheme = it!! }) {
             APP_THEME_LIGHT -> {
                 setTheme(R.style.LightTheme)
             }
@@ -22,7 +22,7 @@ abstract class AppActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
 
-        Application.theme.observe(this, Observer { theme ->
+        App.theme.observe(this, Observer { theme ->
             if (theme != activityTheme) {
                 recreate()
             }

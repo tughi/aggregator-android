@@ -2,13 +2,13 @@ package com.tughi.aggregator.data
 
 import android.text.format.DateUtils
 import androidx.room.TypeConverter
-import com.tughi.aggregator.Application
+import com.tughi.aggregator.App
 
 object CustomTypeConverters {
     private const val DATE_FORMAT = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_YEAR
     private const val TIME_FORMAT = DateUtils.FORMAT_SHOW_TIME
 
-    private val context by lazy { Application.instance.applicationContext }
+    private val context by lazy { App.instance.applicationContext }
 
     @TypeConverter
     @JvmStatic

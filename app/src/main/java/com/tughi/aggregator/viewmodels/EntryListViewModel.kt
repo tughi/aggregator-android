@@ -5,14 +5,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
-import com.tughi.aggregator.Application
+import com.tughi.aggregator.App
 import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.UiEntriesGetter
 import com.tughi.aggregator.data.UiEntry
 
 class EntryListViewModel(entriesGetter: UiEntriesGetter) : ViewModel() {
 
-    private val context = Application.instance.applicationContext
+    private val context = App.instance.applicationContext
     private val database = Database.from(context)
 
     val entries: LiveData<PagedList<UiEntry>>

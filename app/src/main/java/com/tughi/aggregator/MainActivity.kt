@@ -36,7 +36,7 @@ class MainActivity : AppActivity() {
                 .replace(R.id.content, fragment)
                 .commit()
 
-        Application.preferences.edit()
+        App.preferences.edit()
                 .putString(PREF_ACTIVE_TAB, tabName)
                 .apply()
 
@@ -56,8 +56,8 @@ class MainActivity : AppActivity() {
         drawerNavigationView = drawerView.findViewById(R.id.drawer_navigation)
         drawerNavigationView.setNavigationItemSelectedListener {
             when (it.itemId) {
-                R.id.dark_theme -> Application.theme.value = APP_THEME_DARK
-                R.id.light_theme -> Application.theme.value = APP_THEME_LIGHT
+                R.id.dark_theme -> App.theme.value = APP_THEME_DARK
+                R.id.light_theme -> App.theme.value = APP_THEME_LIGHT
             }
             return@setNavigationItemSelectedListener true
         }
@@ -76,7 +76,7 @@ class MainActivity : AppActivity() {
         if (savedInstanceState == null) {
             FeedUpdater(this).update()
 
-            bottomNavigationView.selectedItemId = when (Application.preferences.getString(PREF_ACTIVE_TAB, TAB_FEEDS)) {
+            bottomNavigationView.selectedItemId = when (App.preferences.getString(PREF_ACTIVE_TAB, TAB_FEEDS)) {
                 TAB_FEEDS -> R.id.navigation_feeds
                 TAB_MY_FEED -> R.id.navigation_my_feeds
                 TAB_TAGS -> R.id.navigation_tags
