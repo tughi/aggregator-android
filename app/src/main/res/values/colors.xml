@@ -5,12 +5,14 @@
     <color name="dark_theme__primary">#212121</color>
     <color name="dark_theme__primary_dark">#000000</color>
     <color name="dark_theme__accent">#ff5722</color>
+    <color name="dark_theme__bottom_navigation">#000000</color>
     <color name="dark_theme__favicon_background">#ffffff</color>
 
     <color name="light_theme__background">#fafafa</color>
     <color name="light_theme__primary">#fafafa</color>
-    <color name="light_theme__primary_dark">#f0f0f0</color>
+    <color name="light_theme__primary_dark">#000000</color>
     <color name="light_theme__accent">#ff5722</color>
+    <color name="light_theme__bottom_navigation">#eeeeee</color>
     <color name="light_theme__favicon_background">#606060</color>
 
 </resources>

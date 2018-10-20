@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="Aggregator">
+        <attr name="colorBottomNavigation" format="color" />
         <attr name="colorFaviconBackground" format="color" />
     </declare-styleable>
 </resources>
