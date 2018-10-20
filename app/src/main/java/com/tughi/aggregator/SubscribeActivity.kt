@@ -1,8 +1,7 @@
 package com.tughi.aggregator
 
 import android.os.Bundle
-import android.view.MenuItem
-import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 
 class SubscribeActivity : AppActivity() {
 
@@ -13,32 +12,22 @@ class SubscribeActivity : AppActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        setContentView(R.layout.subscribe_activity)
+
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
+        toolbar.setNavigationIcon(when (intent.getBooleanExtra(EXTRA_VIA_ACTION, false)) {
+            true -> R.drawable.action_back
+            false -> R.drawable.action_cancel
+        })
+        toolbar.setNavigationOnClickListener { finish() }
+
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                    .replace(android.R.id.content, SubscribeSearchFragment())
+                    .replace(R.id.content, SubscribeSearchFragment())
                     .commit()
         }
-    }
-
-    override fun onPostCreate(savedInstanceState: Bundle?) {
-        super.onPostCreate(savedInstanceState)
-
-        supportActionBar?.apply {
-            setDisplayHomeAsUpEnabled(true)
-            if (!intent.getBooleanExtra(EXTRA_VIA_ACTION, false)) {
-                setHomeAsUpIndicator(R.drawable.action_cancel)
-            }
-        }
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item?.itemId) {
-            android.R.id.home ->
-                finish()
-            else ->
-                return super.onOptionsItemSelected(item)
-        }
-        return true
     }
 
 }
