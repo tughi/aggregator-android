@@ -7,6 +7,7 @@ import android.view.*
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -58,6 +59,12 @@ class FeedListFragment : Fragment(), OnFeedClickedListener {
 
         fragmentView.findViewById<Button>(R.id.add).setOnClickListener {
             startActivity(Intent(activity, SubscribeActivity::class.java))
+        }
+
+        val toolbar = fragmentView.findViewById<Toolbar>(R.id.toolbar)
+        toolbar.setNavigationOnClickListener {
+            val activity = activity as MainActivity
+            activity.openDrawer()
         }
 
         return fragmentView

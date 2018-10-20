@@ -98,16 +98,14 @@ class MainActivity : AppActivity() {
         if (item?.itemId == android.R.id.home) {
             if (supportFragmentManager.backStackEntryCount > 0) {
                 supportFragmentManager.popBackStack()
-            } else {
-                if (drawerView.isDrawerOpen(drawerNavigationView)) {
-                    drawerView.closeDrawer(drawerNavigationView)
-                } else {
-                    drawerView.openDrawer(drawerNavigationView)
-                }
             }
         }
 
         return super.onOptionsItemSelected(item)
+    }
+
+    fun openDrawer() {
+        drawerView.openDrawer(drawerNavigationView)
     }
 
 }

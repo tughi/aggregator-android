@@ -21,6 +21,10 @@ class FeedEntryListFragment : EntryListFragment() {
         })
     }
 
+    override fun getLayout(): Int {
+        return R.layout.entry_list_fragment
+    }
+
     override fun getUiEntriesGetter(): UiEntriesGetter {
         return FeedUiEntriesGetter(feedId)
     }
