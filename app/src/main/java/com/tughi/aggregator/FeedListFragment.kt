@@ -85,12 +85,15 @@ class FeedListFragment : Fragment(), OnFeedClickedListener {
 
     override fun onFeedClicked(feed: UiFeed) {
         fragmentManager!!.beginTransaction()
-                .replace(id, FeedEntryListFragment.newInstance(feedId = feed.id))
+                .setCustomAnimations(R.anim.slide_in, 0, 0, R.anim.fade_out)
+                .add(id, FeedEntryListFragment.newInstance(feedId = feed.id), TAG)
                 .addToBackStack(null)
                 .commit()
     }
 
     companion object {
+        const val TAG = "feed"
+
         fun newInstance(): FeedListFragment {
             return FeedListFragment()
         }
