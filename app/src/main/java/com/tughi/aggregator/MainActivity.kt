@@ -54,6 +54,7 @@ class MainActivity : AppActivity() {
         bottomNavigationView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
 
         drawerNavigationView = drawerView.findViewById(R.id.drawer_navigation)
+        drawerNavigationView.inflateHeaderView(R.layout.drawer_header)
         drawerNavigationView.setNavigationItemSelectedListener {
             when (it.itemId) {
                 R.id.dark_theme -> App.theme.value = APP_THEME_DARK
