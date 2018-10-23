@@ -30,7 +30,7 @@
      inkscape:cx="53.239446"
      inkscape:cy="54.392647"
      inkscape:document-units="px"
-     inkscape:current-layer="layer6"
+     inkscape:current-layer="svg43"
      showgrid="false"
      units="px"
      width="108px"
@@ -133,7 +133,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -222,7 +222,7 @@
        id="path1072"
        inkscape:connector-curvature="0" />
     <path
-       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+       style="opacity:1;fill:#ffab00;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
        d="M 0 0 L 0 108 L 108 108 L 108 0 L 0 0 z M 54 23 A 31 31 0 0 1 57.910156 23.277344 L 58.814453 26.445312 A 28 28 0 0 1 64.867188 28.197266 L 67.3125 26.046875 A 31 31 0 0 1 73.908203 30.240234 L 72.945312 33.429688 A 28 28 0 0 1 77.0625 38.173828 L 80.332031 37.679688 A 31 31 0 0 1 83.568359 44.796875 L 81.074219 46.925781 A 28 28 0 0 1 81.970703 53.160156 L 84.974609 54.505859 A 31 31 0 0 1 83.849609 62.244141 L 80.599609 62.6875 A 28 28 0 0 1 77.974609 68.400391 L 79.787109 71.175781 A 31 31 0 0 1 74.650391 77.070312 L 71.683594 75.689453 A 28 28 0 0 1 66.382812 79.095703 L 66.40625 82.367188 A 31 31 0 0 1 58.912109 84.591797 L 57.138672 81.789062 A 28 28 0 0 1 54 82 A 28 28 0 0 1 50.849609 81.804688 L 49.099609 84.572266 A 31 31 0 0 1 41.591797 82.390625 L 41.617188 79.074219 A 28 28 0 0 1 36.318359 75.6875 L 33.34375 77.072266 A 31 31 0 0 1 28.216797 71.171875 L 30.023438 68.404297 A 28 28 0 0 1 27.417969 62.689453 L 24.117188 62.238281 A 31 31 0 0 1 23.017578 54.509766 L 26.042969 53.154297 A 28 28 0 0 1 26.941406 46.9375 L 24.408203 44.775391 A 31 31 0 0 1 27.6875 37.681641 L 30.90625 38.167969 A 28 28 0 0 1 35.052734 33.421875 L 34.101562 30.269531 A 31 31 0 0 1 40.681641 26.041016 L 43.154297 28.214844 A 28 28 0 0 1 49.193359 26.417969 L 50.087891 23.287109 A 31 31 0 0 1 54 23 z "
        id="rect1041" />
     <path
