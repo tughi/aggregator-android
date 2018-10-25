@@ -6,6 +6,7 @@
     <color name="dark_theme__primary_dark">#000000</color>
     <color name="dark_theme__accent">#ff6600</color>
     <color name="dark_theme__bottom_navigation">#ff6600</color>
+    <color name="dark_theme__entry_list_header">#424242</color>
     <color name="dark_theme__favicon_background">#ffffff</color>
 
     <color name="light_theme__background">#fafafa</color>
@@ -13,6 +14,7 @@
     <color name="light_theme__primary_dark">#000000</color>
     <color name="light_theme__accent">#ff6600</color>
     <color name="light_theme__bottom_navigation">#ff6600</color>
+    <color name="light_theme__entry_list_header">#eeeeee</color>
     <color name="light_theme__favicon_background">#606060</color>
 
 </resources>

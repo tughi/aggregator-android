@@ -76,31 +76,59 @@ abstract class EntryListFragment : Fragment() {
 
 }
 
-private class EntriesAdapter : PagedListAdapter<UiEntry, EntryViewHolder>(EntriesDiffUtil) {
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EntryViewHolder {
-        val itemView = LayoutInflater.from(parent.context).inflate(R.layout.entry_list_item, parent, false)
-        return EntryViewHolder(itemView)
+private class EntriesAdapter : PagedListAdapter<UiEntry, EntryListItemViewHolder>(EntriesDiffUtil) {
+
+    override fun getItemCount(): Int {
+        return super.getItemCount() * 2
     }
 
-    override fun onBindViewHolder(holder: EntryViewHolder, position: Int) {
+    override fun getItem(position: Int): UiEntry? {
+        return super.getItem(position / 2)
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        if (position % 2 == 0) {
+            if (position != 0 && getItem(position)!!.formattedDate == getItem(position - 2)!!.formattedDate) {
+                return R.layout.entry_list_divider
+            }
+            return R.layout.entry_list_header
+        }
+
+        return R.layout.entry_list_item
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EntryListItemViewHolder = when (viewType) {
+        R.layout.entry_list_divider -> DividerViewHolder(LayoutInflater.from(parent.context).inflate(viewType, parent, false))
+        R.layout.entry_list_header -> HeaderViewHolder(LayoutInflater.from(parent.context).inflate(viewType, parent, false))
+        else -> EntryViewHolder(LayoutInflater.from(parent.context).inflate(viewType, parent, false))
+    }
+
+    override fun onBindViewHolder(holder: EntryListItemViewHolder, position: Int) {
         val entry = getItem(position)
 
         if (entry != null) {
-            holder.entry = entry
-
-            holder.itemView.visibility = View.VISIBLE
-
-            holder.feedTitle.text = entry.feedTitle
-            holder.title.text = entry.title
-            holder.favicon.setImageResource(R.drawable.favicon_placeholder)
-            holder.time.text = entry.formattedTime.toString()
+            holder.onBind(entry)
         } else {
             holder.itemView.visibility = View.INVISIBLE
         }
     }
+
 }
 
-private class EntryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
+private sealed class EntryListItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+
+    abstract fun onBind(entry: UiEntry)
+
+}
+
+private class DividerViewHolder(itemView: View) : EntryListItemViewHolder(itemView) {
+
+    override fun onBind(entry: UiEntry) {}
+
+}
+
+private class EntryViewHolder(itemView: View) : EntryListItemViewHolder(itemView), View.OnClickListener {
+
     val favicon: ImageView = itemView.findViewById(R.id.favicon)
     val title: TextView = itemView.findViewById(R.id.title)
     val feedTitle: TextView = itemView.findViewById(R.id.feed_title)
@@ -112,11 +140,34 @@ private class EntryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView
         itemView.setOnClickListener(this)
     }
 
+    override fun onBind(entry: UiEntry) {
+        this.entry = entry
+
+        itemView.visibility = View.VISIBLE
+
+        feedTitle.text = entry.feedTitle
+        title.text = entry.title
+        favicon.setImageResource(R.drawable.favicon_placeholder)
+        time.text = entry.formattedTime.toString()
+    }
+
     override fun onClick(view: View?) {
         itemView.context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(entry.link)))
 
         // TODO: mark entry as read
     }
+
+}
+
+
+private class HeaderViewHolder(itemView: View) : EntryListItemViewHolder(itemView) {
+
+    val header: TextView = itemView.findViewById(R.id.header)
+
+    override fun onBind(entry: UiEntry) {
+        header.text = entry.formattedDate.toString()
+    }
+
 }
 
 private object EntriesDiffUtil : DiffUtil.ItemCallback<UiEntry>() {

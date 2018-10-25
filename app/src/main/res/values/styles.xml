@@ -7,6 +7,7 @@
         <item name="colorPrimaryDark">@color/dark_theme__primary_dark</item>
         <item name="colorAccent">@color/dark_theme__accent</item>
         <item name="colorBottomNavigation">@color/dark_theme__bottom_navigation</item>
+        <item name="colorEntryListHeader">@color/dark_theme__entry_list_header</item>
         <item name="colorFaviconBackground">@color/dark_theme__favicon_background</item>
         <item name="android:keepScreenOn">@bool/debug</item>
     </style>
@@ -18,6 +19,7 @@
         <item name="colorPrimaryDark">@color/light_theme__primary_dark</item>
         <item name="colorAccent">@color/light_theme__accent</item>
         <item name="colorBottomNavigation">@color/light_theme__bottom_navigation</item>
+        <item name="colorEntryListHeader">@color/light_theme__entry_list_header</item>
         <item name="colorFaviconBackground">@color/light_theme__favicon_background</item>
         <item name="android:keepScreenOn">@bool/debug</item>
     </style>
