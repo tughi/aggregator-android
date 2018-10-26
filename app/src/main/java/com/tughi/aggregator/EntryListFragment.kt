@@ -16,11 +16,15 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.UiEntriesGetter
 import com.tughi.aggregator.data.UiEntry
 import com.tughi.aggregator.viewmodels.EntryListViewModel
 import org.jetbrains.anko.displayMetrics
+import org.jetbrains.anko.doAsync
+import java.lang.IllegalStateException
 import kotlin.math.min
 
 abstract class EntryListFragment : Fragment() {
@@ -45,6 +49,7 @@ abstract class EntryListFragment : Fragment() {
                 progressBar.visibility = View.GONE
             })
         }
+        ItemTouchHelper(SwipeItemTouchHelper()).attachToRecyclerView(entriesRecyclerView)
 
         toolbar = fragmentView.findViewById<Toolbar>(R.id.toolbar)
         toolbar.setNavigationIcon(when (this) {
@@ -93,14 +98,18 @@ private class EntriesAdapter : PagedListAdapter<UiEntry, EntryListItemViewHolder
             }
             return R.layout.entry_list_header
         }
-
-        return R.layout.entry_list_item
+        if (getItem(position)!!.readTime != 0L) {
+            return R.layout.entry_list_read_item
+        }
+        return R.layout.entry_list_unread_item
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EntryListItemViewHolder = when (viewType) {
         R.layout.entry_list_divider -> DividerViewHolder(LayoutInflater.from(parent.context).inflate(viewType, parent, false))
         R.layout.entry_list_header -> HeaderViewHolder(LayoutInflater.from(parent.context).inflate(viewType, parent, false))
-        else -> EntryViewHolder(LayoutInflater.from(parent.context).inflate(viewType, parent, false))
+        R.layout.entry_list_read_item -> ReadEntryViewHolder(LayoutInflater.from(parent.context).inflate(viewType, parent, false))
+        R.layout.entry_list_unread_item -> UnreadEntryViewHolder(LayoutInflater.from(parent.context).inflate(viewType, parent, false))
+        else -> throw IllegalStateException()
     }
 
     override fun onBindViewHolder(holder: EntryListItemViewHolder, position: Int) {
@@ -127,7 +136,7 @@ private class DividerViewHolder(itemView: View) : EntryListItemViewHolder(itemVi
 
 }
 
-private class EntryViewHolder(itemView: View) : EntryListItemViewHolder(itemView), View.OnClickListener {
+private abstract class EntryViewHolder(itemView: View) : EntryListItemViewHolder(itemView), View.OnClickListener {
 
     val favicon: ImageView = itemView.findViewById(R.id.favicon)
     val title: TextView = itemView.findViewById(R.id.title)
@@ -159,6 +168,9 @@ private class EntryViewHolder(itemView: View) : EntryListItemViewHolder(itemView
 
 }
 
+private class ReadEntryViewHolder(itemView: View) : EntryViewHolder(itemView)
+
+private class UnreadEntryViewHolder(itemView: View) : EntryViewHolder(itemView)
 
 private class HeaderViewHolder(itemView: View) : EntryListItemViewHolder(itemView) {
 
@@ -178,6 +190,31 @@ private object EntriesDiffUtil : DiffUtil.ItemCallback<UiEntry>() {
 
     override fun areContentsTheSame(oldItem: UiEntry, newItem: UiEntry): Boolean {
         return oldItem == newItem
+    }
+
+}
+
+private class SwipeItemTouchHelper : ItemTouchHelper.Callback() {
+
+    override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int =
+            when (viewHolder) {
+                is EntryViewHolder -> makeMovementFlags(0, ItemTouchHelper.START or ItemTouchHelper.END)
+                else -> 0
+            }
+
+
+    override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+        return false
+    }
+
+    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+        if (viewHolder is EntryViewHolder) {
+            val entry = viewHolder.entry
+            doAsync {
+                Database.from(App.instance).entryDao()
+                        .setReadTime(entry.id, if (entry.readTime != 0L) 0 else System.currentTimeMillis())
+            }
+        }
     }
 
 }

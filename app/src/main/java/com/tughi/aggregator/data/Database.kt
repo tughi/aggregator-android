@@ -11,7 +11,7 @@ import com.tughi.aggregator.utilities.DATABASE_NAME
             Entry::class,
             Feed::class
         ],
-        version = 9
+        version = 10
 )
 @TypeConverters(CustomTypeConverters::class)
 abstract class Database : RoomDatabase() {

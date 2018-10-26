@@ -71,7 +71,8 @@ interface EntryDao {
             e.link,
             e.author,
             e.publish_time as formatted_date,
-            e.publish_time as formatted_time
+            e.publish_time as formatted_time,
+            e.read_time as read_time
         FROM
             entries e
             LEFT JOIN feeds f ON f.id = e.feed_id
@@ -88,7 +89,8 @@ interface EntryDao {
             e.link,
             e.author,
             e.publish_time as formatted_date,
-            e.publish_time as formatted_time
+            e.publish_time as formatted_time,
+            e.read_time as read_time
         FROM
             entries e
             LEFT JOIN feeds f ON f.id = e.feed_id
@@ -99,6 +101,10 @@ interface EntryDao {
     """)
     fun getFeedUiEntries(feedId: Long): DataSource.Factory<Int, UiEntry>
 
+    @Query("""
+        UPDATE entries SET read_time = :readTime WHERE id = :entryId
+    """)
+    fun setReadTime(entryId: Long, readTime: Long): Int
 }
 
 data class UiEntry(
@@ -121,7 +127,10 @@ data class UiEntry(
         val formattedDate: FormattedDate,
 
         @ColumnInfo(name = "formatted_time")
-        val formattedTime: FormattedTime
+        val formattedTime: FormattedTime,
+
+        @ColumnInfo(name = "read_time")
+        val readTime: Long
 )
 
 sealed class UiEntriesGetter {

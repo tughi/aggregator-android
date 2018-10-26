@@ -93,7 +93,10 @@ data class Entry(
         val publishTime: Long,
 
         @ColumnInfo(name = "update_time")
-        val updateTime: Long
+        val updateTime: Long,
+
+        @ColumnInfo(name = "read_time")
+        val readTime: Long = 0
 ) {
     fun updated(
             title: String?,
