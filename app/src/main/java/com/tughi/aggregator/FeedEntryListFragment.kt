@@ -22,7 +22,7 @@ class FeedEntryListFragment : EntryListFragment() {
     }
 
     override fun getUiEntriesGetter(): UiEntriesGetter {
-        return FeedUiEntriesGetter(feedId)
+        return FeedUiEntriesGetter(feedId, since = sessionTime)
     }
 
     override fun onNavigationClick() {

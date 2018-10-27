@@ -32,6 +32,8 @@ abstract class EntryListFragment : Fragment() {
 
     private lateinit var toolbar: Toolbar
 
+    protected val sessionTime = System.currentTimeMillis()
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val fragmentView = inflater.inflate(R.layout.entry_list_fragment, container, false)
 

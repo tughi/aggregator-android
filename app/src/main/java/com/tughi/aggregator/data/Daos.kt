@@ -76,10 +76,12 @@ interface EntryDao {
         FROM
             entries e
             LEFT JOIN feeds f ON f.id = e.feed_id
+        WHERE
+            (e.read_time = 0 OR e.read_time > :since)
         ORDER BY
             e.publish_time
     """)
-    fun getMyFeedUiEntries(): DataSource.Factory<Int, UiEntry>
+    fun getMyFeedUiEntries(since: Long): DataSource.Factory<Int, UiEntry>
 
     @Query("""
         SELECT
@@ -95,11 +97,12 @@ interface EntryDao {
             entries e
             LEFT JOIN feeds f ON f.id = e.feed_id
         WHERE
-            e.feed_id = :feedId
+            e.feed_id = :feedId AND
+            (e.read_time = 0 OR e.read_time > :since)
         ORDER BY
             e.publish_time
     """)
-    fun getFeedUiEntries(feedId: Long): DataSource.Factory<Int, UiEntry>
+    fun getFeedUiEntries(feedId: Long, since: Long): DataSource.Factory<Int, UiEntry>
 
     @Query("""
         UPDATE entries SET read_time = :readTime WHERE id = :entryId
@@ -137,14 +140,14 @@ sealed class UiEntriesGetter {
     abstract fun getUiEntries(entryDao: EntryDao): DataSource.Factory<Int, UiEntry>
 }
 
-class FeedUiEntriesGetter(private val feedId: Long) : UiEntriesGetter() {
+class FeedUiEntriesGetter(private val feedId: Long, private val since: Long) : UiEntriesGetter() {
     override fun getUiEntries(entryDao: EntryDao): DataSource.Factory<Int, UiEntry> {
-        return entryDao.getFeedUiEntries(feedId)
+        return entryDao.getFeedUiEntries(feedId, since)
     }
 }
 
-object MyFeedUiEntriesGetter : UiEntriesGetter() {
+class MyFeedUiEntriesGetter(private val since: Long) : UiEntriesGetter() {
     override fun getUiEntries(entryDao: EntryDao): DataSource.Factory<Int, UiEntry> {
-        return entryDao.getMyFeedUiEntries()
+        return entryDao.getMyFeedUiEntries(since)
     }
 }

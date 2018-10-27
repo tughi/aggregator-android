@@ -18,7 +18,7 @@ class MyFeedFragment : EntryListFragment() {
     }
 
     override fun getUiEntriesGetter(): UiEntriesGetter {
-        return MyFeedUiEntriesGetter
+        return MyFeedUiEntriesGetter(since = sessionTime)
     }
 
     override fun onNavigationClick() {
