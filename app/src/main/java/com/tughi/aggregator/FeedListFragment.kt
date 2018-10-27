@@ -114,11 +114,11 @@ private class FeedsAdapter(private val listener: OnFeedClickedListener) : ListAd
         holder.feed = feed
         holder.favicon.setImageResource(R.drawable.favicon_placeholder)
         holder.title.text = feed.title
-        if (feed.entryCount == 0) {
+        if (feed.unreadEntryCount == 0) {
             holder.count.text = ""
             holder.count.visibility = View.INVISIBLE
         } else {
-            holder.count.text = feed.entryCount.toString()
+            holder.count.text = feed.unreadEntryCount.toString()
             holder.count.visibility = View.VISIBLE
         }
         if (feed.updateTime == 0L) {

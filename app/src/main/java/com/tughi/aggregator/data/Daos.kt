@@ -27,7 +27,7 @@ interface FeedDao {
             f.id,
             COALESCE(f.custom_title, f.title) AS title,
             f.update_time,
-            (SELECT COUNT(1) FROM entries e WHERE f.id = e.feed_id) AS entry_count
+            (SELECT COUNT(1) FROM entries e WHERE f.id = e.feed_id AND e.read_time = 0) AS unread_entry_count
         FROM
             feeds f
         ORDER BY
@@ -47,8 +47,8 @@ data class UiFeed(
         @ColumnInfo(name = "update_time")
         val updateTime: Long,
 
-        @ColumnInfo(name = "entry_count")
-        val entryCount: Int
+        @ColumnInfo(name = "unread_entry_count")
+        val unreadEntryCount: Int
 )
 
 @Dao
