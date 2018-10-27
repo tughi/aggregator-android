@@ -24,7 +24,6 @@ import com.tughi.aggregator.data.UiEntry
 import com.tughi.aggregator.viewmodels.EntryListViewModel
 import org.jetbrains.anko.displayMetrics
 import org.jetbrains.anko.doAsync
-import java.lang.IllegalStateException
 import kotlin.math.min
 
 abstract class EntryListFragment : Fragment() {
@@ -161,9 +160,16 @@ private abstract class EntryViewHolder(itemView: View) : EntryListItemViewHolder
     }
 
     override fun onClick(view: View?) {
-        itemView.context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(entry.link)))
+        val entry = entry
 
-        // TODO: mark entry as read
+        val context = itemView.context
+        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(entry.link)))
+
+        val applicationContext = context.applicationContext
+        doAsync {
+            Database.from(applicationContext).entryDao()
+                    .setReadTime(entry.id, System.currentTimeMillis())
+        }
     }
 
 }
