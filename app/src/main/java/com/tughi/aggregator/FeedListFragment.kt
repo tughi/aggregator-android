@@ -18,12 +18,8 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.data.UiFeed
 import com.tughi.aggregator.viewmodels.FeedListViewModel
-import org.jetbrains.anko.displayMetrics
-import kotlin.math.min
 
 class FeedListFragment : Fragment(), OnFeedClickedListener {
-
-    private val toolbarElevationMax by lazy { context!!.displayMetrics.density * 4 }
 
     private lateinit var viewModel: FeedListViewModel
 
@@ -73,12 +69,6 @@ class FeedListFragment : Fragment(), OnFeedClickedListener {
 
             return@setOnMenuItemClickListener true
         }
-
-        feedsRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                toolbar.elevation = min(recyclerView.computeVerticalScrollOffset().toFloat(), toolbarElevationMax)
-            }
-        })
 
         return fragmentView
     }
