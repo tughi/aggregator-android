@@ -146,12 +146,12 @@ private class EntriesAdapter : PagedListAdapter<UiEntry, EntryListItemViewHolder
 
     override fun getItemViewType(position: Int): Int {
         if (position % 2 == 0) {
-            if (position != 0 && getItem(position)!!.formattedDate == getItem(position - 2)!!.formattedDate) {
+            if (position != 0 && getItem(position)?.formattedDate == getItem(position - 2)?.formattedDate) {
                 return R.layout.entry_list_divider
             }
             return R.layout.entry_list_header
         }
-        if (getItem(position)!!.readTime != 0L) {
+        if (getItem(position)?.readTime != 0L) {
             return R.layout.entry_list_read_item
         }
         return R.layout.entry_list_unread_item
