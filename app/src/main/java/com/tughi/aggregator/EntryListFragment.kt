@@ -1,11 +1,15 @@
 package com.tughi.aggregator
 
+import android.content.Context
 import android.content.Intent
+import android.graphics.Canvas
 import android.net.Uri
 import android.os.Bundle
+import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -22,13 +26,9 @@ import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.UiEntriesGetter
 import com.tughi.aggregator.data.UiEntry
 import com.tughi.aggregator.viewmodels.EntryListViewModel
-import org.jetbrains.anko.displayMetrics
 import org.jetbrains.anko.doAsync
-import kotlin.math.min
 
 abstract class EntryListFragment : Fragment() {
-
-    private val toolbarElevationMax by lazy { context!!.displayMetrics.density * 4 }
 
     private lateinit var toolbar: Toolbar
 
@@ -59,12 +59,6 @@ abstract class EntryListFragment : Fragment() {
         })
         toolbar.setNavigationOnClickListener { onNavigationClick() }
 
-        entriesRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                toolbar.elevation = min(recyclerView.computeVerticalScrollOffset().toFloat(), toolbarElevationMax)
-            }
-        })
-
         return fragmentView
     }
 
@@ -81,6 +75,64 @@ abstract class EntryListFragment : Fragment() {
     }
 
 }
+
+class EntryListRecyclerView(context: Context, attrs: AttributeSet) : RecyclerView(context, attrs) {
+
+    private val headerView = LayoutInflater.from(context).inflate(R.layout.entry_list_header, FrameLayout(context), false)
+    private val headerTextView: TextView = headerView.findViewById(R.id.header)
+
+    private var headerText: String? = null
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+
+        if (w > 0) {
+            // update the overlay layout
+            val widthMeasureSpec = MeasureSpec.makeMeasureSpec(w, MeasureSpec.EXACTLY)
+            val heightMeasureSpec = MeasureSpec.makeMeasureSpec(h, MeasureSpec.UNSPECIFIED)
+            headerView.measure(widthMeasureSpec, heightMeasureSpec)
+            headerView.layout(0, 0, headerView.measuredWidth, headerView.measuredHeight)
+        }
+    }
+
+    override fun dispatchDraw(canvas: Canvas) {
+        super.dispatchDraw(canvas)
+
+        val childCount = childCount
+        if (childCount > 0) {
+            val firstChild = getChildAt(0)
+            val firstChildViewHolder = getChildViewHolder(firstChild)
+            if (firstChildViewHolder is EntryListItemViewHolder) {
+                // update overlay text
+                val firstChildHeaderText = firstChildViewHolder.entry.formattedDate.toString()
+                if (headerText != firstChildHeaderText) {
+                    headerText = firstChildHeaderText
+                    headerTextView.text = headerText
+
+                    headerView.measure(MeasureSpec.makeMeasureSpec(headerView.width, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(headerView.height, MeasureSpec.EXACTLY))
+                    headerView.layout(0, 0, headerView.width, headerView.height)
+                }
+
+                // draw overlay
+                canvas.save()
+                if (childCount > 1) {
+                    val secondChild = getChildAt(1)
+                    val secondChildViewHolder = getChildViewHolder(secondChild) as EntryListItemViewHolder
+                    val secondChildSection = secondChildViewHolder.entry.formattedDate.toString()
+
+                    if (firstChildHeaderText != secondChildSection && secondChild.top < headerView.height) {
+                        // snap overlay under the next section
+                        canvas.translate(0f, (secondChild.top - headerView.height).toFloat())
+                    }
+                }
+                headerView.draw(canvas)
+                canvas.restore()
+            }
+        }
+    }
+
+}
+
 
 private class EntriesAdapter : PagedListAdapter<UiEntry, EntryListItemViewHolder>(EntriesDiffUtil) {
 
@@ -127,15 +179,16 @@ private class EntriesAdapter : PagedListAdapter<UiEntry, EntryListItemViewHolder
 
 private sealed class EntryListItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-    abstract fun onBind(entry: UiEntry)
+    lateinit var entry: UiEntry
+        protected set
+
+    open fun onBind(entry: UiEntry) {
+        this.entry = entry
+    }
 
 }
 
-private class DividerViewHolder(itemView: View) : EntryListItemViewHolder(itemView) {
-
-    override fun onBind(entry: UiEntry) {}
-
-}
+private class DividerViewHolder(itemView: View) : EntryListItemViewHolder(itemView)
 
 private abstract class EntryViewHolder(itemView: View) : EntryListItemViewHolder(itemView), View.OnClickListener {
 
@@ -144,14 +197,12 @@ private abstract class EntryViewHolder(itemView: View) : EntryListItemViewHolder
     val feedTitle: TextView = itemView.findViewById(R.id.feed_title)
     val time: TextView = itemView.findViewById(R.id.time)
 
-    lateinit var entry: UiEntry
-
     init {
         itemView.setOnClickListener(this)
     }
 
     override fun onBind(entry: UiEntry) {
-        this.entry = entry
+        super.onBind(entry)
 
         itemView.visibility = View.VISIBLE
 
@@ -185,6 +236,8 @@ private class HeaderViewHolder(itemView: View) : EntryListItemViewHolder(itemVie
     val header: TextView = itemView.findViewById(R.id.header)
 
     override fun onBind(entry: UiEntry) {
+        super.onBind(entry)
+
         header.text = entry.formattedDate.toString()
     }
 
