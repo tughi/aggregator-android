@@ -21,7 +21,6 @@ class App : Application() {
             APP_THEME_LIGHT -> APP_THEME_LIGHT
             else -> APP_THEME_DARK
         }
-
     }
 
     companion object {
@@ -31,7 +30,23 @@ class App : Application() {
         lateinit var preferences: SharedPreferences
             private set
 
-        val theme = MutableLiveData<String>()
+        val theme = object : MutableLiveData<String>() {
+            private var oldValue: String? = null
+
+            override fun setValue(value: String?) {
+                super.setValue(value)
+
+                val oldValue = oldValue
+                if (oldValue != value) {
+                    if (oldValue != null) {
+                        preferences.edit()
+                                .putString(PREF_APP_THEME, value)
+                                .apply()
+                    }
+                    this.oldValue = value
+                }
+            }
+        }
     }
 
 }
