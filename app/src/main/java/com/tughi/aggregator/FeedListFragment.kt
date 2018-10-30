@@ -3,7 +3,6 @@ package com.tughi.aggregator
 import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateUtils
-import android.util.SparseBooleanArray
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -82,6 +81,10 @@ class FeedListFragment : Fragment(), OnFeedClickedListener {
                 .commit()
     }
 
+    override fun toggleFeed(feed: UiFeed) {
+        viewModel.toggleFeed(feed)
+    }
+
     companion object {
         const val TAG = "feed"
 
@@ -94,14 +97,9 @@ class FeedListFragment : Fragment(), OnFeedClickedListener {
 
 private class FeedsAdapter(private val listener: OnFeedClickedListener) : ListAdapter<UiFeed, FeedListItemViewHolder>(FeedsDiffCallback()) {
 
-    private var expandedFeeds = SparseBooleanArray()
-
-    override fun getItemViewType(position: Int): Int {
-        val feed = getItem(position)
-        if (expandedFeeds.get(feed.id.toInt())) {
-            return R.layout.feed_list_item_expanded
-        }
-        return R.layout.feed_list_item_collapsed
+    override fun getItemViewType(position: Int): Int = when (getItem(position).expanded) {
+        true -> R.layout.feed_list_item_expanded
+        false -> R.layout.feed_list_item_collapsed
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FeedListItemViewHolder {
@@ -115,9 +113,7 @@ private class FeedsAdapter(private val listener: OnFeedClickedListener) : ListAd
             listener.onFeedClicked(viewHolder.feed)
         }
         viewHolder.toggle.setOnClickListener {
-            val key = viewHolder.feed.id.toInt()
-            expandedFeeds.put(key, !expandedFeeds.get(key))
-            notifyItemChanged(viewHolder.adapterPosition)
+            listener.toggleFeed(viewHolder.feed)
         }
 
         return viewHolder
@@ -187,5 +183,9 @@ private class ExpandedFeedViewHolder(itemView: View) : FeedListItemViewHolder(it
 }
 
 private interface OnFeedClickedListener {
+
     fun onFeedClicked(feed: UiFeed)
+
+    fun toggleFeed(feed: UiFeed)
+
 }
