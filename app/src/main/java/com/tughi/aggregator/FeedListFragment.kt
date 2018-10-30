@@ -3,6 +3,7 @@ package com.tughi.aggregator
 import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateUtils
+import android.util.SparseBooleanArray
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -91,34 +92,39 @@ class FeedListFragment : Fragment(), OnFeedClickedListener {
 
 }
 
-private class FeedsAdapter(private val listener: OnFeedClickedListener) : ListAdapter<UiFeed, FeedViewHolder>(FeedsDiffCallback()) {
+private class FeedsAdapter(private val listener: OnFeedClickedListener) : ListAdapter<UiFeed, FeedListItemViewHolder>(FeedsDiffCallback()) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FeedViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.feed_list_item, parent, false)
-        return FeedViewHolder(view, listener)
+    private var expandedFeeds = SparseBooleanArray()
+
+    override fun getItemViewType(position: Int): Int {
+        val feed = getItem(position)
+        if (expandedFeeds.get(feed.id.toInt())) {
+            return R.layout.feed_list_item_expanded
+        }
+        return R.layout.feed_list_item_collapsed
     }
 
-    override fun onBindViewHolder(holder: FeedViewHolder, position: Int) {
-        val feed = getItem(position)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FeedListItemViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(viewType, parent, false)
+        val viewHolder = when (viewType) {
+            R.layout.feed_list_item_expanded -> ExpandedFeedViewHolder(view)
+            else -> CollapsedFeedViewHolder(view)
+        }
 
-        holder.feed = feed
-        holder.favicon.setImageResource(R.drawable.favicon_placeholder)
-        holder.title.text = feed.title
-        if (feed.unreadEntryCount == 0) {
-            holder.count.text = ""
-            holder.count.visibility = View.INVISIBLE
-        } else {
-            holder.count.text = feed.unreadEntryCount.toString()
-            holder.count.visibility = View.VISIBLE
+        viewHolder.itemView.setOnClickListener {
+            listener.onFeedClicked(viewHolder.feed)
         }
-        if (feed.updateTime == 0L) {
-            holder.lastUpdateTime.setText(R.string.last_update_time__never)
-        } else {
-            val context = holder.itemView.context
-            DateUtils.getRelativeDateTimeString(context, feed.updateTime, DateUtils.DAY_IN_MILLIS, DateUtils.DAY_IN_MILLIS, 0).let {
-                holder.lastUpdateTime.text = context.getString(R.string.last_update_time__since, it)
-            }
+        viewHolder.toggle.setOnClickListener {
+            val key = viewHolder.feed.id.toInt()
+            expandedFeeds.put(key, !expandedFeeds.get(key))
+            notifyItemChanged(viewHolder.adapterPosition)
         }
+
+        return viewHolder
+    }
+
+    override fun onBindViewHolder(holder: FeedListItemViewHolder, position: Int) {
+        holder.onBind(getItem(position))
     }
 
 }
@@ -135,23 +141,49 @@ private class FeedsDiffCallback : DiffUtil.ItemCallback<UiFeed>() {
 
 }
 
-private class FeedViewHolder(itemView: View, private val listener: OnFeedClickedListener) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
+private abstract class FeedListItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     val favicon: ImageView = itemView.findViewById(R.id.favicon)
     val title: TextView = itemView.findViewById(R.id.title)
     val count: TextView = itemView.findViewById(R.id.count)
-    val lastUpdateTime: TextView = itemView.findViewById(R.id.last_update_time)
+    val toggle: View = itemView.findViewById(R.id.toggle)
 
     lateinit var feed: UiFeed
 
-    init {
-        itemView.setOnClickListener(this)
+    open fun onBind(feed: UiFeed) {
+        this.feed = feed
+
+        favicon.setImageResource(R.drawable.favicon_placeholder)
+        title.text = feed.title
+        if (feed.unreadEntryCount == 0) {
+            count.text = ""
+            count.visibility = View.INVISIBLE
+        } else {
+            count.text = feed.unreadEntryCount.toString()
+            count.visibility = View.VISIBLE
+        }
     }
 
-    override fun onClick(view: View?) {
-        listener.onFeedClicked(feed)
-    }
+}
 
+private class CollapsedFeedViewHolder(itemView: View) : FeedListItemViewHolder(itemView)
+
+private class ExpandedFeedViewHolder(itemView: View) : FeedListItemViewHolder(itemView) {
+
+    val lastUpdateTime: TextView = itemView.findViewById(R.id.last_update_time)
+
+    override fun onBind(feed: UiFeed) {
+        super.onBind(feed)
+
+        if (feed.updateTime == 0L) {
+            lastUpdateTime.setText(R.string.last_update_time__never)
+        } else {
+            val context = itemView.context
+            DateUtils.getRelativeDateTimeString(context, feed.updateTime, DateUtils.DAY_IN_MILLIS, DateUtils.DAY_IN_MILLIS, 0).let {
+                lastUpdateTime.text = context.getString(R.string.last_update_time__since, it)
+            }
+        }
+    }
 }
 
 private interface OnFeedClickedListener {
