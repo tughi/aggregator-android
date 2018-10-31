@@ -167,6 +167,7 @@ private class CollapsedFeedViewHolder(itemView: View) : FeedListItemViewHolder(i
 private class ExpandedFeedViewHolder(itemView: View) : FeedListItemViewHolder(itemView) {
 
     val lastUpdateTime: TextView = itemView.findViewById(R.id.last_update_time)
+    val updateMode: TextView = itemView.findViewById(R.id.update_mode)
 
     override fun onBind(feed: UiFeed) {
         super.onBind(feed)
@@ -179,6 +180,8 @@ private class ExpandedFeedViewHolder(itemView: View) : FeedListItemViewHolder(it
                 lastUpdateTime.text = context.getString(R.string.last_update_time__since, it)
             }
         }
+
+        updateMode.setText(R.string.update_mode__default)
     }
 }
 
