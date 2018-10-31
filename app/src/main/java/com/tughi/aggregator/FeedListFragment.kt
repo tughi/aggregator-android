@@ -168,6 +168,17 @@ private class ExpandedFeedViewHolder(itemView: View) : FeedListItemViewHolder(it
 
     val lastUpdateTime: TextView = itemView.findViewById(R.id.last_update_time)
     val updateMode: TextView = itemView.findViewById(R.id.update_mode)
+    val settingsButton: Button = itemView.findViewById(R.id.settings)
+
+    init {
+        settingsButton.setOnClickListener {
+            val context = it.context
+            context.startActivity(
+                    Intent(context, FeedSettingsActivity::class.java)
+                            .putExtra(FeedSettingsActivity.EXTRA_FEED_ID, feed.id)
+            )
+        }
+    }
 
     override fun onBind(feed: UiFeed) {
         super.onBind(feed)

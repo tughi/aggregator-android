@@ -30,5 +30,7 @@
     <string name="title_find_feeds">Find feeds</string>
     <string name="title_tags">Tags</string>
 
+    <string name="feed_settings_title">Feed Settings</string>
+
     <string name="update_mode__default">Update mode: Default</string>
 </resources>

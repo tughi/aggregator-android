@@ -26,6 +26,11 @@
         </activity>
 
         <activity
+            android:name=".FeedSettingsActivity"
+            android:label="@string/feed_settings_title"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
             android:name=".SubscribeActivity"
             android:label="@string/title_find_feeds"
             android:windowSoftInputMode="adjustResize">
