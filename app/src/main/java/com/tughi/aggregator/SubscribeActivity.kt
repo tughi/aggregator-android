@@ -1,7 +1,7 @@
 package com.tughi.aggregator
 
 import android.os.Bundle
-import androidx.appcompat.widget.Toolbar
+import android.view.MenuItem
 
 class SubscribeActivity : AppActivity() {
 
@@ -12,22 +12,26 @@ class SubscribeActivity : AppActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContentView(R.layout.subscribe_activity)
-
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
-
-        toolbar.setNavigationIcon(when (intent.getBooleanExtra(EXTRA_VIA_ACTION, false)) {
-            true -> R.drawable.action_back
-            false -> R.drawable.action_cancel
-        })
-        toolbar.setNavigationOnClickListener { finish() }
+        with(supportActionBar!!) {
+            setDisplayHomeAsUpEnabled(true)
+            setHomeAsUpIndicator(when (intent.getBooleanExtra(EXTRA_VIA_ACTION, false)) {
+                true -> R.drawable.action_back
+                false -> R.drawable.action_cancel
+            })
+        }
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                    .replace(R.id.content, SubscribeSearchFragment())
+                    .replace(android.R.id.content, SubscribeSearchFragment())
                     .commit()
         }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item?.itemId) {
+            android.R.id.home -> finish()
+        }
+        return super.onOptionsItemSelected(item)
     }
 
 }
