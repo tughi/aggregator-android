@@ -27,6 +27,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="72dp"
         android:layout_marginEnd="8dp"
+        android:ellipsize="end"
+        android:maxLines="1"
         android:textAppearance="?textAppearanceBody2"
         android:textColor="?android:textColorSecondary"
         app:layout_constraintEnd_toStartOf="@id/time"
