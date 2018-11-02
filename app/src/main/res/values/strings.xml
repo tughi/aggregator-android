@@ -4,8 +4,8 @@
     <string name="action__settings">Settings</string>
 
     <string name="action__save">Save</string>
-    <string name="action_subscribe">Subscribe</string>
-    <string name="action_unsubscribe">Unsubscribe</string>
+    <string name="action__subscribe">Subscribe</string>
+    <string name="action__unsubscribe">Unsubscribe</string>
 
     <string name="feed_settings">Feed settings</string>
     <string name="feed_settings__title">Title</string>

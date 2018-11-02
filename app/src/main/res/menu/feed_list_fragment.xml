@@ -5,7 +5,7 @@
     <item
         android:id="@+id/add"
         android:icon="@drawable/action_add"
-        android:title="@string/action_subscribe"
+        android:title="@string/action__subscribe"
         app:showAsAction="ifRoom" />
 
 </menu>
