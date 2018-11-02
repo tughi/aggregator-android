@@ -1,15 +1,18 @@
 <resources>
     <string name="app_name" translatable="false">Aggregator</string>
 
+    <string name="action__settings">Settings</string>
+
+    <string name="action__save">Save</string>
     <string name="action_subscribe">Subscribe</string>
     <string name="action_unsubscribe">Unsubscribe</string>
 
-    <string name="feeds_empty_message">You don\'t have any feeds yet.</string>
+    <string name="feed_settings">Feed settings</string>
+    <string name="feed_settings__title">Title</string>
+    <string name="feed_settings__update_mode">Update mode</string>
+    <string name="feed_settings__url">URL</string>
 
-    <string name="label_settings">Settings</string>
-    <string name="label_title">Title</string>
-    <string name="label_update_mode">Update mode</string>
-    <string name="label_url">URL</string>
+    <string name="feeds_empty_message">You don\'t have any feeds yet.</string>
 
     <string name="last_update_time__never">Updated: Never</string>
     <string name="last_update_time__since">Updated: %1$s</string>
@@ -29,8 +32,6 @@
     <string name="title_feeds">Feeds</string>
     <string name="title_find_feeds">Find feeds</string>
     <string name="title_tags">Tags</string>
-
-    <string name="feed_settings_title">Feed Settings</string>
 
     <string name="update_mode__default">Update mode: Default</string>
 

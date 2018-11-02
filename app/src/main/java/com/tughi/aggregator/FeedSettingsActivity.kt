@@ -3,16 +3,17 @@ package com.tughi.aggregator
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.viewmodels.FeedSettingsViewModel
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
 
 class FeedSettingsActivity : AppActivity() {
 
@@ -38,20 +39,29 @@ class FeedSettingsActivity : AppActivity() {
 
 }
 
-
+// TODO: add update_mode options
 class FeedSettingsFragment : Fragment() {
 
     companion object {
         const val ARG_FEED_ID = "feed_id"
     }
 
+    private lateinit var urlEditText: EditText
+    private lateinit var titleEditText: EditText
+
     lateinit var viewModel: FeedSettingsViewModel
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        setHasOptionsMenu(true)
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val fragmentView = inflater.inflate(R.layout.feed_settings_fragment, container, false)
 
-        val urlEditText = fragmentView.findViewById<EditText>(R.id.url)
-        val titleEditText = fragmentView.findViewById<EditText>(R.id.title)
+        urlEditText = fragmentView.findViewById(R.id.url)
+        titleEditText = fragmentView.findViewById(R.id.title)
         val updateModeTextView = fragmentView.findViewById<TextView>(R.id.update_mode)
 
         updateModeTextView.keyListener = null
@@ -79,6 +89,36 @@ class FeedSettingsFragment : Fragment() {
         })
 
         return fragmentView
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
+        super.onCreateOptionsMenu(menu, inflater)
+
+        inflater?.inflate(R.menu.feed_settings_fragment, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean = when (item?.itemId) {
+        R.id.save -> onSave()
+        else -> super.onOptionsItemSelected(item)
+    }
+
+    private fun onSave(): Boolean {
+        val url = urlEditText.text.toString().trim()
+        val title = titleEditText.text.toString().trim()
+
+        doAsync {
+            Database.from(App.instance).feedDao()
+                    .updateFeed(viewModel.feed.value!!.copy(
+                            url = url,
+                            customTitle = if (title.isEmpty()) null else title
+                    ))
+
+            uiThread {
+                activity?.finish()
+            }
+        }
+
+        return true
     }
 
 }

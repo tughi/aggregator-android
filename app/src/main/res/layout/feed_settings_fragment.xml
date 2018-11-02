@@ -17,7 +17,7 @@
             style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/label_url">
+            android:hint="@string/feed_settings__url">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/url"
@@ -32,7 +32,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:hint="@string/label_title">
+            android:hint="@string/feed_settings__title">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/title"
@@ -47,7 +47,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:hint="@string/label_update_mode">
+            android:hint="@string/feed_settings__update_mode">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/update_mode"

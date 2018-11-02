@@ -27,7 +27,7 @@
 
         <activity
             android:name=".FeedSettingsActivity"
-            android:label="@string/feed_settings_title"
+            android:label="@string/feed_settings"
             android:parentActivityName=".MainActivity" />
 
         <activity

@@ -91,7 +91,7 @@
         android:minWidth="48dp"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
-        android:text="@string/label_settings"
+        android:text="@string/action__settings"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/toggle"
         app:layout_constraintTop_toBottomOf="@id/details" />
