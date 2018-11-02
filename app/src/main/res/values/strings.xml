@@ -33,4 +33,9 @@
     <string name="feed_settings_title">Feed Settings</string>
 
     <string name="update_mode__default">Update mode: Default</string>
+
+    <string name="subscribe_feed__title">Title</string>
+    <string name="subscribe_feed__update_mode">Update mode</string>
+    <string name="subscribe_feed__update_mode__default">Default</string>
+    <string name="subscribe_feed__url">URL</string>
 </resources>

@@ -1,7 +1,9 @@
 package com.tughi.aggregator
 
+import android.content.Context
 import android.os.Bundle
 import android.view.*
+import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.tughi.aggregator.data.Database
@@ -39,7 +41,13 @@ class SubscribeFeedFragment : Fragment() {
 
         updateModeTextView = fragmentView.findViewById(R.id.update_mode)
         updateModeTextView.keyListener = null
-        updateModeTextView.setText(R.string.update_mode__default)
+        updateModeTextView.setOnFocusChangeListener { view, hasFocus ->
+            if (hasFocus) {
+                val inputMethodManager = view.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+            }
+        }
+        updateModeTextView.setText(R.string.subscribe_feed__update_mode__default)
 
         return fragmentView
     }
