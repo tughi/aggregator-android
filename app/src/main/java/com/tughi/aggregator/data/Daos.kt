@@ -1,7 +1,6 @@
 package com.tughi.aggregator.data
 
 import androidx.lifecycle.LiveData
-import androidx.paging.DataSource
 import androidx.room.*
 import java.io.Serializable
 
@@ -89,7 +88,7 @@ interface EntryDao {
         ORDER BY
             e.publish_time
     """)
-    fun getMyFeedUiEntries(since: Long): DataSource.Factory<Int, UiEntry>
+    fun getMyFeedUiEntries(since: Long): LiveData<List<UiEntry>>
 
     @Query("""
         SELECT
@@ -110,7 +109,7 @@ interface EntryDao {
         ORDER BY
             e.publish_time
     """)
-    fun getFeedUiEntries(feedId: Long, since: Long): DataSource.Factory<Int, UiEntry>
+    fun getFeedUiEntries(feedId: Long, since: Long): LiveData<List<UiEntry>>
 
     @Query("""
         UPDATE entries SET read_time = :readTime WHERE id = :entryId
@@ -145,17 +144,17 @@ data class UiEntry(
 )
 
 sealed class UiEntriesGetter {
-    abstract fun getUiEntries(entryDao: EntryDao): DataSource.Factory<Int, UiEntry>
+    abstract fun getUiEntries(entryDao: EntryDao): LiveData<List<UiEntry>>
 }
 
 class FeedUiEntriesGetter(private val feedId: Long, private val since: Long) : UiEntriesGetter() {
-    override fun getUiEntries(entryDao: EntryDao): DataSource.Factory<Int, UiEntry> {
+    override fun getUiEntries(entryDao: EntryDao): LiveData<List<UiEntry>> {
         return entryDao.getFeedUiEntries(feedId, since)
     }
 }
 
 class MyFeedUiEntriesGetter(private val since: Long) : UiEntriesGetter() {
-    override fun getUiEntries(entryDao: EntryDao): DataSource.Factory<Int, UiEntry> {
+    override fun getUiEntries(entryDao: EntryDao): LiveData<List<UiEntry>> {
         return entryDao.getMyFeedUiEntries(since)
     }
 }

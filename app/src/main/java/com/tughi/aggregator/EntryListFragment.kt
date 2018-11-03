@@ -18,9 +18,9 @@ import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.UiEntriesGetter
@@ -134,7 +134,7 @@ class EntryListRecyclerView(context: Context, attrs: AttributeSet) : RecyclerVie
 }
 
 
-private class EntriesAdapter : PagedListAdapter<UiEntry, EntryListItemViewHolder>(EntriesDiffUtil) {
+private class EntriesAdapter : ListAdapter<UiEntry, EntryListItemViewHolder>(EntriesDiffUtil) {
 
     override fun getItemCount(): Int {
         return super.getItemCount() * 2
