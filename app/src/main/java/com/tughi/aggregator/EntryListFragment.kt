@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.UiEntriesGetter
 import com.tughi.aggregator.data.UiEntry
+import com.tughi.aggregator.data.UiEntryType
 import com.tughi.aggregator.viewmodels.EntryListViewModel
 import org.jetbrains.anko.doAsync
 
@@ -118,9 +119,9 @@ class EntryListRecyclerView(context: Context, attrs: AttributeSet) : RecyclerVie
                 if (childCount > 1) {
                     val secondChild = getChildAt(1)
                     val secondChildViewHolder = getChildViewHolder(secondChild) as EntryListItemViewHolder
-                    val secondChildSection = secondChildViewHolder.entry.formattedDate.toString()
+                    val secondChildHeaderText = secondChildViewHolder.entry.formattedDate.toString()
 
-                    if (firstChildHeaderText != secondChildSection && secondChild.top < headerView.height) {
+                    if (firstChildHeaderText != secondChildHeaderText && secondChild.top < headerView.height) {
                         // snap overlay under the next section
                         canvas.translate(0f, (secondChild.top - headerView.height).toFloat())
                     }
@@ -136,44 +137,16 @@ class EntryListRecyclerView(context: Context, attrs: AttributeSet) : RecyclerVie
 
 private class EntriesAdapter : ListAdapter<UiEntry, EntryListItemViewHolder>(EntriesDiffUtil) {
 
-    override fun getItemCount(): Int {
-        return super.getItemCount() * 2
+    override fun getItemViewType(position: Int): Int = getItem(position).type.ordinal
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EntryListItemViewHolder = when (UiEntryType.values()[viewType]) {
+        UiEntryType.DIVIDER -> DividerViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.entry_list_divider, parent, false))
+        UiEntryType.HEADER -> HeaderViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.entry_list_header, parent, false))
+        UiEntryType.READ -> ReadEntryViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.entry_list_read_item, parent, false))
+        UiEntryType.UNREAD -> UnreadEntryViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.entry_list_unread_item, parent, false))
     }
 
-    override fun getItem(position: Int): UiEntry? {
-        return super.getItem(position / 2)
-    }
-
-    override fun getItemViewType(position: Int): Int {
-        if (position % 2 == 0) {
-            if (position != 0 && getItem(position)?.formattedDate == getItem(position - 2)?.formattedDate) {
-                return R.layout.entry_list_divider
-            }
-            return R.layout.entry_list_header
-        }
-        if (getItem(position)?.readTime != 0L) {
-            return R.layout.entry_list_read_item
-        }
-        return R.layout.entry_list_unread_item
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EntryListItemViewHolder = when (viewType) {
-        R.layout.entry_list_divider -> DividerViewHolder(LayoutInflater.from(parent.context).inflate(viewType, parent, false))
-        R.layout.entry_list_header -> HeaderViewHolder(LayoutInflater.from(parent.context).inflate(viewType, parent, false))
-        R.layout.entry_list_read_item -> ReadEntryViewHolder(LayoutInflater.from(parent.context).inflate(viewType, parent, false))
-        R.layout.entry_list_unread_item -> UnreadEntryViewHolder(LayoutInflater.from(parent.context).inflate(viewType, parent, false))
-        else -> throw IllegalStateException()
-    }
-
-    override fun onBindViewHolder(holder: EntryListItemViewHolder, position: Int) {
-        val entry = getItem(position)
-
-        if (entry != null) {
-            holder.onBind(entry)
-        } else {
-            holder.itemView.visibility = View.INVISIBLE
-        }
-    }
+    override fun onBindViewHolder(holder: EntryListItemViewHolder, position: Int) = holder.onBind(getItem(position))
 
 }
 

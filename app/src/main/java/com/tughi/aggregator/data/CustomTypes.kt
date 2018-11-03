@@ -5,6 +5,7 @@ import androidx.room.TypeConverter
 import com.tughi.aggregator.App
 
 object CustomTypeConverters {
+
     private const val DATE_FORMAT = DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_YEAR
     private const val TIME_FORMAT = DateUtils.FORMAT_SHOW_TIME
 
@@ -21,6 +22,13 @@ object CustomTypeConverters {
     fun formatTime(timestamp: Long): FormattedTime {
         return FormattedTime(DateUtils.formatDateTime(context, timestamp, TIME_FORMAT))
     }
+
+    @TypeConverter
+    @JvmStatic
+    fun convertUiEntryType(type: Int): UiEntryType {
+        return UiEntryType.values()[type]
+    }
+
 }
 
 data class FormattedDate(private val text: String) {
@@ -33,4 +41,11 @@ data class FormattedTime(private val text: String) {
     override fun toString(): String {
         return text
     }
+}
+
+enum class UiEntryType {
+    UNREAD,
+    READ,
+    DIVIDER,
+    HEADER
 }

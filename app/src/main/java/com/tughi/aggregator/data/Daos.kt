@@ -77,9 +77,10 @@ interface EntryDao {
             e.title,
             e.link,
             e.author,
-            e.publish_time as formatted_date,
-            e.publish_time as formatted_time,
-            e.read_time as read_time
+            e.publish_time AS formatted_date,
+            e.publish_time AS formatted_time,
+            e.read_time AS read_time,
+            e.read_time > 0 AS type
         FROM
             entries e
             LEFT JOIN feeds f ON f.id = e.feed_id
@@ -97,9 +98,10 @@ interface EntryDao {
             e.title,
             e.link,
             e.author,
-            e.publish_time as formatted_date,
-            e.publish_time as formatted_time,
-            e.read_time as read_time
+            e.publish_time AS formatted_date,
+            e.publish_time AS formatted_time,
+            e.read_time AS read_time,
+            e.read_time > 0 AS type
         FROM
             entries e
             LEFT JOIN feeds f ON f.id = e.feed_id
@@ -140,7 +142,10 @@ data class UiEntry(
         val formattedTime: FormattedTime,
 
         @ColumnInfo(name = "read_time")
-        val readTime: Long
+        val readTime: Long,
+
+        @ColumnInfo
+        val type: UiEntryType
 )
 
 sealed class UiEntriesGetter {
