@@ -3,6 +3,7 @@ package com.tughi.aggregator.data
 import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.room.*
+import java.io.Serializable
 
 @Dao
 interface FeedDao {
@@ -12,6 +13,9 @@ interface FeedDao {
 
     @Update
     fun updateFeed(feed: Feed): Int
+
+    @Query("DELETE FROM feeds WHERE id = :feedId")
+    fun deleteFeed(feedId: Long): Int
 
     @Query("SELECT id FROM feeds")
     fun queryFeedIds(): LongArray
@@ -53,7 +57,7 @@ data class UiFeed(
 
         @ColumnInfo
         val expanded: Boolean
-)
+) : Serializable
 
 @Dao
 interface EntryDao {

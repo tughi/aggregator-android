@@ -1,5 +1,6 @@
 package com.tughi.aggregator
 
+import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateUtils
@@ -9,15 +10,19 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.UiFeed
 import com.tughi.aggregator.viewmodels.FeedListViewModel
+import org.jetbrains.anko.doAsync
 
 class FeedListFragment : Fragment(), OnFeedClickedListener {
 
@@ -81,8 +86,18 @@ class FeedListFragment : Fragment(), OnFeedClickedListener {
                 .commit()
     }
 
-    override fun toggleFeed(feed: UiFeed) {
+    override fun onToggleFeed(feed: UiFeed) {
         viewModel.toggleFeed(feed)
+    }
+
+    override fun onUnsubscribeFeed(feed: UiFeed) {
+        UnsubscribeDialogFragment()
+                .apply {
+                    arguments = Bundle().apply {
+                        putSerializable(UnsubscribeDialogFragment.ARG_FEED, feed)
+                    }
+                }
+                .show(fragmentManager, "unsubscribe-dialog")
     }
 
     companion object {
@@ -90,6 +105,28 @@ class FeedListFragment : Fragment(), OnFeedClickedListener {
 
         fun newInstance(): FeedListFragment {
             return FeedListFragment()
+        }
+    }
+
+    class UnsubscribeDialogFragment : DialogFragment() {
+
+        companion object {
+            const val ARG_FEED = "feed"
+        }
+
+        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+            val feed = arguments!!.getSerializable(ARG_FEED) as UiFeed
+            return AlertDialog.Builder(context!!)
+                    .setTitle(feed.title)
+                    .setMessage(R.string.unsubscribe_feed__message)
+                    .setNegativeButton(R.string.action__no, null)
+                    .setPositiveButton(R.string.action__yes) { dialog, _ ->
+                        val context = (dialog as AlertDialog).context.applicationContext
+                        doAsync {
+                            Database.from(context).feedDao().deleteFeed(feed.id)
+                        }
+                    }
+                    .create()
         }
     }
 
@@ -113,7 +150,13 @@ private class FeedsAdapter(private val listener: OnFeedClickedListener) : ListAd
             listener.onFeedClicked(viewHolder.feed)
         }
         viewHolder.toggle.setOnClickListener {
-            listener.toggleFeed(viewHolder.feed)
+            listener.onToggleFeed(viewHolder.feed)
+        }
+
+        if (viewHolder is ExpandedFeedViewHolder) {
+            viewHolder.unsubscribeButton.setOnClickListener {
+                listener.onUnsubscribeFeed(viewHolder.feed)
+            }
         }
 
         return viewHolder
@@ -169,6 +212,7 @@ private class ExpandedFeedViewHolder(itemView: View) : FeedListItemViewHolder(it
     val lastUpdateTime: TextView = itemView.findViewById(R.id.last_update_time)
     val updateMode: TextView = itemView.findViewById(R.id.update_mode)
     val settingsButton: Button = itemView.findViewById(R.id.settings)
+    val unsubscribeButton: Button = itemView.findViewById(R.id.unsubscribe)
 
     init {
         settingsButton.setOnClickListener {
@@ -200,6 +244,8 @@ private interface OnFeedClickedListener {
 
     fun onFeedClicked(feed: UiFeed)
 
-    fun toggleFeed(feed: UiFeed)
+    fun onToggleFeed(feed: UiFeed)
+
+    fun onUnsubscribeFeed(feed: UiFeed)
 
 }
