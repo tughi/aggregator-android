@@ -170,9 +170,12 @@ private abstract class EntryViewHolder(itemView: View) : EntryListItemViewHolder
     val feedTitle: TextView = itemView.findViewById(R.id.feed_title)
     val time: TextView = itemView.findViewById(R.id.time)
     val author: TextView = itemView.findViewById(R.id.author)
+    val star: View = itemView.findViewById(R.id.star)
 
     init {
         itemView.setOnClickListener(this)
+
+        star.visibility = View.GONE
     }
 
     override fun onBind(entry: UiEntry) {
