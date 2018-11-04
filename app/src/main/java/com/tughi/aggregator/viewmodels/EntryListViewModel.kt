@@ -15,38 +15,40 @@ class EntryListViewModel(entriesGetter: UiEntriesGetter) : ViewModel() {
         private const val MSG_PROCESS_DATABASE_ENTRIES = 1
     }
 
-    private val databaseEntries: LiveData<List<UiEntry>> = entriesGetter.getUiEntries(Database.from(App.instance).entryDao())
-    private val processedDatabaseEntries = MutableLiveData<List<UiEntry>>()
+    private val databaseEntries: LiveData<Array<UiEntry>> = entriesGetter.getUiEntries(Database.from(App.instance).entryDao())
+    private val processedDatabaseEntries = MutableLiveData<Array<UiEntry>>()
 
     private val handlerThread = HandlerThread(javaClass.simpleName).also { it.start() }
     private val handler = Handler(handlerThread.looper, Handler.Callback {
         when (it.what) {
             MSG_PROCESS_DATABASE_ENTRIES -> {
                 @Suppress("UNCHECKED_CAST")
-                processDatabaseEntries(it.obj as List<UiEntry>)
+                processDatabaseEntries(it.obj as Array<UiEntry>)
             }
         }
         return@Callback true
     })
 
     val entries: LiveData<List<UiEntry>> = MediatorLiveData<List<UiEntry>>().apply {
-        addSource(databaseEntries) { list ->
-            if (list.isEmpty()) {
-                value = list
+        addSource(databaseEntries) { databaseEntries ->
+            if (databaseEntries.isEmpty()) {
+                value = databaseEntries.asList()
             } else {
                 handler.removeMessages(MSG_PROCESS_DATABASE_ENTRIES)
-                handler.sendMessage(handler.obtainMessage(MSG_PROCESS_DATABASE_ENTRIES, list))
+                handler.sendMessage(handler.obtainMessage(MSG_PROCESS_DATABASE_ENTRIES, databaseEntries))
             }
         }
-        addSource(processedDatabaseEntries, ::setValue)
+        addSource(processedDatabaseEntries) { entries ->
+            value = entries.asList()
+        }
     }
 
-    private fun processDatabaseEntries(list: List<UiEntry>) {
-        val oldList = processedDatabaseEntries.value
-        if (oldList != null && oldList.size == list.size * 2) {
+    private fun processDatabaseEntries(databaseEntries: Array<UiEntry>) {
+        val oldEntries = processedDatabaseEntries.value
+        if (oldEntries != null && oldEntries.size == databaseEntries.size * 2) {
             var changed = false
-            for (index in 0 until list.size) {
-                if (oldList[index * 2 + 1] != list[index]) {
+            for (index in 0 until databaseEntries.size) {
+                if (oldEntries[index * 2 + 1] != databaseEntries[index]) {
                     changed = true
                     break
                 }
@@ -56,26 +58,18 @@ class EntryListViewModel(entriesGetter: UiEntriesGetter) : ViewModel() {
             }
         }
 
-        val newList = ArrayList<UiEntry>(list.size * 2)
 
-        val firstEntry = list.first()
-        newList.add(firstEntry.copy(type = UiEntryType.HEADER))
-        newList.add(firstEntry)
-
-        var previousEntry = firstEntry
-        for (index in 1 until list.size) {
-            val entry = list[index]
-
-            newList.add(entry.copy(
-                    readTime = 0,
-                    type = if (entry.formattedDate == previousEntry.formattedDate) UiEntryType.DIVIDER else UiEntryType.HEADER
-            ))
-            newList.add(entry)
-
-            previousEntry = entry
+        val newEntries = Array(databaseEntries.size * 2) { index ->
+            when {
+                index == 0 -> databaseEntries[0].copy(readTime = 0, type = UiEntryType.HEADER)
+                index % 2 == 0 -> databaseEntries[index / 2].let {
+                    it.copy(readTime = 0, type = if (it.formattedDate != databaseEntries[index / 2 - 1].formattedDate) UiEntryType.HEADER else UiEntryType.DIVIDER)
+                }
+                else -> databaseEntries[index / 2]
+            }
         }
 
-        processedDatabaseEntries.postValue(newList)
+        processedDatabaseEntries.postValue(newEntries)
     }
 
     override fun onCleared() {

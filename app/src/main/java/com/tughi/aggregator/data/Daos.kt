@@ -89,7 +89,7 @@ interface EntryDao {
         ORDER BY
             e.publish_time
     """)
-    fun getMyFeedUiEntries(since: Long): LiveData<List<UiEntry>>
+    fun getMyFeedUiEntries(since: Long): LiveData<Array<UiEntry>>
 
     @Query("""
         SELECT
@@ -111,7 +111,7 @@ interface EntryDao {
         ORDER BY
             e.publish_time
     """)
-    fun getFeedUiEntries(feedId: Long, since: Long): LiveData<List<UiEntry>>
+    fun getFeedUiEntries(feedId: Long, since: Long): LiveData<Array<UiEntry>>
 
     @Query("""
         UPDATE entries SET read_time = :readTime WHERE id = :entryId
@@ -149,17 +149,17 @@ data class UiEntry(
 )
 
 sealed class UiEntriesGetter {
-    abstract fun getUiEntries(entryDao: EntryDao): LiveData<List<UiEntry>>
+    abstract fun getUiEntries(entryDao: EntryDao): LiveData<Array<UiEntry>>
 }
 
 class FeedUiEntriesGetter(private val feedId: Long, private val since: Long) : UiEntriesGetter() {
-    override fun getUiEntries(entryDao: EntryDao): LiveData<List<UiEntry>> {
+    override fun getUiEntries(entryDao: EntryDao): LiveData<Array<UiEntry>> {
         return entryDao.getFeedUiEntries(feedId, since)
     }
 }
 
 class MyFeedUiEntriesGetter(private val since: Long) : UiEntriesGetter() {
-    override fun getUiEntries(entryDao: EntryDao): LiveData<List<UiEntry>> {
+    override fun getUiEntries(entryDao: EntryDao): LiveData<Array<UiEntry>> {
         return entryDao.getMyFeedUiEntries(since)
     }
 }
