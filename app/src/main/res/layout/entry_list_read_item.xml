@@ -17,7 +17,6 @@
         android:id="@+id/selector"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:background="?attr/selectableItemBackground"
         android:paddingStart="?listPreferredItemPaddingLeft"
         android:paddingEnd="?listPreferredItemPaddingLeft">
 
