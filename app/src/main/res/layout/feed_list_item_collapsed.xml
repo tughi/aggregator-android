@@ -10,7 +10,7 @@
     android:focusable="true"
     android:minHeight="56dp">
 
-    <ImageView
+    <com.tughi.aggregator.widgets.InlineImageView
         android:id="@+id/favicon"
         android:layout_width="24dp"
         android:layout_height="24dp"
@@ -18,8 +18,8 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="32dp"
         android:background="?colorFaviconBackground"
-        android:baseline="18sp"
         android:padding="4dp"
+        android:textAppearance="?textAppearanceBody1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription"
@@ -30,6 +30,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
+        android:textAppearance="?textAppearanceBody1"
         android:textColor="?android:textColorSecondary"
         android:textSize="16sp"
         android:textStyle="normal"
@@ -45,6 +46,7 @@
         android:layout_marginStart="72dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        android:textAppearance="?textAppearanceBody1"
         android:textColor="?android:textColorPrimary"
         android:textSize="16sp"
         app:layout_constraintBaseline_toBaselineOf="@id/favicon"
