@@ -169,6 +169,7 @@ private abstract class EntryViewHolder(itemView: View) : EntryListItemViewHolder
     val title: TextView = itemView.findViewById(R.id.title)
     val feedTitle: TextView = itemView.findViewById(R.id.feed_title)
     val time: TextView = itemView.findViewById(R.id.time)
+    val author: TextView = itemView.findViewById(R.id.author)
 
     init {
         itemView.setOnClickListener(this)
@@ -177,8 +178,7 @@ private abstract class EntryViewHolder(itemView: View) : EntryListItemViewHolder
     override fun onBind(entry: UiEntry) {
         super.onBind(entry)
 
-        itemView.visibility = View.VISIBLE
-
+        author.visibility = View.GONE
         feedTitle.text = entry.feedTitle
         title.text = entry.title
         favicon.setImageResource(R.drawable.favicon_placeholder)

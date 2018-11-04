@@ -1,65 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<com.tughi.aggregator.widgets.EntryItemLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?selectableItemBackground"
     android:clickable="true"
-    android:focusable="true">
+    android:clipToPadding="false"
+    android:focusable="true"
+    android:paddingStart="?listPreferredItemPaddingLeft"
+    android:paddingTop="16dp"
+    android:paddingEnd="?listPreferredItemPaddingRight"
+    android:paddingBottom="16dp">
 
-    <TextView
-        android:id="@+id/time"
+    <FrameLayout
+        android:id="@+id/selector"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:textAppearance="?textAppearanceBody2"
-        android:textColor="?android:textColorSecondary"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="03:42" />
+        android:layout_height="match_parent"
+        android:background="?attr/selectableItemBackground"
+        android:paddingStart="?listPreferredItemPaddingLeft"
+        android:paddingEnd="?listPreferredItemPaddingLeft">
+
+        <View
+            android:layout_width="24dp"
+            android:layout_height="match_parent"
+            android:visibility="invisible" />
+
+    </FrameLayout>
 
     <TextView
         android:id="@+id/feed_title"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="72dp"
         android:layout_marginEnd="8dp"
         android:ellipsize="end"
         android:maxLines="1"
         android:textAppearance="?textAppearanceBody2"
         android:textColor="?android:textColorSecondary"
-        app:layout_constraintEnd_toStartOf="@id/time"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/time"
         tools:text="Aggregator News" />
+
+    <com.tughi.aggregator.widgets.InlineImageView
+        android:id="@+id/star"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_marginEnd="4dp"
+        android:scaleType="fitXY"
+        android:textAppearance="?textAppearanceBody2" />
+
+    <TextView
+        android:id="@+id/time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:textAppearance="?textAppearanceBody2"
+        android:textColor="?android:textColorSecondary"
+        tools:text="03:42" />
 
     <TextView
         android:id="@+id/title"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
+        android:layout_marginStart="56dp"
         android:textAppearance="?textAppearanceBody1"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@id/time"
-        app:layout_constraintStart_toStartOf="@id/feed_title"
-        app:layout_constraintTop_toBottomOf="@id/feed_title"
         tools:text="Aggregator 3.0 will be the best news reader out there!" />
 
-    <ImageView
+    <com.tughi.aggregator.widgets.InlineImageView
         android:id="@+id/favicon"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="32dp"
         android:background="?colorFaviconBackground"
-        android:baseline="17sp"
         android:padding="4dp"
-        app:layout_constraintBaseline_toBaselineOf="@id/title"
-        app:layout_constraintStart_toStartOf="parent"
+        android:scaleType="fitXY"
+        android:textAppearance="?textAppearanceBody1"
         tools:ignore="ContentDescription"
         tools:src="@drawable/favicon_placeholder" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <TextView
+        android:id="@+id/author"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        tools:text="by Tughi" />
+
+</com.tughi.aggregator.widgets.EntryItemLayout>
