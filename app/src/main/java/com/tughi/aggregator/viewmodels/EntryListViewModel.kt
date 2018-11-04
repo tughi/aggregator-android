@@ -42,6 +42,20 @@ class EntryListViewModel(entriesGetter: UiEntriesGetter) : ViewModel() {
     }
 
     private fun processDatabaseEntries(list: List<UiEntry>) {
+        val oldList = processedDatabaseEntries.value
+        if (oldList != null && oldList.size == list.size * 2) {
+            var changed = false
+            for (index in 0 until list.size) {
+                if (oldList[index * 2 + 1] != list[index]) {
+                    changed = true
+                    break
+                }
+            }
+            if (!changed) {
+                return
+            }
+        }
+
         val newList = ArrayList<UiEntry>(list.size * 2)
 
         val firstEntry = list.first()
@@ -61,21 +75,7 @@ class EntryListViewModel(entriesGetter: UiEntriesGetter) : ViewModel() {
             previousEntry = entry
         }
 
-        val oldList = processedDatabaseEntries.value
-        if (oldList == null || oldList.size != newList.size) {
-            processedDatabaseEntries.postValue(newList)
-        } else {
-            var changed = false
-            for (index in 0 until newList.size) {
-                if (oldList[index] != newList[index]) {
-                    changed = true
-                    break
-                }
-            }
-            if (changed) {
-                processedDatabaseEntries.postValue(newList)
-            }
-        }
+        processedDatabaseEntries.postValue(newList)
     }
 
     override fun onCleared() {
