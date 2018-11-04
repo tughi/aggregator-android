@@ -81,6 +81,8 @@
         android:layout_height="wrap_content"
         android:ellipsize="end"
         android:maxLines="1"
+        android:textAppearance="?textAppearanceBody2"
+        android:textColor="?android:textColorSecondary"
         tools:text="by Tughi" />
 
 </com.tughi.aggregator.widgets.EntryItemLayout>

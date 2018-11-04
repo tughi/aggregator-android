@@ -181,11 +181,17 @@ private abstract class EntryViewHolder(itemView: View) : EntryListItemViewHolder
     override fun onBind(entry: UiEntry) {
         super.onBind(entry)
 
-        author.visibility = View.GONE
         feedTitle.text = entry.feedTitle
         title.text = entry.title
         favicon.setImageResource(R.drawable.favicon_placeholder)
         time.text = entry.formattedTime.toString()
+
+        if (entry.author != null) {
+            author.visibility = View.VISIBLE
+            author.text = entry.author
+        } else {
+            author.visibility = View.GONE
+        }
     }
 
     override fun onClick(view: View?) {
