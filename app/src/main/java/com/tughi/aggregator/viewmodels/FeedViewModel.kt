@@ -4,12 +4,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.App
-import com.tughi.aggregator.data.Database
+import com.tughi.aggregator.data.AppDatabase
 import com.tughi.aggregator.data.Feed
 
 class FeedViewModel(feedId: Long) : ViewModel() {
 
-    val feed: LiveData<Feed> = Database.from(App.instance).feedDao().getFeed(feedId)
+    val feed: LiveData<Feed> = AppDatabase.from(App.instance).feedDao().getFeed(feedId)
 
     class Factory(private val feedId: Long) : ViewModelProvider.Factory {
 

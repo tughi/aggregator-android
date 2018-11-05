@@ -22,7 +22,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.tughi.aggregator.data.Database
+import com.tughi.aggregator.data.AppDatabase
 import com.tughi.aggregator.data.UiEntriesGetter
 import com.tughi.aggregator.data.UiEntry
 import com.tughi.aggregator.data.UiEntryType
@@ -202,7 +202,7 @@ private abstract class EntryViewHolder(itemView: View) : EntryListItemViewHolder
 
         val applicationContext = context.applicationContext
         doAsync {
-            Database.from(applicationContext).entryDao()
+            AppDatabase.from(applicationContext).entryDao()
                     .setReadTime(entry.id, System.currentTimeMillis())
         }
     }
@@ -254,7 +254,7 @@ private class SwipeItemTouchHelper : ItemTouchHelper.Callback() {
         if (viewHolder is EntryViewHolder) {
             val entry = viewHolder.entry
             doAsync {
-                Database.from(App.instance).entryDao()
+                AppDatabase.from(App.instance).entryDao()
                         .setReadTime(entry.id, if (entry.readTime != 0L) 0 else System.currentTimeMillis())
             }
         }

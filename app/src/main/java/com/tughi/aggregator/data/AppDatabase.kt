@@ -14,7 +14,7 @@ import com.tughi.aggregator.utilities.DATABASE_NAME
         version = 10
 )
 @TypeConverters(CustomTypeConverters::class)
-abstract class Database : RoomDatabase() {
+abstract class AppDatabase : RoomDatabase() {
 
     abstract fun entryDao(): EntryDao
     abstract fun feedDao(): FeedDao
@@ -22,16 +22,16 @@ abstract class Database : RoomDatabase() {
     companion object {
 
         @Volatile
-        private var instance: Database? = null
+        private var instance: AppDatabase? = null
 
-        fun from(context: Context): Database {
+        fun from(context: Context): AppDatabase {
             return instance ?: synchronized(this) {
                 instance ?: create(context).also { instance = it }
             }
         }
 
-        private fun create(context: Context): Database {
-            return Room.databaseBuilder(context, Database::class.java, DATABASE_NAME)
+        private fun create(context: Context): AppDatabase {
+            return Room.databaseBuilder(context, AppDatabase::class.java, DATABASE_NAME)
                     .fallbackToDestructiveMigration()
                     .build()
         }

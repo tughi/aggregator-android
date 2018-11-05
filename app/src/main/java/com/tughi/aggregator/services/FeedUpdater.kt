@@ -2,7 +2,7 @@ package com.tughi.aggregator.services
 
 import android.content.Context
 import android.util.Xml
-import com.tughi.aggregator.data.Database
+import com.tughi.aggregator.data.AppDatabase
 import com.tughi.aggregator.data.Entry
 import com.tughi.aggregator.feeds.FeedParser
 import com.tughi.aggregator.utilities.Http
@@ -13,7 +13,7 @@ import java.util.*
 
 class FeedUpdater(context: Context) {
 
-    private val database = Database.from(context)
+    private val database = AppDatabase.from(context)
 
     fun update(vararg feedIds: Long) {
         if (feedIds.isEmpty()) {

@@ -5,12 +5,12 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
-import com.tughi.aggregator.data.Database
+import com.tughi.aggregator.data.AppDatabase
 import com.tughi.aggregator.data.UiFeed
 
 class FeedListViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val databaseFeeds = Database.from(application).feedDao().getUiFeeds()
+    private val databaseFeeds = AppDatabase.from(application).feedDao().getUiFeeds()
 
     private val expandedFeedId = MutableLiveData<Long>()
 

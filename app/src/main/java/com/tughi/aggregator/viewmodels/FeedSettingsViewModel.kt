@@ -5,7 +5,7 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.App
-import com.tughi.aggregator.data.Database
+import com.tughi.aggregator.data.AppDatabase
 import com.tughi.aggregator.data.Feed
 
 class FeedSettingsViewModel(feedId: Long) : ViewModel() {
@@ -16,7 +16,7 @@ class FeedSettingsViewModel(feedId: Long) : ViewModel() {
         get() = liveFeed
 
     init {
-        val databaseFeed = Database.from(App.instance).feedDao().getFeed(feedId)
+        val databaseFeed = AppDatabase.from(App.instance).feedDao().getFeed(feedId)
 
         liveFeed.addSource(databaseFeed) { newFeed ->
             if (liveFeed.value == null) {
