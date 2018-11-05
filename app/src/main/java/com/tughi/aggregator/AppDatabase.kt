@@ -1,9 +1,10 @@
-package com.tughi.aggregator.data
+package com.tughi.aggregator
 
 import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.tughi.aggregator.data.*
 import com.tughi.aggregator.utilities.DATABASE_NAME
 
 @androidx.room.Database(
@@ -21,14 +22,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
 
-        @Volatile
-        private var instance: AppDatabase? = null
-
-        fun from(context: Context): AppDatabase {
-            return instance ?: synchronized(this) {
-                instance ?: create(context).also { instance = it }
-            }
-        }
+        val instance: AppDatabase by lazy { create(App.instance) }
 
         private fun create(context: Context): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, DATABASE_NAME)

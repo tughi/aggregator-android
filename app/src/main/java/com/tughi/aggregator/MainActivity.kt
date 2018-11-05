@@ -64,7 +64,7 @@ class MainActivity : AppActivity() {
         }
 
         if (savedInstanceState == null) {
-            FeedUpdater(this).update()
+            FeedUpdater().update()
 
             bottomNavigationView.selectedItemId = when (App.preferences.getString(PREF_ACTIVE_TAB, TAB_FEEDS)) {
                 TAB_FEEDS -> R.id.navigation_feeds

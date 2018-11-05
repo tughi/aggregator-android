@@ -19,7 +19,6 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.tughi.aggregator.data.AppDatabase
 import com.tughi.aggregator.data.UiFeed
 import com.tughi.aggregator.viewmodels.FeedListViewModel
 import org.jetbrains.anko.doAsync
@@ -121,9 +120,8 @@ class FeedListFragment : Fragment(), OnFeedClickedListener {
                     .setMessage(R.string.unsubscribe_feed__message)
                     .setNegativeButton(R.string.action__no, null)
                     .setPositiveButton(R.string.action__yes) { dialog, _ ->
-                        val context = (dialog as AlertDialog).context.applicationContext
                         doAsync {
-                            AppDatabase.from(context).feedDao().deleteFeed(feed.id)
+                            AppDatabase.instance.feedDao().deleteFeed(feed.id)
                         }
                     }
                     .create()

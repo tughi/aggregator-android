@@ -10,7 +10,6 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import com.tughi.aggregator.data.AppDatabase
 import com.tughi.aggregator.viewmodels.FeedSettingsViewModel
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
@@ -107,7 +106,7 @@ class FeedSettingsFragment : Fragment() {
         val title = titleEditText.text.toString().trim()
 
         doAsync {
-            AppDatabase.from(App.instance).feedDao()
+            AppDatabase.instance.feedDao()
                     .updateFeed(viewModel.feed.value!!.copy(
                             url = url,
                             customTitle = if (title.isEmpty()) null else title

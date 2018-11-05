@@ -1,8 +1,7 @@
 package com.tughi.aggregator.services
 
-import android.content.Context
 import android.util.Xml
-import com.tughi.aggregator.data.AppDatabase
+import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.data.Entry
 import com.tughi.aggregator.feeds.FeedParser
 import com.tughi.aggregator.utilities.Http
@@ -11,9 +10,9 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.util.*
 
-class FeedUpdater(context: Context) {
+class FeedUpdater {
 
-    private val database = AppDatabase.from(context)
+    private val database = AppDatabase.instance
 
     fun update(vararg feedIds: Long) {
         if (feedIds.isEmpty()) {

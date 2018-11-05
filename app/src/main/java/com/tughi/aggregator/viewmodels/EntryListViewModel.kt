@@ -3,8 +3,7 @@ package com.tughi.aggregator.viewmodels
 import android.os.Handler
 import android.os.HandlerThread
 import androidx.lifecycle.*
-import com.tughi.aggregator.App
-import com.tughi.aggregator.data.AppDatabase
+import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.data.UiEntriesGetter
 import com.tughi.aggregator.data.UiEntry
 import com.tughi.aggregator.data.UiEntryType
@@ -15,7 +14,7 @@ class EntryListViewModel(entriesGetter: UiEntriesGetter) : ViewModel() {
         private const val MSG_PROCESS_DATABASE_ENTRIES = 1
     }
 
-    private val databaseEntries: LiveData<Array<UiEntry>> = entriesGetter.getUiEntries(AppDatabase.from(App.instance).entryDao())
+    private val databaseEntries: LiveData<Array<UiEntry>> = entriesGetter.getUiEntries(AppDatabase.instance.entryDao())
     private val processedDatabaseEntries = MutableLiveData<Array<UiEntry>>()
 
     private val handlerThread = HandlerThread(javaClass.simpleName).also { it.start() }
