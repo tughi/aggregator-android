@@ -41,6 +41,10 @@
             </intent-filter>
         </activity>
 
+        <service
+            android:name=".services.FaviconUpdaterService"
+            android:exported="false" />
+
     </application>
 
 </manifest>

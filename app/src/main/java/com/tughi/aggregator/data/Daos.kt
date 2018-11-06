@@ -13,6 +13,9 @@ interface FeedDao {
     @Update
     fun updateFeed(feed: Feed): Int
 
+    @Query("UPDATE feeds SET favicon_url = :faviconUrl, favicon_content = :faviconContent WHERE id = :id")
+    fun updateFeed(id: Long, faviconUrl: String, faviconContent: ByteArray): Int
+
     @Query("DELETE FROM feeds WHERE id = :feedId")
     fun deleteFeed(feedId: Long): Int
 

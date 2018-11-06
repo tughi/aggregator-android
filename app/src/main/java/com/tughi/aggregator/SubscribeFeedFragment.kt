@@ -7,6 +7,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.tughi.aggregator.data.Feed
+import com.tughi.aggregator.services.FaviconUpdaterService
 import com.tughi.aggregator.services.FeedUpdater
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
@@ -77,6 +78,8 @@ class SubscribeFeedFragment : Fragment() {
 
                     uiThread {
                         FeedUpdater().update(feedId)
+
+                        FaviconUpdaterService.start(feedId)
 
                         activity?.finish()
                     }

@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import com.tughi.aggregator.services.FaviconUpdaterService
 import com.tughi.aggregator.viewmodels.FeedSettingsViewModel
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
@@ -105,15 +106,20 @@ class FeedSettingsFragment : Fragment() {
         val url = urlEditText.text.toString().trim()
         val title = titleEditText.text.toString().trim()
 
-        doAsync {
-            AppDatabase.instance.feedDao()
-                    .updateFeed(viewModel.feed.value!!.copy(
-                            url = url,
-                            customTitle = if (title.isEmpty()) null else title
-                    ))
+        val feed = viewModel.feed.value
+        if (feed != null) {
+            doAsync {
+                AppDatabase.instance.feedDao()
+                        .updateFeed(feed.copy(
+                                url = url,
+                                customTitle = if (title.isEmpty()) null else title
+                        ))
 
-            uiThread {
-                activity?.finish()
+                uiThread {
+                    FaviconUpdaterService.start(feed.id!!)
+
+                    activity?.finish()
+                }
             }
         }
 

@@ -26,6 +26,12 @@ data class Feed(
         @ColumnInfo(name = "custom_title")
         val customTitle: String? = null,
 
+        @ColumnInfo(name = "favicon_url")
+        val faviconUrl: String? = null,
+
+        @ColumnInfo(name = "favicon_content")
+        val faviconContent: ByteArray? = null,
+
         @ColumnInfo(name = "update_mode")
         val updateMode: String = DEFAULT_UPDATE_MODE,
 
@@ -48,6 +54,38 @@ data class Feed(
             updateMode = this.updateMode,
             updateTime = updateTime
     )
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Feed
+
+        if (id != other.id) return false
+        if (url != other.url) return false
+        if (title != other.title) return false
+        if (link != other.link) return false
+        if (language != other.language) return false
+        if (customTitle != other.customTitle) return false
+        if (faviconUrl != other.faviconUrl) return false
+        if (updateMode != other.updateMode) return false
+        if (updateTime != other.updateTime) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id?.hashCode() ?: 0
+        result = 31 * result + url.hashCode()
+        result = 31 * result + title.hashCode()
+        result = 31 * result + (link?.hashCode() ?: 0)
+        result = 31 * result + (language?.hashCode() ?: 0)
+        result = 31 * result + (customTitle?.hashCode() ?: 0)
+        result = 31 * result + (faviconUrl?.hashCode() ?: 0)
+        result = 31 * result + updateMode.hashCode()
+        result = 31 * result + updateTime.hashCode()
+        return result
+    }
 }
 
 @Entity(
