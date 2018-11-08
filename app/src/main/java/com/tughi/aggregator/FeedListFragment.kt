@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.data.UiFeed
+import com.tughi.aggregator.utilities.Favicons
 import com.tughi.aggregator.viewmodels.FeedListViewModel
 import org.jetbrains.anko.doAsync
 
@@ -190,7 +191,6 @@ private abstract class FeedListItemViewHolder(itemView: View) : RecyclerView.Vie
     open fun onBind(feed: UiFeed) {
         this.feed = feed
 
-        favicon.setImageResource(R.drawable.favicon_placeholder)
         title.text = feed.title
         if (feed.unreadEntryCount == 0) {
             count.text = ""
@@ -199,6 +199,8 @@ private abstract class FeedListItemViewHolder(itemView: View) : RecyclerView.Vie
             count.text = feed.unreadEntryCount.toString()
             count.visibility = View.VISIBLE
         }
+
+        Favicons.load(feed.id, feed.faviconUrl, favicon)
     }
 
 }
