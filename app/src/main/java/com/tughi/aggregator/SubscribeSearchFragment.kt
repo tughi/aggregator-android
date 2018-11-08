@@ -108,8 +108,9 @@ class SubscribeSearchFragment : Fragment(), OnSubscribeSearchFeedClickListener {
     override fun onFeedClicked(feed: Feed) {
         val activity = activity as SubscribeActivity
         val arguments = Bundle().apply {
-            putString(SubscribeFeedFragment.ARG_TITLE, feed.title)
             putString(SubscribeFeedFragment.ARG_URL, feed.url)
+            putString(SubscribeFeedFragment.ARG_TITLE, feed.title)
+            putString(SubscribeFeedFragment.ARG_LINK, feed.link)
         }
         activity.supportFragmentManager.beginTransaction()
                 .replace(id, SubscribeFeedFragment().also { it.arguments = arguments })

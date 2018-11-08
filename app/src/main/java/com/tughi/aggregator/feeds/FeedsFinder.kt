@@ -15,7 +15,7 @@ class FeedsFinder(private val listener: Listener) {
 
         val feedParser = FeedParser(contentUrl, object : FeedParser.Listener() {
             override fun onParsedFeed(title: String, link: String?, language: String?) {
-                listener.onFeedFound(contentUrl, title)
+                listener.onFeedFound(url = contentUrl, title = title, link = link)
             }
         })
 
@@ -53,8 +53,9 @@ class FeedsFinder(private val listener: Listener) {
                     val href = attributes["href"]
                     if (href != null) {
                         listener.onFeedFound(
-                                href.toAbsoluteUrl(contentUrl),
-                                attributes["title"] ?: "Untitled feed"
+                                url = href.toAbsoluteUrl(contentUrl),
+                                title = attributes["title"] ?: "Untitled feed",
+                                link = contentUrl
                         )
                     }
                 }
@@ -114,7 +115,7 @@ class FeedsFinder(private val listener: Listener) {
     }
 
     interface Listener {
-        fun onFeedFound(url: String, title: String)
+        fun onFeedFound(url: String, title: String, link: String?)
     }
 
     private class NotClosableReader(reader: Reader, bufferSize: Int) : BufferedReader(reader, bufferSize) {

@@ -118,10 +118,11 @@ class SubscribeSearchViewModel : ViewModel(), AnkoLogger {
             onProgressUpdate(result)
         }
 
-        override fun onFeedFound(url: String, title: String) {
+        override fun onFeedFound(url: String, title: String, link: String?) {
             feeds.add(Feed(
                     url = url,
-                    title = title
+                    title = title,
+                    link = link
             ))
             publishProgress(state.cloneWith())
         }

@@ -15,8 +15,9 @@ import org.jetbrains.anko.uiThread
 class SubscribeFeedFragment : Fragment() {
 
     companion object {
-        const val ARG_TITLE = "title"
         const val ARG_URL = "url"
+        const val ARG_TITLE = "title"
+        const val ARG_LINK = "link"
     }
 
     private lateinit var urlTextView: TextView
@@ -67,13 +68,16 @@ class SubscribeFeedFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item?.itemId) {
             R.id.add -> {
-                val title = arguments!!.getString(ARG_TITLE)!!
+                val arguments = arguments!!
+                val title = arguments.getString(ARG_TITLE)!!
                 val customTitle = titleTextView.text.toString()
+                val link = arguments.getString(ARG_LINK)!!
                 doAsync {
                     val feedId = AppDatabase.instance.feedDao().insertFeed(Feed(
                             url = urlTextView.text.toString(),
                             title = title,
-                            customTitle = if (customTitle != title) customTitle else null
+                            customTitle = if (customTitle != title) customTitle else null,
+                            link = link
                     ))
 
                     uiThread {

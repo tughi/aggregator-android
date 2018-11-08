@@ -29,8 +29,7 @@ class FaviconUpdaterService : IntentService("FaviconUpdater") {
 
         var icon = detectWebsiteFavicon(feedLink)
         if (icon == null) {
-            // TODO: try "/favicon.ico"
-            icon = detectWebsiteFavicon(feedLink)
+            icon = detectRootFavicon(feedLink)
         }
 
         if (icon?.content != null) {
@@ -87,7 +86,23 @@ class FaviconUpdaterService : IntentService("FaviconUpdater") {
             }
         }
 
-        // download first available icon
+        return downloadIcon(icons)
+    }
+
+    private val baseUrlPattern = Pattern.compile("(https?://[^/]+).*")
+
+    private fun detectRootFavicon(url: String): Icon? {
+        val matcher = baseUrlPattern.matcher(url)
+        if (matcher.matches()) {
+            val faviconUrl = matcher.group(1) + "/favicon.ico"
+
+            return downloadIcon(listOf(Icon(faviconUrl)))
+        }
+
+        return null
+    }
+
+    private fun downloadIcon(icons: List<Icon>): Icon? {
         for (icon in icons) {
             val iconRequest = Request.Builder().url(icon.url).build()
             val iconResponse = Http.client.newCall(iconRequest).execute()
