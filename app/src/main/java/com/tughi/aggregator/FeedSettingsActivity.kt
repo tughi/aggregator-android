@@ -110,13 +110,14 @@ class FeedSettingsFragment : Fragment() {
         if (feed != null) {
             doAsync {
                 AppDatabase.instance.feedDao()
-                        .updateFeed(feed.copy(
+                        .updateFeed(
+                                id = feed.id!!,
                                 url = url,
                                 customTitle = if (title.isEmpty()) null else title
-                        ))
+                        )
 
                 uiThread {
-                    FaviconUpdaterService.start(feed.id!!)
+                    FaviconUpdaterService.start(feed.id)
 
                     activity?.finish()
                 }

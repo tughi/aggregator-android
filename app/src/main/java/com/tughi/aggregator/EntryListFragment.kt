@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.data.UiEntriesGetter
 import com.tughi.aggregator.data.UiEntry
 import com.tughi.aggregator.data.UiEntryType
+import com.tughi.aggregator.utilities.Favicons
 import com.tughi.aggregator.viewmodels.EntryListViewModel
 import org.jetbrains.anko.doAsync
 
@@ -182,7 +183,6 @@ private abstract class EntryViewHolder(itemView: View) : EntryListItemViewHolder
 
         feedTitle.text = entry.feedTitle
         title.text = entry.title
-        favicon.setImageResource(R.drawable.favicon_placeholder)
         time.text = entry.formattedTime.toString()
 
         if (entry.author != null) {
@@ -191,6 +191,8 @@ private abstract class EntryViewHolder(itemView: View) : EntryListItemViewHolder
         } else {
             author.visibility = View.GONE
         }
+
+        Favicons.load(entry.feedId, entry.faviconUrl, favicon)
     }
 
     override fun onClick(view: View?) {
@@ -199,7 +201,6 @@ private abstract class EntryViewHolder(itemView: View) : EntryListItemViewHolder
         val context = itemView.context
         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(entry.link)))
 
-        val applicationContext = context.applicationContext
         doAsync {
             AppDatabase.instance.entryDao()
                     .setReadTime(entry.id, System.currentTimeMillis())

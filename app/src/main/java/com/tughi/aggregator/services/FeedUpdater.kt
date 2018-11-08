@@ -52,13 +52,14 @@ class FeedUpdater {
                             language: String?
                     ) {
                         val now = System.currentTimeMillis()
-                        val updated = feedDao.updateFeed(feed.updated(
+                        val updated = feedDao.updateFeed(
+                                id = feedId,
                                 url = feed.url, // TODO: save URL for permanently redirected feed
                                 title = title,
                                 link = link,
                                 language = language,
                                 updateTime = now
-                        ))
+                        )
                         if (updated != 1) {
                             // TODO: report that the feed couldn't be updated
                         }

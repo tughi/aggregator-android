@@ -10,8 +10,19 @@ interface FeedDao {
     @Insert
     fun insertFeed(feed: Feed): Long
 
-    @Update
-    fun updateFeed(feed: Feed): Int
+    @Query("""
+        UPDATE feeds SET
+            url = :url,
+            title = :title,
+            link = :link,
+            language = :language,
+            update_time = :updateTime
+        WHERE id = :id
+    """)
+    fun updateFeed(id: Long, url: String, title: String, link: String?, language: String?, updateTime: Long): Int
+
+    @Query("UPDATE feeds SET url = :url, custom_title = :customTitle WHERE id = :id")
+    fun updateFeed(id: Long, url: String, customTitle: String?): Int
 
     @Query("UPDATE feeds SET favicon_url = :faviconUrl, favicon_content = :faviconContent WHERE id = :id")
     fun updateFeed(id: Long, faviconUrl: String, faviconContent: ByteArray): Int
@@ -32,6 +43,7 @@ interface FeedDao {
         SELECT
             f.id,
             COALESCE(f.custom_title, f.title) AS title,
+            f.favicon_url,
             f.update_time,
             (SELECT COUNT(1) FROM entries e WHERE f.id = e.feed_id AND e.read_time = 0) AS unread_entry_count,
             0 AS expanded
@@ -50,6 +62,9 @@ data class UiFeed(
 
         @ColumnInfo
         val title: String,
+
+        @ColumnInfo(name = "favicon_url")
+        val faviconUrl: String?,
 
         @ColumnInfo(name = "update_time")
         val updateTime: Long,
@@ -76,7 +91,9 @@ interface EntryDao {
     @Query("""
         SELECT
             e.id,
+            f.id AS feed_id,
             COALESCE(f.custom_title, f.title) AS feed_title,
+            f.favicon_url,
             e.title,
             e.link,
             e.author,
@@ -97,7 +114,9 @@ interface EntryDao {
     @Query("""
         SELECT
             e.id,
+            f.id AS feed_id,
             COALESCE(f.custom_title, f.title) AS feed_title,
+            f.favicon_url,
             e.title,
             e.link,
             e.author,
@@ -126,8 +145,14 @@ data class UiEntry(
         @ColumnInfo
         val id: Long,
 
+        @ColumnInfo(name = "feed_id")
+        val feedId: Long,
+
         @ColumnInfo(name = "feed_title")
         val feedTitle: String,
+
+        @ColumnInfo(name = "favicon_url")
+        val faviconUrl: String?,
 
         @ColumnInfo
         val title: String,
