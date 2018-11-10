@@ -1,6 +1,8 @@
 package com.tughi.aggregator
 
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.widget.TextView
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -18,8 +20,8 @@ private const val TAB_TAGS = "tags"
 class MainActivity : AppActivity() {
 
     private lateinit var bottomNavigationView: BottomNavigationView
-    private lateinit var drawerView: DrawerLayout
-    private lateinit var drawerNavigationView: NavigationView
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var drawer: NavigationView
 
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         var tabName: String = TAB_FEEDS
@@ -48,19 +50,23 @@ class MainActivity : AppActivity() {
 
         setContentView(R.layout.main_activity)
 
-        drawerView = findViewById(R.id.drawer)
+        drawerLayout = findViewById(R.id.drawer_layout)
 
-        bottomNavigationView = drawerView.findViewById(R.id.bottom_navigation)
+        bottomNavigationView = drawerLayout.findViewById(R.id.bottom_navigation)
         bottomNavigationView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
 
-        drawerNavigationView = drawerView.findViewById(R.id.drawer_navigation)
-        drawerNavigationView.inflateHeaderView(R.layout.drawer_header)
-        drawerNavigationView.setNavigationItemSelectedListener {
+        drawer = drawerLayout.findViewById(R.id.drawer)
+        drawer.setNavigationItemSelectedListener {
             when (it.itemId) {
                 R.id.dark_theme -> App.theme.value = APP_THEME_DARK
                 R.id.light_theme -> App.theme.value = APP_THEME_LIGHT
             }
             return@setNavigationItemSelectedListener true
+        }
+
+        LayoutInflater.from(this).inflate(R.layout.drawer_header, drawer, false).let {
+            it.findViewById<TextView>(R.id.version).text = BuildConfig.VERSION_NAME
+            drawer.addHeaderView(it)
         }
 
         if (savedInstanceState == null) {
@@ -85,19 +91,15 @@ class MainActivity : AppActivity() {
     }
 
     override fun onBackPressed() {
-        if (drawerView.isDrawerOpen(drawerNavigationView)) {
-            closeDrawer()
+        if (drawerLayout.isDrawerOpen(drawer)) {
+            drawerLayout.closeDrawer(drawer)
         } else {
             super.onBackPressed()
         }
     }
 
     fun openDrawer() {
-        drawerView.openDrawer(drawerNavigationView)
-    }
-
-    fun closeDrawer() {
-        drawerView.closeDrawer(drawerNavigationView)
+        drawerLayout.openDrawer(drawer)
     }
 
 }
