@@ -9,8 +9,9 @@ import androidx.fragment.app.Fragment
 import com.tughi.aggregator.data.Feed
 import com.tughi.aggregator.services.FaviconUpdaterService
 import com.tughi.aggregator.services.FeedUpdater
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class SubscribeFeedFragment : Fragment() {
 
@@ -72,7 +73,7 @@ class SubscribeFeedFragment : Fragment() {
                 val title = arguments.getString(ARG_TITLE)!!
                 val customTitle = titleTextView.text.toString()
                 val link = arguments.getString(ARG_LINK)!!
-                doAsync {
+                GlobalScope.launch {
                     val feedId = AppDatabase.instance.feedDao().insertFeed(Feed(
                             url = urlTextView.text.toString(),
                             title = title,
@@ -80,7 +81,7 @@ class SubscribeFeedFragment : Fragment() {
                             link = link
                     ))
 
-                    uiThread {
+                    launch(Dispatchers.Main) {
                         FeedUpdater().update(feedId)
 
                         FaviconUpdaterService.start(feedId)

@@ -6,8 +6,9 @@ import android.widget.ImageView
 import androidx.collection.LruCache
 import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.R
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
 object Favicons {
@@ -40,12 +41,12 @@ object Favicons {
                     val placeholder = target.drawable
                     val targetReference = WeakReference(target)
 
-                    doAsync {
+                    GlobalScope.launch {
                         val feedDao = AppDatabase.instance.feedDao()
                         val feed = feedDao.queryFeed(feedId)
                         val bitmap = if (feed.faviconContent != null) BitmapFactory.decodeByteArray(feed.faviconContent, 0, feed.faviconContent.size) else null
 
-                        uiThread {
+                        launch(Dispatchers.Main) {
                             if (bitmap != null) {
                                 if (cache.get(faviconUrl) == null) {
                                     cache.put(faviconUrl, bitmap)

@@ -12,8 +12,9 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.tughi.aggregator.services.FaviconUpdaterService
 import com.tughi.aggregator.viewmodels.FeedSettingsViewModel
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class FeedSettingsActivity : AppActivity() {
 
@@ -108,7 +109,7 @@ class FeedSettingsFragment : Fragment() {
 
         val feed = viewModel.feed.value
         if (feed != null) {
-            doAsync {
+            GlobalScope.launch {
                 AppDatabase.instance.feedDao()
                         .updateFeed(
                                 id = feed.id!!,
@@ -116,7 +117,7 @@ class FeedSettingsFragment : Fragment() {
                                 customTitle = if (title.isEmpty()) null else title
                         )
 
-                uiThread {
+                launch(Dispatchers.Main) {
                     FaviconUpdaterService.start(feed.id)
 
                     activity?.finish()

@@ -22,7 +22,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.data.UiFeed
 import com.tughi.aggregator.utilities.Favicons
 import com.tughi.aggregator.viewmodels.FeedListViewModel
-import org.jetbrains.anko.doAsync
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class FeedListFragment : Fragment(), OnFeedClickedListener {
 
@@ -121,7 +122,7 @@ class FeedListFragment : Fragment(), OnFeedClickedListener {
                     .setMessage(R.string.unsubscribe_feed__message)
                     .setNegativeButton(R.string.action__no, null)
                     .setPositiveButton(R.string.action__yes) { dialog, _ ->
-                        doAsync {
+                        GlobalScope.launch {
                             AppDatabase.instance.feedDao().deleteFeed(feed.id)
                         }
                     }

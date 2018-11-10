@@ -1,6 +1,5 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 android {
@@ -46,8 +45,8 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:3.10.0'
     implementation 'com.tughi.sax:sax-framework:2.0'
     implementation 'commons-codec:commons-codec:1.10'
-    implementation "org.jetbrains.anko:anko-common:$anko_version"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1'
 
     kapt 'androidx.room:room-compiler:2.0.0'
 }

@@ -27,7 +27,8 @@ import com.tughi.aggregator.data.UiEntry
 import com.tughi.aggregator.data.UiEntryType
 import com.tughi.aggregator.utilities.Favicons
 import com.tughi.aggregator.viewmodels.EntryListViewModel
-import org.jetbrains.anko.doAsync
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 abstract class EntryListFragment : Fragment() {
 
@@ -201,7 +202,7 @@ private abstract class EntryViewHolder(itemView: View) : EntryListItemViewHolder
         val context = itemView.context
         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(entry.link)))
 
-        doAsync {
+        GlobalScope.launch {
             AppDatabase.instance.entryDao()
                     .setReadTime(entry.id, System.currentTimeMillis())
         }
@@ -253,7 +254,7 @@ private class SwipeItemTouchHelper : ItemTouchHelper.Callback() {
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
         if (viewHolder is EntryViewHolder) {
             val entry = viewHolder.entry
-            doAsync {
+            GlobalScope.launch {
                 AppDatabase.instance.entryDao()
                         .setReadTime(entry.id, if (entry.readTime != 0L) 0 else System.currentTimeMillis())
             }

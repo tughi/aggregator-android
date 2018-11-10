@@ -9,12 +9,11 @@ import com.tughi.aggregator.utilities.Http
 import okhttp3.Call
 import okhttp3.Request
 import okhttp3.Response
-import org.jetbrains.anko.AnkoLogger
 import java.io.IOException
 import java.net.NoRouteToHostException
 import java.net.SocketTimeoutException
 
-class SubscribeSearchViewModel : ViewModel(), AnkoLogger {
+class SubscribeSearchViewModel : ViewModel() {
 
     val state = MutableLiveData<State>().apply {
         value = SubscribeSearchViewModel.State(null, false, emptyList(), null)

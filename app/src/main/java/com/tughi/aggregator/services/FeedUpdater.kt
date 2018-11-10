@@ -5,9 +5,10 @@ import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.data.Entry
 import com.tughi.aggregator.feeds.FeedParser
 import com.tughi.aggregator.utilities.Http
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import okhttp3.Request
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
 import java.util.*
 
 class FeedUpdater {
@@ -16,15 +17,15 @@ class FeedUpdater {
 
     fun update(vararg feedIds: Long) {
         if (feedIds.isEmpty()) {
-            doAsync {
+            GlobalScope.launch {
                 val feedIds2 = database.feedDao().queryFeedIds()
-                uiThread {
+                launch(Dispatchers.Main) {
                     update(*feedIds2)
                 }
             }
         } else {
             for (feedId in feedIds) {
-                doAsync {
+                GlobalScope.launch {
                     update(feedId)
                 }
             }
