@@ -68,7 +68,6 @@
         android:id="@+id/favicon"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:background="?colorFaviconBackground"
         android:padding="4dp"
         android:scaleType="fitXY"
         android:textAppearance="?textAppearanceBody1"
