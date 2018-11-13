@@ -82,7 +82,7 @@ class SubscribeFeedFragment : Fragment() {
                     ))
 
                     launch(Dispatchers.Main) {
-                        FeedUpdater().update(feedId)
+                        FeedUpdater.update(feedId)
 
                         FaviconUpdaterService.start(feedId)
 

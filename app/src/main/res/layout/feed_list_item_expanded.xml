@@ -1,135 +1,139 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?colorEntryListHeader"
-    android:clickable="true"
-    android:focusable="true"
-    android:foreground="?selectableItemBackground"
-    android:minHeight="56dp">
+    android:background="?colorEntryListHeader">
 
-    <com.tughi.aggregator.widgets.InlineImageView
-        android:id="@+id/favicon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_marginStart="?listPreferredItemPaddingLeft"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="32dp"
-        android:padding="4dp"
-        android:textAppearance="?textAppearanceBody1"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="ContentDescription"
-        tools:src="@drawable/favicon_placeholder" />
-
-    <TextView
-        android:id="@+id/count"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/coordinatorLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:textAppearance="?textAppearanceBody1"
-        android:textColor="?android:textColorSecondary"
-        android:textSize="16sp"
-        android:textStyle="normal"
-        app:layout_constraintBaseline_toBaselineOf="@id/favicon"
-        app:layout_constraintEnd_toStartOf="@id/toggle"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="42" />
+        android:background="?selectableItemBackground"
+        android:minHeight="56dp">
 
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="72dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:textAppearance="?textAppearanceBody1"
-        android:textColor="?android:textColorPrimary"
-        android:textSize="16sp"
-        app:layout_constraintBaseline_toBaselineOf="@id/favicon"
-        app:layout_constraintEnd_toStartOf="@id/count"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:text="Aggregator News" />
-
-    <LinearLayout
-        android:id="@+id/details"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="4dp"
-        android:orientation="vertical"
-        app:layout_constraintEnd_toEndOf="@id/count"
-        app:layout_constraintStart_toStartOf="@+id/title"
-        app:layout_constraintTop_toBottomOf="@+id/title">
+        <com.tughi.aggregator.widgets.InlineImageView
+            android:id="@+id/favicon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="?listPreferredItemPaddingLeft"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="32dp"
+            android:padding="4dp"
+            android:textAppearance="?textAppearanceBody1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/favicon_placeholder" />
 
         <TextView
-            android:id="@+id/last_update_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?textAppearanceBody2"
-            android:textColor="?android:textColorSecondary"
-            android:textSize="14sp"
-            tools:text="@string/last_update_time__since" />
-
-        <TextView
-            android:id="@+id/update_mode"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?textAppearanceBody2"
-            android:textColor="?android:textColorSecondary"
-            android:textSize="14sp"
-            tools:text="@string/update_mode__default" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/toggle"
-        app:layout_constraintTop_toBottomOf="@id/details">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/unsubscribe"
-            style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+            android:id="@+id/count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
-            android:layout_marginBottom="4dp"
-            android:minWidth="48dp"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:text="@string/action__unsubscribe"
-            android:textColor="?android:textColorSecondary" />
+            android:textAppearance="?textAppearanceBody1"
+            android:textColor="?android:textColorSecondary"
+            android:textSize="16sp"
+            android:textStyle="normal"
+            app:layout_constraintBaseline_toBaselineOf="@id/favicon"
+            app:layout_constraintEnd_toStartOf="@id/toggle"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="42" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/settings"
-            style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="72dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:textAppearance="?textAppearanceBody1"
+            android:textColor="?android:textColorPrimary"
+            android:textSize="16sp"
+            app:layout_constraintBaseline_toBaselineOf="@id/favicon"
+            app:layout_constraintEnd_toStartOf="@id/count"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="Aggregator News" />
+
+        <LinearLayout
+            android:id="@+id/details"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
-            android:minWidth="48dp"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:text="@string/action__settings" />
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="@id/count"
+            app:layout_constraintStart_toStartOf="@+id/title"
+            app:layout_constraintTop_toBottomOf="@+id/title">
 
-    </LinearLayout>
+            <TextView
+                android:id="@+id/last_update_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?textAppearanceBody2"
+                android:textColor="?android:textColorSecondary"
+                android:textSize="14sp"
+                tools:text="@string/last_update_time__since" />
 
-    <ImageView
-        android:id="@+id/toggle"
-        style="?actionButtonStyle"
-        android:layout_width="48dp"
-        android:layout_height="56dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:src="@drawable/action_show_less"
-        android:tint="#888"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="ContentDescription" />
+            <TextView
+                android:id="@+id/update_mode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?textAppearanceBody2"
+                android:textColor="?android:textColorSecondary"
+                android:textSize="14sp"
+                tools:text="@string/update_mode__default" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/toggle"
+            app:layout_constraintTop_toBottomOf="@id/details">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/update"
+                style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="4dp"
+                android:minWidth="48dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:text="@string/action__update"
+                android:textColor="?android:textColorSecondary" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/settings"
+                style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:minWidth="48dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:text="@string/action__settings" />
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/toggle"
+            style="?actionButtonStyle"
+            android:layout_width="48dp"
+            android:layout_height="56dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/action_show_less"
+            android:tint="#888"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="ContentDescription" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</FrameLayout>

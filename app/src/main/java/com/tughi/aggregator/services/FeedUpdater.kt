@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import okhttp3.Request
 import java.util.*
 
-class FeedUpdater {
+object FeedUpdater {
 
     private val database = AppDatabase.instance
 

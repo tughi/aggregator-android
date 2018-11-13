@@ -4,10 +4,12 @@
     <string name="action__settings">Settings</string>
 
     <string name="action__no">No</string>
+    <string name="action__refresh">Refresh</string>
     <string name="action__remove">Remove</string>
     <string name="action__save">Save</string>
     <string name="action__subscribe">Subscribe</string>
     <string name="action__unsubscribe">Unsubscribe</string>
+    <string name="action__update">Update</string>
     <string name="action__yes">Yes</string>
 
     <string name="feed_settings">Feed settings</string>
