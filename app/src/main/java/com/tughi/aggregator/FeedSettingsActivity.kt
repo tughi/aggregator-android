@@ -89,6 +89,14 @@ class FeedSettingsFragment : Fragment() {
             }
         })
 
+        fragmentView.findViewById<View>(R.id.unsubscribe).setOnClickListener {
+            val feed = viewModel.feed.value
+            if (feed != null) {
+                val feedTitle = feed.customTitle ?: feed.title
+                UnsubscribeDialogFragment.show(fragmentManager!!, feedId, feedTitle, true)
+            }
+        }
+
         return fragmentView
     }
 
