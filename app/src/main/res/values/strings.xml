@@ -21,6 +21,7 @@
 
     <string name="last_update_time__never">Updated: Never</string>
     <string name="last_update_time__since">Updated: %1$s</string>
+    <string name="next_update_time">Next update: %1$s</string>
 
     <string name="subscribe_url">Website or feed URL</string>
     <string name="subscribe_explanation">Content providers, like news sites and blogs, often

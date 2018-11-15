@@ -16,10 +16,10 @@ interface FeedDao {
             title = :title,
             link = :link,
             language = :language,
-            update_time = :updateTime
+            last_update_time = :lastUpdateTime
         WHERE id = :id
     """)
-    fun updateFeed(id: Long, url: String, title: String, link: String?, language: String?, updateTime: Long): Int
+    fun updateFeed(id: Long, url: String, title: String, link: String?, language: String?, lastUpdateTime: Long): Int
 
     @Query("UPDATE feeds SET url = :url, custom_title = :customTitle WHERE id = :id")
     fun updateFeed(id: Long, url: String, customTitle: String?): Int
@@ -44,7 +44,8 @@ interface FeedDao {
             f.id,
             COALESCE(f.custom_title, f.title) AS title,
             f.favicon_url,
-            f.update_time,
+            f.last_update_time,
+            f.next_update_time,
             (SELECT COUNT(1) FROM entries e WHERE f.id = e.feed_id AND e.read_time = 0) AS unread_entry_count,
             0 AS expanded
         FROM
@@ -66,8 +67,11 @@ data class UiFeed(
         @ColumnInfo(name = "favicon_url")
         val faviconUrl: String?,
 
-        @ColumnInfo(name = "update_time")
-        val updateTime: Long,
+        @ColumnInfo(name = "last_update_time")
+        val lastUpdateTime: Long,
+
+        @ColumnInfo(name = "next_update_time")
+        val nextUpdateTime: Long,
 
         @ColumnInfo(name = "unread_entry_count")
         val unreadEntryCount: Int,
@@ -139,6 +143,7 @@ interface EntryDao {
         UPDATE entries SET read_time = :readTime WHERE id = :entryId
     """)
     fun setReadTime(entryId: Long, readTime: Long): Int
+
 }
 
 data class UiEntry(

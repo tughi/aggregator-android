@@ -33,8 +33,7 @@ object FeedUpdater {
     }
 
     private fun update(feedId: Long) {
-        val feedDao = database.feedDao()
-        val feed = feedDao.queryFeed(feedId)
+        val feed = database.feedDao().queryFeed(feedId)
 
         val request = Request.Builder()
                 .url(feed.url)
@@ -47,84 +46,97 @@ object FeedUpdater {
 
             if (responseBody != null) {
                 val feedParser = FeedParser(feed.url, object : FeedParser.Listener() {
-                    override fun onParsedFeed(
-                            title: String,
-                            link: String?,
-                            language: String?
-                    ) {
-                        val now = System.currentTimeMillis()
-                        val updated = feedDao.updateFeed(
-                                id = feedId,
-                                url = feed.url, // TODO: save URL for permanently redirected feed
-                                title = title,
-                                link = link,
-                                language = language,
-                                updateTime = now
-                        )
-                        if (updated != 1) {
-                            // TODO: report that the feed couldn't be updated
-                        }
+                    override fun onParsedFeed(title: String, link: String?, language: String?) {
+                        // TODO: save URL for permanently redirected feed
+                        updateFeed(id = feedId, url = feed.url, title = title, link = link, language = language)
                     }
 
-                    override fun onParsedEntry(
-                            uid: String,
-                            title: String?,
-                            link: String?,
-                            content: String?,
-                            author: String?,
-                            publishDate: Date?,
-                            publishDateText: String?
-                    ) {
-                        val entryDao = database.entryDao()
-
-                        try {
-                            database.beginTransaction()
-
-                            val entry = entryDao.queryEntry(feedId, uid)
-                            if (entry == null) {
-                                val now = System.currentTimeMillis()
-                                val entryId = entryDao.insertEntry(Entry(
-                                        feedId = feedId,
-                                        uid = uid,
-                                        title = title,
-                                        link = link,
-                                        content = content,
-                                        author = author,
-                                        insertTime = now,
-                                        publishTime = publishDate?.time ?: now,
-                                        updateTime = now
-                                ))
-                                if (entryId == -1L) {
-                                    // TODO: report that an entry couldn't be inserted
-                                }
-                            } else if (entry.title != title || entry.link != link || entry.content != content || entry.author != author) {
-                                val now = System.currentTimeMillis()
-                                val updated = entryDao.updateEntry(entry.updated(
-                                        title = title,
-                                        link = link,
-                                        content = content,
-                                        author = author,
-                                        publishTime = publishDate?.time,
-                                        updateTime = now
-                                ))
-                                if (updated != 1) {
-                                    // TODO: report that an entry couldn't be updated
-                                }
-                            }
-
-                            if (publishDate == null && publishDateText != null) {
-                                // TODO: report that a date text couldn't be parsed
-                            }
-
-                            database.setTransactionSuccessful()
-                        } finally {
-                            database.endTransaction()
-                        }
+                    override fun onParsedEntry(uid: String, title: String?, link: String?, content: String?, author: String?, publishDate: Date?, publishDateText: String?) {
+                        saveEntry(feedId = feedId, uid = uid, title = title, link = link, content = content, author = author, publishDate = publishDate, publishDateText = publishDateText)
                     }
                 })
 
                 Xml.parse(responseBody.charStream(), feedParser.feedContentHandler)
             }
+        }
+    }
+
+    fun saveEntry(
+            feedId: Long,
+            uid: String,
+            title: String?,
+            link: String?,
+            content: String?,
+            author: String?,
+            publishDate: Date?,
+            publishDateText: String?
+    ) {
+        val entryDao = database.entryDao()
+
+        try {
+            database.beginTransaction()
+
+            val entry = entryDao.queryEntry(feedId, uid)
+            if (entry == null) {
+                val now = System.currentTimeMillis()
+                val entryId = entryDao.insertEntry(Entry(
+                        feedId = feedId,
+                        uid = uid,
+                        title = title,
+                        link = link,
+                        content = content,
+                        author = author,
+                        insertTime = now,
+                        publishTime = publishDate?.time ?: now,
+                        updateTime = now
+                ))
+                if (entryId == -1L) {
+                    // TODO: report that an entry couldn't be inserted
+                }
+            } else if (entry.title != title || entry.link != link || entry.content != content || entry.author != author) {
+                val now = System.currentTimeMillis()
+                val updated = entryDao.updateEntry(entry.updated(
+                        title = title,
+                        link = link,
+                        content = content,
+                        author = author,
+                        publishTime = publishDate?.time,
+                        updateTime = now
+                ))
+                if (updated != 1) {
+                    // TODO: report that an entry couldn't be updated
+                }
+            }
+
+            if (publishDate == null && publishDateText != null) {
+                // TODO: report that a date text couldn't be parsed
+            }
+
+            database.setTransactionSuccessful()
+        } finally {
+            database.endTransaction()
+        }
+    }
+
+    fun updateFeed(
+            id: Long,
+            url: String,
+            title: String,
+            link: String?,
+            language: String?
+    ) {
+
+        val now = System.currentTimeMillis()
+        val updated = database.feedDao().updateFeed(
+                id = id,
+                url = url,
+                title = title,
+                link = link,
+                language = language,
+                lastUpdateTime = now
+        )
+        if (updated != 1) {
+            // TODO: report that the feed couldn't be updated
         }
     }
 

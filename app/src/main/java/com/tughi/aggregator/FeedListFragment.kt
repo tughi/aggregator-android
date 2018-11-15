@@ -184,6 +184,7 @@ private class CollapsedFeedViewHolder(itemView: View) : FeedListItemViewHolder(i
 private class ExpandedFeedViewHolder(itemView: View) : FeedListItemViewHolder(itemView) {
 
     val lastUpdateTime: TextView = itemView.findViewById(R.id.last_update_time)
+    val nextUpdateTime: TextView = itemView.findViewById(R.id.next_update_time)
     val updateMode: TextView = itemView.findViewById(R.id.update_mode)
     val settingsButton: View = itemView.findViewById(R.id.settings)
     val updateButton: View = itemView.findViewById(R.id.update)
@@ -201,15 +202,17 @@ private class ExpandedFeedViewHolder(itemView: View) : FeedListItemViewHolder(it
     override fun onBind(feed: UiFeed) {
         super.onBind(feed)
 
-        if (feed.updateTime == 0L) {
+        val context = itemView.context
+        if (feed.lastUpdateTime == 0L) {
             lastUpdateTime.setText(R.string.last_update_time__never)
         } else {
-            val context = itemView.context
-            DateUtils.getRelativeDateTimeString(context, feed.updateTime, DateUtils.DAY_IN_MILLIS, DateUtils.DAY_IN_MILLIS, 0).let {
+            DateUtils.getRelativeDateTimeString(context, feed.lastUpdateTime, DateUtils.DAY_IN_MILLIS, DateUtils.DAY_IN_MILLIS, 0).let {
                 lastUpdateTime.text = context.getString(R.string.last_update_time__since, it)
             }
         }
-
+        DateUtils.getRelativeDateTimeString(context, feed.nextUpdateTime, DateUtils.DAY_IN_MILLIS, DateUtils.DAY_IN_MILLIS, 0).let {
+            nextUpdateTime.text = context.getString(R.string.next_update_time, it)
+        }
         updateMode.setText(R.string.update_mode__default)
     }
 }

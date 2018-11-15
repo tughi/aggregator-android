@@ -2,7 +2,9 @@ package com.tughi.aggregator.data
 
 import androidx.room.*
 
-const val DEFAULT_UPDATE_MODE = "DEFAULT"
+const val UPDATE_MODE__DEFAULT = "DEFAULT"
+const val UPDATE_MODE__AUTO = "AUTO"
+const val UPDATE_MODE__DISABLED = "DISABLED"
 
 @Entity(
         tableName = "feeds"
@@ -33,17 +35,23 @@ data class Feed(
         val faviconContent: ByteArray? = null,
 
         @ColumnInfo(name = "update_mode")
-        val updateMode: String = DEFAULT_UPDATE_MODE,
+        val updateMode: String = UPDATE_MODE__DEFAULT,
 
-        @ColumnInfo(name = "update_time")
-        val updateTime: Long = 0
+        @ColumnInfo(name = "last_update_time")
+        val lastUpdateTime: Long = 0,
+
+        @ColumnInfo(name = "next_update_retry")
+        val nextUpdateRetry: Int = 0,
+
+        @ColumnInfo(name = "next_update_time")
+        val nextUpdateTime: Long = 0
 ) {
     fun updated(
             url: String,
             title: String,
             link: String?,
             language: String?,
-            updateTime: Long
+            lastUpdateTime: Long
     ) = Feed(
             id = this.id,
             url = url,
@@ -52,7 +60,8 @@ data class Feed(
             language = language,
             customTitle = this.customTitle,
             updateMode = this.updateMode,
-            updateTime = updateTime
+            lastUpdateTime = lastUpdateTime,
+            nextUpdateTime = this.nextUpdateTime
     )
 
     override fun equals(other: Any?): Boolean {
@@ -69,7 +78,8 @@ data class Feed(
         if (customTitle != other.customTitle) return false
         if (faviconUrl != other.faviconUrl) return false
         if (updateMode != other.updateMode) return false
-        if (updateTime != other.updateTime) return false
+        if (lastUpdateTime != other.lastUpdateTime) return false
+        if (nextUpdateTime != other.nextUpdateTime) return false
 
         return true
     }
@@ -83,7 +93,8 @@ data class Feed(
         result = 31 * result + (customTitle?.hashCode() ?: 0)
         result = 31 * result + (faviconUrl?.hashCode() ?: 0)
         result = 31 * result + updateMode.hashCode()
-        result = 31 * result + updateTime.hashCode()
+        result = 31 * result + lastUpdateTime.hashCode()
+        result = 31 * result + nextUpdateTime.hashCode()
         return result
     }
 }
