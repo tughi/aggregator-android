@@ -169,10 +169,10 @@ data class UiEntry(
         val faviconUrl: String?,
 
         @ColumnInfo
-        val title: String,
+        val title: String?,
 
         @ColumnInfo
-        val link: String,
+        val link: String?,
 
         @ColumnInfo
         val author: String?,
