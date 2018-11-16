@@ -22,7 +22,7 @@ object FeedUpdater {
     fun update(vararg feedIds: Long) {
         if (feedIds.isEmpty()) {
             GlobalScope.launch {
-                val feedIds2 = database.feedDao().queryFeedIds()
+                val feedIds2 = database.feedDao().queryUpdatableFeeds(System.currentTimeMillis())
                 launch(Dispatchers.Main) {
                     update(*feedIds2)
                 }
