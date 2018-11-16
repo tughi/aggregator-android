@@ -86,8 +86,17 @@ interface EntryDao {
     @Insert
     fun insertEntry(entry: Entry): Long
 
-    @Update
-    fun updateEntry(entry: Entry): Int
+    @Query("""
+        UPDATE entries SET
+            title = :title,
+            link = :link,
+            content = :content,
+            author = :author,
+            publish_time = :publishTime,
+            update_time = :updateTime
+        WHERE id = :id
+    """)
+    fun updateEntry(id: Long, title: String?, link: String?, content: String?, author: String?, publishTime: Long?, updateTime: Long): Int
 
     @Query("SELECT * FROM entries WHERE feed_id = :feedId AND uid = :uid")
     fun queryEntry(feedId: Long, uid: String): Entry?

@@ -46,24 +46,6 @@ data class Feed(
         @ColumnInfo(name = "next_update_time")
         val nextUpdateTime: Long = 0
 ) {
-    fun updated(
-            url: String,
-            title: String,
-            link: String?,
-            language: String?,
-            lastUpdateTime: Long
-    ) = Feed(
-            id = this.id,
-            url = url,
-            title = title,
-            link = link,
-            language = language,
-            customTitle = this.customTitle,
-            updateMode = this.updateMode,
-            lastUpdateTime = lastUpdateTime,
-            nextUpdateTime = this.nextUpdateTime
-    )
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -135,35 +117,15 @@ data class Entry(
         @ColumnInfo
         val author: String? = null,
 
+        @ColumnInfo(name = "publish_time")
+        val publishTime: Long? = null,
+
         @ColumnInfo(name = "insert_time")
         val insertTime: Long,
-
-        @ColumnInfo(name = "publish_time")
-        val publishTime: Long,
 
         @ColumnInfo(name = "update_time")
         val updateTime: Long,
 
         @ColumnInfo(name = "read_time")
         val readTime: Long = 0
-) {
-    fun updated(
-            title: String?,
-            link: String?,
-            content: String?,
-            author: String?,
-            publishTime: Long?,
-            updateTime: Long
-    ) = Entry(
-            id = this.id,
-            feedId = this.feedId,
-            uid = this.uid,
-            title = title,
-            link = link,
-            content = content,
-            author = author,
-            insertTime = this.insertTime,
-            publishTime = publishTime ?: this.publishTime,
-            updateTime = updateTime
-    )
-}
+)

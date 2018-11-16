@@ -1,5 +1,6 @@
 package com.tughi.aggregator.services
 
+import android.util.Log
 import android.util.Xml
 import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.data.Entry
@@ -77,6 +78,7 @@ object FeedUpdater {
             database.beginTransaction()
 
             val entry = entryDao.queryEntry(feedId, uid)
+            val publishTime = publishDate?.time
             if (entry == null) {
                 val now = System.currentTimeMillis()
                 val entryId = entryDao.insertEntry(Entry(
@@ -87,29 +89,31 @@ object FeedUpdater {
                         content = content,
                         author = author,
                         insertTime = now,
-                        publishTime = publishDate?.time ?: now,
+                        publishTime = publishTime,
                         updateTime = now
                 ))
                 if (entryId == -1L) {
                     // TODO: report that an entry couldn't be inserted
                 }
-            } else if (entry.title != title || entry.link != link || entry.content != content || entry.author != author) {
+            } else if (entry.title != title || entry.link != link || entry.content != content || entry.author != author || entry.publishTime != publishTime) {
                 val now = System.currentTimeMillis()
-                val updated = entryDao.updateEntry(entry.updated(
+                val updated = entryDao.updateEntry(
+                        id = entry.id!!,
                         title = title,
                         link = link,
                         content = content,
                         author = author,
-                        publishTime = publishDate?.time,
+                        publishTime = publishTime,
                         updateTime = now
-                ))
+                )
                 if (updated != 1) {
                     // TODO: report that an entry couldn't be updated
                 }
             }
 
             if (publishDate == null && publishDateText != null) {
-                // TODO: report that a date text couldn't be parsed
+                // TODO: report unsupported date format
+                Log.e(javaClass.name, "Unsupported date format: $publishDateText")
             }
 
             database.setTransactionSuccessful()

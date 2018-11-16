@@ -13,14 +13,14 @@ object CustomTypeConverters {
 
     @TypeConverter
     @JvmStatic
-    fun formatDate(timestamp: Long): FormattedDate {
-        return FormattedDate(DateUtils.formatDateTime(context, timestamp, DATE_FORMAT))
+    fun formatDate(timestamp: Long?): FormattedDate {
+        return FormattedDate(DateUtils.formatDateTime(context, timestamp ?: 0, DATE_FORMAT))
     }
 
     @TypeConverter
     @JvmStatic
-    fun formatTime(timestamp: Long): FormattedTime {
-        return FormattedTime(DateUtils.formatDateTime(context, timestamp, TIME_FORMAT))
+    fun formatTime(timestamp: Long?): FormattedTime {
+        return FormattedTime(DateUtils.formatDateTime(context, timestamp ?: 0, TIME_FORMAT))
     }
 
     @TypeConverter

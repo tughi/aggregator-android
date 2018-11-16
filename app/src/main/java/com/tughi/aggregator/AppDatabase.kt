@@ -12,7 +12,7 @@ import com.tughi.aggregator.utilities.DATABASE_NAME
             Entry::class,
             Feed::class
         ],
-        version = 12
+        version = 13
 )
 @TypeConverters(CustomTypeConverters::class)
 abstract class AppDatabase : RoomDatabase() {
