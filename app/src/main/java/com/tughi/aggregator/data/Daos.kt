@@ -110,8 +110,8 @@ interface EntryDao {
             e.title,
             e.link,
             e.author,
-            e.publish_time AS formatted_date,
-            e.publish_time AS formatted_time,
+            COALESCE(e.publish_time, e.insert_time) AS formatted_date,
+            COALESCE(e.publish_time, e.insert_time) AS formatted_time,
             e.read_time AS read_time,
             e.read_time > 0 AS type
         FROM
@@ -120,7 +120,7 @@ interface EntryDao {
         WHERE
             (e.read_time = 0 OR e.read_time > :since)
         ORDER BY
-            e.publish_time
+            COALESCE(e.publish_time, e.insert_time)
     """)
     fun getMyFeedUiEntries(since: Long): LiveData<Array<UiEntry>>
 
@@ -133,8 +133,8 @@ interface EntryDao {
             e.title,
             e.link,
             e.author,
-            e.publish_time AS formatted_date,
-            e.publish_time AS formatted_time,
+            COALESCE(e.publish_time, e.insert_time) AS formatted_date,
+            COALESCE(e.publish_time, e.insert_time) AS formatted_time,
             e.read_time AS read_time,
             e.read_time > 0 AS type
         FROM
@@ -144,7 +144,7 @@ interface EntryDao {
             e.feed_id = :feedId AND
             (e.read_time = 0 OR e.read_time > :since)
         ORDER BY
-            e.publish_time
+            COALESCE(e.publish_time, e.insert_time)
     """)
     fun getFeedUiEntries(feedId: Long, since: Long): LiveData<Array<UiEntry>>
 
