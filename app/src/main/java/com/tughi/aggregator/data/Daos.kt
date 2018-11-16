@@ -1,7 +1,10 @@
 package com.tughi.aggregator.data
 
 import androidx.lifecycle.LiveData
-import androidx.room.*
+import androidx.room.ColumnInfo
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.Query
 import java.io.Serializable
 
 @Dao
@@ -16,10 +19,12 @@ interface FeedDao {
             title = :title,
             link = :link,
             language = :language,
-            last_update_time = :lastUpdateTime
+            last_update_time = :lastUpdateTime,
+            next_update_retry = 0,
+            next_update_time = :nextUpdateTime
         WHERE id = :id
     """)
-    fun updateFeed(id: Long, url: String, title: String, link: String?, language: String?, lastUpdateTime: Long): Int
+    fun updateFeed(id: Long, url: String, title: String, link: String?, language: String?, lastUpdateTime: Long, nextUpdateTime: Long): Int
 
     @Query("UPDATE feeds SET url = :url, custom_title = :customTitle WHERE id = :id")
     fun updateFeed(id: Long, url: String, customTitle: String?): Int
@@ -152,6 +157,9 @@ interface EntryDao {
         UPDATE entries SET read_time = :readTime WHERE id = :entryId
     """)
     fun setReadTime(entryId: Long, readTime: Long): Int
+
+    @Query("SELECT COUNT(1) FROM entries WHERE feed_id = :feedId AND COALESCE(publish_time, insert_time) > :since")
+    fun countAggregatedEntries(feedId: Long, since: Long): Int
 
 }
 
