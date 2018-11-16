@@ -1,19 +1,21 @@
 package com.tughi.aggregator.utilities
 
-private val URL_REGEX = "^((.+)://([^/]+))(.*)".toRegex()
+import java.net.MalformedURLException
+import java.net.URL
 
 fun String.toAbsoluteUrl(baseUrl: String): String {
     val url = trim()
-    if (url.startsWith("/")) {
-        val rootUrl = baseUrl.replace(URL_REGEX, "\$1")
-        return rootUrl + url
-    }
-    if (!url.matches(URL_REGEX)) {
-        if (baseUrl.endsWith("/")) {
-            return baseUrl + url
-        } else {
-            TODO("Cannot create absolute feed URL")
+    try {
+        val absoluteUrl = URL(url)
+        return absoluteUrl.toString()
+    } catch (exception: MalformedURLException) {
+        try {
+            val absoluteBaseUrl = URL(baseUrl)
+            val absoluteUrl = URL(absoluteBaseUrl, url)
+            return absoluteUrl.toString()
+        } catch (exception: MalformedURLException) {
+            throw IllegalStateException("Failed to make '$url' absolute using '$baseUrl'")
         }
     }
-    return url
+
 }
