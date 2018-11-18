@@ -23,8 +23,10 @@ object FeedUpdater {
         if (feedIds.isEmpty()) {
             GlobalScope.launch {
                 val feedIds2 = database.feedDao().queryUpdatableFeeds(System.currentTimeMillis())
-                launch(Dispatchers.Main) {
-                    update(*feedIds2)
+                if (feedIds2.isNotEmpty()) {
+                    launch(Dispatchers.Main) {
+                        update(*feedIds2)
+                    }
                 }
             }
         } else {
