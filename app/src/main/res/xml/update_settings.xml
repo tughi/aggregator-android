@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="background_updates"
+        android:title="@string/update_settings__background_update" />
+
+    <ListPreference
+        android:dependency="background_updates"
+        android:entries="@array/update_modes"
+        android:entryValues="@array/update_modes_values"
+        android:key="default_update_mode"
+        android:title="@string/update_settings__default_update_mode" />
+
+</androidx.preference.PreferenceScreen>

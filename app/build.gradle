@@ -11,7 +11,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 28
 
-        versionName = 'Preview:005'
+        versionName = 'Preview:006'
         versionCode = 299000 + Integer.parseInt(versionName.split(':')[1])
 
         kapt {
@@ -38,6 +38,7 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
     implementation 'androidx.lifecycle:lifecycle-livedata:2.0.0'
+    implementation 'androidx.preference:preference:1.0.0'
     implementation 'androidx.room:room-runtime:2.0.0'
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'com.squareup.okhttp3:okhttp:3.10.0'

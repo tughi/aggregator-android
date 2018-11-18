@@ -41,6 +41,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".UpdateSettingsActivity"
+            android:label="@string/update_settings"
+            android:parentActivityName=".MainActivity" />
+
         <service
             android:name=".services.FaviconUpdaterService"
             android:exported="false" />

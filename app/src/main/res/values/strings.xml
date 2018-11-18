@@ -1,12 +1,11 @@
 <resources>
     <string name="app_name" translatable="false">Aggregator</string>
 
-    <string name="action__settings">Settings</string>
-
     <string name="action__no">No</string>
     <string name="action__refresh">Refresh</string>
     <string name="action__remove">Remove</string>
     <string name="action__save">Save</string>
+    <string name="action__settings">Settings</string>
     <string name="action__subscribe">Subscribe</string>
     <string name="action__unsubscribe">Unsubscribe</string>
     <string name="action__update">Update</string>
@@ -39,13 +38,19 @@
     <string name="title_find_feeds">Find feeds</string>
     <string name="title_tags">Tags</string>
 
-    <string name="update_mode__default">Update mode: Default</string>
-
     <string name="subscribe_feed__title">Title</string>
     <string name="subscribe_feed__update_mode">Update mode</string>
     <string name="subscribe_feed__update_mode__default">Default</string>
     <string name="subscribe_feed__url">URL</string>
 
     <string name="unsubscribe_feed__message">Are you sure you want to unsubscribe from this feed and delete all its entries?</string>
+
+    <string name="update_mode__auto">Auto</string>
+    <string name="update_mode__default">Default</string>
+    <string name="update_mode__disabled">Disabled</string>
+
+    <string name="update_settings">Update settings</string>
+    <string name="update_settings__background_update">Background updates</string>
+    <string name="update_settings__default_update_mode">Default update mode</string>
 
 </resources>

@@ -3,6 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/update_settings"
+        android:icon="@drawable/action_update_settings"
+        android:title="@string/update_settings"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/add"
         android:icon="@drawable/action_add"
         android:title="@string/action__subscribe"

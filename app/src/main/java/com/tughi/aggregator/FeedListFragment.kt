@@ -66,6 +66,9 @@ class FeedListFragment : Fragment(), OnFeedClickedListener {
                 R.id.add -> {
                     startActivity(Intent(activity, SubscribeActivity::class.java).putExtra(SubscribeActivity.EXTRA_VIA_ACTION, true))
                 }
+                R.id.update_settings -> {
+                    startActivity(Intent(activity, UpdateSettingsActivity::class.java))
+                }
                 else -> {
                     return@setOnMenuItemClickListener false
                 }
