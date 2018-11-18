@@ -32,13 +32,13 @@ object FeedUpdater {
         } else {
             for (feedId in feedIds) {
                 GlobalScope.launch {
-                    update(feedId)
+                    updateFeed(feedId)
                 }
             }
         }
     }
 
-    private fun update(feedId: Long) {
+    private fun updateFeed(feedId: Long) {
         val feed = database.feedDao().queryFeed(feedId)
 
         val request = Request.Builder()
