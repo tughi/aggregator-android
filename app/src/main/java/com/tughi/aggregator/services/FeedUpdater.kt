@@ -25,7 +25,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 
-object UpdateFeedJob {
+object FeedUpdater {
 
     private val database = AppDatabase.instance
 
@@ -235,7 +235,7 @@ object UpdateFeedJob {
         } finally {
             database.endTransaction()
 
-            UpdateFeedJobService.schedule()
+            FeedsUpdaterService.schedule()
         }
     }
 

@@ -6,32 +6,24 @@ import android.app.job.JobScheduler
 import android.app.job.JobService
 import android.content.ComponentName
 import android.content.Context
-import android.util.Log
+import android.text.format.DateUtils
 import com.tughi.aggregator.App
 import com.tughi.aggregator.AppDatabase
-import com.tughi.aggregator.utilities.JOB_SERVICE_UPDATE_FEEDS
+import com.tughi.aggregator.utilities.JOB_SERVICE_FEEDS_UPDATER_SCHEDULER
 import kotlinx.coroutines.*
-import kotlin.math.max
 
-class UpdateFeedJobService : JobService() {
+class FeedsUpdaterService : JobService() {
 
     companion object {
         fun schedule() {
-            val nextUpdateTime = AppDatabase.instance.feedDao().queryNextUpdateTime() ?: return
-            val nextUpdateDelay = nextUpdateTime - System.currentTimeMillis()
-
-            val context: Context = App.instance
+            val context = App.instance
             val jobScheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
 
-            val jobInfo = JobInfo.Builder(JOB_SERVICE_UPDATE_FEEDS, ComponentName(context, UpdateFeedJobService::class.java))
-                    .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                    .setMinimumLatency(max(0, nextUpdateDelay))
+            val jobInfo = JobInfo.Builder(JOB_SERVICE_FEEDS_UPDATER_SCHEDULER, ComponentName(context, FeedsUpdaterSchedulerService::class.java))
+                    .setMinimumLatency(DateUtils.MINUTE_IN_MILLIS)
                     .setPersisted(true)
                     .build()
 
-            Log.d(UpdateFeedJob::class.java.name, "Schedule update with delay: $nextUpdateDelay")
-
-            // TODO: find a solution where this doesn't cancel the current job
             jobScheduler.schedule(jobInfo)
         }
     }
@@ -43,7 +35,7 @@ class UpdateFeedJobService : JobService() {
             val feeds = AppDatabase.instance.feedDao().queryUpdatableFeeds(System.currentTimeMillis())
 
             val jobs = feeds.map { feedId ->
-                async { UpdateFeedJob.updateFeed(feedId) }
+                async { FeedUpdater.updateFeed(feedId) }
             }
             jobs.forEach {
                 it.await()

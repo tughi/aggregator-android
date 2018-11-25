@@ -52,7 +52,12 @@
             android:exported="false" />
 
         <service
-            android:name=".services.UpdateFeedJobService"
+            android:name=".services.FeedsUpdaterSchedulerService"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <service
+            android:name=".services.FeedsUpdaterService"
             android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
