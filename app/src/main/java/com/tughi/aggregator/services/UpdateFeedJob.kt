@@ -3,71 +3,139 @@ package com.tughi.aggregator.services
 import android.text.format.DateUtils
 import android.util.Log
 import android.util.Xml
+import androidx.lifecycle.MutableLiveData
 import com.tughi.aggregator.AppDatabase
+import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.data.*
 import com.tughi.aggregator.feeds.FeedParser
+import com.tughi.aggregator.utilities.Failure
 import com.tughi.aggregator.utilities.Http
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import com.tughi.aggregator.utilities.Result
+import com.tughi.aggregator.utilities.Success
+import kotlinx.coroutines.*
+import okhttp3.Call
+import okhttp3.Callback
 import okhttp3.Request
+import okhttp3.Response
+import java.io.IOException
 import java.util.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlin.math.max
 import kotlin.math.min
 
-object FeedUpdater {
+
+object UpdateFeedJob {
 
     private val database = AppDatabase.instance
 
-    fun update(vararg feedIds: Long) {
-        if (feedIds.isEmpty()) {
-            GlobalScope.launch {
-                val feedIds2 = database.feedDao().queryUpdatableFeeds(System.currentTimeMillis())
-                if (feedIds2.isNotEmpty()) {
-                    launch(Dispatchers.Main) {
-                        update(*feedIds2)
-                    }
-                }
+    val updatingFeedIds = MutableLiveData<MutableSet<Long>>().apply {
+        value = mutableSetOf()
+    }
+
+    suspend fun updateFeed(feedId: Long) {
+        addUpdatingFeed(feedId)
+
+        try {
+            val feed = database.feedDao().queryFeed(feedId)
+
+            val result = requestFeed(feed.url)
+            when (result) {
+                is Failure -> saveUpdateError(feed, result.error)
+                is Success -> parseFeed(feed, result.data)
             }
-        } else {
-            for (feedId in feedIds) {
-                GlobalScope.launch {
-                    updateFeed(feedId)
-                }
+
+        } finally {
+            withContext(NonCancellable) {
+                removeUpdatingFeed(feedId)
             }
         }
     }
 
-    private fun updateFeed(feedId: Long) {
-        val feed = database.feedDao().queryFeed(feedId)
+    private suspend fun addUpdatingFeed(feedId: Long): Unit = suspendCoroutine {
+        GlobalScope.launch(Dispatchers.Main) {
+            val feedIds = updatingFeedIds.value
+            feedIds?.add(feedId)
+            updatingFeedIds.value = feedIds
 
+            it.resume(Unit)
+        }
+    }
+
+    private suspend fun removeUpdatingFeed(feedId: Long): Unit = suspendCoroutine {
+        GlobalScope.launch(Dispatchers.Main) {
+            val feedIds = updatingFeedIds.value
+            feedIds?.remove(feedId)
+            updatingFeedIds.value = feedIds
+
+            it.resume(Unit)
+        }
+    }
+
+    private suspend fun requestFeed(url: String): Result<Response> = suspendCancellableCoroutine {
         val request = Request.Builder()
-                .url(feed.url)
+                .url(url)
                 .build()
 
-        val response = Http.client.newCall(request).execute()
-        // TODO: handle redirected URLs
-        if (response.isSuccessful) {
-            val responseBody = response.body()
-
-            if (responseBody != null) {
-                val feedParser = FeedParser(feed.url, object : FeedParser.Listener() {
-                    override fun onParsedFeed(title: String, link: String?, language: String?) {
-                        // TODO: save URL for permanently redirected feed
-                        updateFeed(feed = feed, url = feed.url, title = title, link = link, language = language)
+        Http.client.newCall(request)
+                .also { call ->
+                    it.invokeOnCancellation {
+                        call.cancel()
+                    }
+                }
+                .enqueue(object : Callback {
+                    override fun onResponse(call: Call, response: Response) {
+                        if (response.isSuccessful && response.body() != null) {
+                            it.resume(Success(response))
+                        } else {
+                            it.resume(Failure(UnexpectedHttpResponseException(response)))
+                        }
                     }
 
-                    override fun onParsedEntry(uid: String, title: String?, link: String?, content: String?, author: String?, publishDate: Date?, publishDateText: String?) {
-                        saveEntry(feedId = feedId, uid = uid, title = title, link = link, content = content, author = author, publishDate = publishDate, publishDateText = publishDateText)
+                    override fun onFailure(call: Call, exception: IOException) {
+                        it.resume(Failure(exception))
                     }
                 })
+    }
 
-                Xml.parse(responseBody.charStream(), feedParser.feedContentHandler)
+    private suspend fun saveUpdateError(feed: Feed, error: Throwable?) = suspendCoroutine<Unit> {
+        Log.d(javaClass.name, "saveUpdateError($error)")
+        // TODO: save update error
+
+        it.resume(Unit)
+    }
+
+    private suspend fun parseFeed(feed: Feed, response: Response): Unit = suspendCancellableCoroutine {
+        GlobalScope.launch(Dispatchers.IO) {
+            val feedParser = FeedParser(feed.url, object : FeedParser.Listener() {
+                override fun onParsedEntry(uid: String, title: String?, link: String?, content: String?, author: String?, publishDate: Date?, publishDateText: String?) {
+                    if (!it.context.isActive) {
+                        throw CancellationException()
+                    }
+                    saveEntry(feedId = feed.id!!, uid = uid, title = title, link = link, content = content, author = author, publishDate = publishDate, publishDateText = publishDateText)
+                }
+
+                override fun onParsedFeed(title: String, link: String?, language: String?) {
+                    if (!it.context.isActive) {
+                        throw CancellationException()
+                    }
+                    // TODO: save URL for permanently redirected feed
+                    updateFeed(feed = feed, url = feed.url, title = title, link = link, language = language)
+                }
+            })
+
+            try {
+                response.use {
+                    val responseBody = response.body()!!
+                    Xml.parse(responseBody.charStream(), feedParser.feedContentHandler)
+                }
+            } finally {
+                it.resume(Unit)
             }
         }
     }
 
-    fun saveEntry(
+    private fun saveEntry(
             feedId: Long,
             uid: String,
             title: String?,
@@ -77,6 +145,10 @@ object FeedUpdater {
             publishDate: Date?,
             publishDateText: String?
     ) {
+        if (BuildConfig.DEBUG) {
+            Log.d(javaClass.name, "saveEntry($feedId, $uid, $title, $link, ...)")
+        }
+
         val entryDao = database.entryDao()
 
         try {
@@ -127,18 +199,23 @@ object FeedUpdater {
         }
     }
 
-    fun updateFeed(
+    private fun updateFeed(
             feed: Feed,
             url: String,
             title: String,
             link: String?,
             language: String?
     ) {
+        if (BuildConfig.DEBUG) {
+            Log.d(javaClass.name, "onParsedFeed($title, $link, $language)")
+        }
+
         try {
             database.beginTransaction()
 
             val feedId = feed.id!!
 
+            // TODO: check if background updates are enabled
             val nextUpdateTime = calculateNextUpdateTime(feedId, feed.updateMode)
 
             val updated = database.feedDao().updateFeed(
@@ -157,6 +234,8 @@ object FeedUpdater {
             database.setTransactionSuccessful()
         } finally {
             database.endTransaction()
+
+            UpdateFeedJobService.schedule()
         }
     }
 
@@ -186,4 +265,7 @@ object FeedUpdater {
         return now / (DateUtils.HOUR_IN_MILLIS / 4) * (DateUtils.HOUR_IN_MILLIS / 4) + alignedUpdateRate
     }
 
+    class UnexpectedHttpResponseException(val response: Response) : Exception("Unexpected HTTP response: $response")
+
 }
+

@@ -52,13 +52,17 @@ interface FeedDao {
             f.last_update_time,
             f.next_update_time,
             (SELECT COUNT(1) FROM entries e WHERE f.id = e.feed_id AND e.read_time = 0) AS unread_entry_count,
-            0 AS expanded
+            0 AS expanded,
+            0 AS updating
         FROM
             feeds f
         ORDER BY
             title
     """)
     fun getUiFeeds(): LiveData<List<UiFeed>>
+
+    @Query("SELECT MIN(next_update_time) FROM feeds WHERE next_update_time > 0")
+    fun queryNextUpdateTime(): Long?
 
 }
 
@@ -82,7 +86,10 @@ data class UiFeed(
         val unreadEntryCount: Int,
 
         @ColumnInfo
-        val expanded: Boolean
+        val expanded: Boolean,
+
+        @ColumnInfo
+        val updating: Boolean
 ) : Serializable
 
 @Dao

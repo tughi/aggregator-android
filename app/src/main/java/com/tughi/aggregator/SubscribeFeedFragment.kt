@@ -8,7 +8,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.tughi.aggregator.data.Feed
 import com.tughi.aggregator.services.FaviconUpdaterService
-import com.tughi.aggregator.services.FeedUpdater
+import com.tughi.aggregator.services.UpdateFeedJob
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -82,7 +82,7 @@ class SubscribeFeedFragment : Fragment() {
                     ))
 
                     launch(Dispatchers.Main) {
-                        FeedUpdater.update(feedId)
+                        UpdateFeedJob.updateFeed(feedId)
 
                         FaviconUpdaterService.start(feedId)
 

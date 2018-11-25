@@ -126,14 +126,14 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
 
         // create RDF elements
 
-        val rdfElement = document.addChild(TagElement("RDF", "http://www.w3.org/1999/02/22-rdf-syntax-ns#"))
-        channelElement = rdfElement.addChild(object : TagElement("channel", *rssUris) {
+        val rdfElement = document.addChild(object : TagElement("RDF", "http://www.w3.org/1999/02/22-rdf-syntax-ns#") {
             override fun end(namespace: String?, name: String?) {
                 super.end(namespace, name)
 
                 handleFeedEnd()
             }
         })
+        channelElement = rdfElement.addChild(TagElement("channel", *rssUris))
         channelElement.addChild(channelLinkElement)
         channelElement.addChild(channelTitleElement)
         channelElement.addChild(object : TextElement("language", "http://purl.org/dc/elements/1.1/") {

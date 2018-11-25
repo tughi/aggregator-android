@@ -5,6 +5,7 @@
     tools:targetApi="m">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:name=".App"
@@ -49,6 +50,11 @@
         <service
             android:name=".services.FaviconUpdaterService"
             android:exported="false" />
+
+        <service
+            android:name=".services.UpdateFeedJobService"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
 
     </application>
 

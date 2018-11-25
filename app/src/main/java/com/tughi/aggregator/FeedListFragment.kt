@@ -17,9 +17,10 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.data.UiFeed
-import com.tughi.aggregator.services.FeedUpdater
+import com.tughi.aggregator.services.UpdateFeedJob
 import com.tughi.aggregator.utilities.Favicons
 import com.tughi.aggregator.viewmodels.FeedListViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -93,8 +94,8 @@ class FeedListFragment : Fragment(), OnFeedClickedListener {
     }
 
     override fun onUpdateFeed(feed: UiFeed) {
-        GlobalScope.launch {
-            FeedUpdater.update(feed.id)
+        GlobalScope.launch(Dispatchers.IO) {
+            UpdateFeedJob.updateFeed(feed.id)
         }
     }
 
@@ -177,7 +178,11 @@ private abstract class FeedListItemViewHolder(itemView: View) : RecyclerView.Vie
             count.visibility = View.VISIBLE
         }
 
-        Favicons.load(feed.id, feed.faviconUrl, favicon)
+        if (feed.updating) {
+            favicon.setImageResource(R.drawable.action_refresh)
+        } else {
+            Favicons.load(feed.id, feed.faviconUrl, favicon)
+        }
     }
 
 }
@@ -217,6 +222,8 @@ private class ExpandedFeedViewHolder(itemView: View) : FeedListItemViewHolder(it
             nextUpdateTime.text = context.getString(R.string.next_update_time, it)
         }
         updateMode.setText(R.string.update_mode__default)
+
+        updateButton.isEnabled = !feed.updating
     }
 }
 

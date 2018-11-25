@@ -10,6 +10,7 @@ import com.tughi.aggregator.utilities.toAbsoluteUrl
 import okhttp3.Request
 import java.util.regex.Pattern
 
+// TODO: re-factor to a JobService-based solution
 class FaviconUpdaterService : IntentService("FaviconUpdater") {
 
     companion object {

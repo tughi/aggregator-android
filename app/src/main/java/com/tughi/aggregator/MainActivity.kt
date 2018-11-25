@@ -7,7 +7,6 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
-import com.tughi.aggregator.services.FeedUpdater
 import com.tughi.aggregator.utilities.APP_THEME_DARK
 import com.tughi.aggregator.utilities.APP_THEME_LIGHT
 
@@ -70,8 +69,6 @@ class MainActivity : AppActivity() {
         }
 
         if (savedInstanceState == null) {
-            FeedUpdater.update()
-
             bottomNavigationView.selectedItemId = when (App.preferences.getString(PREF_ACTIVE_TAB, TAB_FEEDS)) {
                 TAB_FEEDS -> R.id.navigation_feeds
                 TAB_MY_FEED -> R.id.navigation_my_feeds
