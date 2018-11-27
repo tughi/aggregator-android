@@ -73,7 +73,8 @@ class SubscribeFeedFragment : Fragment() {
                 val title = arguments.getString(ARG_TITLE)!!
                 val customTitle = titleTextView.text.toString()
                 val link = arguments.getString(ARG_LINK)!!
-                GlobalScope.launch {
+
+                GlobalScope.launch(Dispatchers.IO) {
                     val feedId = AppDatabase.instance.feedDao().insertFeed(Feed(
                             url = urlTextView.text.toString(),
                             title = title,
@@ -81,9 +82,11 @@ class SubscribeFeedFragment : Fragment() {
                             link = link
                     ))
 
-                    launch(Dispatchers.Main) {
+                    launch {
                         FeedUpdater.updateFeed(feedId)
+                    }
 
+                    launch(Dispatchers.Main) {
                         FaviconUpdaterService.start(feedId)
 
                         activity?.finish()
