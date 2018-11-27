@@ -12,7 +12,7 @@ class SubscribeActivity : AppActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        with(supportActionBar!!) {
+        supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
             setHomeAsUpIndicator(when (intent.getBooleanExtra(EXTRA_VIA_ACTION, false)) {
                 true -> R.drawable.action_back
