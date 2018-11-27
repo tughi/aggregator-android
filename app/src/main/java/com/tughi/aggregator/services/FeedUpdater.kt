@@ -29,9 +29,7 @@ object FeedUpdater {
 
     private val database = AppDatabase.instance
 
-    val updatingFeedIds = MutableLiveData<MutableSet<Long>>().apply {
-        value = mutableSetOf()
-    }
+    val updatingFeedIds = MutableLiveData<MutableSet<Long>>()
 
     suspend fun updateFeed(feedId: Long) {
         addUpdatingFeed(feedId)
@@ -54,8 +52,8 @@ object FeedUpdater {
 
     private suspend fun addUpdatingFeed(feedId: Long): Unit = suspendCoroutine {
         GlobalScope.launch(Dispatchers.Main) {
-            val feedIds = updatingFeedIds.value
-            feedIds?.add(feedId)
+            val feedIds = updatingFeedIds.value ?: mutableSetOf()
+            feedIds.add(feedId)
             updatingFeedIds.value = feedIds
 
             it.resume(Unit)
@@ -64,8 +62,8 @@ object FeedUpdater {
 
     private suspend fun removeUpdatingFeed(feedId: Long): Unit = suspendCoroutine {
         GlobalScope.launch(Dispatchers.Main) {
-            val feedIds = updatingFeedIds.value
-            feedIds?.remove(feedId)
+            val feedIds = updatingFeedIds.value ?: mutableSetOf()
+            feedIds.remove(feedId)
             updatingFeedIds.value = feedIds
 
             it.resume(Unit)
