@@ -6,7 +6,6 @@ import android.app.job.JobScheduler
 import android.app.job.JobService
 import android.content.ComponentName
 import android.content.Context
-import android.text.format.DateUtils
 import com.tughi.aggregator.App
 import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.UpdateSettings
@@ -16,7 +15,7 @@ import kotlinx.coroutines.*
 class FeedsUpdaterService : JobService() {
 
     companion object {
-        fun schedule() {
+        fun schedule(delay: Long = 0) {
             if (!UpdateSettings.backgroundUpdates) {
                 return
             }
@@ -25,7 +24,7 @@ class FeedsUpdaterService : JobService() {
             val jobScheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
 
             val jobInfo = JobInfo.Builder(JOB_SERVICE_FEEDS_UPDATER_SCHEDULER, ComponentName(context, FeedsUpdaterSchedulerService::class.java))
-                    .setMinimumLatency(DateUtils.MINUTE_IN_MILLIS)
+                    .setMinimumLatency(delay)
                     .setPersisted(true)
                     .build()
 

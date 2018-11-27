@@ -233,7 +233,7 @@ object FeedUpdater {
         } finally {
             database.endTransaction()
 
-            FeedsUpdaterService.schedule()
+            FeedsUpdaterService.schedule(DateUtils.MINUTE_IN_MILLIS)
         }
     }
 
