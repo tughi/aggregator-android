@@ -6,10 +6,8 @@
         android:key="background_updates"
         android:title="@string/update_settings__background_update" />
 
-    <ListPreference
+    <Preference
         android:dependency="background_updates"
-        android:entries="@array/update_modes"
-        android:entryValues="@array/update_modes_values"
         android:key="default_update_mode"
         android:title="@string/update_settings__default_update_mode" />
 

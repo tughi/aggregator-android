@@ -45,9 +45,14 @@
 
     <string name="unsubscribe_feed__message">Are you sure you want to unsubscribe from this feed and delete all its entries?</string>
 
+    <string name="update_mode">Update mode</string>
     <string name="update_mode__auto">Auto</string>
+    <string name="update_mode__auto__description">The next update is calculated based on the already aggregated feed entries.</string>
+    <string name="update_mode__daily">Daily</string>
     <string name="update_mode__default">Default</string>
     <string name="update_mode__disabled">Disabled</string>
+    <string name="update_mode__on_app_launch">On app launch</string>
+    <string name="update_mode__repeating">Repeating</string>
 
     <string name="update_settings">Update settings</string>
     <string name="update_settings__background_update">Background updates</string>

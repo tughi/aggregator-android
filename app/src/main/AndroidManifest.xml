@@ -47,6 +47,10 @@
             android:label="@string/update_settings"
             android:parentActivityName=".MainActivity" />
 
+        <activity
+            android:name=".UpdateModeActivity"
+            android:label="@string/update_mode" />
+
         <service
             android:name=".services.FaviconUpdaterService"
             android:exported="false" />
