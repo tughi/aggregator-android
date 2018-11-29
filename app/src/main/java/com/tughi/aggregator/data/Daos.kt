@@ -5,6 +5,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import com.tughi.aggregator.UpdateMode
 import java.io.Serializable
 
 @Dao
@@ -31,6 +32,9 @@ interface FeedDao {
 
     @Query("UPDATE feeds SET favicon_url = :faviconUrl, favicon_content = :faviconContent WHERE id = :id")
     fun updateFeed(id: Long, faviconUrl: String, faviconContent: ByteArray): Int
+
+    @Query("UPDATE feeds SET update_mode = :updateMode WHERE id = :id")
+    fun updateFeed(id: Long, updateMode: UpdateMode): Int
 
     @Query("DELETE FROM feeds WHERE id = :feedId")
     fun deleteFeed(feedId: Long): Int

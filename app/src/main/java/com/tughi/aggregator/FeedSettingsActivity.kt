@@ -1,8 +1,9 @@
 package com.tughi.aggregator
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
@@ -45,6 +46,8 @@ class FeedSettingsFragment : Fragment() {
 
     companion object {
         const val ARG_FEED_ID = "feed_id"
+
+        const val REQUEST_UPDATE_MODE = 1
     }
 
     private lateinit var urlEditText: EditText
@@ -73,7 +76,8 @@ class FeedSettingsFragment : Fragment() {
             }
         }
         updateModeTextView.setOnClickListener {
-            Log.d(javaClass.name, "Clicked")
+            val feed = viewModel.feed.value ?: return@setOnClickListener
+            startUpdateModeActivity(REQUEST_UPDATE_MODE, feed.updateMode)
         }
 
 
@@ -98,6 +102,20 @@ class FeedSettingsFragment : Fragment() {
         }
 
         return fragmentView
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQUEST_UPDATE_MODE && resultCode == Activity.RESULT_OK) {
+            val feed = viewModel.feed.value
+            if (feed?.id != null) {
+                val updateMode = data?.getStringExtra(UpdateModeActivity.EXTRA_UPDATE_MODE) ?: return
+                GlobalScope.launch(Dispatchers.IO) {
+                    AppDatabase.instance.feedDao().updateFeed(feed.id, UpdateMode.deserialize(updateMode))
+
+                    // TODO: reschedule feed
+                }
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
