@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.preference.PreferenceFragmentCompat
-import com.tughi.aggregator.data.UPDATE_MODE__AUTO
 import com.tughi.aggregator.services.FeedsUpdaterService
 import com.tughi.aggregator.utilities.JOB_SERVICE_FEEDS_UPDATER
 import kotlinx.coroutines.Dispatchers
@@ -55,7 +54,7 @@ class UpdateSettingsFragment : PreferenceFragmentCompat() {
 
         val defaultUpdateModePreference = findPreference(PREFERENCE_DEFAULT_UPDATE_MODE)
         defaultUpdateModePreference.setOnPreferenceClickListener {
-            startUpdateModeActivity(REQUEST_UPDATE_MODE)
+            startUpdateModeActivity(REQUEST_UPDATE_MODE, UpdateSettings.defaultUpdateMode)
             return@setOnPreferenceClickListener true
         }
     }
@@ -75,7 +74,18 @@ object UpdateSettings {
     val backgroundUpdates: Boolean
         get() = preferences.getBoolean(PREFERENCE_BACKGROUND_UPDATES, true)
 
-    val defaultUpdateMode: String
-        get() = preferences.getString(PREFERENCE_DEFAULT_UPDATE_MODE, null) ?: UPDATE_MODE__AUTO
+    var defaultUpdateMode: UpdateMode
+        get() {
+            val value = preferences.getString(PREFERENCE_DEFAULT_UPDATE_MODE, null)
+            if (value != null) {
+                return UpdateMode.deserialize(value)
+            }
+            return AutoUpdateMode
+        }
+        set(updateMode) {
+            preferences.edit()
+                    .putString(PREFERENCE_DEFAULT_UPDATE_MODE, updateMode.serialize())
+                    .apply()
+        }
 
 }

@@ -3,6 +3,7 @@ package com.tughi.aggregator.data
 import android.text.format.DateUtils
 import androidx.room.TypeConverter
 import com.tughi.aggregator.App
+import com.tughi.aggregator.UpdateMode
 
 object CustomTypeConverters {
 
@@ -27,6 +28,18 @@ object CustomTypeConverters {
     @JvmStatic
     fun convertUiEntryType(type: Int): UiEntryType {
         return UiEntryType.values()[type]
+    }
+
+    @TypeConverter
+    @JvmStatic
+    fun deserializeUpdateMode(updateMode: String): UpdateMode {
+        return UpdateMode.deserialize(updateMode)
+    }
+
+    @TypeConverter
+    @JvmStatic
+    fun serializeUpdateMode(updateMode: UpdateMode): String {
+        return updateMode.serialize()
     }
 
 }

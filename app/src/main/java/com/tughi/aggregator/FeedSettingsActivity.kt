@@ -85,7 +85,7 @@ class FeedSettingsFragment : Fragment() {
             if (feed != null) {
                 urlEditText.setText(feed.url)
                 titleEditText.setText(feed.customTitle ?: feed.title)
-                updateModeTextView.text = feed.updateMode
+                updateModeTextView.text = feed.updateMode.toString()
             }
         })
 

@@ -11,8 +11,11 @@ import androidx.recyclerview.widget.RecyclerView
 class UpdateModeActivity : AppActivity() {
 
     companion object {
+        const val EXTRA_CURRENT_UPDATE_MODE = "current-update-mode"
         const val EXTRA_INCLUDE_DEFAULT = "include-default"
     }
+
+    private lateinit var adapter: UpdateModeAdapter
 
     private lateinit var saveMenuItem: MenuItem
 
@@ -28,17 +31,21 @@ class UpdateModeActivity : AppActivity() {
 
         setContentView(R.layout.update_mode_activity)
 
+        val currentUpdateMode = UpdateMode.deserialize(intent.getStringExtra(EXTRA_CURRENT_UPDATE_MODE))
+
         val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
         val updateModes = mutableListOf(
                 AutoUpdateMode,
-                DisabledUpdateMode,
-                RepeatingUpdateMode(0)
+                DisabledUpdateMode
+                // TODO: if (currentUpdateMode is RepeatingUpdateMode) currentUpdateMode else RepeatingUpdateMode(0)
         )
-        recyclerView.adapter = UpdateModeAdapter(updateModes, object : OnUpdateModeClickListener {
+        adapter = UpdateModeAdapter(updateModes, object : OnUpdateModeClickListener {
             override fun onUpdateModeClicked(updateMode: UpdateMode) {
-                (recyclerView.adapter as UpdateModeAdapter).selectedUpdateMode = updateMode
+                adapter.selectedUpdateMode = updateMode
             }
         })
+        adapter.selectedUpdateMode = currentUpdateMode
+        recyclerView.adapter = adapter
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -70,9 +77,10 @@ class UpdateModeActivity : AppActivity() {
 
 }
 
-fun Fragment.startUpdateModeActivity(requestCode: Int, includeDefault: Boolean = true) {
+fun Fragment.startUpdateModeActivity(requestCode: Int, currentUpdateMode: UpdateMode, includeDefault: Boolean = true) {
     val context = context ?: return
     val intent = Intent(context, UpdateModeActivity::class.java)
+            .putExtra(UpdateModeActivity.EXTRA_CURRENT_UPDATE_MODE, currentUpdateMode.serialize())
             .putExtra(UpdateModeActivity.EXTRA_INCLUDE_DEFAULT, includeDefault)
     startActivityForResult(intent, requestCode)
 }

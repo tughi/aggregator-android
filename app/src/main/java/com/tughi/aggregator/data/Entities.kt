@@ -1,10 +1,8 @@
 package com.tughi.aggregator.data
 
 import androidx.room.*
-
-const val UPDATE_MODE__DEFAULT = "DEFAULT"
-const val UPDATE_MODE__AUTO = "AUTO"
-const val UPDATE_MODE__DISABLED = "DISABLED"
+import com.tughi.aggregator.DefaultUpdateMode
+import com.tughi.aggregator.UpdateMode
 
 @Entity(
         tableName = "feeds"
@@ -35,7 +33,7 @@ data class Feed(
         val faviconContent: ByteArray? = null,
 
         @ColumnInfo(name = "update_mode")
-        val updateMode: String = UPDATE_MODE__DEFAULT,
+        val updateMode: UpdateMode = DefaultUpdateMode,
 
         @ColumnInfo(name = "last_update_time")
         val lastUpdateTime: Long = 0,

@@ -4,9 +4,9 @@ import android.text.format.DateUtils
 import android.util.Log
 import android.util.Xml
 import androidx.lifecycle.MutableLiveData
-import com.tughi.aggregator.AppDatabase
-import com.tughi.aggregator.BuildConfig
-import com.tughi.aggregator.data.*
+import com.tughi.aggregator.*
+import com.tughi.aggregator.data.Entry
+import com.tughi.aggregator.data.Feed
 import com.tughi.aggregator.feeds.FeedParser
 import com.tughi.aggregator.utilities.Failure
 import com.tughi.aggregator.utilities.Http
@@ -237,10 +237,10 @@ object FeedUpdater {
         }
     }
 
-    private fun calculateNextUpdateTime(feedId: Long, updateMode: String): Long = when (updateMode) {
-        UPDATE_MODE__DEFAULT -> calculateNextUpdateTime(feedId, UPDATE_MODE__AUTO)
-        UPDATE_MODE__AUTO -> calculateNextAutoUpdateTime(feedId)
-        UPDATE_MODE__DISABLED -> 0
+    private fun calculateNextUpdateTime(feedId: Long, updateMode: UpdateMode): Long = when (updateMode) {
+        DefaultUpdateMode -> calculateNextUpdateTime(feedId, UpdateSettings.defaultUpdateMode)
+        AutoUpdateMode -> calculateNextAutoUpdateTime(feedId)
+        DisabledUpdateMode -> 0
         else -> throw IllegalStateException("Unsupported update mode")
     }
 
