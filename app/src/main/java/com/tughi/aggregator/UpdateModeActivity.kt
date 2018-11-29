@@ -11,8 +11,8 @@ import androidx.recyclerview.widget.RecyclerView
 class UpdateModeActivity : AppActivity() {
 
     companion object {
-        const val EXTRA_CURRENT_UPDATE_MODE = "current-update-mode"
-        const val EXTRA_INCLUDE_DEFAULT = "include-default"
+        const val EXTRA_UPDATE_MODE = "update-mode"
+        const val EXTRA_SHOW_DEFAULT = "show-default"
     }
 
     private lateinit var adapter: UpdateModeAdapter
@@ -31,20 +31,24 @@ class UpdateModeActivity : AppActivity() {
 
         setContentView(R.layout.update_mode_activity)
 
-        val currentUpdateMode = UpdateMode.deserialize(intent.getStringExtra(EXTRA_CURRENT_UPDATE_MODE))
+        val currentUpdateMode = UpdateMode.deserialize(intent.getStringExtra(EXTRA_UPDATE_MODE))
 
         val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
+
         val updateModes = mutableListOf(
                 AutoUpdateMode,
                 DisabledUpdateMode
                 // TODO: if (currentUpdateMode is RepeatingUpdateMode) currentUpdateMode else RepeatingUpdateMode(0)
         )
-        adapter = UpdateModeAdapter(updateModes, object : OnUpdateModeClickListener {
+        if (intent.getBooleanExtra(EXTRA_SHOW_DEFAULT, false)) {
+            updateModes.add(0, DefaultUpdateMode)
+        }
+
+        adapter = UpdateModeAdapter(updateModes, currentUpdateMode, object : OnUpdateModeClickListener {
             override fun onUpdateModeClicked(updateMode: UpdateMode) {
                 adapter.selectedUpdateMode = updateMode
             }
         })
-        adapter.selectedUpdateMode = currentUpdateMode
         recyclerView.adapter = adapter
     }
 
@@ -66,7 +70,7 @@ class UpdateModeActivity : AppActivity() {
                 // ignored
             }
             R.id.save -> {
-                setResult(Activity.RESULT_OK)
+                setResult(Activity.RESULT_OK, Intent().putExtra(EXTRA_UPDATE_MODE, adapter.selectedUpdateMode.serialize()))
             }
             else -> return super.onOptionsItemSelected(item)
         }
@@ -77,33 +81,25 @@ class UpdateModeActivity : AppActivity() {
 
 }
 
-fun Fragment.startUpdateModeActivity(requestCode: Int, currentUpdateMode: UpdateMode, includeDefault: Boolean = true) {
+fun Fragment.startUpdateModeActivity(requestCode: Int, currentUpdateMode: UpdateMode, showDefault: Boolean = true) {
     val context = context ?: return
     val intent = Intent(context, UpdateModeActivity::class.java)
-            .putExtra(UpdateModeActivity.EXTRA_CURRENT_UPDATE_MODE, currentUpdateMode.serialize())
-            .putExtra(UpdateModeActivity.EXTRA_INCLUDE_DEFAULT, includeDefault)
+            .putExtra(UpdateModeActivity.EXTRA_UPDATE_MODE, currentUpdateMode.serialize())
+            .putExtra(UpdateModeActivity.EXTRA_SHOW_DEFAULT, showDefault)
     startActivityForResult(intent, requestCode)
 }
 
-private class UpdateModeAdapter(private val updateModes: List<UpdateMode>, private val listener: OnUpdateModeClickListener) : RecyclerView.Adapter<UpdateModeViewHolder>() {
+private class UpdateModeAdapter(private val updateModes: List<UpdateMode>, currentUpdateMode: UpdateMode, private val listener: OnUpdateModeClickListener) : RecyclerView.Adapter<UpdateModeViewHolder>() {
 
-    var selectedUpdateMode: UpdateMode? = null
+    var selectedUpdateMode: UpdateMode = currentUpdateMode
         set(value) {
             val oldValue = field
-
             if (value == oldValue) {
                 return
             }
-
-            if (oldValue != null) {
-                notifyItemChanged(updateModes.indexOf(oldValue))
-            }
-
             field = value
-
-            if (value != null) {
-                notifyItemChanged(updateModes.indexOf(value))
-            }
+            notifyItemChanged(updateModes.indexOf(oldValue))
+            notifyItemChanged(updateModes.indexOf(value))
         }
 
     override fun getItemCount(): Int = updateModes.size

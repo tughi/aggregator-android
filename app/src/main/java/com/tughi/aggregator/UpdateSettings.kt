@@ -54,14 +54,15 @@ class UpdateSettingsFragment : PreferenceFragmentCompat() {
 
         val defaultUpdateModePreference = findPreference(PREFERENCE_DEFAULT_UPDATE_MODE)
         defaultUpdateModePreference.setOnPreferenceClickListener {
-            startUpdateModeActivity(REQUEST_UPDATE_MODE, UpdateSettings.defaultUpdateMode)
+            startUpdateModeActivity(REQUEST_UPDATE_MODE, UpdateSettings.defaultUpdateMode, false)
             return@setOnPreferenceClickListener true
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_UPDATE_MODE && resultCode == Activity.RESULT_OK) {
-            // TODO: update preferences
+            val updateMode = data?.getStringExtra(UpdateModeActivity.EXTRA_UPDATE_MODE) ?: return
+            UpdateSettings.defaultUpdateMode = UpdateMode.deserialize(updateMode)
         }
     }
 
@@ -86,6 +87,8 @@ object UpdateSettings {
             preferences.edit()
                     .putString(PREFERENCE_DEFAULT_UPDATE_MODE, updateMode.serialize())
                     .apply()
+
+            // TODO: reschedule the feeds that use the default update mode
         }
 
 }
