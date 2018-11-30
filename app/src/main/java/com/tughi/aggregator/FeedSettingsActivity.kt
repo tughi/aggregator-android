@@ -52,6 +52,7 @@ class FeedSettingsFragment : Fragment() {
 
     private lateinit var urlEditText: EditText
     private lateinit var titleEditText: EditText
+    private lateinit var updateModeTextView: TextView
 
     lateinit var viewModel: FeedSettingsViewModel
 
@@ -66,18 +67,20 @@ class FeedSettingsFragment : Fragment() {
 
         urlEditText = fragmentView.findViewById(R.id.url)
         titleEditText = fragmentView.findViewById(R.id.title)
-        val updateModeTextView = fragmentView.findViewById<TextView>(R.id.update_mode)
+        updateModeTextView = fragmentView.findViewById(R.id.update_mode)
 
         updateModeTextView.keyListener = null
         updateModeTextView.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
                 val inputMethodManager = view.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+
+                view.callOnClick()
             }
         }
         updateModeTextView.setOnClickListener {
             val feed = viewModel.feed.value ?: return@setOnClickListener
-            startUpdateModeActivity(REQUEST_UPDATE_MODE, feed.updateMode)
+            startUpdateModeActivity(REQUEST_UPDATE_MODE, viewModel.newUpdateMode ?: feed.updateMode)
         }
 
 
@@ -89,7 +92,8 @@ class FeedSettingsFragment : Fragment() {
             if (feed != null) {
                 urlEditText.setText(feed.url)
                 titleEditText.setText(feed.customTitle ?: feed.title)
-                updateModeTextView.text = feed.updateMode.toString()
+
+                updateModeTextView.apply { text = feed.updateMode.toString(context) }
             }
         })
 
@@ -106,14 +110,9 @@ class FeedSettingsFragment : Fragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_UPDATE_MODE && resultCode == Activity.RESULT_OK) {
-            val feed = viewModel.feed.value
-            if (feed?.id != null) {
-                val updateMode = data?.getStringExtra(UpdateModeActivity.EXTRA_UPDATE_MODE) ?: return
-                GlobalScope.launch(Dispatchers.IO) {
-                    AppDatabase.instance.feedDao().updateFeed(feed.id, UpdateMode.deserialize(updateMode))
-
-                    // TODO: reschedule feed
-                }
+            val serializedUpdateMode = data?.getStringExtra(UpdateModeActivity.EXTRA_UPDATE_MODE) ?: return
+            viewModel.newUpdateMode = UpdateMode.deserialize(serializedUpdateMode).also { updateMode ->
+                updateModeTextView.apply { text = updateMode.toString(context) }
             }
         }
     }
@@ -132,16 +131,22 @@ class FeedSettingsFragment : Fragment() {
     private fun onSave(): Boolean {
         val url = urlEditText.text.toString().trim()
         val title = titleEditText.text.toString().trim()
+        val updateMode = viewModel.newUpdateMode
 
         val feed = viewModel.feed.value
-        if (feed != null) {
+        if (feed?.id != null) {
             GlobalScope.launch {
                 AppDatabase.instance.feedDao()
                         .updateFeed(
-                                id = feed.id!!,
+                                id = feed.id,
                                 url = url,
-                                customTitle = if (title.isEmpty()) null else title
+                                customTitle = if (title.isEmpty()) null else title,
+                                updateMode = updateMode ?: feed.updateMode
                         )
+
+                if (updateMode != null && updateMode != feed.updateMode) {
+                    // TODO: reschedule next feed update
+                }
 
                 launch(Dispatchers.Main) {
                     FaviconUpdaterService.start(feed.id)

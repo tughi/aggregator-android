@@ -49,7 +49,8 @@
     <string name="update_mode__auto">Auto</string>
     <string name="update_mode__auto__description">Aggregator decides when to update the feed based on the already aggregated entries</string>
     <string name="update_mode__daily">Daily</string>
-    <string name="update_mode__default">Default</string>
+    <string name="update_mode__default">Default (%1$s)</string>
+    <string name="update_mode__default__description">Use the default update mode</string>
     <string name="update_mode__disabled">Disabled</string>
     <string name="update_mode__disabled__description">Disables automated feed updates</string>
     <string name="update_mode__on_app_launch">On app launch</string>

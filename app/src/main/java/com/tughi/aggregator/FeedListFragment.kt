@@ -221,7 +221,7 @@ private class ExpandedFeedViewHolder(itemView: View) : FeedListItemViewHolder(it
         DateUtils.getRelativeDateTimeString(context, feed.nextUpdateTime, DateUtils.DAY_IN_MILLIS, DateUtils.DAY_IN_MILLIS, 0).let {
             nextUpdateTime.text = context.getString(R.string.next_update_time, it)
         }
-        updateMode.setText(R.string.update_mode__default)
+        updateMode.apply { text = feed.updateMode.toString(context) }
 
         updateButton.isEnabled = !feed.updating
     }

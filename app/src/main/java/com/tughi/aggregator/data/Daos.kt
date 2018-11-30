@@ -27,14 +27,11 @@ interface FeedDao {
     """)
     fun updateFeed(id: Long, url: String, title: String, link: String?, language: String?, lastUpdateTime: Long, nextUpdateTime: Long): Int
 
-    @Query("UPDATE feeds SET url = :url, custom_title = :customTitle WHERE id = :id")
-    fun updateFeed(id: Long, url: String, customTitle: String?): Int
+    @Query("UPDATE feeds SET url = :url, custom_title = :customTitle, update_mode = :updateMode WHERE id = :id")
+    fun updateFeed(id: Long, url: String, customTitle: String?, updateMode: UpdateMode): Int
 
     @Query("UPDATE feeds SET favicon_url = :faviconUrl, favicon_content = :faviconContent WHERE id = :id")
     fun updateFeed(id: Long, faviconUrl: String, faviconContent: ByteArray): Int
-
-    @Query("UPDATE feeds SET update_mode = :updateMode WHERE id = :id")
-    fun updateFeed(id: Long, updateMode: UpdateMode): Int
 
     @Query("DELETE FROM feeds WHERE id = :feedId")
     fun deleteFeed(feedId: Long): Int
@@ -55,6 +52,7 @@ interface FeedDao {
             f.favicon_url,
             f.last_update_time,
             f.next_update_time,
+            f.update_mode,
             (SELECT COUNT(1) FROM entries e WHERE f.id = e.feed_id AND e.read_time = 0) AS unread_entry_count,
             0 AS expanded,
             0 AS updating
@@ -85,6 +83,9 @@ data class UiFeed(
 
         @ColumnInfo(name = "next_update_time")
         val nextUpdateTime: Long,
+
+        @ColumnInfo(name = "update_mode")
+        val updateMode: UpdateMode,
 
         @ColumnInfo(name = "unread_entry_count")
         val unreadEntryCount: Int,

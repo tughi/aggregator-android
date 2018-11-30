@@ -1,6 +1,7 @@
 package com.tughi.aggregator
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.*
@@ -149,18 +150,20 @@ private sealed class UpdateModeViewHolder(itemView: View) : RecyclerView.ViewHol
     fun bind(updateMode: UpdateMode) {
         this.updateMode = updateMode
 
-        titleTextView.setText(when (updateMode) {
-            AutoUpdateMode -> R.string.update_mode__auto
-            DefaultUpdateMode -> R.string.update_mode__default
-            DisabledUpdateMode -> R.string.update_mode__disabled
-            is RepeatingUpdateMode -> R.string.update_mode__repeating
-        })
+        titleTextView.text = updateMode.toString(titleTextView.context)
 
         onBind()
     }
 
     open fun onBind() {}
 
+}
+
+fun UpdateMode.toString(context: Context): String = when (this) {
+    AutoUpdateMode -> context.getString(R.string.update_mode__auto)
+    DefaultUpdateMode -> context.getString(R.string.update_mode__default, UpdateSettings.defaultUpdateMode.toString(context))
+    DisabledUpdateMode -> context.getString(R.string.update_mode__disabled)
+    is RepeatingUpdateMode -> TODO()
 }
 
 private class UncheckedUpdateModeViewHolder(itemView: View) : UpdateModeViewHolder(itemView)

@@ -5,11 +5,13 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.AppDatabase
+import com.tughi.aggregator.UpdateMode
 import com.tughi.aggregator.data.Feed
 
 class FeedSettingsViewModel(feedId: Long) : ViewModel() {
 
     private val liveFeed = MediatorLiveData<Feed>()
+    var newUpdateMode: UpdateMode? = null
 
     val feed: LiveData<Feed>
         get() = liveFeed
