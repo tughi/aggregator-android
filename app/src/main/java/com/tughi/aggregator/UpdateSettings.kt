@@ -5,6 +5,7 @@ import android.app.job.JobScheduler
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.tughi.aggregator.data.AdaptiveUpdateMode
 import com.tughi.aggregator.data.UpdateMode
@@ -39,6 +40,8 @@ class UpdateSettingsFragment : PreferenceFragmentCompat() {
         private const val REQUEST_UPDATE_MODE = 1
     }
 
+    private lateinit var defaultUpdateModePrefence: Preference
+
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.update_settings, rootKey)
 
@@ -55,17 +58,22 @@ class UpdateSettingsFragment : PreferenceFragmentCompat() {
             return@setOnPreferenceChangeListener true
         }
 
-        val defaultUpdateModePreference = findPreference(PREFERENCE_DEFAULT_UPDATE_MODE)
-        defaultUpdateModePreference.setOnPreferenceClickListener {
-            startUpdateModeActivity(REQUEST_UPDATE_MODE, UpdateSettings.defaultUpdateMode, false)
-            return@setOnPreferenceClickListener true
+        defaultUpdateModePrefence = findPreference(PREFERENCE_DEFAULT_UPDATE_MODE).apply {
+            summary = UpdateSettings.defaultUpdateMode.toString(context)
+            setOnPreferenceClickListener {
+                startUpdateModeActivity(REQUEST_UPDATE_MODE, UpdateSettings.defaultUpdateMode, false)
+                return@setOnPreferenceClickListener true
+            }
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_UPDATE_MODE && resultCode == Activity.RESULT_OK) {
-            val updateMode = data?.getStringExtra(UpdateModeActivity.EXTRA_UPDATE_MODE) ?: return
-            UpdateSettings.defaultUpdateMode = UpdateMode.deserialize(updateMode)
+            val serializedUpdateMode = data?.getStringExtra(UpdateModeActivity.EXTRA_UPDATE_MODE) ?: return
+            UpdateMode.deserialize(serializedUpdateMode).also {
+                UpdateSettings.defaultUpdateMode = it
+                defaultUpdateModePrefence.summary = it.toString(defaultUpdateModePrefence.context)
+            }
         }
     }
 
