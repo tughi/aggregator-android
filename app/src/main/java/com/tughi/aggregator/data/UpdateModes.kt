@@ -1,6 +1,6 @@
 package com.tughi.aggregator.data
 
-private const val UPDATE_MODE__AUTO = "AUTO"
+private const val UPDATE_MODE__ADAPTIVE = "ADAPTIVE"
 private const val UPDATE_MODE__DEFAULT = "DEFAULT"
 private const val UPDATE_MODE__DISABLED = "DISABLED"
 private const val UPDATE_MODE__REPEATING = "REPEATING"
@@ -16,18 +16,18 @@ sealed class UpdateMode {
             val params = if (parts.size == 2) parts[1] else null
 
             return when (name) {
-                UPDATE_MODE__AUTO -> AutoUpdateMode
+                UPDATE_MODE__ADAPTIVE -> AdaptiveUpdateMode
                 UPDATE_MODE__DEFAULT -> DefaultUpdateMode
                 UPDATE_MODE__DISABLED -> DisabledUpdateMode
                 UPDATE_MODE__REPEATING -> RepeatingUpdateMode(params ?: "60")
-                else -> throw IllegalArgumentException(value)
+                else -> DisabledUpdateMode
             }
         }
     }
 }
 
-object AutoUpdateMode : UpdateMode() {
-    override fun serialize(): String = UPDATE_MODE__AUTO
+object AdaptiveUpdateMode : UpdateMode() {
+    override fun serialize(): String = UPDATE_MODE__ADAPTIVE
 }
 
 object DefaultUpdateMode : UpdateMode() {

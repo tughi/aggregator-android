@@ -3,7 +3,7 @@ package com.tughi.aggregator.services
 import android.text.format.DateUtils
 import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.UpdateSettings
-import com.tughi.aggregator.data.AutoUpdateMode
+import com.tughi.aggregator.data.AdaptiveUpdateMode
 import com.tughi.aggregator.data.DefaultUpdateMode
 import com.tughi.aggregator.data.DisabledUpdateMode
 import com.tughi.aggregator.data.RepeatingUpdateMode
@@ -48,13 +48,13 @@ object FeedUpdaterScheduler {
     }
 
     fun calculateNextUpdateTime(feedId: Long, updateMode: UpdateMode, lastUpdateTime: Long): Long = when (updateMode) {
-        AutoUpdateMode -> calculateNextAutoUpdateTime(feedId, lastUpdateTime)
+        AdaptiveUpdateMode -> calculateNextAdaptiveUpdateTime(feedId, lastUpdateTime)
         DefaultUpdateMode -> calculateNextUpdateTime(feedId, UpdateSettings.defaultUpdateMode, lastUpdateTime)
         DisabledUpdateMode -> 0
         is RepeatingUpdateMode -> throw IllegalArgumentException("Unsupported update mode: $updateMode")
     }
 
-    private fun calculateNextAutoUpdateTime(feedId: Long, lastUpdateTime: Long): Long {
+    private fun calculateNextAdaptiveUpdateTime(feedId: Long, lastUpdateTime: Long): Long {
         val entryDao = AppDatabase.instance.entryDao()
 
         val aggregatedEntriesSinceYesterday = entryDao.countAggregatedEntries(feedId, lastUpdateTime - DateUtils.DAY_IN_MILLIS)

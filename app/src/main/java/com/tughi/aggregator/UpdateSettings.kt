@@ -6,7 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.preference.PreferenceFragmentCompat
-import com.tughi.aggregator.data.AutoUpdateMode
+import com.tughi.aggregator.data.AdaptiveUpdateMode
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.FeedUpdaterScheduler
 import com.tughi.aggregator.services.FeedsUpdaterService
@@ -84,7 +84,7 @@ object UpdateSettings {
             if (value != null) {
                 return UpdateMode.deserialize(value)
             }
-            return AutoUpdateMode
+            return AdaptiveUpdateMode
         }
         set(updateMode) {
             preferences.edit()

@@ -12,7 +12,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
-import com.tughi.aggregator.data.AutoUpdateMode
+import com.tughi.aggregator.data.AdaptiveUpdateMode
 import com.tughi.aggregator.data.DefaultUpdateMode
 import com.tughi.aggregator.data.DisabledUpdateMode
 import com.tughi.aggregator.data.RepeatingUpdateMode
@@ -46,7 +46,7 @@ class UpdateModeActivity : AppActivity() {
         val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
 
         val updateModes = mutableListOf(
-                AutoUpdateMode,
+                AdaptiveUpdateMode,
                 DisabledUpdateMode
                 // TODO: if (currentUpdateMode is RepeatingUpdateMode) currentUpdateMode else RepeatingUpdateMode(0)
         )
@@ -121,7 +121,7 @@ private class UpdateModeAdapter(private val updateModes: List<UpdateMode>, curre
         }
 
         return when (updateMode) {
-            AutoUpdateMode -> R.layout.update_mode_item_checked_auto
+            AdaptiveUpdateMode -> R.layout.update_mode_item_checked_adaptive
             DefaultUpdateMode -> R.layout.update_mode_item_checked_default
             DisabledUpdateMode -> R.layout.update_mode_item_checked_disabled
             is RepeatingUpdateMode -> R.layout.update_mode_item_checked_repeating
@@ -136,7 +136,7 @@ private class UpdateModeAdapter(private val updateModes: List<UpdateMode>, curre
                     listener.onUpdateModeClicked(holder.updateMode)
                 }
             }
-            R.layout.update_mode_item_checked_auto -> AutoUpdateModeViewHolder(itemView)
+            R.layout.update_mode_item_checked_adaptive -> AdaptiveUpdateModeViewHolder(itemView)
             R.layout.update_mode_item_checked_default -> DefaultUpdateModeViewHolder(itemView)
             R.layout.update_mode_item_checked_disabled -> DisabledUpdateModeViewHolder(itemView)
             R.layout.update_mode_item_checked_repeating -> RepeatingUpdateModeViewHolder(itemView)
@@ -169,7 +169,7 @@ private sealed class UpdateModeViewHolder(itemView: View) : RecyclerView.ViewHol
 }
 
 fun UpdateMode.toString(context: Context): String = when (this) {
-    AutoUpdateMode -> context.getString(R.string.update_mode__auto)
+    AdaptiveUpdateMode -> context.getString(R.string.update_mode__adaptive)
     DefaultUpdateMode -> context.getString(R.string.update_mode__default, UpdateSettings.defaultUpdateMode.toString(context))
     DisabledUpdateMode -> context.getString(R.string.update_mode__disabled)
     is RepeatingUpdateMode -> TODO()
@@ -177,7 +177,7 @@ fun UpdateMode.toString(context: Context): String = when (this) {
 
 private class UncheckedUpdateModeViewHolder(itemView: View) : UpdateModeViewHolder(itemView)
 
-private class AutoUpdateModeViewHolder(itemView: View) : UpdateModeViewHolder(itemView)
+private class AdaptiveUpdateModeViewHolder(itemView: View) : UpdateModeViewHolder(itemView)
 
 private class DefaultUpdateModeViewHolder(itemView: View) : UpdateModeViewHolder(itemView)
 

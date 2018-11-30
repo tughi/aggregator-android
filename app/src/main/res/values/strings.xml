@@ -47,8 +47,8 @@
     <string name="unsubscribe_feed__message">Are you sure you want to unsubscribe from this feed and delete all its entries?</string>
 
     <string name="update_mode">Update mode</string>
-    <string name="update_mode__auto">Auto</string>
-    <string name="update_mode__auto__description">Aggregator decides when to update the feed based on the already aggregated entries</string>
+    <string name="update_mode__adaptive">Adaptive</string>
+    <string name="update_mode__adaptive__description">Aggregator decides when to update the feed based on the already aggregated entries</string>
     <string name="update_mode__daily">Daily</string>
     <string name="update_mode__default">Default (%1$s)</string>
     <string name="update_mode__default__description">Use the default update mode</string>

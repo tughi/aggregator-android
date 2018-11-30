@@ -15,6 +15,6 @@
         android:paddingStart="56dp"
         android:paddingEnd="0dp"
         android:paddingBottom="16dp"
-        android:text="@string/update_mode__auto__description" />
+        android:text="@string/update_mode__adaptive__description" />
 
 </LinearLayout>
