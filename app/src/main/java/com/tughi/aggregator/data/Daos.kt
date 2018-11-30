@@ -5,7 +5,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import com.tughi.aggregator.UpdateMode
 import java.io.Serializable
 
 @Dao

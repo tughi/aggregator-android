@@ -1,8 +1,10 @@
 package com.tughi.aggregator.data
 
-import androidx.room.*
-import com.tughi.aggregator.DefaultUpdateMode
-import com.tughi.aggregator.UpdateMode
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
+import androidx.room.PrimaryKey
 
 @Entity(
         tableName = "feeds"

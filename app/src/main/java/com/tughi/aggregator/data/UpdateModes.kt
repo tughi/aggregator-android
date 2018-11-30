@@ -1,4 +1,4 @@
-package com.tughi.aggregator
+package com.tughi.aggregator.data
 
 private const val UPDATE_MODE__AUTO = "AUTO"
 private const val UPDATE_MODE__DEFAULT = "DEFAULT"
@@ -12,10 +12,10 @@ sealed class UpdateMode {
         fun deserialize(value: String): UpdateMode {
             val parts = value.split(':', limit = 1)
 
-            val prefix = parts[0]
+            val name = parts[0]
             val params = if (parts.size == 2) parts[1] else null
 
-            return when (prefix) {
+            return when (name) {
                 UPDATE_MODE__AUTO -> AutoUpdateMode
                 UPDATE_MODE__DEFAULT -> DefaultUpdateMode
                 UPDATE_MODE__DISABLED -> DisabledUpdateMode

@@ -4,10 +4,19 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
+import com.tughi.aggregator.data.AutoUpdateMode
+import com.tughi.aggregator.data.DefaultUpdateMode
+import com.tughi.aggregator.data.DisabledUpdateMode
+import com.tughi.aggregator.data.RepeatingUpdateMode
+import com.tughi.aggregator.data.UpdateMode
 
 class UpdateModeActivity : AppActivity() {
 

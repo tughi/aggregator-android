@@ -3,7 +3,6 @@ package com.tughi.aggregator.data
 import android.text.format.DateUtils
 import androidx.room.TypeConverter
 import com.tughi.aggregator.App
-import com.tughi.aggregator.UpdateMode
 
 object CustomTypeConverters {
 

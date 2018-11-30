@@ -6,6 +6,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.preference.PreferenceFragmentCompat
+import com.tughi.aggregator.data.AutoUpdateMode
+import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.FeedsUpdaterService
 import com.tughi.aggregator.utilities.JOB_SERVICE_FEEDS_UPDATER
 import kotlinx.coroutines.Dispatchers
