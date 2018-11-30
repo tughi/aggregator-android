@@ -193,7 +193,6 @@ private class ExpandedFeedViewHolder(itemView: View) : FeedListItemViewHolder(it
 
     val lastUpdateTime: TextView = itemView.findViewById(R.id.last_update_time)
     val nextUpdateTime: TextView = itemView.findViewById(R.id.next_update_time)
-    val updateMode: TextView = itemView.findViewById(R.id.update_mode)
     val settingsButton: View = itemView.findViewById(R.id.settings)
     val updateButton: View = itemView.findViewById(R.id.update)
 
@@ -211,17 +210,22 @@ private class ExpandedFeedViewHolder(itemView: View) : FeedListItemViewHolder(it
         super.onBind(feed)
 
         val context = itemView.context
+
         if (feed.lastUpdateTime == 0L) {
-            lastUpdateTime.setText(R.string.last_update_time__never)
+            lastUpdateTime.setText(R.string.feed_list_item__last_update_time__never)
         } else {
             DateUtils.getRelativeDateTimeString(context, feed.lastUpdateTime, DateUtils.DAY_IN_MILLIS, DateUtils.DAY_IN_MILLIS, 0).let {
-                lastUpdateTime.text = context.getString(R.string.last_update_time__since, it)
+                lastUpdateTime.text = context.getString(R.string.feed_list_item__last_update_time, it)
             }
         }
-        DateUtils.getRelativeDateTimeString(context, feed.nextUpdateTime, DateUtils.DAY_IN_MILLIS, DateUtils.DAY_IN_MILLIS, 0).let {
-            nextUpdateTime.text = context.getString(R.string.next_update_time, it)
+
+        if (feed.nextUpdateTime == 0L) {
+            nextUpdateTime.setText(R.string.feed_list_item__next_update_time__disabled)
+        } else {
+            DateUtils.getRelativeDateTimeString(context, feed.nextUpdateTime, DateUtils.DAY_IN_MILLIS, DateUtils.DAY_IN_MILLIS, 0).let {
+                nextUpdateTime.text = context.getString(R.string.feed_list_item__next_update_time, it)
+            }
         }
-        updateMode.apply { text = feed.updateMode.toString(context) }
 
         updateButton.isEnabled = !feed.updating
     }

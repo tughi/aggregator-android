@@ -11,16 +11,17 @@
     <string name="action__update">Update</string>
     <string name="action__yes">Yes</string>
 
+    <string name="feed_list_item__last_update_time">Updated: %1$s</string>
+    <string name="feed_list_item__last_update_time__never">Updated: Never</string>
+    <string name="feed_list_item__next_update_time">Auto update: %1$s</string>
+    <string name="feed_list_item__next_update_time__disabled">Auto update: disabled</string>
+
     <string name="feed_settings">Feed settings</string>
     <string name="feed_settings__title">Title</string>
     <string name="feed_settings__update_mode">Update mode</string>
     <string name="feed_settings__url">URL</string>
 
     <string name="feeds_empty_message">You don\'t have any feeds yet.</string>
-
-    <string name="last_update_time__never">Updated: Never</string>
-    <string name="last_update_time__since">Updated: %1$s</string>
-    <string name="next_update_time">Next update: %1$s</string>
 
     <string name="subscribe_url">Website or feed URL</string>
     <string name="subscribe_explanation">Content providers, like news sites and blogs, often

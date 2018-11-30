@@ -70,28 +70,23 @@
                 android:id="@+id/last_update_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
                 android:textAppearance="?textAppearanceBody2"
                 android:textColor="?android:textColorSecondary"
                 android:textSize="14sp"
-                tools:text="@string/last_update_time__since" />
+                tools:text="@string/feed_list_item__last_update_time" />
 
             <TextView
                 android:id="@+id/next_update_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
                 android:textAppearance="?textAppearanceBody2"
                 android:textColor="?android:textColorSecondary"
                 android:textSize="14sp"
-                tools:text="@string/next_update_time" />
-
-            <TextView
-                android:id="@+id/update_mode"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?textAppearanceBody2"
-                android:textColor="?android:textColorSecondary"
-                android:textSize="14sp"
-                tools:text="@string/update_mode__default" />
+                tools:text="@string/feed_list_item__next_update_time" />
 
         </LinearLayout>
 
