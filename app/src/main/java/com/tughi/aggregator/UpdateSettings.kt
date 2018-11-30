@@ -8,6 +8,7 @@ import android.os.Bundle
 import androidx.preference.PreferenceFragmentCompat
 import com.tughi.aggregator.data.AutoUpdateMode
 import com.tughi.aggregator.data.UpdateMode
+import com.tughi.aggregator.services.FeedUpdaterScheduler
 import com.tughi.aggregator.services.FeedsUpdaterService
 import com.tughi.aggregator.utilities.JOB_SERVICE_FEEDS_UPDATER
 import kotlinx.coroutines.Dispatchers
@@ -90,7 +91,9 @@ object UpdateSettings {
                     .putString(PREFERENCE_DEFAULT_UPDATE_MODE, updateMode.serialize())
                     .apply()
 
-            // TODO: reschedule the feeds that use the default update mode
+            GlobalScope.launch {
+                FeedUpdaterScheduler.scheduleFeedsWithDefaultUpdateMode()
+            }
         }
 
 }

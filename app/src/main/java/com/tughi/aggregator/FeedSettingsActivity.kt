@@ -18,6 +18,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.FaviconUpdaterService
+import com.tughi.aggregator.services.FeedUpdaterScheduler
 import com.tughi.aggregator.viewmodels.FeedSettingsViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -142,16 +143,15 @@ class FeedSettingsFragment : Fragment() {
         val feed = viewModel.feed.value
         if (feed?.id != null) {
             GlobalScope.launch {
-                AppDatabase.instance.feedDao()
-                        .updateFeed(
-                                id = feed.id,
-                                url = url,
-                                customTitle = if (title.isEmpty()) null else title,
-                                updateMode = updateMode ?: feed.updateMode
-                        )
+                AppDatabase.instance.feedDao().updateFeed(
+                        id = feed.id,
+                        url = url,
+                        customTitle = if (title.isEmpty()) null else title,
+                        updateMode = updateMode ?: feed.updateMode
+                )
 
                 if (updateMode != null && updateMode != feed.updateMode) {
-                    // TODO: reschedule next feed update
+                    FeedUpdaterScheduler.scheduleFeed(feed.id)
                 }
 
                 launch(Dispatchers.Main) {

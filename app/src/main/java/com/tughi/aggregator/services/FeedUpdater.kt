@@ -6,13 +6,8 @@ import android.util.Xml
 import androidx.lifecycle.MutableLiveData
 import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.BuildConfig
-import com.tughi.aggregator.UpdateSettings
-import com.tughi.aggregator.data.AutoUpdateMode
-import com.tughi.aggregator.data.DefaultUpdateMode
-import com.tughi.aggregator.data.DisabledUpdateMode
 import com.tughi.aggregator.data.Entry
 import com.tughi.aggregator.data.Feed
-import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.feeds.FeedParser
 import com.tughi.aggregator.utilities.Failure
 import com.tughi.aggregator.utilities.Http
@@ -34,8 +29,6 @@ import java.io.IOException
 import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
-import kotlin.math.max
-import kotlin.math.min
 
 
 object FeedUpdater {
@@ -225,9 +218,9 @@ object FeedUpdater {
             database.beginTransaction()
 
             val feedId = feed.id!!
+            val lastUpdateTime = System.currentTimeMillis()
 
-            // TODO: check if background updates are enabled
-            val nextUpdateTime = calculateNextUpdateTime(feedId, feed.updateMode)
+            val nextUpdateTime = FeedUpdaterScheduler.calculateNextUpdateTime(feedId, feed.updateMode, lastUpdateTime)
 
             val updated = database.feedDao().updateFeed(
                     id = feedId,
@@ -235,7 +228,7 @@ object FeedUpdater {
                     title = title,
                     link = link,
                     language = language,
-                    lastUpdateTime = System.currentTimeMillis(),
+                    lastUpdateTime = lastUpdateTime,
                     nextUpdateTime = nextUpdateTime
             )
             if (updated != 1) {
@@ -250,33 +243,7 @@ object FeedUpdater {
         }
     }
 
-    private fun calculateNextUpdateTime(feedId: Long, updateMode: UpdateMode): Long = when (updateMode) {
-        DefaultUpdateMode -> calculateNextUpdateTime(feedId, UpdateSettings.defaultUpdateMode)
-        AutoUpdateMode -> calculateNextAutoUpdateTime(feedId)
-        DisabledUpdateMode -> 0
-        else -> throw IllegalStateException("Unsupported update mode")
-    }
-
-    private fun calculateNextAutoUpdateTime(feedId: Long): Long {
-        val entryDao = database.entryDao()
-        val now = System.currentTimeMillis()
-
-        val aggregatedEntriesSinceYesterday = entryDao.countAggregatedEntries(feedId, now - DateUtils.DAY_IN_MILLIS)
-        val updateRate = if (aggregatedEntriesSinceYesterday > 0) {
-            max(DateUtils.DAY_IN_MILLIS / aggregatedEntriesSinceYesterday, DateUtils.HOUR_IN_MILLIS / 2) / 2
-        } else {
-            val aggregatedEntriesSinceLastWeek = entryDao.countAggregatedEntries(feedId, now - DateUtils.WEEK_IN_MILLIS)
-            if (aggregatedEntriesSinceLastWeek > 0) {
-                min(DateUtils.WEEK_IN_MILLIS / aggregatedEntriesSinceLastWeek, DateUtils.DAY_IN_MILLIS / 2) / 2
-            } else {
-                DateUtils.DAY_IN_MILLIS / 2
-            }
-        }
-        val alignedUpdateRate = updateRate / (DateUtils.HOUR_IN_MILLIS / 4) * (DateUtils.HOUR_IN_MILLIS / 4)
-        return now / (DateUtils.HOUR_IN_MILLIS / 4) * (DateUtils.HOUR_IN_MILLIS / 4) + alignedUpdateRate
-    }
-
-    class UnexpectedHttpResponseException(val response: Response) : Exception("Unexpected HTTP response: $response")
+    class UnexpectedHttpResponseException(response: Response) : Exception("Unexpected HTTP response: $response")
 
 }
 

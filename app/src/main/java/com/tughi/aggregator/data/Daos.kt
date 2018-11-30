@@ -29,6 +29,9 @@ interface FeedDao {
     @Query("UPDATE feeds SET url = :url, custom_title = :customTitle, update_mode = :updateMode WHERE id = :id")
     fun updateFeed(id: Long, url: String, customTitle: String?, updateMode: UpdateMode): Int
 
+    @Query("UPDATE feeds SET next_update_time = :nextUpdateTime WHERE id = :id")
+    fun updateFeed(id: Long, nextUpdateTime: Long): Int
+
     @Query("UPDATE feeds SET favicon_url = :faviconUrl, favicon_content = :faviconContent WHERE id = :id")
     fun updateFeed(id: Long, faviconUrl: String, faviconContent: ByteArray): Int
 
@@ -40,6 +43,12 @@ interface FeedDao {
 
     @Query("SELECT * FROM feeds WHERE id = :id")
     fun queryFeed(id: Long): Feed
+
+    @Query("SELECT id, last_update_time, update_mode FROM feeds WHERE id = :feedId")
+    fun querySchedulerFeed(feedId: Long): SchedulerFeed?
+
+    @Query("SELECT id, last_update_time, update_mode FROM feeds WHERE update_mode = :updateMode")
+    fun querySchedulerFeeds(updateMode: UpdateMode): Array<SchedulerFeed>
 
     @Query("SELECT * FROM feeds WHERE id = :id")
     fun getFeed(id: Long): LiveData<Feed>
@@ -66,6 +75,17 @@ interface FeedDao {
     fun queryNextUpdateTime(): Long?
 
 }
+
+data class SchedulerFeed(
+        @ColumnInfo
+        val id: Long,
+
+        @ColumnInfo(name = "last_update_time")
+        val lastUpdateTime: Long,
+
+        @ColumnInfo(name = "update_mode")
+        val updateMode: UpdateMode
+)
 
 data class UiFeed(
         @ColumnInfo
