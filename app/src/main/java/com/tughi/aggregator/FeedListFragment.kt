@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.data.UiFeed
+import com.tughi.aggregator.services.AutoUpdateScheduler
 import com.tughi.aggregator.services.FeedUpdater
 import com.tughi.aggregator.utilities.Favicons
 import com.tughi.aggregator.viewmodels.FeedListViewModel
@@ -96,6 +97,8 @@ class FeedListFragment : Fragment(), OnFeedClickedListener {
     override fun onUpdateFeed(feed: UiFeed) {
         GlobalScope.launch(Dispatchers.IO) {
             FeedUpdater.updateFeed(feed.id)
+
+            AutoUpdateScheduler.scheduleFeed(feed.id)
         }
     }
 

@@ -1,36 +1,17 @@
 package com.tughi.aggregator.services
 
-import android.app.job.JobInfo
 import android.app.job.JobParameters
-import android.app.job.JobScheduler
 import android.app.job.JobService
-import android.content.ComponentName
-import android.content.Context
-import com.tughi.aggregator.App
 import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.UpdateSettings
-import com.tughi.aggregator.utilities.JOB_SERVICE_FEEDS_UPDATER_SCHEDULER
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 
-class FeedsUpdaterService : JobService() {
-
-    companion object {
-        fun schedule(delay: Long = 0) {
-            if (!UpdateSettings.backgroundUpdates) {
-                return
-            }
-
-            val context = App.instance
-            val jobScheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
-
-            val jobInfo = JobInfo.Builder(JOB_SERVICE_FEEDS_UPDATER_SCHEDULER, ComponentName(context, FeedsUpdaterSchedulerService::class.java))
-                    .setMinimumLatency(delay)
-                    .setPersisted(true)
-                    .build()
-
-            jobScheduler.schedule(jobInfo)
-        }
-    }
+class AutoUpdateService : JobService() {
 
     private var currentJob: Job? = null
 
@@ -48,6 +29,10 @@ class FeedsUpdaterService : JobService() {
             }.also {
                 it.invokeOnCompletion { error ->
                     jobFinished(params, error != null && error !is CancellationException)
+
+                    GlobalScope.launch(Dispatchers.IO) {
+                        AutoUpdateScheduler.schedule()
+                    }
                 }
             }
 

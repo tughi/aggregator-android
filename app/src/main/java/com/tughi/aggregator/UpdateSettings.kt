@@ -1,17 +1,13 @@
 package com.tughi.aggregator
 
 import android.app.Activity
-import android.app.job.JobScheduler
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.tughi.aggregator.data.AdaptiveUpdateMode
 import com.tughi.aggregator.data.UpdateMode
-import com.tughi.aggregator.services.FeedUpdaterScheduler
-import com.tughi.aggregator.services.FeedsUpdaterService
-import com.tughi.aggregator.utilities.JOB_SERVICE_FEEDS_UPDATER
+import com.tughi.aggregator.services.AutoUpdateScheduler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -48,12 +44,11 @@ class UpdateSettingsFragment : PreferenceFragmentCompat() {
         val backgroundUpdatesPreference = findPreference(PREFERENCE_BACKGROUND_UPDATES)
         backgroundUpdatesPreference.setOnPreferenceChangeListener { preference, newValue ->
             if (newValue == true) {
-                GlobalScope.launch(Dispatchers.Main) {
-                    FeedsUpdaterService.schedule()
+                GlobalScope.launch(Dispatchers.IO) {
+                    AutoUpdateScheduler.schedule()
                 }
             } else {
-                val jobScheduler = preference.context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
-                jobScheduler.cancel(JOB_SERVICE_FEEDS_UPDATER)
+                AutoUpdateScheduler.cancel()
             }
             return@setOnPreferenceChangeListener true
         }
@@ -100,7 +95,7 @@ object UpdateSettings {
                     .apply()
 
             GlobalScope.launch {
-                FeedUpdaterScheduler.scheduleFeedsWithDefaultUpdateMode()
+                AutoUpdateScheduler.scheduleFeedsWithDefaultUpdateMode()
             }
         }
 

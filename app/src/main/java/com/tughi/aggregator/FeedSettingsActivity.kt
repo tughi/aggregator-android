@@ -18,7 +18,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.FaviconUpdaterService
-import com.tughi.aggregator.services.FeedUpdaterScheduler
+import com.tughi.aggregator.services.AutoUpdateScheduler
 import com.tughi.aggregator.viewmodels.FeedSettingsViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -150,7 +150,7 @@ class FeedSettingsFragment : Fragment() {
                 )
 
                 if (updateMode != null && updateMode != feed.updateMode) {
-                    FeedUpdaterScheduler.scheduleFeed(feed.id)
+                    AutoUpdateScheduler.scheduleFeed(feed.id)
                 }
 
                 launch(Dispatchers.Main) {

@@ -19,8 +19,7 @@ import com.tughi.aggregator.data.DefaultUpdateMode
 import com.tughi.aggregator.data.Feed
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.FaviconUpdaterService
-import com.tughi.aggregator.services.FeedUpdater
-import com.tughi.aggregator.services.FeedUpdaterScheduler
+import com.tughi.aggregator.services.AutoUpdateScheduler
 import com.tughi.aggregator.viewmodels.SubscribeFeedViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -113,7 +112,7 @@ class SubscribeFeedFragment : Fragment() {
                     ))
 
                     launch {
-                        FeedUpdaterScheduler.scheduleFeed(feedId)
+                        AutoUpdateScheduler.scheduleFeed(feedId)
                     }
 
                     launch(Dispatchers.Main) {

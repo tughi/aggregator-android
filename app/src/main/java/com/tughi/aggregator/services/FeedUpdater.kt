@@ -220,7 +220,7 @@ object FeedUpdater {
             val feedId = feed.id!!
             val lastUpdateTime = System.currentTimeMillis()
 
-            val nextUpdateTime = FeedUpdaterScheduler.calculateNextUpdateTime(feedId, feed.updateMode, lastUpdateTime)
+            val nextUpdateTime = AutoUpdateScheduler.calculateNextUpdateTime(feedId, feed.updateMode, lastUpdateTime)
 
             val updated = database.feedDao().updateFeed(
                     id = feedId,
@@ -238,8 +238,6 @@ object FeedUpdater {
             database.setTransactionSuccessful()
         } finally {
             database.endTransaction()
-
-            FeedsUpdaterService.schedule(DateUtils.MINUTE_IN_MILLIS)
         }
     }
 

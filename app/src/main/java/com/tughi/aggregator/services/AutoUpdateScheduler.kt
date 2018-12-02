@@ -1,6 +1,12 @@
 package com.tughi.aggregator.services
 
+import android.app.job.JobInfo
+import android.app.job.JobScheduler
+import android.content.ComponentName
+import android.content.Context
 import android.text.format.DateUtils
+import android.util.Log
+import com.tughi.aggregator.App
 import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.UpdateSettings
 import com.tughi.aggregator.data.AdaptiveUpdateMode
@@ -9,10 +15,12 @@ import com.tughi.aggregator.data.DisabledUpdateMode
 import com.tughi.aggregator.data.RepeatingUpdateMode
 import com.tughi.aggregator.data.SchedulerFeed
 import com.tughi.aggregator.data.UpdateMode
+import com.tughi.aggregator.utilities.JOB_SERVICE_FEEDS_UPDATER
+import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 
-object FeedUpdaterScheduler {
+object AutoUpdateScheduler {
 
     fun scheduleFeed(feedId: Long) {
         val database = AppDatabase.instance
@@ -44,7 +52,30 @@ object FeedUpdaterScheduler {
             database.endTransaction()
         }
 
-        // TODO: schedule job service
+        schedule()
+    }
+
+    fun schedule() {
+        val nextUpdateTime = AppDatabase.instance.feedDao().queryNextUpdateTime() ?: return
+        val nextUpdateDelay = nextUpdateTime - System.currentTimeMillis()
+
+        val context: Context = App.instance
+        val jobScheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+
+        val jobInfo = JobInfo.Builder(JOB_SERVICE_FEEDS_UPDATER, ComponentName(context, AutoUpdateService::class.java))
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                .setMinimumLatency(max(0, nextUpdateDelay))
+                .setPersisted(true)
+                .build()
+
+        Log.d(javaClass.name, "Schedule next auto update: ${Date(nextUpdateTime)}")
+
+        jobScheduler.schedule(jobInfo)
+    }
+
+    fun cancel() {
+        val jobScheduler = App.instance.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        jobScheduler.cancel(JOB_SERVICE_FEEDS_UPDATER)
     }
 
     fun calculateNextUpdateTime(feedId: Long, updateMode: UpdateMode, lastUpdateTime: Long): Long = when (updateMode) {
