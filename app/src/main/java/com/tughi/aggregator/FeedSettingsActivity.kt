@@ -48,7 +48,6 @@ class FeedSettingsActivity : AppActivity() {
 
 }
 
-// TODO: add update_mode options
 class FeedSettingsFragment : Fragment() {
 
     companion object {
@@ -61,7 +60,7 @@ class FeedSettingsFragment : Fragment() {
     private lateinit var titleEditText: EditText
     private lateinit var updateModeTextView: TextView
 
-    lateinit var viewModel: FeedSettingsViewModel
+    private lateinit var viewModel: FeedSettingsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

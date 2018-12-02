@@ -1,14 +1,27 @@
 package com.tughi.aggregator
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import com.tughi.aggregator.data.DefaultUpdateMode
 import com.tughi.aggregator.data.Feed
+import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.FaviconUpdaterService
 import com.tughi.aggregator.services.FeedUpdater
+import com.tughi.aggregator.services.FeedUpdaterScheduler
+import com.tughi.aggregator.viewmodels.SubscribeFeedViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -19,7 +32,11 @@ class SubscribeFeedFragment : Fragment() {
         const val ARG_URL = "url"
         const val ARG_TITLE = "title"
         const val ARG_LINK = "link"
+
+        private const val REQUEST_UPDATE_MODE = 1
     }
+
+    private lateinit var viewModel: SubscribeFeedViewModel
 
     private lateinit var urlTextView: TextView
     private lateinit var titleTextView: TextView
@@ -35,6 +52,9 @@ class SubscribeFeedFragment : Fragment() {
         val fragmentView = inflater.inflate(R.layout.subscribe_feed_fragment, container, false)
         val arguments = arguments!!
 
+        viewModel = ViewModelProviders.of(this, SubscribeFeedViewModel.Factory())
+                .get(SubscribeFeedViewModel::class.java)
+
         urlTextView = fragmentView.findViewById(R.id.url)
         urlTextView.text = arguments.getString(ARG_URL)
 
@@ -47,9 +67,18 @@ class SubscribeFeedFragment : Fragment() {
             if (hasFocus) {
                 val inputMethodManager = view.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+
+                view.callOnClick()
             }
         }
-        updateModeTextView.setText(R.string.subscribe_feed__update_mode__default)
+        updateModeTextView.setOnClickListener {
+            val currentUpdateMode = viewModel.updateMode.value ?: return@setOnClickListener
+            startUpdateModeActivity(REQUEST_UPDATE_MODE, currentUpdateMode)
+        }
+
+        viewModel.updateMode.observe(this, Observer {
+            updateModeTextView.text = it.toString(updateModeTextView.context)
+        })
 
         return fragmentView
     }
@@ -79,11 +108,12 @@ class SubscribeFeedFragment : Fragment() {
                             url = urlTextView.text.toString(),
                             title = title,
                             customTitle = if (customTitle != title) customTitle else null,
-                            link = link
+                            link = link,
+                            updateMode = viewModel.updateMode.value ?: DefaultUpdateMode
                     ))
 
                     launch {
-                        FeedUpdater.updateFeed(feedId)
+                        FeedUpdaterScheduler.scheduleFeed(feedId)
                     }
 
                     launch(Dispatchers.Main) {
@@ -95,6 +125,13 @@ class SubscribeFeedFragment : Fragment() {
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQUEST_UPDATE_MODE && resultCode == Activity.RESULT_OK) {
+            val serializedUpdateMode = data?.getStringExtra(UpdateModeActivity.EXTRA_UPDATE_MODE) ?: return
+            viewModel.updateMode.value = UpdateMode.deserialize(serializedUpdateMode)
+        }
     }
 
 }
