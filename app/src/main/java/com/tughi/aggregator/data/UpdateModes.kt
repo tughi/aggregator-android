@@ -1,8 +1,11 @@
 package com.tughi.aggregator.data
 
+import com.tughi.aggregator.BuildConfig
+
 private const val UPDATE_MODE__ADAPTIVE = "ADAPTIVE"
 private const val UPDATE_MODE__DEFAULT = "DEFAULT"
 private const val UPDATE_MODE__DISABLED = "DISABLED"
+private const val UPDATE_MODE__ON_APP_LAUNCH = "ON_APP_LAUNCH"
 private const val UPDATE_MODE__REPEATING = "REPEATING"
 
 sealed class UpdateMode {
@@ -19,8 +22,9 @@ sealed class UpdateMode {
                 UPDATE_MODE__ADAPTIVE -> AdaptiveUpdateMode
                 UPDATE_MODE__DEFAULT -> DefaultUpdateMode
                 UPDATE_MODE__DISABLED -> DisabledUpdateMode
+                UPDATE_MODE__ON_APP_LAUNCH -> OnAppLaunchUpdateMode
                 UPDATE_MODE__REPEATING -> RepeatingUpdateMode(params ?: "60")
-                else -> DisabledUpdateMode
+                else -> if (BuildConfig.DEBUG) throw IllegalArgumentException(value) else DisabledUpdateMode
             }
         }
     }
@@ -36,6 +40,10 @@ object DefaultUpdateMode : UpdateMode() {
 
 object DisabledUpdateMode : UpdateMode() {
     override fun serialize(): String = UPDATE_MODE__DISABLED
+}
+
+object OnAppLaunchUpdateMode : UpdateMode() {
+    override fun serialize(): String = UPDATE_MODE__ON_APP_LAUNCH
 }
 
 data class RepeatingUpdateMode(val minutes: Int = 60) : UpdateMode() {

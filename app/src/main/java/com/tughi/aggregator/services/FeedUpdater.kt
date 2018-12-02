@@ -1,6 +1,5 @@
 package com.tughi.aggregator.services
 
-import android.text.format.DateUtils
 import android.util.Log
 import android.util.Xml
 import androidx.lifecycle.MutableLiveData
@@ -17,6 +16,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.async
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -52,6 +52,25 @@ object FeedUpdater {
         } finally {
             withContext(NonCancellable) {
                 removeUpdatingFeed(feedId)
+            }
+        }
+    }
+
+    suspend fun updateOutdatedFeeds() {
+        GlobalScope.launch(Dispatchers.IO) {
+            val feeds = database.feedDao().queryOutdatedFeeds(System.currentTimeMillis())
+
+            val jobs = feeds.map { feedId ->
+                async { FeedUpdater.updateFeed(feedId) }
+            }
+            jobs.forEach {
+                it.await()
+            }
+        }.also {
+            it.invokeOnCompletion { error ->
+                GlobalScope.launch(Dispatchers.IO) {
+                    AutoUpdateScheduler.schedule()
+                }
             }
         }
     }

@@ -12,6 +12,7 @@ import com.tughi.aggregator.UpdateSettings
 import com.tughi.aggregator.data.AdaptiveUpdateMode
 import com.tughi.aggregator.data.DefaultUpdateMode
 import com.tughi.aggregator.data.DisabledUpdateMode
+import com.tughi.aggregator.data.OnAppLaunchUpdateMode
 import com.tughi.aggregator.data.RepeatingUpdateMode
 import com.tughi.aggregator.data.SchedulerFeed
 import com.tughi.aggregator.data.UpdateMode
@@ -21,6 +22,9 @@ import kotlin.math.max
 import kotlin.math.min
 
 object AutoUpdateScheduler {
+
+    const val NEXT_UPDATE_TIME__DISABLED = 0L
+    const val NEXT_UPDATE_TIME__ON_APP_LAUNCH = -1L
 
     fun scheduleFeed(feedId: Long) {
         val database = AppDatabase.instance
@@ -81,7 +85,8 @@ object AutoUpdateScheduler {
     fun calculateNextUpdateTime(feedId: Long, updateMode: UpdateMode, lastUpdateTime: Long): Long = when (updateMode) {
         AdaptiveUpdateMode -> calculateNextAdaptiveUpdateTime(feedId, lastUpdateTime)
         DefaultUpdateMode -> calculateNextUpdateTime(feedId, UpdateSettings.defaultUpdateMode, lastUpdateTime)
-        DisabledUpdateMode -> 0
+        DisabledUpdateMode -> NEXT_UPDATE_TIME__DISABLED
+        OnAppLaunchUpdateMode -> NEXT_UPDATE_TIME__ON_APP_LAUNCH
         is RepeatingUpdateMode -> throw IllegalArgumentException("Unsupported update mode: $updateMode")
     }
 

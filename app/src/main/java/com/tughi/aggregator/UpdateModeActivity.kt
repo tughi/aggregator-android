@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.data.AdaptiveUpdateMode
 import com.tughi.aggregator.data.DefaultUpdateMode
 import com.tughi.aggregator.data.DisabledUpdateMode
+import com.tughi.aggregator.data.OnAppLaunchUpdateMode
 import com.tughi.aggregator.data.RepeatingUpdateMode
 import com.tughi.aggregator.data.UpdateMode
 
@@ -47,7 +48,8 @@ class UpdateModeActivity : AppActivity() {
 
         val updateModes = mutableListOf(
                 AdaptiveUpdateMode,
-                DisabledUpdateMode
+                DisabledUpdateMode,
+                OnAppLaunchUpdateMode
                 // TODO: if (currentUpdateMode is RepeatingUpdateMode) currentUpdateMode else RepeatingUpdateMode(0)
         )
         if (intent.getBooleanExtra(EXTRA_SHOW_DEFAULT, false)) {
@@ -124,6 +126,7 @@ private class UpdateModeAdapter(private val updateModes: List<UpdateMode>, curre
             AdaptiveUpdateMode -> R.layout.update_mode_item_checked_adaptive
             DefaultUpdateMode -> R.layout.update_mode_item_checked_default
             DisabledUpdateMode -> R.layout.update_mode_item_checked_disabled
+            OnAppLaunchUpdateMode -> R.layout.update_mode_item_checked_on_app_launch
             is RepeatingUpdateMode -> R.layout.update_mode_item_checked_repeating
         }
     }
@@ -139,6 +142,7 @@ private class UpdateModeAdapter(private val updateModes: List<UpdateMode>, curre
             R.layout.update_mode_item_checked_adaptive -> AdaptiveUpdateModeViewHolder(itemView)
             R.layout.update_mode_item_checked_default -> DefaultUpdateModeViewHolder(itemView)
             R.layout.update_mode_item_checked_disabled -> DisabledUpdateModeViewHolder(itemView)
+            R.layout.update_mode_item_checked_on_app_launch -> OnAppLaunchUpdateModeViewHolder(itemView)
             R.layout.update_mode_item_checked_repeating -> RepeatingUpdateModeViewHolder(itemView)
             else -> throw IllegalArgumentException("Unsupported view type: $viewType")
         }
@@ -172,6 +176,7 @@ fun UpdateMode.toString(context: Context): String = when (this) {
     AdaptiveUpdateMode -> context.getString(R.string.update_mode__adaptive)
     DefaultUpdateMode -> context.getString(R.string.update_mode__default, UpdateSettings.defaultUpdateMode.toString(context))
     DisabledUpdateMode -> context.getString(R.string.update_mode__disabled)
+    OnAppLaunchUpdateMode -> context.getString(R.string.update_mode__on_app_launch)
     is RepeatingUpdateMode -> TODO()
 }
 
@@ -182,6 +187,8 @@ private class AdaptiveUpdateModeViewHolder(itemView: View) : UpdateModeViewHolde
 private class DefaultUpdateModeViewHolder(itemView: View) : UpdateModeViewHolder(itemView)
 
 private class DisabledUpdateModeViewHolder(itemView: View) : UpdateModeViewHolder(itemView)
+
+private class OnAppLaunchUpdateModeViewHolder(itemView: View) : UpdateModeViewHolder(itemView)
 
 private class RepeatingUpdateModeViewHolder(itemView: View) : UpdateModeViewHolder(itemView)
 

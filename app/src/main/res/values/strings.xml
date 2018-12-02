@@ -15,6 +15,7 @@
     <string name="feed_list_item__last_update_time__never">Updated: never</string>
     <string name="feed_list_item__next_update_time">Auto update: %1$s</string>
     <string name="feed_list_item__next_update_time__disabled">Auto update: disabled</string>
+    <string name="feed_list_item__next_update_time__on_app_launch">Auto update: on app launch</string>
 
     <string name="feed_settings">Feed settings</string>
     <string name="feed_settings__title">Title</string>
@@ -48,13 +49,14 @@
 
     <string name="update_mode">Update mode</string>
     <string name="update_mode__adaptive">Adaptive</string>
-    <string name="update_mode__adaptive__description">Aggregator decides when to update the feed based on the already aggregated entries</string>
+    <string name="update_mode__adaptive__description">Aggregator decides when to update the feed based on the already aggregated entries.</string>
     <string name="update_mode__daily">Daily</string>
     <string name="update_mode__default">Default (%1$s)</string>
-    <string name="update_mode__default__description">Use the default update mode</string>
+    <string name="update_mode__default__description">Use the default update mode.</string>
     <string name="update_mode__disabled">Disabled</string>
-    <string name="update_mode__disabled__description">Disables automated feed updates</string>
+    <string name="update_mode__disabled__description">Disables automated feed updates.</string>
     <string name="update_mode__on_app_launch">On app launch</string>
+    <string name="update_mode__on_app_launch__description">The feed is updated when you launch the app.\n\nA launch event is detected only if you previously left the app using the back button.</string>
     <string name="update_mode__repeating">Repeating</string>
 
     <string name="update_settings">Update settings</string>

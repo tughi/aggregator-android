@@ -7,8 +7,11 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
+import com.tughi.aggregator.services.FeedUpdater
 import com.tughi.aggregator.utilities.APP_THEME_DARK
 import com.tughi.aggregator.utilities.APP_THEME_LIGHT
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 private const val PREF_ACTIVE_TAB = "active-tab"
 
@@ -74,6 +77,12 @@ class MainActivity : AppActivity() {
                 TAB_MY_FEED -> R.id.navigation_my_feeds
                 TAB_TAGS -> R.id.navigation_tags
                 else -> R.id.navigation_feeds
+            }
+
+            if (UpdateSettings.backgroundUpdates) {
+                GlobalScope.launch {
+                    FeedUpdater.updateOutdatedFeeds()
+                }
             }
         }
     }

@@ -222,10 +222,10 @@ private class ExpandedFeedViewHolder(itemView: View) : FeedListItemViewHolder(it
             }
         }
 
-        if (feed.nextUpdateTime == 0L) {
-            nextUpdateTime.setText(R.string.feed_list_item__next_update_time__disabled)
-        } else {
-            DateUtils.getRelativeDateTimeString(context, feed.nextUpdateTime, DateUtils.DAY_IN_MILLIS, DateUtils.DAY_IN_MILLIS, 0).let {
+        when (feed.nextUpdateTime) {
+            AutoUpdateScheduler.NEXT_UPDATE_TIME__DISABLED -> nextUpdateTime.setText(R.string.feed_list_item__next_update_time__disabled)
+            AutoUpdateScheduler.NEXT_UPDATE_TIME__ON_APP_LAUNCH -> nextUpdateTime.setText(R.string.feed_list_item__next_update_time__on_app_launch)
+            else -> DateUtils.getRelativeDateTimeString(context, feed.nextUpdateTime, DateUtils.DAY_IN_MILLIS, DateUtils.DAY_IN_MILLIS, 0).let {
                 nextUpdateTime.text = context.getString(R.string.feed_list_item__next_update_time, it)
             }
         }
