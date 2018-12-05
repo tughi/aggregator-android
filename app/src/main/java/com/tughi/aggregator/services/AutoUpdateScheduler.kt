@@ -12,8 +12,16 @@ import com.tughi.aggregator.UpdateSettings
 import com.tughi.aggregator.data.AdaptiveUpdateMode
 import com.tughi.aggregator.data.DefaultUpdateMode
 import com.tughi.aggregator.data.DisabledUpdateMode
+import com.tughi.aggregator.data.Every15MinutesUpdateMode
+import com.tughi.aggregator.data.Every2HoursUpdateMode
+import com.tughi.aggregator.data.Every30MinutesUpdateMode
+import com.tughi.aggregator.data.Every3HoursUpdateMode
+import com.tughi.aggregator.data.Every45MinutesUpdateMode
+import com.tughi.aggregator.data.Every4HoursUpdateMode
+import com.tughi.aggregator.data.Every6HoursUpdateMode
+import com.tughi.aggregator.data.Every8HoursUpdateMode
+import com.tughi.aggregator.data.EveryHourUpdateMode
 import com.tughi.aggregator.data.OnAppLaunchUpdateMode
-import com.tughi.aggregator.data.RepeatingUpdateMode
 import com.tughi.aggregator.data.SchedulerFeed
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.utilities.JOB_SERVICE_FEEDS_UPDATER
@@ -87,7 +95,15 @@ object AutoUpdateScheduler {
         DefaultUpdateMode -> calculateNextUpdateTime(feedId, UpdateSettings.defaultUpdateMode, lastUpdateTime)
         DisabledUpdateMode -> NEXT_UPDATE_TIME__DISABLED
         OnAppLaunchUpdateMode -> NEXT_UPDATE_TIME__ON_APP_LAUNCH
-        is RepeatingUpdateMode -> throw IllegalArgumentException("Unsupported update mode: $updateMode")
+        Every15MinutesUpdateMode -> calculateNextRepeatingUpdateTime(lastUpdateTime, 15)
+        Every30MinutesUpdateMode -> calculateNextRepeatingUpdateTime(lastUpdateTime, 30)
+        Every45MinutesUpdateMode -> calculateNextRepeatingUpdateTime(lastUpdateTime, 45)
+        EveryHourUpdateMode -> calculateNextRepeatingUpdateTime(lastUpdateTime, 60)
+        Every2HoursUpdateMode -> calculateNextRepeatingUpdateTime(lastUpdateTime, 120)
+        Every3HoursUpdateMode -> calculateNextRepeatingUpdateTime(lastUpdateTime, 180)
+        Every4HoursUpdateMode -> calculateNextRepeatingUpdateTime(lastUpdateTime, 240)
+        Every6HoursUpdateMode -> calculateNextRepeatingUpdateTime(lastUpdateTime, 360)
+        Every8HoursUpdateMode -> calculateNextRepeatingUpdateTime(lastUpdateTime, 480)
     }
 
     private fun calculateNextAdaptiveUpdateTime(feedId: Long, lastUpdateTime: Long): Long {
@@ -106,6 +122,18 @@ object AutoUpdateScheduler {
         }
         val alignedUpdateRate = updateRate / (DateUtils.HOUR_IN_MILLIS / 4) * (DateUtils.HOUR_IN_MILLIS / 4)
         return lastUpdateTime / (DateUtils.HOUR_IN_MILLIS / 4) * (DateUtils.HOUR_IN_MILLIS / 4) + alignedUpdateRate
+    }
+
+    private fun calculateNextRepeatingUpdateTime(lastUpdateTime: Long, minutes: Int): Long {
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = lastUpdateTime
+        calendar.set(Calendar.MILLISECOND, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        val midnight = calendar.timeInMillis
+        val minutesInMillis = minutes * 60000
+        return midnight + ((lastUpdateTime - midnight) / minutesInMillis + 1) * minutesInMillis
     }
 
 }

@@ -13,7 +13,7 @@ sealed class UpdateMode {
 
     companion object {
         fun deserialize(value: String): UpdateMode {
-            val parts = value.split(':', limit = 1)
+            val parts = value.split(':', limit = 2)
 
             val name = parts[0]
             val params = if (parts.size == 2) parts[1] else null
@@ -23,7 +23,18 @@ sealed class UpdateMode {
                 UPDATE_MODE__DEFAULT -> DefaultUpdateMode
                 UPDATE_MODE__DISABLED -> DisabledUpdateMode
                 UPDATE_MODE__ON_APP_LAUNCH -> OnAppLaunchUpdateMode
-                UPDATE_MODE__REPEATING -> RepeatingUpdateMode(params ?: "60")
+                UPDATE_MODE__REPEATING -> when (params) {
+                    Every15MinutesUpdateMode.MINUTES -> Every15MinutesUpdateMode
+                    Every30MinutesUpdateMode.MINUTES -> Every30MinutesUpdateMode
+                    Every45MinutesUpdateMode.MINUTES -> Every45MinutesUpdateMode
+                    EveryHourUpdateMode.MINUTES -> EveryHourUpdateMode
+                    Every2HoursUpdateMode.MINUTES -> Every2HoursUpdateMode
+                    Every3HoursUpdateMode.MINUTES -> Every3HoursUpdateMode
+                    Every4HoursUpdateMode.MINUTES -> Every4HoursUpdateMode
+                    Every6HoursUpdateMode.MINUTES -> Every6HoursUpdateMode
+                    Every8HoursUpdateMode.MINUTES -> Every8HoursUpdateMode
+                    else -> if (BuildConfig.DEBUG) throw IllegalArgumentException(value) else Every8HoursUpdateMode
+                }
                 else -> if (BuildConfig.DEBUG) throw IllegalArgumentException(value) else DisabledUpdateMode
             }
         }
@@ -46,8 +57,47 @@ object OnAppLaunchUpdateMode : UpdateMode() {
     override fun serialize(): String = UPDATE_MODE__ON_APP_LAUNCH
 }
 
-data class RepeatingUpdateMode(val minutes: Int = 60) : UpdateMode() {
-    constructor(params: String) : this(params.toInt())
+object Every15MinutesUpdateMode : UpdateMode() {
+    const val MINUTES = "15"
+    override fun serialize(): String = "$UPDATE_MODE__REPEATING:$MINUTES"
+}
 
-    override fun serialize(): String = "$UPDATE_MODE__REPEATING:$minutes"
+object Every30MinutesUpdateMode : UpdateMode() {
+    const val MINUTES = "30"
+    override fun serialize(): String = "$UPDATE_MODE__REPEATING:$MINUTES"
+}
+
+object Every45MinutesUpdateMode : UpdateMode() {
+    const val MINUTES = "45"
+    override fun serialize(): String = "$UPDATE_MODE__REPEATING:$MINUTES"
+}
+
+object EveryHourUpdateMode : UpdateMode() {
+    const val MINUTES = "60"
+    override fun serialize(): String = "$UPDATE_MODE__REPEATING:$MINUTES"
+}
+
+object Every2HoursUpdateMode : UpdateMode() {
+    const val MINUTES = "120"
+    override fun serialize(): String = "$UPDATE_MODE__REPEATING:$MINUTES"
+}
+
+object Every3HoursUpdateMode : UpdateMode() {
+    const val MINUTES = "180"
+    override fun serialize(): String = "$UPDATE_MODE__REPEATING:$MINUTES"
+}
+
+object Every4HoursUpdateMode : UpdateMode() {
+    const val MINUTES = "240"
+    override fun serialize(): String = "$UPDATE_MODE__REPEATING:$MINUTES"
+}
+
+object Every6HoursUpdateMode : UpdateMode() {
+    const val MINUTES = "360"
+    override fun serialize(): String = "$UPDATE_MODE__REPEATING:$MINUTES"
+}
+
+object Every8HoursUpdateMode : UpdateMode() {
+    const val MINUTES = "480"
+    override fun serialize(): String = "$UPDATE_MODE__REPEATING:$MINUTES"
 }

@@ -15,8 +15,16 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.data.AdaptiveUpdateMode
 import com.tughi.aggregator.data.DefaultUpdateMode
 import com.tughi.aggregator.data.DisabledUpdateMode
+import com.tughi.aggregator.data.Every15MinutesUpdateMode
+import com.tughi.aggregator.data.Every2HoursUpdateMode
+import com.tughi.aggregator.data.Every30MinutesUpdateMode
+import com.tughi.aggregator.data.Every3HoursUpdateMode
+import com.tughi.aggregator.data.Every45MinutesUpdateMode
+import com.tughi.aggregator.data.Every4HoursUpdateMode
+import com.tughi.aggregator.data.Every6HoursUpdateMode
+import com.tughi.aggregator.data.Every8HoursUpdateMode
+import com.tughi.aggregator.data.EveryHourUpdateMode
 import com.tughi.aggregator.data.OnAppLaunchUpdateMode
-import com.tughi.aggregator.data.RepeatingUpdateMode
 import com.tughi.aggregator.data.UpdateMode
 
 class UpdateModeActivity : AppActivity() {
@@ -47,10 +55,18 @@ class UpdateModeActivity : AppActivity() {
         val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
 
         val updateModes = mutableListOf(
-                AdaptiveUpdateMode,
                 DisabledUpdateMode,
-                OnAppLaunchUpdateMode
-                // TODO: if (currentUpdateMode is RepeatingUpdateMode) currentUpdateMode else RepeatingUpdateMode(0)
+                AdaptiveUpdateMode,
+                OnAppLaunchUpdateMode,
+                Every15MinutesUpdateMode,
+                Every30MinutesUpdateMode,
+                Every45MinutesUpdateMode,
+                EveryHourUpdateMode,
+                Every2HoursUpdateMode,
+                Every3HoursUpdateMode,
+                Every4HoursUpdateMode,
+                Every6HoursUpdateMode,
+                Every8HoursUpdateMode
         )
         if (intent.getBooleanExtra(EXTRA_SHOW_DEFAULT, false)) {
             updateModes.add(0, DefaultUpdateMode)
@@ -127,7 +143,15 @@ private class UpdateModeAdapter(private val updateModes: List<UpdateMode>, curre
             DefaultUpdateMode -> R.layout.update_mode_item_checked_default
             DisabledUpdateMode -> R.layout.update_mode_item_checked_disabled
             OnAppLaunchUpdateMode -> R.layout.update_mode_item_checked_on_app_launch
-            is RepeatingUpdateMode -> R.layout.update_mode_item_checked_repeating
+            Every15MinutesUpdateMode -> R.layout.update_mode_item_checked_repeating
+            Every30MinutesUpdateMode -> R.layout.update_mode_item_checked_repeating
+            Every45MinutesUpdateMode -> R.layout.update_mode_item_checked_repeating
+            EveryHourUpdateMode -> R.layout.update_mode_item_checked_repeating
+            Every2HoursUpdateMode -> R.layout.update_mode_item_checked_repeating
+            Every3HoursUpdateMode -> R.layout.update_mode_item_checked_repeating
+            Every4HoursUpdateMode -> R.layout.update_mode_item_checked_repeating
+            Every6HoursUpdateMode -> R.layout.update_mode_item_checked_repeating
+            Every8HoursUpdateMode -> R.layout.update_mode_item_checked_repeating
         }
     }
 
@@ -176,8 +200,16 @@ fun UpdateMode.toString(context: Context): String = when (this) {
     AdaptiveUpdateMode -> context.getString(R.string.update_mode__adaptive)
     DefaultUpdateMode -> context.getString(R.string.update_mode__default, UpdateSettings.defaultUpdateMode.toString(context))
     DisabledUpdateMode -> context.getString(R.string.update_mode__disabled)
+    Every15MinutesUpdateMode -> context.getString(R.string.update_mode__every_15_minutes)
+    Every30MinutesUpdateMode -> context.getString(R.string.update_mode__every_30_minutes)
+    Every45MinutesUpdateMode -> context.getString(R.string.update_mode__every_45_minutes)
+    EveryHourUpdateMode -> context.getString(R.string.update_mode__every_hour)
+    Every2HoursUpdateMode -> context.getString(R.string.update_mode__every_2_hours)
+    Every3HoursUpdateMode -> context.getString(R.string.update_mode__every_3_hours)
+    Every4HoursUpdateMode -> context.getString(R.string.update_mode__every_4_hours)
+    Every6HoursUpdateMode -> context.getString(R.string.update_mode__every_6_hours)
+    Every8HoursUpdateMode -> context.getString(R.string.update_mode__every_8_hours)
     OnAppLaunchUpdateMode -> context.getString(R.string.update_mode__on_app_launch)
-    is RepeatingUpdateMode -> TODO()
 }
 
 private class UncheckedUpdateModeViewHolder(itemView: View) : UpdateModeViewHolder(itemView)

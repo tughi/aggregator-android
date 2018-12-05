@@ -55,9 +55,17 @@
     <string name="update_mode__default__description">Use the default update mode.</string>
     <string name="update_mode__disabled">Disabled</string>
     <string name="update_mode__disabled__description">Disables automated feed updates.</string>
-    <string name="update_mode__on_app_launch">On app launch</string>
-    <string name="update_mode__on_app_launch__description">The feed is updated when you launch the app.\n\nA launch event is detected only if you previously left the app using the back button.</string>
-    <string name="update_mode__repeating">Repeating</string>
+    <string name="update_mode__every_15_minutes">Every 15 minutes</string>
+    <string name="update_mode__every_30_minutes">Every 30 minutes</string>
+    <string name="update_mode__every_45_minutes">Every 45 minutes</string>
+    <string name="update_mode__every_hour">Every hour</string>
+    <string name="update_mode__every_2_hours">Every 2 hours</string>
+    <string name="update_mode__every_3_hours">Every 3 hours</string>
+    <string name="update_mode__every_4_hours">Every 4 hours</string>
+    <string name="update_mode__every_6_hours">Every 6 hours</string>
+    <string name="update_mode__every_8_hours">Every 8 hours</string>
+    <string name="update_mode__on_app_launch">On application launch</string>
+    <string name="update_mode__on_app_launch__description">The feed is updated when you launch the application.\n\nA launch event is detected only if you previously left the app using the back button.</string>
 
     <string name="update_settings">Update settings</string>
     <string name="update_settings__background_update">Background updates</string>
