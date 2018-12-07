@@ -1,6 +1,6 @@
 package com.tughi.aggregator.viewmodels
 
-import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.data.DefaultUpdateMode
@@ -8,7 +8,7 @@ import com.tughi.aggregator.data.UpdateMode
 
 class SubscribeFeedViewModel() : ViewModel() {
 
-    var updateMode = MediatorLiveData<UpdateMode>().apply { value = DefaultUpdateMode }
+    var updateMode = MutableLiveData<UpdateMode>().apply { value = DefaultUpdateMode }
 
     class Factory() : ViewModelProvider.Factory {
 
