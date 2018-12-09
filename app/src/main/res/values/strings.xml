@@ -2,6 +2,8 @@
     <string name="app_name" translatable="false">Aggregator</string>
 
     <string name="action__no">No</string>
+    <string name="action__import">Import</string>
+    <string name="action__invert_selection">Invert selection</string>
     <string name="action__refresh">Refresh</string>
     <string name="action__remove">Remove</string>
     <string name="action__save">Save</string>

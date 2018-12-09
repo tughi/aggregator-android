@@ -4,6 +4,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
@@ -63,6 +64,16 @@ internal class OpmlImportViewModel : ViewModel() {
         }
     }
 
+    fun toggleAllFeeds() {
+        val newFeeds = mutableListOf<OpmlFeed>()
+
+        feeds.value?.forEach {
+            newFeeds.add(it.copy(feed = it.feed, excluded = !it.excluded))
+        }
+
+        feeds.value = newFeeds
+    }
+
     fun toggleFeed(feed: OpmlFeed) {
         val newFeeds = mutableListOf<OpmlFeed>()
 
@@ -81,6 +92,8 @@ internal class OpmlImportViewModel : ViewModel() {
 
 class OpmlImportActivity : AppActivity() {
 
+    private lateinit var viewModel: OpmlImportViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -91,7 +104,7 @@ class OpmlImportActivity : AppActivity() {
             setHomeAsUpIndicator(R.drawable.action_back)
         }
 
-        val viewModel = ViewModelProviders.of(this).get(OpmlImportViewModel::class.java)
+        viewModel = ViewModelProviders.of(this).get(OpmlImportViewModel::class.java)
 
         val feedsAdapter = OpmlFeedsAdapter(viewModel)
 
@@ -143,9 +156,18 @@ class OpmlImportActivity : AppActivity() {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        super.onCreateOptionsMenu(menu)
+
+        menuInflater.inflate(R.menu.opml_import_activity, menu)
+
+        return true
+    }
+
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item?.itemId) {
             android.R.id.home -> finish()
+            R.id.invert_selection -> viewModel.toggleAllFeeds()
             else -> return super.onOptionsItemSelected(item)
         }
 
