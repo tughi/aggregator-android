@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import com.tughi.aggregator.services.AutoUpdateScheduler
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -40,6 +41,8 @@ class UnsubscribeDialogFragment : DialogFragment() {
                 .setPositiveButton(R.string.action__yes) { dialog, _ ->
                     GlobalScope.launch {
                         AppDatabase.instance.feedDao().deleteFeed(feedId)
+
+                        AutoUpdateScheduler.schedule()
                     }
                     if (finishActivity) {
                         activity?.finish()
