@@ -51,6 +51,10 @@
             android:name=".UpdateModeActivity"
             android:label="@string/update_mode" />
 
+        <activity
+            android:name=".OpmlImportActivity"
+            android:label="@string/opml_import__title" />
+
         <service
             android:name=".services.FaviconUpdaterService"
             android:exported="false" />

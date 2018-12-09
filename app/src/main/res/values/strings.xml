@@ -24,6 +24,8 @@
 
     <string name="feeds_empty_message">You don\'t have any feeds yet.</string>
 
+    <string name="opml_import__title">OPML feeds</string>
+
     <string name="subscribe_url">Website or feed URL</string>
     <string name="subscribe_explanation">Content providers, like news sites and blogs, often
         use feeds as an alternative way to inform readers about new or updated articles.
