@@ -1,7 +1,5 @@
 package com.tughi.aggregator.data
 
-import com.tughi.aggregator.BuildConfig
-
 private const val UPDATE_MODE__ADAPTIVE = "ADAPTIVE"
 private const val UPDATE_MODE__DEFAULT = "DEFAULT"
 private const val UPDATE_MODE__DISABLED = "DISABLED"
@@ -33,9 +31,9 @@ sealed class UpdateMode {
                     Every4HoursUpdateMode.MINUTES -> Every4HoursUpdateMode
                     Every6HoursUpdateMode.MINUTES -> Every6HoursUpdateMode
                     Every8HoursUpdateMode.MINUTES -> Every8HoursUpdateMode
-                    else -> if (BuildConfig.DEBUG) throw IllegalArgumentException(value) else Every8HoursUpdateMode
+                    else -> DisabledUpdateMode
                 }
-                else -> if (BuildConfig.DEBUG) throw IllegalArgumentException(value) else DisabledUpdateMode
+                else -> DisabledUpdateMode
             }
         }
     }
