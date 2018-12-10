@@ -52,7 +52,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="@string/title_find_feeds" />
+                android:text="@string/subscribe__find_feeds" />
 
         </LinearLayout>
 

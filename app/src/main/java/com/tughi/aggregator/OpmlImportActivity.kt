@@ -1,5 +1,6 @@
 package com.tughi.aggregator
 
+import android.app.Activity
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -130,6 +131,7 @@ class OpmlImportActivity : AppActivity() {
                     AutoUpdateScheduler.schedule()
                 }
 
+                setResult(Activity.RESULT_OK)
                 finish()
             }
         }

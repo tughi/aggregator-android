@@ -2,7 +2,6 @@
     <string name="app_name" translatable="false">Aggregator</string>
 
     <string name="action__no">No</string>
-    <string name="action__import">Import</string>
     <string name="action__invert_selection">Invert selection</string>
     <string name="action__refresh">Refresh</string>
     <string name="action__remove">Remove</string>
@@ -29,9 +28,10 @@
     <string name="opml_import__title">OPML feeds</string>
 
     <string name="subscribe_url">Website or feed URL</string>
-    <string name="subscribe_explanation">Content providers, like news sites and blogs, often
+    <string name="subscribe_intro">Content providers, like news sites and blogs, often
         use feeds as an alternative way to inform readers about new or updated articles.
         \n\n<b>Aggregator</b> is able to detect if a website is providing such feeds.
+        \n\n\nAdditionally, <b>Aggregator</b> also supports adding feeds from OPML files.
     </string>
 
     <string name="theme_title">Theme</string>
@@ -41,8 +41,10 @@
     <string name="title_add_feed">Add feed</string>
     <string name="title_my_feed">My Feed</string>
     <string name="title_feeds">Feeds</string>
-    <string name="title_find_feeds">Find feeds</string>
     <string name="title_tags">Tags</string>
+
+    <string name="subscribe__find_feeds">Find feeds</string>
+    <string name="subscribe__load_opml_file">Load OPML file</string>
 
     <string name="subscribe_feed__title">Title</string>
     <string name="subscribe_feed__update_mode">Update mode</string>

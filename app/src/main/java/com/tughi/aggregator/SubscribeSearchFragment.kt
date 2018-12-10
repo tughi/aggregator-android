@@ -1,5 +1,6 @@
 package com.tughi.aggregator
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -8,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.fragment.app.Fragment
@@ -20,11 +22,15 @@ import com.google.android.material.textfield.TextInputLayout
 import com.tughi.aggregator.data.Feed
 import com.tughi.aggregator.viewmodels.SubscribeSearchViewModel
 
+private const val REQUEST_SELECT_OPML_FILE = 1
+private const val REQUEST_IMPORT_OPML_FILE = 2
+
+
 class SubscribeSearchFragment : Fragment(), OnSubscribeSearchFeedClickListener {
 
     private lateinit var urlTextInputLayout: TextInputLayout
     private lateinit var urlEditText: EditText
-    private lateinit var explanationTextView: TextView
+    private lateinit var introView: View
     private lateinit var feedsRecyclerView: RecyclerView
 
     private val adapter = SubscribeSearchFeedsAdapter(this)
@@ -36,7 +42,7 @@ class SubscribeSearchFragment : Fragment(), OnSubscribeSearchFeedClickListener {
 
         urlTextInputLayout = view.findViewById(R.id.url_wrapper)
         urlEditText = urlTextInputLayout.findViewById(R.id.url)
-        explanationTextView = view.findViewById(R.id.explanation)
+        introView = view.findViewById(R.id.intro)
         feedsRecyclerView = view.findViewById(R.id.feeds)
 
         val activity = activity as SubscribeActivity
@@ -59,14 +65,22 @@ class SubscribeSearchFragment : Fragment(), OnSubscribeSearchFeedClickListener {
 
         feedsRecyclerView.adapter = adapter
 
+        view.findViewById<Button>(R.id.import_opml).setOnClickListener {
+            startActivityForResult(
+                    Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        type = "*/*"
+                    },
+                    REQUEST_SELECT_OPML_FILE
+            )
+        }
+
         if (savedInstanceState == null) {
             if (activity.intent.action == Intent.ACTION_SEND) {
                 if (viewModel.state.value?.url == null) {
                     urlEditText.setText(activity.intent.getStringExtra(Intent.EXTRA_TEXT))
                     findFeeds()
                 }
-            } else {
-                urlEditText.requestFocus()
             }
         }
 
@@ -76,7 +90,27 @@ class SubscribeSearchFragment : Fragment(), OnSubscribeSearchFeedClickListener {
     override fun onResume() {
         super.onResume()
 
-        activity?.setTitle(R.string.title_find_feeds)
+        activity?.setTitle(R.string.subscribe__find_feeds)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (resultCode == Activity.RESULT_OK) {
+            when (requestCode) {
+                REQUEST_SELECT_OPML_FILE -> {
+                    data?.data?.let { uri ->
+                        startActivityForResult(
+                                Intent(activity, OpmlImportActivity::class.java).apply {
+                                    this.data = uri
+                                },
+                                REQUEST_IMPORT_OPML_FILE
+                        )
+                    }
+                }
+                REQUEST_IMPORT_OPML_FILE -> {
+                    activity?.finish()
+                }
+            }
+        }
     }
 
     private fun findFeeds() {
@@ -87,7 +121,7 @@ class SubscribeSearchFragment : Fragment(), OnSubscribeSearchFeedClickListener {
         urlEditText.isEnabled = !state.loading
 
         if (state.loading || !state.feeds.isEmpty() || state.message != null) {
-            explanationTextView.visibility = View.GONE
+            introView.visibility = View.GONE
             feedsRecyclerView.visibility = View.VISIBLE
 
             adapter.submitList(mutableListOf<Any>().apply {
@@ -100,7 +134,7 @@ class SubscribeSearchFragment : Fragment(), OnSubscribeSearchFeedClickListener {
                 }
             })
         } else {
-            explanationTextView.visibility = View.VISIBLE
+            introView.visibility = View.VISIBLE
             feedsRecyclerView.visibility = View.GONE
         }
     }
@@ -135,8 +169,8 @@ private class SubscribeSearchFeedsAdapter(private val listener: OnSubscribeSearc
         val itemView = LayoutInflater.from(parent.context).inflate(viewType, parent, false)
         return when (viewType) {
             R.layout.subscribe_feed_item -> SubscribeSearchFeedViewHolder(itemView, listener)
-            R.layout.subscribe_loading_item -> SubscribeSearchLoadingViewHolder(itemView, listener)
-            R.layout.subscribe_message_item -> SubscribeSearchMessageViewHolder(itemView, listener)
+            R.layout.subscribe_loading_item -> SubscribeSearchLoadingViewHolder(itemView)
+            R.layout.subscribe_message_item -> SubscribeSearchMessageViewHolder(itemView)
             else -> throw IllegalStateException("Unsupported item view type")
         }
     }
@@ -147,13 +181,13 @@ private class SubscribeSearchFeedsAdapter(private val listener: OnSubscribeSearc
 
 }
 
-private open class SubscribeSearchViewHolder(itemView: View, val listener: OnSubscribeSearchFeedClickListener) : RecyclerView.ViewHolder(itemView) {
+private open class SubscribeSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     open fun onBind(item: Any) {}
 
 }
 
-private class SubscribeSearchFeedViewHolder(itemView: View, listener: OnSubscribeSearchFeedClickListener) : SubscribeSearchViewHolder(itemView, listener) {
+private class SubscribeSearchFeedViewHolder(itemView: View, listener: OnSubscribeSearchFeedClickListener) : SubscribeSearchViewHolder(itemView) {
     private val titleTextView = itemView.findViewById<TextView>(R.id.title)
     private val urlTextView = itemView.findViewById<TextView>(R.id.url)
 
@@ -187,9 +221,9 @@ private class DiffUtilCallback : DiffUtil.ItemCallback<Any>() {
     }
 }
 
-private class SubscribeSearchLoadingViewHolder(itemView: View, listener: OnSubscribeSearchFeedClickListener) : SubscribeSearchViewHolder(itemView, listener)
+private class SubscribeSearchLoadingViewHolder(itemView: View) : SubscribeSearchViewHolder(itemView)
 
-private class SubscribeSearchMessageViewHolder(itemView: View, listener: OnSubscribeSearchFeedClickListener) : SubscribeSearchViewHolder(itemView, listener) {
+private class SubscribeSearchMessageViewHolder(itemView: View) : SubscribeSearchViewHolder(itemView) {
     private val textView = itemView as TextView
 
     override fun onBind(item: Any) {

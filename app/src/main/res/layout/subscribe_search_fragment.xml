@@ -28,15 +28,36 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
-    <TextView
-        android:id="@+id/explanation"
+    <ScrollView
+        android:id="@+id/intro"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp"
-        android:text="@string/subscribe_explanation"
-        android:textAppearance="?textAppearanceBody1" />
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/subscribe_intro"
+                android:textAppearance="?textAppearanceBody1" />
+
+            <Button
+                android:id="@+id/import_opml"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:text="@string/subscribe__load_opml_file" />
+
+        </LinearLayout>
+
+    </ScrollView>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/feeds"
