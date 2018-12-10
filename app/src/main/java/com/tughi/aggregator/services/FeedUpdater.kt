@@ -1,5 +1,6 @@
 package com.tughi.aggregator.services
 
+import android.text.format.DateUtils
 import android.util.Log
 import android.util.Xml
 import androidx.lifecycle.MutableLiveData
@@ -125,6 +126,9 @@ object FeedUpdater {
         Log.d(javaClass.name, "saveUpdateError($error)")
         // TODO: save update error
 
+        // TODO: schedule retry using back-off algorithm
+        database.feedDao().updateFeed(feed.id!!, System.currentTimeMillis() + DateUtils.HOUR_IN_MILLIS)
+
         it.resume(Unit)
     }
 
@@ -152,6 +156,8 @@ object FeedUpdater {
                     val responseBody = response.body()!!
                     Xml.parse(responseBody.charStream(), feedParser.feedContentHandler)
                 }
+            } catch (exception: Exception) {
+                saveUpdateError(feed, exception)
             } finally {
                 it.resume(Unit)
             }
