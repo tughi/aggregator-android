@@ -53,6 +53,21 @@ interface FeedDao {
     @Query("SELECT id, last_update_time, update_mode FROM feeds WHERE update_mode = :updateMode")
     fun querySchedulerFeeds(updateMode: UpdateMode): Array<SchedulerFeed>
 
+    @Query("""
+        SELECT
+            url,
+            title,
+            link,
+            custom_title,
+            update_mode,
+            0 AS excluded
+        FROM
+            feeds
+        ORDER BY
+            title
+    """)
+    fun queryOpmlFeeds(): List<OpmlFeed>
+
     @Query("SELECT * FROM feeds WHERE id = :id")
     fun getFeed(id: Long): LiveData<Feed>
 
@@ -78,6 +93,26 @@ interface FeedDao {
     fun queryNextUpdateTime(): Long?
 
 }
+
+data class OpmlFeed(
+        @ColumnInfo
+        val url: String,
+
+        @ColumnInfo
+        val title: String,
+
+        @ColumnInfo
+        val link: String?,
+
+        @ColumnInfo
+        val customTitle: String?,
+
+        @ColumnInfo(name = "update_mode")
+        val updateMode: UpdateMode,
+
+        @ColumnInfo
+        val excluded: Boolean
+)
 
 data class SchedulerFeed(
         @ColumnInfo

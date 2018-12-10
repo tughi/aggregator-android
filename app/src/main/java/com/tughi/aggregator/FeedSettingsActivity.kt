@@ -17,12 +17,14 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.tughi.aggregator.data.UpdateMode
-import com.tughi.aggregator.services.FaviconUpdaterService
+import com.tughi.aggregator.feeds.OpmlGenerator
 import com.tughi.aggregator.services.AutoUpdateScheduler
+import com.tughi.aggregator.services.FaviconUpdaterService
 import com.tughi.aggregator.viewmodels.FeedSettingsViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.io.File
 
 class FeedSettingsActivity : AppActivity() {
 
@@ -142,7 +144,9 @@ class FeedSettingsFragment : Fragment() {
         val feed = viewModel.feed.value
         if (feed?.id != null) {
             GlobalScope.launch {
-                AppDatabase.instance.feedDao().updateFeed(
+                val feedDao = AppDatabase.instance.feedDao()
+
+                feedDao.updateFeed(
                         id = feed.id,
                         url = url,
                         customTitle = if (title.isEmpty()) null else title,
@@ -151,6 +155,17 @@ class FeedSettingsFragment : Fragment() {
 
                 if (updateMode != null && updateMode != feed.updateMode) {
                     AutoUpdateScheduler.scheduleFeed(feed.id)
+                }
+
+                launch(Dispatchers.IO) {
+                    App.instance.getExternalFilesDir(null)?.also { externalFilesDir ->
+                        val backupFile = File(externalFilesDir, "feeds.opml")
+                        backupFile.parentFile.mkdirs()
+
+                        backupFile.outputStream().use {
+                            OpmlGenerator.generate(feedDao.queryOpmlFeeds(), it)
+                        }
+                    }
                 }
 
                 launch(Dispatchers.Main) {
