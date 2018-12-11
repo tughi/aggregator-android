@@ -41,10 +41,10 @@ object OpmlParser {
                             feedTitle = "Feed"
                             feedCustomTitle = feedTitle
                         } else {
-                            feedTitle = text
+                            feedTitle = feedCustomTitle
                         }
-                    } else if (feedCustomTitle == null) {
-                        feedCustomTitle = feedTitle
+                    } else if (feedTitle == feedCustomTitle) {
+                        feedCustomTitle = null
                     }
                     val feedUrl = attributes.getValue("xmlUrl")
                     val feedUpdateMode = attributes.getValue("updateMode").let {

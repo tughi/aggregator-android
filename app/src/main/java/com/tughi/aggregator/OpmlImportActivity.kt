@@ -194,7 +194,7 @@ internal class OpmlFeedViewHolder(itemView: View) : RecyclerView.ViewHolder(item
         } else {
             checkbox.setImageResource(R.drawable.check_box_checked)
         }
-        title.text = feed.feed.title
+        title.text = feed.feed.customTitle ?: feed.feed.title
         url.text = feed.feed.url
     }
 

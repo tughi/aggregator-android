@@ -104,7 +104,7 @@ data class OpmlFeed(
         @ColumnInfo
         val link: String?,
 
-        @ColumnInfo
+        @ColumnInfo(name = "custom_title")
         val customTitle: String?,
 
         @ColumnInfo(name = "update_mode")
