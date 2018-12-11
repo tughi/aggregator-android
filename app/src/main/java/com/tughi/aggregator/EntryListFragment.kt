@@ -199,8 +199,11 @@ private abstract class EntryViewHolder(itemView: View) : EntryListItemViewHolder
     override fun onClick(view: View?) {
         val entry = entry
 
-        val context = itemView.context
-        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(entry.link)))
+        val entryLink = entry.link
+        if (entryLink != null) {
+            val context = itemView.context
+            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(entryLink)))
+        }
 
         GlobalScope.launch {
             AppDatabase.instance.entryDao()
