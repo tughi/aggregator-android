@@ -47,6 +47,9 @@ interface FeedDao {
     @Query("SELECT * FROM feeds WHERE id = :id")
     fun queryFeed(id: Long): Feed
 
+    @Query("SELECT COUNT(1) FROM feeds")
+    fun queryFeedCount(): Int
+
     @Query("SELECT id, last_update_time, update_mode FROM feeds WHERE id = :feedId")
     fun querySchedulerFeed(feedId: Long): SchedulerFeed?
 
