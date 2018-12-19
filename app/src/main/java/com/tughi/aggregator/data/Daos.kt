@@ -26,13 +26,30 @@ interface FeedDao {
     """)
     fun updateFeed(id: Long, url: String, title: String, link: String?, language: String?, lastUpdateTime: Long, nextUpdateTime: Long): Int
 
-    @Query("UPDATE feeds SET url = :url, custom_title = :customTitle, update_mode = :updateMode WHERE id = :id")
+    @Query("""
+        UPDATE feeds SET
+            url = :url,
+            custom_title = :customTitle,
+            update_mode = :updateMode
+        WHERE id = :id
+    """)
     fun updateFeed(id: Long, url: String, customTitle: String?, updateMode: UpdateMode): Int
 
-    @Query("UPDATE feeds SET next_update_time = :nextUpdateTime WHERE id = :id")
-    fun updateFeed(id: Long, nextUpdateTime: Long): Int
+    @Query("""
+        UPDATE feeds SET
+            next_update_time = :nextUpdateTime,
+            next_update_retry = :nextUpdateRetry,
+            last_update_error = :lastUpdateError
+        WHERE id = :id
+    """)
+    fun updateFeed(id: Long, nextUpdateTime: Long, nextUpdateRetry: Int = 0, lastUpdateError: String? = null): Int
 
-    @Query("UPDATE feeds SET favicon_url = :faviconUrl, favicon_content = :faviconContent WHERE id = :id")
+    @Query("""
+        UPDATE feeds SET
+            favicon_url = :faviconUrl,
+            favicon_content = :faviconContent
+        WHERE id = :id
+    """)
     fun updateFeed(id: Long, faviconUrl: String, faviconContent: ByteArray): Int
 
     @Query("DELETE FROM feeds WHERE id = :feedId")

@@ -40,6 +40,9 @@ data class Feed(
         @ColumnInfo(name = "last_update_time")
         val lastUpdateTime: Long = 0,
 
+        @ColumnInfo(name = "last_update_error")
+        val lastUpdateError: String? = null,
+
         @ColumnInfo(name = "next_update_retry")
         val nextUpdateRetry: Int = 0,
 

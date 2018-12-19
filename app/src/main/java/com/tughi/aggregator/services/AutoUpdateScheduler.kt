@@ -90,6 +90,26 @@ object AutoUpdateScheduler {
         jobScheduler.cancel(JOB_SERVICE_FEEDS_UPDATER)
     }
 
+    fun calculateNextUpdateRetryTime(updateMode: UpdateMode, retry: Int): Long = when (updateMode) {
+        DefaultUpdateMode -> calculateNextUpdateRetryTime(UpdateSettings.defaultUpdateMode, retry)
+        DisabledUpdateMode -> NEXT_UPDATE_TIME__DISABLED
+        OnAppLaunchUpdateMode -> NEXT_UPDATE_TIME__ON_APP_LAUNCH
+        else -> calculateNextUpdateRetryTime(retry)
+    }
+
+    private fun calculateNextUpdateRetryTime(retry: Int): Long {
+        val fifteenMinutes = 15 * DateUtils.MINUTE_IN_MILLIS
+        val currentTimeSlot = (System.currentTimeMillis() / fifteenMinutes) * fifteenMinutes
+
+        return currentTimeSlot + when (retry) {
+            1, 2, 3 -> retry * fifteenMinutes
+            4, 5, 6 -> (retry - 3) * DateUtils.HOUR_IN_MILLIS
+            7, 8, 9 -> (retry - 6) * 4 * DateUtils.HOUR_IN_MILLIS
+            10, 11, 12 -> (retry - 9) * DateUtils.DAY_IN_MILLIS
+            else -> DateUtils.WEEK_IN_MILLIS
+        }
+    }
+
     fun calculateNextUpdateTime(feedId: Long, updateMode: UpdateMode, lastUpdateTime: Long): Long = when (updateMode) {
         AdaptiveUpdateMode -> calculateNextAdaptiveUpdateTime(feedId, lastUpdateTime)
         DefaultUpdateMode -> calculateNextUpdateTime(feedId, UpdateSettings.defaultUpdateMode, lastUpdateTime)

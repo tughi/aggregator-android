@@ -1,6 +1,5 @@
 package com.tughi.aggregator.services
 
-import android.text.format.DateUtils
 import android.util.Log
 import android.util.Xml
 import androidx.lifecycle.MutableLiveData
@@ -68,7 +67,7 @@ object FeedUpdater {
                 it.await()
             }
         }.also {
-            it.invokeOnCompletion { error ->
+            it.invokeOnCompletion {
                 GlobalScope.launch(Dispatchers.IO) {
                     AutoUpdateScheduler.schedule()
                 }
@@ -122,14 +121,22 @@ object FeedUpdater {
                 })
     }
 
-    private suspend fun saveUpdateError(feed: Feed, error: Throwable?) = suspendCoroutine<Unit> {
-        Log.d(javaClass.name, "saveUpdateError($error)")
-        // TODO: save update error
+    private fun saveUpdateError(feed: Feed, error: Throwable?) {
+        if (BuildConfig.DEBUG) {
+            Log.d(javaClass.name, "Update error: $error")
+        }
 
-        // TODO: schedule retry using back-off algorithm
-        database.feedDao().updateFeed(feed.id!!, System.currentTimeMillis() + DateUtils.HOUR_IN_MILLIS)
+        val nextUpdateRetry = feed.nextUpdateRetry + 1
 
-        it.resume(Unit)
+        database.feedDao().updateFeed(
+                id = feed.id!!,
+                lastUpdateError = when (error) {
+                    null -> "Unknown error"
+                    else -> error.message ?: error::class.java.simpleName
+                },
+                nextUpdateRetry = nextUpdateRetry,
+                nextUpdateTime = AutoUpdateScheduler.calculateNextUpdateRetryTime(feed.updateMode, nextUpdateRetry)
+        )
     }
 
     private suspend fun parseFeed(feed: Feed, response: Response): Unit = suspendCancellableCoroutine {

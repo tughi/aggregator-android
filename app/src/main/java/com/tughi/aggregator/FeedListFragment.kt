@@ -98,7 +98,7 @@ class FeedListFragment : Fragment(), OnFeedClickedListener {
         GlobalScope.launch(Dispatchers.IO) {
             FeedUpdater.updateFeed(feed.id)
 
-            AutoUpdateScheduler.scheduleFeed(feed.id)
+            AutoUpdateScheduler.schedule()
         }
     }
 
