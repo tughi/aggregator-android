@@ -7,6 +7,10 @@ import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.feeds.OpmlGenerator
 import com.tughi.aggregator.feeds.OpmlParser
 import com.tughi.aggregator.services.AutoUpdateScheduler
+import com.tughi.aggregator.services.FaviconUpdaterService
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.File
 
 private const val BACKUP_FILENAME = "feeds.opml"
@@ -43,6 +47,10 @@ fun restoreFeeds() {
 
                             if (feedId > 0) {
                                 feedDao.updateFeed(feedId, AutoUpdateScheduler.calculateNextUpdateTime(feedId, updateMode, 0))
+
+                                GlobalScope.launch(Dispatchers.Main) {
+                                    FaviconUpdaterService.start(feedId)
+                                }
                             }
                         }
                     })

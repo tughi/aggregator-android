@@ -23,6 +23,7 @@ import com.tughi.aggregator.data.Feed
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.feeds.OpmlParser
 import com.tughi.aggregator.services.AutoUpdateScheduler
+import com.tughi.aggregator.services.FaviconUpdaterService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -124,6 +125,10 @@ class OpmlImportActivity : AppActivity() {
 
                             if (feedId > 0) {
                                 feedDao.updateFeed(feedId, AutoUpdateScheduler.calculateNextUpdateTime(feedId, it.feed.updateMode, 0))
+
+                                GlobalScope.launch(Dispatchers.Main) {
+                                    FaviconUpdaterService.start(feedId)
+                                }
                             }
                         }
                     }
