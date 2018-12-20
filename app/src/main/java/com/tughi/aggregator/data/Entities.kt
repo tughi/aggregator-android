@@ -47,7 +47,13 @@ data class Feed(
         val nextUpdateRetry: Int = 0,
 
         @ColumnInfo(name = "next_update_time")
-        val nextUpdateTime: Long = 0
+        val nextUpdateTime: Long = 0,
+
+        @ColumnInfo(name = "http_etag")
+        val httpEtag: String? = null,
+
+        @ColumnInfo(name = "http_last_modified")
+        val httpLastModified: String? = null
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

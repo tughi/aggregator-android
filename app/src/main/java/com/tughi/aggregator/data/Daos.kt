@@ -19,12 +19,26 @@ interface FeedDao {
             title = :title,
             link = :link,
             language = :language,
+            last_update_error = NULL,
             last_update_time = :lastUpdateTime,
             next_update_retry = 0,
-            next_update_time = :nextUpdateTime
+            next_update_time = :nextUpdateTime,
+            http_etag = :httpEtag,
+            http_last_modified = :httpLastModified
         WHERE id = :id
     """)
-    fun updateFeed(id: Long, url: String, title: String, link: String?, language: String?, lastUpdateTime: Long, nextUpdateTime: Long): Int
+    fun updateFeed(
+            id: Long,
+            url: String,
+            title: String,
+            link: String?,
+            language: String?,
+            lastUpdateTime: Long,
+            nextUpdateTime: Long,
+            httpEtag: String?,
+            httpLastModified: String?
+
+    ): Int
 
     @Query("""
         UPDATE feeds SET

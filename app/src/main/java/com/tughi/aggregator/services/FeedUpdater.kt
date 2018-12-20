@@ -12,12 +12,10 @@ import com.tughi.aggregator.utilities.Failure
 import com.tughi.aggregator.utilities.Http
 import com.tughi.aggregator.utilities.Result
 import com.tughi.aggregator.utilities.Success
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -43,7 +41,7 @@ object FeedUpdater {
         try {
             val feed = database.feedDao().queryFeed(feedId)
 
-            val result = requestFeed(feed.url)
+            val result = requestFeed(feed)
             when (result) {
                 is Failure -> saveUpdateError(feed, result.error)
                 is Success -> parseFeed(feed, result.data)
@@ -95,9 +93,28 @@ object FeedUpdater {
         }
     }
 
-    private suspend fun requestFeed(url: String): Result<Response> = suspendCancellableCoroutine {
+    private suspend fun requestFeed(feed: Feed): Result<Response> = suspendCancellableCoroutine {
         val request = Request.Builder()
-                .url(url)
+                .url(feed.url)
+                .apply {
+                    var enableDeltaUpdates = false
+
+                    val httpEtag = feed.httpEtag
+                    if (httpEtag != null) {
+                        enableDeltaUpdates = true
+                        addHeader("If-None-Match", httpEtag)
+                    }
+
+                    val httpLastModified = feed.httpLastModified
+                    if (httpLastModified != null) {
+                        enableDeltaUpdates = true
+                        addHeader("If-Modified-Since", httpLastModified)
+                    }
+
+                    if (enableDeltaUpdates) {
+                        addHeader("A-IM", "feed")
+                    }
+                }
                 .build()
 
         Http.client.newCall(request)
@@ -108,7 +125,7 @@ object FeedUpdater {
                 }
                 .enqueue(object : Callback {
                     override fun onResponse(call: Call, response: Response) {
-                        if (response.isSuccessful && response.body() != null) {
+                        if (response.isSuccessful || response.code() == 304) {
                             it.resume(Success(response))
                         } else {
                             it.resume(Failure(UnexpectedHttpResponseException(response)))
@@ -139,34 +156,56 @@ object FeedUpdater {
         )
     }
 
-    private suspend fun parseFeed(feed: Feed, response: Response): Unit = suspendCancellableCoroutine {
-        GlobalScope.launch(Dispatchers.IO) {
+    private fun parseFeed(feed: Feed, response: Response) {
+        if (response.code() == 304) {
+            updateFeed(
+                    feed = feed,
+                    url = feed.url,
+                    title = feed.title,
+                    link = feed.link,
+                    language = feed.language,
+                    httpEtag = feed.httpEtag,
+                    httpLastModified = feed.httpLastModified
+            )
+        } else {
+            val httpEtag = response.header("Etag")
+            val httpLastModified = response.header("Last-Modified")
+
             val feedParser = FeedParser(feed.url, object : FeedParser.Listener() {
                 override fun onParsedEntry(uid: String, title: String?, link: String?, content: String?, author: String?, publishDate: Date?, publishDateText: String?) {
-                    if (!it.context.isActive) {
-                        throw CancellationException()
-                    }
-                    saveEntry(feedId = feed.id!!, uid = uid, title = title, link = link, content = content, author = author, publishDate = publishDate, publishDateText = publishDateText)
+                    saveEntry(
+                            feedId = feed.id!!,
+                            uid = uid,
+                            title = title,
+                            link = link,
+                            content = content,
+                            author = author,
+                            publishDate = publishDate,
+                            publishDateText = publishDateText
+                    )
                 }
 
                 override fun onParsedFeed(title: String, link: String?, language: String?) {
-                    if (!it.context.isActive) {
-                        throw CancellationException()
-                    }
                     // TODO: save URL for permanently redirected feed
-                    updateFeed(feed = feed, url = feed.url, title = title, link = link, language = language)
+                    updateFeed(
+                            feed = feed,
+                            url = feed.url,
+                            title = title,
+                            link = link,
+                            language = language,
+                            httpEtag = httpEtag,
+                            httpLastModified = httpLastModified
+                    )
                 }
             })
 
             try {
                 response.use {
-                    val responseBody = response.body()!!
-                    Xml.parse(responseBody.charStream(), feedParser.feedContentHandler)
+                    val responseBody = response.body()
+                    Xml.parse(responseBody?.charStream(), feedParser.feedContentHandler)
                 }
             } catch (exception: Exception) {
                 saveUpdateError(feed, exception)
-            } finally {
-                it.resume(Unit)
             }
         }
     }
@@ -240,10 +279,12 @@ object FeedUpdater {
             url: String,
             title: String,
             link: String?,
-            language: String?
+            language: String?,
+            httpEtag: String?,
+            httpLastModified: String?
     ) {
         if (BuildConfig.DEBUG) {
-            Log.d(javaClass.name, "onParsedFeed($title, $link, $language)")
+            Log.d(javaClass.name, "updateFeed($title, $link, $language, ...)")
         }
 
         try {
@@ -261,7 +302,9 @@ object FeedUpdater {
                     link = link,
                     language = language,
                     lastUpdateTime = lastUpdateTime,
-                    nextUpdateTime = nextUpdateTime
+                    nextUpdateTime = nextUpdateTime,
+                    httpEtag = httpEtag,
+                    httpLastModified = httpLastModified
             )
             if (updated != 1) {
                 // TODO: report that the feed couldn't be updated

@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
             Entry::class,
             Feed::class
         ],
-        version = 14
+        version = 15
 )
 @TypeConverters(CustomTypeConverters::class)
 abstract class AppDatabase : RoomDatabase() {
