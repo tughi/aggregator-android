@@ -190,11 +190,26 @@ private abstract class FeedListItemViewHolder(itemView: View) : RecyclerView.Vie
 
 }
 
-private class CollapsedFeedViewHolder(itemView: View) : FeedListItemViewHolder(itemView)
+private class CollapsedFeedViewHolder(itemView: View) : FeedListItemViewHolder(itemView) {
+
+    val toggleImageView: ImageView = itemView.findViewById(R.id.toggle)
+
+    override fun onBind(feed: UiFeed) {
+        super.onBind(feed)
+
+        if (feed.nextUpdateRetry > 2) {
+            toggleImageView.setImageResource(R.drawable.action_warning)
+        } else {
+            toggleImageView.setImageResource(R.drawable.action_show_more)
+        }
+    }
+
+}
 
 private class ExpandedFeedViewHolder(itemView: View) : FeedListItemViewHolder(itemView) {
 
     val lastUpdateTime: TextView = itemView.findViewById(R.id.last_update_time)
+    val lastUpdateError: TextView = itemView.findViewById(R.id.last_update_error)
     val nextUpdateTime: TextView = itemView.findViewById(R.id.next_update_time)
     val settingsButton: View = itemView.findViewById(R.id.settings)
     val updateButton: View = itemView.findViewById(R.id.update)
@@ -228,6 +243,13 @@ private class ExpandedFeedViewHolder(itemView: View) : FeedListItemViewHolder(it
             else -> DateUtils.getRelativeDateTimeString(context, feed.nextUpdateTime, DateUtils.DAY_IN_MILLIS, DateUtils.DAY_IN_MILLIS, 0).let {
                 nextUpdateTime.text = context.getString(R.string.feed_list_item__next_update_time, it)
             }
+        }
+
+        if (feed.lastUpdateError != null) {
+            lastUpdateError.visibility = View.VISIBLE
+            lastUpdateError.text = context.getString(R.string.feed_list_item__last_update_error, feed.nextUpdateRetry, feed.lastUpdateError)
+        } else {
+            lastUpdateError.visibility = View.GONE
         }
 
         updateButton.isEnabled = !feed.updating

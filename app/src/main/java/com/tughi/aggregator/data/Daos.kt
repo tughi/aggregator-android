@@ -97,7 +97,9 @@ interface FeedDao {
             COALESCE(f.custom_title, f.title) AS title,
             f.favicon_url,
             f.last_update_time,
+            f.last_update_error,
             f.next_update_time,
+            f.next_update_retry,
             f.update_mode,
             (SELECT COUNT(1) FROM entries e WHERE f.id = e.feed_id AND e.read_time = 0) AS unread_entry_count,
             0 AS expanded,
@@ -158,8 +160,14 @@ data class UiFeed(
         @ColumnInfo(name = "last_update_time")
         val lastUpdateTime: Long,
 
+        @ColumnInfo(name = "last_update_error")
+        val lastUpdateError: String?,
+
         @ColumnInfo(name = "next_update_time")
         val nextUpdateTime: Long,
+
+        @ColumnInfo(name = "next_update_retry")
+        val nextUpdateRetry: Int,
 
         @ColumnInfo(name = "update_mode")
         val updateMode: UpdateMode,
