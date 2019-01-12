@@ -2,19 +2,23 @@ package com.tughi.aggregator.viewmodels
 
 import android.os.Handler
 import android.os.HandlerThread
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.AppDatabase
-import com.tughi.aggregator.data.UiEntriesGetter
+import com.tughi.aggregator.data.EntriesQuery
 import com.tughi.aggregator.data.UiEntry
 import com.tughi.aggregator.data.UiEntryType
 
-class EntryListViewModel(entriesGetter: UiEntriesGetter) : ViewModel() {
+class EntryListViewModel(entriesQuery: EntriesQuery) : ViewModel() {
 
     companion object {
         private const val MSG_PROCESS_DATABASE_ENTRIES = 1
     }
 
-    private val databaseEntries: LiveData<Array<UiEntry>> = entriesGetter.getUiEntries(AppDatabase.instance.entryDao())
+    private val databaseEntries: LiveData<Array<UiEntry>> = AppDatabase.instance.entryDao().getUiEntries(entriesQuery)
     private val processedDatabaseEntries = MutableLiveData<Array<UiEntry>>()
 
     private val handlerThread = HandlerThread(javaClass.simpleName).also { it.start() }
@@ -77,12 +81,12 @@ class EntryListViewModel(entriesGetter: UiEntriesGetter) : ViewModel() {
         super.onCleared()
     }
 
-    class Factory(private val entriesGetter: UiEntriesGetter) : ViewModelProvider.Factory {
+    class Factory(private val entriesQuery: EntriesQuery) : ViewModelProvider.Factory {
 
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(EntryListViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
-                return EntryListViewModel(entriesGetter) as T
+                return EntryListViewModel(entriesQuery) as T
             }
             throw UnsupportedOperationException()
         }

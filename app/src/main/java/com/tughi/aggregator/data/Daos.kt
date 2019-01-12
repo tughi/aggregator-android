@@ -197,10 +197,10 @@ data class UiFeed(
 ) : Serializable
 
 @Dao
-interface EntryDao {
+abstract class EntryDao {
 
     @Insert
-    fun insertEntry(entry: Entry): Long
+    abstract fun insertEntry(entry: Entry): Long
 
     @Query("""
         UPDATE entries SET
@@ -212,10 +212,10 @@ interface EntryDao {
             update_time = :updateTime
         WHERE id = :id
     """)
-    fun updateEntry(id: Long, title: String?, link: String?, content: String?, author: String?, publishTime: Long?, updateTime: Long): Int
+    abstract fun updateEntry(id: Long, title: String?, link: String?, content: String?, author: String?, publishTime: Long?, updateTime: Long): Int
 
     @Query("SELECT * FROM entries WHERE feed_id = :feedId AND uid = :uid")
-    fun queryEntry(feedId: Long, uid: String): Entry?
+    abstract fun queryEntry(feedId: Long, uid: String): Entry?
 
     @Query("""
         SELECT
@@ -238,7 +238,7 @@ interface EntryDao {
         ORDER BY
             COALESCE(e.publish_time, e.insert_time)
     """)
-    fun getMyFeedUiEntries(since: Long): LiveData<Array<UiEntry>>
+    abstract fun getMyFeedUiEntries(since: Long): LiveData<Array<UiEntry>>
 
     @Query("""
         SELECT
@@ -262,17 +262,26 @@ interface EntryDao {
         ORDER BY
             COALESCE(e.publish_time, e.insert_time)
     """)
-    fun getFeedUiEntries(feedId: Long, since: Long): LiveData<Array<UiEntry>>
+    abstract fun getFeedUiEntries(feedId: Long, since: Long): LiveData<Array<UiEntry>>
 
     @Query("""
         UPDATE entries SET read_time = :readTime WHERE id = :entryId
     """)
-    fun setReadTime(entryId: Long, readTime: Long): Int
+    abstract fun setReadTime(entryId: Long, readTime: Long): Int
 
     @Query("SELECT COUNT(1) FROM entries WHERE feed_id = :feedId AND COALESCE(publish_time, insert_time) > :since")
-    fun countAggregatedEntries(feedId: Long, since: Long): Int
+    abstract fun countAggregatedEntries(feedId: Long, since: Long): Int
+
+    fun getUiEntries(query: EntriesQuery): LiveData<Array<UiEntry>> = when (query) {
+        is FeedEntriesQuery -> getFeedUiEntries(query.feedId, query.since)
+        is MyFeedEntriesQuery -> getMyFeedUiEntries(query.since)
+    }
 
 }
+
+sealed class EntriesQuery
+data class FeedEntriesQuery(val feedId: Long, val since: Long) : EntriesQuery()
+data class MyFeedEntriesQuery(val since: Long) : EntriesQuery()
 
 data class UiEntry(
         @ColumnInfo
@@ -308,19 +317,3 @@ data class UiEntry(
         @ColumnInfo
         val type: UiEntryType
 )
-
-sealed class UiEntriesGetter {
-    abstract fun getUiEntries(entryDao: EntryDao): LiveData<Array<UiEntry>>
-}
-
-class FeedUiEntriesGetter(private val feedId: Long, private val since: Long) : UiEntriesGetter() {
-    override fun getUiEntries(entryDao: EntryDao): LiveData<Array<UiEntry>> {
-        return entryDao.getFeedUiEntries(feedId, since)
-    }
-}
-
-class MyFeedUiEntriesGetter(private val since: Long) : UiEntriesGetter() {
-    override fun getUiEntries(entryDao: EntryDao): LiveData<Array<UiEntry>> {
-        return entryDao.getMyFeedUiEntries(since)
-    }
-}

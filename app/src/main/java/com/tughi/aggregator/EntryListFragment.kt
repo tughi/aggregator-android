@@ -22,7 +22,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.tughi.aggregator.data.UiEntriesGetter
+import com.tughi.aggregator.data.EntriesQuery
 import com.tughi.aggregator.data.UiEntry
 import com.tughi.aggregator.data.UiEntryType
 import com.tughi.aggregator.utilities.Favicons
@@ -39,7 +39,7 @@ abstract class EntryListFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val fragmentView = inflater.inflate(R.layout.entry_list_fragment, container, false)
 
-        val viewModelFactory = EntryListViewModel.Factory(getUiEntriesGetter())
+        val viewModelFactory = EntryListViewModel.Factory(getEntriesQuery())
         val viewModel = ViewModelProviders.of(this, viewModelFactory).get(EntryListViewModel::class.java)
 
         val entriesRecyclerView = fragmentView.findViewById<RecyclerView>(R.id.entries)
@@ -64,7 +64,7 @@ abstract class EntryListFragment : Fragment() {
         return fragmentView
     }
 
-    abstract fun getUiEntriesGetter(): UiEntriesGetter
+    abstract fun getEntriesQuery(): EntriesQuery
 
     abstract fun onNavigationClick()
 

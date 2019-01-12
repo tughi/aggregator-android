@@ -4,8 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.tughi.aggregator.data.MyFeedUiEntriesGetter
-import com.tughi.aggregator.data.UiEntriesGetter
+import com.tughi.aggregator.data.EntriesQuery
+import com.tughi.aggregator.data.MyFeedEntriesQuery
 
 class MyFeedFragment : EntryListFragment() {
 
@@ -17,8 +17,8 @@ class MyFeedFragment : EntryListFragment() {
         return fragmentView
     }
 
-    override fun getUiEntriesGetter(): UiEntriesGetter {
-        return MyFeedUiEntriesGetter(since = sessionTime)
+    override fun getEntriesQuery(): EntriesQuery {
+        return MyFeedEntriesQuery(since = sessionTime)
     }
 
     override fun onNavigationClick() {

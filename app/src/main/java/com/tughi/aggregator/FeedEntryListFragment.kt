@@ -3,8 +3,8 @@ package com.tughi.aggregator
 import android.os.Bundle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import com.tughi.aggregator.data.FeedUiEntriesGetter
-import com.tughi.aggregator.data.UiEntriesGetter
+import com.tughi.aggregator.data.EntriesQuery
+import com.tughi.aggregator.data.FeedEntriesQuery
 import com.tughi.aggregator.viewmodels.FeedViewModel
 
 class FeedEntryListFragment : EntryListFragment() {
@@ -21,8 +21,8 @@ class FeedEntryListFragment : EntryListFragment() {
         })
     }
 
-    override fun getUiEntriesGetter(): UiEntriesGetter {
-        return FeedUiEntriesGetter(feedId, since = sessionTime)
+    override fun getEntriesQuery(): EntriesQuery {
+        return FeedEntriesQuery(feedId, since = sessionTime)
     }
 
     override fun onNavigationClick() {
