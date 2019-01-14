@@ -40,6 +40,8 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-livedata:2.0.0'
     implementation 'androidx.preference:preference:1.0.0'
     implementation 'androidx.room:room-runtime:2.0.0'
+    implementation 'androidx.viewpager:viewpager:1.0.0'
+    implementation 'androidx.webkit:webkit:1.0.0'
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'com.squareup.okhttp3:okhttp:3.10.0'
     implementation 'com.tughi.sax:sax-framework:2.0.1'

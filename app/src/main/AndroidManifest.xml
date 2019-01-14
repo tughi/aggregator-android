@@ -26,6 +26,8 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".ReaderActivity" />
+
         <activity
             android:name=".FeedSettingsActivity"
             android:label="@string/feed_settings"

@@ -3,7 +3,6 @@ package com.tughi.aggregator
 import android.content.Context
 import android.content.Intent
 import android.graphics.Canvas
-import android.net.Uri
 import android.os.Bundle
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -30,7 +29,7 @@ import com.tughi.aggregator.viewmodels.EntryListViewModel
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-abstract class EntryListFragment : Fragment() {
+abstract class EntryListFragment : Fragment(), OnEntryClickedListener {
 
     private lateinit var toolbar: Toolbar
 
@@ -45,7 +44,7 @@ abstract class EntryListFragment : Fragment() {
         val entriesRecyclerView = fragmentView.findViewById<RecyclerView>(R.id.entries)
         val progressBar = fragmentView.findViewById<ProgressBar>(R.id.progress)
 
-        entriesRecyclerView.adapter = EntriesAdapter().also { adapter ->
+        entriesRecyclerView.adapter = EntriesAdapter(this).also { adapter ->
             viewModel.entries.observe(this, Observer { entries ->
                 adapter.submitList(entries)
 
@@ -54,7 +53,7 @@ abstract class EntryListFragment : Fragment() {
         }
         ItemTouchHelper(SwipeItemTouchHelper()).attachToRecyclerView(entriesRecyclerView)
 
-        toolbar = fragmentView.findViewById<Toolbar>(R.id.toolbar)
+        toolbar = fragmentView.findViewById(R.id.toolbar)
         toolbar.setNavigationIcon(when (this) {
             is MyFeedFragment -> R.drawable.action_menu
             else -> R.drawable.action_back
@@ -74,6 +73,16 @@ abstract class EntryListFragment : Fragment() {
 
     protected fun setTitle(title: String) {
         toolbar.title = title
+    }
+
+    override fun onEntryClicked(entry: UiEntry, position: Int) {
+        context?.run {
+            startActivity(
+                    Intent(this, ReaderActivity::class.java)
+                            .putExtra(ReaderActivity.EXTRA_ENTRIES_QUERY, getEntriesQuery())
+                            .putExtra(ReaderActivity.EXTRA_ENTRIES_POSITION, position)
+            )
+        }
     }
 
 }
@@ -136,15 +145,15 @@ class EntryListRecyclerView(context: Context, attrs: AttributeSet) : RecyclerVie
 }
 
 
-private class EntriesAdapter : ListAdapter<UiEntry, EntryListItemViewHolder>(EntriesDiffUtil) {
+private class EntriesAdapter(private val listener: OnEntryClickedListener) : ListAdapter<UiEntry, EntryListItemViewHolder>(EntriesDiffUtil) {
 
     override fun getItemViewType(position: Int): Int = getItem(position).type.ordinal
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EntryListItemViewHolder = when (UiEntryType.values()[viewType]) {
         UiEntryType.DIVIDER -> DividerViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.entry_list_divider, parent, false))
         UiEntryType.HEADER -> HeaderViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.entry_list_header, parent, false))
-        UiEntryType.READ -> ReadEntryViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.entry_list_read_item, parent, false))
-        UiEntryType.UNREAD -> UnreadEntryViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.entry_list_unread_item, parent, false))
+        UiEntryType.READ -> ReadEntryViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.entry_list_read_item, parent, false), listener)
+        UiEntryType.UNREAD -> UnreadEntryViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.entry_list_unread_item, parent, false), listener)
     }
 
     override fun onBindViewHolder(holder: EntryListItemViewHolder, position: Int) = holder.onBind(getItem(position))
@@ -164,7 +173,7 @@ private sealed class EntryListItemViewHolder(itemView: View) : RecyclerView.View
 
 private class DividerViewHolder(itemView: View) : EntryListItemViewHolder(itemView)
 
-private abstract class EntryViewHolder(itemView: View) : EntryListItemViewHolder(itemView), View.OnClickListener {
+private abstract class EntryViewHolder(itemView: View, private val listener: OnEntryClickedListener) : EntryListItemViewHolder(itemView) {
 
     val favicon: ImageView = itemView.findViewById(R.id.favicon)
     val title: TextView = itemView.findViewById(R.id.title)
@@ -174,7 +183,9 @@ private abstract class EntryViewHolder(itemView: View) : EntryListItemViewHolder
     val star: View = itemView.findViewById(R.id.star)
 
     init {
-        itemView.setOnClickListener(this)
+        itemView.setOnClickListener {
+            listener.onEntryClicked(entry, adapterPosition / 2)
+        }
 
         star.visibility = View.GONE
     }
@@ -196,26 +207,11 @@ private abstract class EntryViewHolder(itemView: View) : EntryListItemViewHolder
         Favicons.load(entry.feedId, entry.faviconUrl, favicon)
     }
 
-    override fun onClick(view: View?) {
-        val entry = entry
-
-        val entryLink = entry.link
-        if (entryLink != null) {
-            val context = itemView.context
-            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(entryLink)))
-        }
-
-        GlobalScope.launch {
-            AppDatabase.instance.entryDao()
-                    .setReadTime(entry.id, System.currentTimeMillis())
-        }
-    }
-
 }
 
-private class ReadEntryViewHolder(itemView: View) : EntryViewHolder(itemView)
+private class ReadEntryViewHolder(itemView: View, listener: OnEntryClickedListener) : EntryViewHolder(itemView, listener)
 
-private class UnreadEntryViewHolder(itemView: View) : EntryViewHolder(itemView)
+private class UnreadEntryViewHolder(itemView: View, listener: OnEntryClickedListener) : EntryViewHolder(itemView, listener)
 
 private class HeaderViewHolder(itemView: View) : EntryListItemViewHolder(itemView) {
 
@@ -263,5 +259,11 @@ private class SwipeItemTouchHelper : ItemTouchHelper.Callback() {
             }
         }
     }
+
+}
+
+private interface OnEntryClickedListener {
+
+    fun onEntryClicked(entry: UiEntry, position: Int)
 
 }
