@@ -299,6 +299,22 @@ abstract class EntryDao {
     @Query("SELECT COUNT(1) FROM entries WHERE feed_id = :feedId AND COALESCE(publish_time, insert_time) > :since")
     abstract fun countAggregatedEntries(feedId: Long, since: Long): Int
 
+    @Query("""
+        SELECT
+            e.title,
+            e.link,
+            e.content,
+            e.author,
+            COALESCE(e.publish_time, e.insert_time) AS publish_time,
+            COALESCE(f.custom_title, f.title) AS feed_title,
+            f.language AS feed_language
+        FROM
+            entries e
+            LEFT JOIN feeds f ON f.id = e.feed_id
+        WHERE e.id = :entryId
+    """)
+    abstract fun getReaderEntryContent(entryId: Long): LiveData<ReaderEntryContent>
+
     fun getReaderEntries(query: EntriesQuery): LiveData<Array<ReaderEntry>> = when (query) {
         is FeedEntriesQuery -> getFeedReaderEntries(query.feedId, query.since)
         is MyFeedEntriesQuery -> getMyFeedReaderEntries(query.since)
@@ -356,4 +372,27 @@ data class ReaderEntry(
 
         @ColumnInfo(name = "read_time")
         val readTime: Long
+)
+
+data class ReaderEntryContent(
+        @ColumnInfo
+        val title: String?,
+
+        @ColumnInfo
+        val link: String?,
+
+        @ColumnInfo
+        val content: String?,
+
+        @ColumnInfo
+        val author: String?,
+
+        @ColumnInfo(name = "publish_time")
+        val publishTime: Long,
+
+        @ColumnInfo(name = "feed_title")
+        val feedTitle: String,
+
+        @ColumnInfo(name = "feed_language")
+        val feedLanguage: String?
 )

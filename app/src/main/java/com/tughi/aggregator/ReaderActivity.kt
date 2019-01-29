@@ -7,6 +7,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebView
 import androidx.appcompat.app.ActionBar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentStatePagerAdapter
@@ -164,7 +165,39 @@ class ReaderEntryFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val fragmentView = inflater.inflate(R.layout.reader_entry_fragment, container, false)
 
+        arguments?.also { arguments ->
+            val entryId = arguments.getLong(ARG_ENTRY_ID)
+            val entryReadTime = arguments.getLong(ARG_ENTRY_READ_TIME)
+
+            val viewModelFactory = ReaderEntryViewModel.Factory(entryId, entryReadTime)
+            val viewModel = ViewModelProviders.of(this, viewModelFactory).get(ReaderEntryViewModel::class.java)
+
+            val webView: WebView = fragmentView.findViewById(R.id.content)
+
+            viewModel.entry.observe(this, Observer { entry ->
+                webView.loadDataWithBaseURL(entry.link, entry.content, "text/html", null, null)
+            })
+        }
+
         return fragmentView
+    }
+
+}
+
+internal class ReaderEntryViewModel(entryId: Long, entryReadTime: Long) : ViewModel() {
+
+    val entry = AppDatabase.instance.entryDao().getReaderEntryContent(entryId)
+
+    class Factory(private val entryId: Long, private val entryReadTime: Long) : ViewModelProvider.Factory {
+
+        override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(ReaderEntryViewModel::class.java)) {
+                @Suppress("UNCHECKED_CAST")
+                return ReaderEntryViewModel(entryId, entryReadTime) as T
+            }
+            throw UnsupportedOperationException()
+        }
+
     }
 
 }
