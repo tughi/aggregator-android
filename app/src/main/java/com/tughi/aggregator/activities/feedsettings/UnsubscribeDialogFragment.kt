@@ -1,10 +1,12 @@
-package com.tughi.aggregator
+package com.tughi.aggregator.activities.feedsettings
 
 import android.app.Dialog
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import com.tughi.aggregator.AppDatabase
+import com.tughi.aggregator.R
 import com.tughi.aggregator.services.AutoUpdateScheduler
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -50,4 +52,5 @@ class UnsubscribeDialogFragment : DialogFragment() {
                 }
                 .create()
     }
+
 }

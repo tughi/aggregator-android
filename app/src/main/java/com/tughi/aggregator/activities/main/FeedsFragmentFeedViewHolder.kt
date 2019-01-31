@@ -6,7 +6,7 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.tughi.aggregator.FeedSettingsActivity
+import com.tughi.aggregator.activities.feedsettings.FeedSettingsActivity
 import com.tughi.aggregator.R
 import com.tughi.aggregator.services.AutoUpdateScheduler
 import com.tughi.aggregator.utilities.Favicons

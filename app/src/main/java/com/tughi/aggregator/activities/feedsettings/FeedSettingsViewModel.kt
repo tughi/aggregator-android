@@ -1,4 +1,4 @@
-package com.tughi.aggregator.viewmodels
+package com.tughi.aggregator.activities.feedsettings
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
@@ -39,6 +39,5 @@ class FeedSettingsViewModel(feedId: Long) : ViewModel() {
         }
 
     }
-
 
 }

@@ -1,4 +1,4 @@
-package com.tughi.aggregator
+package com.tughi.aggregator.activities.feedsettings
 
 import android.app.Activity
 import android.content.Context
@@ -16,6 +16,8 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import com.tughi.aggregator.AppDatabase
+import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.updatemode.UpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.startUpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.toString
@@ -23,34 +25,9 @@ import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.AutoUpdateScheduler
 import com.tughi.aggregator.services.FaviconUpdaterService
 import com.tughi.aggregator.utilities.backupFeeds
-import com.tughi.aggregator.viewmodels.FeedSettingsViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-
-class FeedSettingsActivity : AppActivity() {
-
-    companion object {
-        const val EXTRA_FEED_ID = "feed_id"
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        val fragmentManager = supportFragmentManager
-        var fragment = fragmentManager.findFragmentById(android.R.id.content)
-        if (fragment == null) {
-            val intentExtras = intent.extras!!
-            val args = Bundle()
-            args.putLong(FeedSettingsFragment.ARG_FEED_ID, intentExtras.getLong(EXTRA_FEED_ID))
-            fragment = Fragment.instantiate(this, FeedSettingsFragment::class.java.name, args)
-            fragmentManager.beginTransaction()
-                    .replace(android.R.id.content, fragment)
-                    .commit()
-        }
-    }
-
-}
 
 class FeedSettingsFragment : Fragment() {
 

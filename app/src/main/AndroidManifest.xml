@@ -29,7 +29,7 @@
         <activity android:name=".activities.reader.ReaderActivity" />
 
         <activity
-            android:name=".FeedSettingsActivity"
+            android:name=".activities.feedsettings.FeedSettingsActivity"
             android:label="@string/feed_settings"
             android:parentActivityName=".activities.main.MainActivity" />
 
