@@ -16,6 +16,9 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import com.tughi.aggregator.activities.updatemode.UpdateModeActivity
+import com.tughi.aggregator.activities.updatemode.startUpdateModeActivity
+import com.tughi.aggregator.activities.updatemode.toString
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.AutoUpdateScheduler
 import com.tughi.aggregator.services.FaviconUpdaterService

@@ -5,6 +5,9 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import com.tughi.aggregator.activities.updatemode.UpdateModeActivity
+import com.tughi.aggregator.activities.updatemode.startUpdateModeActivity
+import com.tughi.aggregator.activities.updatemode.toString
 import com.tughi.aggregator.data.AdaptiveUpdateMode
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.AutoUpdateScheduler
