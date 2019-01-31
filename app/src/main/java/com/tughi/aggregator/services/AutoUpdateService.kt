@@ -3,7 +3,7 @@ package com.tughi.aggregator.services
 import android.app.job.JobParameters
 import android.app.job.JobService
 import com.tughi.aggregator.AppDatabase
-import com.tughi.aggregator.UpdateSettings
+import com.tughi.aggregator.preferences.UpdateSettings
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope

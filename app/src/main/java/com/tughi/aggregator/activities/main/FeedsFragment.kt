@@ -13,7 +13,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.subscribe.SubscribeActivity
-import com.tughi.aggregator.UpdateSettingsActivity
+import com.tughi.aggregator.activities.updatesettings.UpdateSettingsActivity
 import com.tughi.aggregator.services.AutoUpdateScheduler
 import com.tughi.aggregator.services.FeedUpdater
 import kotlinx.coroutines.Dispatchers

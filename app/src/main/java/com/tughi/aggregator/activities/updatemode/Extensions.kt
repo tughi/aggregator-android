@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.fragment.app.Fragment
 import com.tughi.aggregator.R
-import com.tughi.aggregator.UpdateSettings
+import com.tughi.aggregator.preferences.UpdateSettings
 import com.tughi.aggregator.data.AdaptiveUpdateMode
 import com.tughi.aggregator.data.DefaultUpdateMode
 import com.tughi.aggregator.data.DisabledUpdateMode

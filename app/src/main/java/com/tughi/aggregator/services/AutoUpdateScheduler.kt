@@ -8,7 +8,7 @@ import android.text.format.DateUtils
 import android.util.Log
 import com.tughi.aggregator.App
 import com.tughi.aggregator.AppDatabase
-import com.tughi.aggregator.UpdateSettings
+import com.tughi.aggregator.preferences.UpdateSettings
 import com.tughi.aggregator.data.AdaptiveUpdateMode
 import com.tughi.aggregator.data.DefaultUpdateMode
 import com.tughi.aggregator.data.DisabledUpdateMode

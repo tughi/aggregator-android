@@ -45,7 +45,7 @@
         </activity>
 
         <activity
-            android:name=".UpdateSettingsActivity"
+            android:name=".activities.updatesettings.UpdateSettingsActivity"
             android:label="@string/update_settings"
             android:parentActivityName=".activities.main.MainActivity" />
 

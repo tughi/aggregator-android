@@ -11,7 +11,7 @@ import com.tughi.aggregator.App
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.R
-import com.tughi.aggregator.UpdateSettings
+import com.tughi.aggregator.preferences.UpdateSettings
 import com.tughi.aggregator.services.FeedUpdater
 import com.tughi.aggregator.utilities.APP_THEME_DARK
 import com.tughi.aggregator.utilities.APP_THEME_LIGHT
