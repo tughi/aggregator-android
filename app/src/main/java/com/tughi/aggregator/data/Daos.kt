@@ -243,19 +243,6 @@ abstract class EntryDao {
     @Query("""
         SELECT
             e.id,
-            e.read_time AS read_time
-        FROM
-            entries e
-        WHERE
-            (e.read_time = 0 OR e.read_time > :since)
-        ORDER BY
-            COALESCE(e.publish_time, e.insert_time)
-    """)
-    abstract fun getMyFeedReaderEntries(since: Long): LiveData<Array<ReaderEntry>>
-
-    @Query("""
-        SELECT
-            e.id,
             f.id AS feed_id,
             COALESCE(f.custom_title, f.title) AS feed_title,
             f.favicon_url,
@@ -278,47 +265,12 @@ abstract class EntryDao {
     abstract fun getFeedUiEntries(feedId: Long, since: Long): LiveData<Array<UiEntry>>
 
     @Query("""
-        SELECT
-            e.id,
-            e.read_time AS read_time
-        FROM
-            entries e
-        WHERE
-            e.feed_id = :feedId AND
-            (e.read_time = 0 OR e.read_time > :since)
-        ORDER BY
-            COALESCE(e.publish_time, e.insert_time)
-    """)
-    abstract fun getFeedReaderEntries(feedId: Long, since: Long): LiveData<Array<ReaderEntry>>
-
-    @Query("""
         UPDATE entries SET read_time = :readTime WHERE id = :entryId
     """)
     abstract fun setReadTime(entryId: Long, readTime: Long): Int
 
     @Query("SELECT COUNT(1) FROM entries WHERE feed_id = :feedId AND COALESCE(publish_time, insert_time) > :since")
     abstract fun countAggregatedEntries(feedId: Long, since: Long): Int
-
-    @Query("""
-        SELECT
-            e.title,
-            e.link,
-            e.content,
-            e.author,
-            COALESCE(e.publish_time, e.insert_time) AS publish_time,
-            COALESCE(f.custom_title, f.title) AS feed_title,
-            f.language AS feed_language
-        FROM
-            entries e
-            LEFT JOIN feeds f ON f.id = e.feed_id
-        WHERE e.id = :entryId
-    """)
-    abstract fun getReaderEntryContent(entryId: Long): LiveData<ReaderEntryContent>
-
-    fun getReaderEntries(query: EntriesQuery): LiveData<Array<ReaderEntry>> = when (query) {
-        is FeedEntriesQuery -> getFeedReaderEntries(query.feedId, query.since)
-        is MyFeedEntriesQuery -> getMyFeedReaderEntries(query.since)
-    }
 
     fun getUiEntries(query: EntriesQuery): LiveData<Array<UiEntry>> = when (query) {
         is FeedEntriesQuery -> getFeedUiEntries(query.feedId, query.since)
@@ -364,35 +316,4 @@ data class UiEntry(
 
         @ColumnInfo
         val type: UiEntryType
-)
-
-data class ReaderEntry(
-        @ColumnInfo
-        val id: Long,
-
-        @ColumnInfo(name = "read_time")
-        val readTime: Long
-)
-
-data class ReaderEntryContent(
-        @ColumnInfo
-        val title: String?,
-
-        @ColumnInfo
-        val link: String?,
-
-        @ColumnInfo
-        val content: String?,
-
-        @ColumnInfo
-        val author: String?,
-
-        @ColumnInfo(name = "publish_time")
-        val publishTime: Long,
-
-        @ColumnInfo(name = "feed_title")
-        val feedTitle: String,
-
-        @ColumnInfo(name = "feed_language")
-        val feedLanguage: String?
 )

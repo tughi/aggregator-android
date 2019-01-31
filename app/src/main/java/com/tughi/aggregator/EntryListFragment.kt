@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.tughi.aggregator.activities.reader.ReaderActivity
 import com.tughi.aggregator.data.EntriesQuery
 import com.tughi.aggregator.data.UiEntry
 import com.tughi.aggregator.data.UiEntryType
