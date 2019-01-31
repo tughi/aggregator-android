@@ -1,4 +1,4 @@
-package com.tughi.aggregator
+package com.tughi.aggregator.activities.subscribe
 
 import android.app.Activity
 import android.content.Context
@@ -11,31 +11,30 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputLayout
+import com.tughi.aggregator.OpmlImportActivity
+import com.tughi.aggregator.R
 import com.tughi.aggregator.data.Feed
-import com.tughi.aggregator.viewmodels.SubscribeSearchViewModel
 
-private const val REQUEST_SELECT_OPML_FILE = 1
-private const val REQUEST_IMPORT_OPML_FILE = 2
+class SubscribeSearchFragment : Fragment(), SubscribeSearchFragmentAdapterListener {
 
-
-class SubscribeSearchFragment : Fragment(), OnSubscribeSearchFeedClickListener {
+    companion object {
+        private const val REQUEST_SELECT_OPML_FILE = 1
+        private const val REQUEST_IMPORT_OPML_FILE = 2
+    }
 
     private lateinit var urlTextInputLayout: TextInputLayout
     private lateinit var urlEditText: EditText
     private lateinit var introView: View
     private lateinit var feedsRecyclerView: RecyclerView
 
-    private val adapter = SubscribeSearchFeedsAdapter(this)
+    private val adapter = SubscribeSearchFragmentAdapter(this)
 
-    private lateinit var viewModel: SubscribeSearchViewModel
+    private lateinit var viewModel: SubscribeSearchFragmentViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.subscribe_search_fragment, container, false)
@@ -46,7 +45,7 @@ class SubscribeSearchFragment : Fragment(), OnSubscribeSearchFeedClickListener {
         feedsRecyclerView = view.findViewById(R.id.feeds)
 
         val activity = activity as SubscribeActivity
-        viewModel = ViewModelProviders.of(activity).get(SubscribeSearchViewModel::class.java)
+        viewModel = ViewModelProviders.of(activity).get(SubscribeSearchFragmentViewModel::class.java)
         viewModel.state.observe(this, Observer {
             updateUI(it)
         })
@@ -117,7 +116,7 @@ class SubscribeSearchFragment : Fragment(), OnSubscribeSearchFeedClickListener {
         viewModel.findFeeds(urlEditText.text.toString())
     }
 
-    private fun updateUI(state: SubscribeSearchViewModel.State) {
+    private fun updateUI(state: SubscribeSearchFragmentViewModel.State) {
         urlEditText.isEnabled = !state.loading
 
         if (state.loading || !state.feeds.isEmpty() || state.message != null) {
@@ -154,83 +153,3 @@ class SubscribeSearchFragment : Fragment(), OnSubscribeSearchFeedClickListener {
 
 }
 
-private class SubscribeSearchFeedsAdapter(private val listener: OnSubscribeSearchFeedClickListener) : ListAdapter<Any, SubscribeSearchViewHolder>(DiffUtilCallback()) {
-
-    override fun getItemViewType(position: Int): Int {
-        return when (getItem(position)) {
-            is Feed -> R.layout.subscribe_feed_item
-            is Boolean -> R.layout.subscribe_loading_item
-            is String -> R.layout.subscribe_message_item
-            else -> throw IllegalStateException("Unsupported item")
-        }
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SubscribeSearchViewHolder {
-        val itemView = LayoutInflater.from(parent.context).inflate(viewType, parent, false)
-        return when (viewType) {
-            R.layout.subscribe_feed_item -> SubscribeSearchFeedViewHolder(itemView, listener)
-            R.layout.subscribe_loading_item -> SubscribeSearchLoadingViewHolder(itemView)
-            R.layout.subscribe_message_item -> SubscribeSearchMessageViewHolder(itemView)
-            else -> throw IllegalStateException("Unsupported item view type")
-        }
-    }
-
-    override fun onBindViewHolder(holder: SubscribeSearchViewHolder, position: Int) {
-        holder.onBind(getItem(position))
-    }
-
-}
-
-private open class SubscribeSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
-    open fun onBind(item: Any) {}
-
-}
-
-private class SubscribeSearchFeedViewHolder(itemView: View, listener: OnSubscribeSearchFeedClickListener) : SubscribeSearchViewHolder(itemView) {
-    private val titleTextView = itemView.findViewById<TextView>(R.id.title)
-    private val urlTextView = itemView.findViewById<TextView>(R.id.url)
-
-    private lateinit var feed: Feed
-
-    init {
-        itemView.setOnClickListener {
-            listener.onFeedClicked(feed)
-        }
-    }
-
-    override fun onBind(item: Any) {
-        feed = item as Feed
-        titleTextView.text = feed.title
-        urlTextView.text = feed.url
-    }
-}
-
-private class DiffUtilCallback : DiffUtil.ItemCallback<Any>() {
-    override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean {
-        return when (oldItem) {
-            is Feed -> newItem is Feed && oldItem.url == newItem.url
-            is Boolean -> newItem is Boolean
-            is String -> newItem is String
-            else -> throw IllegalStateException("Unsupported old item")
-        }
-    }
-
-    override fun areContentsTheSame(oldItem: Any, newItem: Any): Boolean {
-        return oldItem == newItem
-    }
-}
-
-private class SubscribeSearchLoadingViewHolder(itemView: View) : SubscribeSearchViewHolder(itemView)
-
-private class SubscribeSearchMessageViewHolder(itemView: View) : SubscribeSearchViewHolder(itemView) {
-    private val textView = itemView as TextView
-
-    override fun onBind(item: Any) {
-        textView.text = item as String
-    }
-}
-
-private interface OnSubscribeSearchFeedClickListener {
-    fun onFeedClicked(feed: Feed)
-}

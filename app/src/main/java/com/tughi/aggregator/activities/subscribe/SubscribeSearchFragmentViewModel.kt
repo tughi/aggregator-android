@@ -1,4 +1,4 @@
-package com.tughi.aggregator.viewmodels
+package com.tughi.aggregator.activities.subscribe
 
 import android.os.AsyncTask
 import androidx.lifecycle.MutableLiveData
@@ -13,10 +13,10 @@ import java.io.IOException
 import java.net.NoRouteToHostException
 import java.net.SocketTimeoutException
 
-class SubscribeSearchViewModel : ViewModel() {
+class SubscribeSearchFragmentViewModel : ViewModel() {
 
     val state = MutableLiveData<State>().apply {
-        value = SubscribeSearchViewModel.State(null, false, emptyList(), null)
+        value = State(null, false, emptyList(), null)
     }
 
     private var currentFindTask: FindTask? = null
@@ -24,7 +24,7 @@ class SubscribeSearchViewModel : ViewModel() {
     fun findFeeds(url: String) {
         currentFindTask?.cancel()
 
-        state.value = SubscribeSearchViewModel.State(url, true, emptyList(), null)
+        state.value = State(url, true, emptyList(), null)
 
         FindTask(this).also { currentFindTask = it }.execute(url)
     }
@@ -35,7 +35,7 @@ class SubscribeSearchViewModel : ViewModel() {
 
     data class State(val url: String?, val loading: Boolean, val feeds: List<Feed>, val message: String?) {
         fun cloneWith(loading: Boolean? = null, feeds: List<Feed>? = null, message: String? = null): State {
-            return SubscribeSearchViewModel.State(
+            return State(
                     url = this.url,
                     loading = loading ?: this.loading,
                     feeds = feeds ?: this.feeds,
@@ -44,7 +44,7 @@ class SubscribeSearchViewModel : ViewModel() {
         }
     }
 
-    class FindTask(private val viewModel: SubscribeSearchViewModel) : AsyncTask<Any, State, State>(), FeedsFinder.Listener {
+    class FindTask(private val viewModel: SubscribeSearchFragmentViewModel) : AsyncTask<Any, State, State>(), FeedsFinder.Listener {
 
         private val feeds = arrayListOf<Feed>()
         private var state = viewModel.state.value!!.cloneWith(feeds = feeds)

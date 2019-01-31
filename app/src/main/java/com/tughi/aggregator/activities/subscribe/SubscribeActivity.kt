@@ -1,7 +1,9 @@
-package com.tughi.aggregator
+package com.tughi.aggregator.activities.subscribe
 
 import android.os.Bundle
 import android.view.MenuItem
+import com.tughi.aggregator.AppActivity
+import com.tughi.aggregator.R
 
 class SubscribeActivity : AppActivity() {
 

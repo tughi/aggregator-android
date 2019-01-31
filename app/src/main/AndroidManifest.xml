@@ -34,7 +34,7 @@
             android:parentActivityName=".activities.main.MainActivity" />
 
         <activity
-            android:name=".SubscribeActivity"
+            android:name=".activities.subscribe.SubscribeActivity"
             android:label="@string/subscribe__find_feeds"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>

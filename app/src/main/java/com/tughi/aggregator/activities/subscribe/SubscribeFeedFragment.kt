@@ -1,4 +1,4 @@
-package com.tughi.aggregator
+package com.tughi.aggregator.activities.subscribe
 
 import android.app.Activity
 import android.content.Context
@@ -15,12 +15,16 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import com.tughi.aggregator.AppDatabase
+import com.tughi.aggregator.R
+import com.tughi.aggregator.UpdateModeActivity
 import com.tughi.aggregator.data.DefaultUpdateMode
 import com.tughi.aggregator.data.Feed
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.FaviconUpdaterService
 import com.tughi.aggregator.services.AutoUpdateScheduler
-import com.tughi.aggregator.viewmodels.SubscribeFeedViewModel
+import com.tughi.aggregator.startUpdateModeActivity
+import com.tughi.aggregator.toString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -35,7 +39,7 @@ class SubscribeFeedFragment : Fragment() {
         private const val REQUEST_UPDATE_MODE = 1
     }
 
-    private lateinit var viewModel: SubscribeFeedViewModel
+    private lateinit var viewModel: SubscribeFeedFragmentViewModel
 
     private lateinit var urlTextView: TextView
     private lateinit var titleTextView: TextView
@@ -51,8 +55,8 @@ class SubscribeFeedFragment : Fragment() {
         val fragmentView = inflater.inflate(R.layout.subscribe_feed_fragment, container, false)
         val arguments = arguments!!
 
-        viewModel = ViewModelProviders.of(this, SubscribeFeedViewModel.Factory())
-                .get(SubscribeFeedViewModel::class.java)
+        viewModel = ViewModelProviders.of(this, SubscribeFeedFragmentViewModel.Factory())
+                .get(SubscribeFeedFragmentViewModel::class.java)
 
         urlTextView = fragmentView.findViewById(R.id.url)
         urlTextView.text = arguments.getString(ARG_URL)
