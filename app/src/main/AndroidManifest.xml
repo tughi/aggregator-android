@@ -18,7 +18,7 @@
         tools:ignore="GoogleAppIndexingWarning">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.main.MainActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -31,7 +31,7 @@
         <activity
             android:name=".FeedSettingsActivity"
             android:label="@string/feed_settings"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".activities.main.MainActivity" />
 
         <activity
             android:name=".SubscribeActivity"
@@ -47,7 +47,7 @@
         <activity
             android:name=".UpdateSettingsActivity"
             android:label="@string/update_settings"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".activities.main.MainActivity" />
 
         <activity
             android:name=".UpdateModeActivity"

@@ -1,4 +1,4 @@
-package com.tughi.aggregator
+package com.tughi.aggregator.activities.main
 
 import android.os.Bundle
 import androidx.lifecycle.Observer
@@ -7,7 +7,7 @@ import com.tughi.aggregator.data.EntriesQuery
 import com.tughi.aggregator.data.FeedEntriesQuery
 import com.tughi.aggregator.viewmodels.FeedViewModel
 
-class FeedEntryListFragment : EntryListFragment() {
+class FeedEntriesFragment : EntriesFragment() {
 
     private val feedId by lazy { arguments!!.getLong(ARGUMENT_FEED_ID) }
 
@@ -32,8 +32,8 @@ class FeedEntryListFragment : EntryListFragment() {
     companion object {
         const val ARGUMENT_FEED_ID = "feed_id"
 
-        fun newInstance(feedId: Long): FeedEntryListFragment {
-            return FeedEntryListFragment().also {
+        fun newInstance(feedId: Long): FeedEntriesFragment {
+            return FeedEntriesFragment().also {
                 it.arguments = Bundle().apply {
                     putLong(ARGUMENT_FEED_ID, feedId)
                 }

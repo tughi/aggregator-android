@@ -1,4 +1,4 @@
-package com.tughi.aggregator.viewmodels
+package com.tughi.aggregator.activities.main
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -6,16 +6,15 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import com.tughi.aggregator.AppDatabase
-import com.tughi.aggregator.data.UiFeed
 import com.tughi.aggregator.services.FeedUpdater
 
-class FeedListViewModel(application: Application) : AndroidViewModel(application) {
+class FeedsFragmentViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val databaseFeeds = AppDatabase.instance.feedDao().getUiFeeds()
+    private val databaseFeeds = AppDatabase.instance.mainDao().getFeedsFragmentFeeds()
 
     private val expandedFeedId = MutableLiveData<Long>()
 
-    private val liveFeeds = MediatorLiveData<List<UiFeed>>().also {
+    private val liveFeeds = MediatorLiveData<List<FeedsFragmentFeed>>().also {
         it.addSource(databaseFeeds) { feeds ->
             val expandedFeedId = expandedFeedId.value
             val updatingFeedIds = FeedUpdater.updatingFeedIds.value ?: emptySet<Long>()
@@ -45,12 +44,12 @@ class FeedListViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    val feeds: LiveData<List<UiFeed>>
+    val feeds: LiveData<List<FeedsFragmentFeed>>
         get() {
             return liveFeeds
         }
 
-    fun toggleFeed(feed: UiFeed) {
+    fun toggleFeed(feed: FeedsFragmentFeed) {
         if (expandedFeedId.value == feed.id) {
             expandedFeedId.value = null
         } else {

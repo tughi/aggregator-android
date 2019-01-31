@@ -5,6 +5,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.tughi.aggregator.activities.main.MainDao
 import com.tughi.aggregator.activities.reader.ReaderDao
 import com.tughi.aggregator.data.CustomTypeConverters
 import com.tughi.aggregator.data.Entry
@@ -30,6 +31,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun entryDao(): EntryDao
     abstract fun feedDao(): FeedDao
 
+    abstract fun mainDao(): MainDao
     abstract fun readerDao(): ReaderDao
 
     companion object {

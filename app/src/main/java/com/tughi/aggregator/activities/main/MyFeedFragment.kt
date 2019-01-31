@@ -1,13 +1,14 @@
-package com.tughi.aggregator
+package com.tughi.aggregator.activities.main
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.tughi.aggregator.R
 import com.tughi.aggregator.data.EntriesQuery
 import com.tughi.aggregator.data.MyFeedEntriesQuery
 
-class MyFeedFragment : EntryListFragment() {
+class MyFeedFragment : EntriesFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val fragmentView = super.onCreateView(inflater, container, savedInstanceState)

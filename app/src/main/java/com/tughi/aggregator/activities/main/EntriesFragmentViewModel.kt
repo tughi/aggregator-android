@@ -1,4 +1,4 @@
-package com.tughi.aggregator.viewmodels
+package com.tughi.aggregator.activities.main
 
 import android.os.Handler
 import android.os.HandlerThread
@@ -9,30 +9,29 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.data.EntriesQuery
-import com.tughi.aggregator.data.UiEntry
 import com.tughi.aggregator.data.UiEntryType
 
-class EntryListViewModel(entriesQuery: EntriesQuery) : ViewModel() {
+class EntriesFragmentViewModel(entriesQuery: EntriesQuery) : ViewModel() {
 
     companion object {
         private const val MSG_PROCESS_DATABASE_ENTRIES = 1
     }
 
-    private val databaseEntries: LiveData<Array<UiEntry>> = AppDatabase.instance.entryDao().getUiEntries(entriesQuery)
-    private val processedDatabaseEntries = MutableLiveData<Array<UiEntry>>()
+    private val databaseEntries: LiveData<Array<EntriesFragmentEntry>> = AppDatabase.instance.mainDao().getEntriesFragmentEntries(entriesQuery)
+    private val processedDatabaseEntries = MutableLiveData<Array<EntriesFragmentEntry>>()
 
     private val handlerThread = HandlerThread(javaClass.simpleName).also { it.start() }
     private val handler = Handler(handlerThread.looper, Handler.Callback {
         when (it.what) {
             MSG_PROCESS_DATABASE_ENTRIES -> {
                 @Suppress("UNCHECKED_CAST")
-                processDatabaseEntries(it.obj as Array<UiEntry>)
+                processDatabaseEntries(it.obj as Array<EntriesFragmentEntry>)
             }
         }
         return@Callback true
     })
 
-    val entries: LiveData<List<UiEntry>> = MediatorLiveData<List<UiEntry>>().apply {
+    val entries: LiveData<List<EntriesFragmentEntry>> = MediatorLiveData<List<EntriesFragmentEntry>>().apply {
         addSource(databaseEntries) { databaseEntries ->
             if (databaseEntries.isEmpty()) {
                 value = databaseEntries.asList()
@@ -46,7 +45,7 @@ class EntryListViewModel(entriesQuery: EntriesQuery) : ViewModel() {
         }
     }
 
-    private fun processDatabaseEntries(databaseEntries: Array<UiEntry>) {
+    private fun processDatabaseEntries(databaseEntries: Array<EntriesFragmentEntry>) {
         val oldEntries = processedDatabaseEntries.value
         if (oldEntries != null && oldEntries.size == databaseEntries.size * 2) {
             var changed = false
@@ -84,9 +83,9 @@ class EntryListViewModel(entriesQuery: EntriesQuery) : ViewModel() {
     class Factory(private val entriesQuery: EntriesQuery) : ViewModelProvider.Factory {
 
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            if (modelClass.isAssignableFrom(EntryListViewModel::class.java)) {
+            if (modelClass.isAssignableFrom(EntriesFragmentViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
-                return EntryListViewModel(entriesQuery) as T
+                return EntriesFragmentViewModel(entriesQuery) as T
             }
             throw UnsupportedOperationException()
         }

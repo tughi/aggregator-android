@@ -1,4 +1,4 @@
-package com.tughi.aggregator
+package com.tughi.aggregator.activities.main
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,19 +7,26 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
+import com.tughi.aggregator.App
+import com.tughi.aggregator.AppActivity
+import com.tughi.aggregator.BuildConfig
+import com.tughi.aggregator.R
+import com.tughi.aggregator.UpdateSettings
 import com.tughi.aggregator.services.FeedUpdater
 import com.tughi.aggregator.utilities.APP_THEME_DARK
 import com.tughi.aggregator.utilities.APP_THEME_LIGHT
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-private const val PREF_ACTIVE_TAB = "active-tab"
-
-private const val TAB_FEEDS = "feeds"
-private const val TAB_MY_FEED = "my-feed"
-private const val TAB_TAGS = "tags"
-
 class MainActivity : AppActivity() {
+
+    companion object {
+        private const val PREF_ACTIVE_TAB = "active-tab"
+
+        private const val TAB_FEEDS = "feeds"
+        private const val TAB_MY_FEED = "my-feed"
+        private const val TAB_TAGS = "tags"
+    }
 
     private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var drawerLayout: DrawerLayout

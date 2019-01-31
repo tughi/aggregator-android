@@ -22,7 +22,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.tughi.aggregator.EntryListRecyclerView
+        <com.tughi.aggregator.activities.main.EntriesRecyclerView
             android:id="@+id/entries"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

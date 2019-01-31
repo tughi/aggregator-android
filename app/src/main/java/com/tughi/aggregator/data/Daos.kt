@@ -5,7 +5,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import java.io.Serializable
 
 @Dao
 interface FeedDao {
@@ -105,26 +104,6 @@ interface FeedDao {
     @Query("SELECT * FROM feeds WHERE id = :id")
     fun getFeed(id: Long): LiveData<Feed>
 
-    @Query("""
-        SELECT
-            f.id,
-            COALESCE(f.custom_title, f.title) AS title,
-            f.favicon_url,
-            f.last_update_time,
-            f.last_update_error,
-            f.next_update_time,
-            f.next_update_retry,
-            f.update_mode,
-            (SELECT COUNT(1) FROM entries e WHERE f.id = e.feed_id AND e.read_time = 0) AS unread_entry_count,
-            0 AS expanded,
-            0 AS updating
-        FROM
-            feeds f
-        ORDER BY
-            title
-    """)
-    fun getUiFeeds(): LiveData<List<UiFeed>>
-
     @Query("SELECT MIN(next_update_time) FROM feeds WHERE next_update_time > 0")
     fun queryNextUpdateTime(): Long?
 
@@ -161,41 +140,6 @@ data class SchedulerFeed(
         val updateMode: UpdateMode
 )
 
-data class UiFeed(
-        @ColumnInfo
-        val id: Long,
-
-        @ColumnInfo
-        val title: String,
-
-        @ColumnInfo(name = "favicon_url")
-        val faviconUrl: String?,
-
-        @ColumnInfo(name = "last_update_time")
-        val lastUpdateTime: Long,
-
-        @ColumnInfo(name = "last_update_error")
-        val lastUpdateError: String?,
-
-        @ColumnInfo(name = "next_update_time")
-        val nextUpdateTime: Long,
-
-        @ColumnInfo(name = "next_update_retry")
-        val nextUpdateRetry: Int,
-
-        @ColumnInfo(name = "update_mode")
-        val updateMode: UpdateMode,
-
-        @ColumnInfo(name = "unread_entry_count")
-        val unreadEntryCount: Int,
-
-        @ColumnInfo
-        val expanded: Boolean,
-
-        @ColumnInfo
-        val updating: Boolean
-) : Serializable
-
 @Dao
 abstract class EntryDao {
 
@@ -218,53 +162,6 @@ abstract class EntryDao {
     abstract fun queryEntry(feedId: Long, uid: String): Entry?
 
     @Query("""
-        SELECT
-            e.id,
-            f.id AS feed_id,
-            COALESCE(f.custom_title, f.title) AS feed_title,
-            f.favicon_url,
-            e.title,
-            e.link,
-            e.author,
-            COALESCE(e.publish_time, e.insert_time) AS formatted_date,
-            COALESCE(e.publish_time, e.insert_time) AS formatted_time,
-            e.read_time AS read_time,
-            e.read_time > 0 AS type
-        FROM
-            entries e
-            LEFT JOIN feeds f ON f.id = e.feed_id
-        WHERE
-            (e.read_time = 0 OR e.read_time > :since)
-        ORDER BY
-            COALESCE(e.publish_time, e.insert_time)
-    """)
-    abstract fun getMyFeedUiEntries(since: Long): LiveData<Array<UiEntry>>
-
-    @Query("""
-        SELECT
-            e.id,
-            f.id AS feed_id,
-            COALESCE(f.custom_title, f.title) AS feed_title,
-            f.favicon_url,
-            e.title,
-            e.link,
-            e.author,
-            COALESCE(e.publish_time, e.insert_time) AS formatted_date,
-            COALESCE(e.publish_time, e.insert_time) AS formatted_time,
-            e.read_time AS read_time,
-            e.read_time > 0 AS type
-        FROM
-            entries e
-            LEFT JOIN feeds f ON f.id = e.feed_id
-        WHERE
-            e.feed_id = :feedId AND
-            (e.read_time = 0 OR e.read_time > :since)
-        ORDER BY
-            COALESCE(e.publish_time, e.insert_time)
-    """)
-    abstract fun getFeedUiEntries(feedId: Long, since: Long): LiveData<Array<UiEntry>>
-
-    @Query("""
         UPDATE entries SET read_time = :readTime WHERE id = :entryId
     """)
     abstract fun setReadTime(entryId: Long, readTime: Long): Int
@@ -272,48 +169,4 @@ abstract class EntryDao {
     @Query("SELECT COUNT(1) FROM entries WHERE feed_id = :feedId AND COALESCE(publish_time, insert_time) > :since")
     abstract fun countAggregatedEntries(feedId: Long, since: Long): Int
 
-    fun getUiEntries(query: EntriesQuery): LiveData<Array<UiEntry>> = when (query) {
-        is FeedEntriesQuery -> getFeedUiEntries(query.feedId, query.since)
-        is MyFeedEntriesQuery -> getMyFeedUiEntries(query.since)
-    }
-
 }
-
-sealed class EntriesQuery : Serializable
-data class FeedEntriesQuery(val feedId: Long, val since: Long) : EntriesQuery()
-data class MyFeedEntriesQuery(val since: Long) : EntriesQuery()
-
-data class UiEntry(
-        @ColumnInfo
-        val id: Long,
-
-        @ColumnInfo(name = "feed_id")
-        val feedId: Long,
-
-        @ColumnInfo(name = "feed_title")
-        val feedTitle: String,
-
-        @ColumnInfo(name = "favicon_url")
-        val faviconUrl: String?,
-
-        @ColumnInfo
-        val title: String?,
-
-        @ColumnInfo
-        val link: String?,
-
-        @ColumnInfo
-        val author: String?,
-
-        @ColumnInfo(name = "formatted_date")
-        val formattedDate: FormattedDate,
-
-        @ColumnInfo(name = "formatted_time")
-        val formattedTime: FormattedTime,
-
-        @ColumnInfo(name = "read_time")
-        val readTime: Long,
-
-        @ColumnInfo
-        val type: UiEntryType
-)
