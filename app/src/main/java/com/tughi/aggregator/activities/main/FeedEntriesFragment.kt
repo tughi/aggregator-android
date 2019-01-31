@@ -5,7 +5,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.tughi.aggregator.data.EntriesQuery
 import com.tughi.aggregator.data.FeedEntriesQuery
-import com.tughi.aggregator.viewmodels.FeedViewModel
 
 class FeedEntriesFragment : EntriesFragment() {
 
@@ -14,8 +13,8 @@ class FeedEntriesFragment : EntriesFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val viewModelFactory = FeedViewModel.Factory(feedId)
-        val viewModel = ViewModelProviders.of(this, viewModelFactory).get(FeedViewModel::class.java)
+        val viewModelFactory = FeedEntriesFragmentViewModel.Factory(feedId)
+        val viewModel = ViewModelProviders.of(this, viewModelFactory).get(FeedEntriesFragmentViewModel::class.java)
         viewModel.feed.observe(this, Observer { feed ->
             setTitle(feed.title)
         })
