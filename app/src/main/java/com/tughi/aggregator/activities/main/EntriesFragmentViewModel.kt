@@ -9,7 +9,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.data.EntriesQuery
-import com.tughi.aggregator.data.UiEntryType
 
 class EntriesFragmentViewModel(entriesQuery: EntriesQuery) : ViewModel() {
 
@@ -63,9 +62,9 @@ class EntriesFragmentViewModel(entriesQuery: EntriesQuery) : ViewModel() {
 
         val newEntries = Array(databaseEntries.size * 2) { index ->
             when {
-                index == 0 -> databaseEntries[0].copy(readTime = 0, type = UiEntryType.HEADER)
+                index == 0 -> databaseEntries[0].copy(readTime = 0, type = EntriesFragmentEntryType.HEADER)
                 index % 2 == 0 -> databaseEntries[index / 2].let {
-                    it.copy(readTime = 0, type = if (it.formattedDate != databaseEntries[index / 2 - 1].formattedDate) UiEntryType.HEADER else UiEntryType.DIVIDER)
+                    it.copy(readTime = 0, type = if (it.formattedDate != databaseEntries[index / 2 - 1].formattedDate) EntriesFragmentEntryType.HEADER else EntriesFragmentEntryType.DIVIDER)
                 }
                 else -> databaseEntries[index / 2]
             }

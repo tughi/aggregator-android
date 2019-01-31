@@ -6,6 +6,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.tughi.aggregator.activities.main.MainDao
+import com.tughi.aggregator.activities.main.MainTypeConverters
 import com.tughi.aggregator.activities.reader.ReaderDao
 import com.tughi.aggregator.data.CustomTypeConverters
 import com.tughi.aggregator.data.Entry
@@ -25,7 +26,10 @@ import kotlinx.coroutines.launch
         ],
         version = 15
 )
-@TypeConverters(CustomTypeConverters::class)
+@TypeConverters(
+        CustomTypeConverters::class,
+        MainTypeConverters::class
+)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun entryDao(): EntryDao

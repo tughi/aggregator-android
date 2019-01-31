@@ -1,9 +1,6 @@
 package com.tughi.aggregator.activities.main
 
 import androidx.room.ColumnInfo
-import com.tughi.aggregator.data.FormattedDate
-import com.tughi.aggregator.data.FormattedTime
-import com.tughi.aggregator.data.UiEntryType
 
 data class EntriesFragmentEntry(
         @ColumnInfo
@@ -37,5 +34,5 @@ data class EntriesFragmentEntry(
         val readTime: Long,
 
         @ColumnInfo
-        val type: UiEntryType
+        val type: EntriesFragmentEntryType
 )
