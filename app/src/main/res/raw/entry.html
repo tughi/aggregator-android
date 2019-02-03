@@ -1,0 +1,84 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <style type="text/css">
+        html, body#aggregator {
+            margin: 0;
+            padding: 0;
+            font-size: 14pt;
+        }
+
+        #aggregator img {
+            max-width: 100%;
+            height: auto !important;
+        }
+
+        #aggregator a {
+            text-decoration: none;
+            color: #ff6600;
+        }
+
+        #aggregator iframe {
+            max-width: 100%;
+        }
+
+        #aggregator-header {
+            margin: 24px 0 16px 0;
+            padding: 0 0 16px 0;
+            font-size: 0.75em;
+            border-bottom: 1px solid #ff6600;
+        }
+
+        #aggregator-header a {
+            font-size: 1.75em;
+        }
+
+        #aggregator-entry {
+            margin: 0 16px;
+        }
+
+        @media all and (min-width: 500px) {
+            #aggregator-entry {
+                margin: 0 32px;
+            }
+        }
+
+        @media all and (min-width: 664px) {
+            #aggregator-entry {
+                width: 600px;
+                margin: 0 auto;
+            }
+        }
+
+        #aggregator-content {
+            overflow-x: auto;
+            margin-bottom: 16px;
+        }
+
+        #aggregator.light {
+            background: white !important;
+            color: black !important;
+        }
+
+        #aggregator.dark {
+            background: #212121 !important;
+            color: #f3f3f3 !important;
+        }
+    </style>
+</head>
+<body id="aggregator" class="{{ reader.theme }}" dir="{{ layout_direction }}">
+    <div id="aggregator-entry">
+        <div id="aggregator-header">
+            {{ entry.feed_name }}
+            <br>
+            <a href="{{ entry.link }}">{{ entry.title }}</a>
+            <br>
+            {{ entry.date }} {{ entry.author }}
+        </div>
+        <div id="aggregator-content">
+            {{ entry.content }}
+        </div>
+    </div>
+</body>
+</html>
