@@ -39,12 +39,12 @@
         tools:text="Aggregator News" />
 
     <com.tughi.aggregator.widgets.InlineImageView
-        android:id="@+id/star"
+        android:id="@+id/pin"
         android:layout_width="12dp"
         android:layout_height="12dp"
         android:layout_marginEnd="4dp"
         android:scaleType="fitXY"
-        android:src="@drawable/action_star"
+        android:src="@drawable/entry_state_pinned"
         android:textAppearance="?textAppearanceBody2" />
 
     <TextView

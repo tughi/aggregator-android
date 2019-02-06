@@ -27,14 +27,14 @@ internal abstract class EntriesFragmentEntryViewHolder(itemView: View, private v
     val feedTitle: TextView = itemView.findViewById(R.id.feed_title)
     val time: TextView = itemView.findViewById(R.id.time)
     val author: TextView = itemView.findViewById(R.id.author)
-    val star: View = itemView.findViewById(R.id.star)
+    val pin: View = itemView.findViewById(R.id.pin)
 
     init {
         itemView.setOnClickListener {
             listener.onEntryClicked(entry, adapterPosition / 2)
         }
 
-        star.visibility = View.GONE
+        pin.visibility = View.GONE
     }
 
     override fun onBind(entry: EntriesFragmentEntry) {

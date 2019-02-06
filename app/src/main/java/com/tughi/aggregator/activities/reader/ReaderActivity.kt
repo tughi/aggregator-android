@@ -2,6 +2,7 @@ package com.tughi.aggregator.activities.reader
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.ActionBar
 import androidx.fragment.app.Fragment
@@ -82,6 +83,14 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
         outState.putInt(EXTRA_ENTRIES_POSITION, resultData.getIntExtra(EXTRA_ENTRIES_POSITION, 0))
 
         super.onSaveInstanceState(outState)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        super.onCreateOptionsMenu(menu)
+
+        menuInflater.inflate(R.menu.reader_activity, menu)
+
+        return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {

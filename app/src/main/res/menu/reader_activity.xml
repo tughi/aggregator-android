@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/mark_pinned"
+        android:icon="@drawable/action_mark_pinned"
+        android:title="@string/action__mark_pinned"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/mark_done"
+        android:icon="@drawable/action_mark_done"
+        android:title="@string/action__mark_done"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/share"
+        android:title="@string/action__share" />
+    <item
+        android:id="@+id/tag"
+        android:title="@string/action__tag" />
+</menu>
