@@ -7,5 +7,8 @@ data class ReaderActivityEntry(
         val id: Long,
 
         @ColumnInfo(name = "read_time")
-        val readTime: Long
+        val readTime: Long,
+
+        @ColumnInfo(name = "pinned_time")
+        val pinnedTime: Long
 )

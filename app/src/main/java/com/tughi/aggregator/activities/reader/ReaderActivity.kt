@@ -2,7 +2,6 @@ package com.tughi.aggregator.activities.reader
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.ActionBar
 import androidx.fragment.app.Fragment
@@ -11,8 +10,11 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.viewpager.widget.ViewPager
 import com.tughi.aggregator.AppActivity
+import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.R
 import com.tughi.aggregator.data.EntriesQuery
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
 
@@ -111,8 +113,11 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
             actionBar.title = (position + 1).toString() + " / " + entries.size
             actionBar.setDisplayShowTitleEnabled(true)
 
-            if (entry.readTime == 0L) {
-                // TODO: ReaderEntryFragment.SetEntryFlagReadTask(this).execute(entry.id, System.currentTimeMillis())
+            if (entry.readTime == 0L && entry.pinnedTime == 0L) {
+                GlobalScope.launch {
+                    AppDatabase.instance.entryDao()
+                            .markEntryRead(entry.id, System.currentTimeMillis())
+                }
             }
         }
 

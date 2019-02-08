@@ -37,7 +37,8 @@ abstract class ReaderDao {
     @Query("""
         SELECT
             e.id,
-            e.read_time AS read_time
+            e.read_time,
+            e.pinned_time
         FROM
             entries e
         WHERE
@@ -51,7 +52,8 @@ abstract class ReaderDao {
     @Query("""
         SELECT
             e.id,
-            e.read_time AS read_time
+            e.read_time,
+            e.pinned_time
         FROM
             entries e
         WHERE
