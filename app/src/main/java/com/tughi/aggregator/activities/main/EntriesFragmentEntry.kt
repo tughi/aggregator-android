@@ -33,6 +33,9 @@ data class EntriesFragmentEntry(
         @ColumnInfo(name = "read_time")
         val readTime: Long,
 
+        @ColumnInfo(name = "pinned_time")
+        val pinnedTime: Long,
+
         @ColumnInfo
         val type: EntriesFragmentEntryType
 )

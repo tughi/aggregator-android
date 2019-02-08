@@ -93,8 +93,13 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
             if (viewHolder is EntriesFragmentEntryViewHolder) {
                 val entry = viewHolder.entry
                 GlobalScope.launch {
-                    AppDatabase.instance.entryDao()
-                            .setReadTime(entry.id, if (entry.readTime != 0L) 0 else System.currentTimeMillis())
+                    AppDatabase.instance.entryDao().run {
+                        if (entry.readTime == 0L || entry.pinnedTime != 0L) {
+                            markEntryRead(entry.id, System.currentTimeMillis())
+                        } else {
+                            markEntryPinned(entry.id, System.currentTimeMillis())
+                        }
+                    }
                 }
             }
         }

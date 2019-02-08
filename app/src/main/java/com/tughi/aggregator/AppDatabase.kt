@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
             Entry::class,
             Feed::class
         ],
-        version = 15
+        version = 16
 )
 @TypeConverters(
         CustomTypeConverters::class,

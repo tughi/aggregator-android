@@ -33,8 +33,6 @@ internal abstract class EntriesFragmentEntryViewHolder(itemView: View, private v
         itemView.setOnClickListener {
             listener.onEntryClicked(entry, adapterPosition / 2)
         }
-
-        pin.visibility = View.GONE
     }
 
     override fun onBind(entry: EntriesFragmentEntry) {
@@ -50,6 +48,8 @@ internal abstract class EntriesFragmentEntryViewHolder(itemView: View, private v
         } else {
             author.visibility = View.GONE
         }
+
+        pin.visibility = if (entry.pinnedTime > 0) View.VISIBLE else View.GONE
 
         Favicons.load(entry.feedId, entry.faviconUrl, favicon)
     }

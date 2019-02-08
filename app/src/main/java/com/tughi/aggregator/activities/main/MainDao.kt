@@ -46,14 +46,15 @@ abstract class MainDao {
             e.author,
             COALESCE(e.publish_time, e.insert_time) AS formatted_date,
             COALESCE(e.publish_time, e.insert_time) AS formatted_time,
-            e.read_time AS read_time,
-            e.read_time > 0 AS type
+            e.read_time,
+            e.pinned_time,
+            (e.read_time > 0 AND e.pinned_time = 0) AS type
         FROM
             entries e
             LEFT JOIN feeds f ON f.id = e.feed_id
         WHERE
             e.feed_id = :feedId AND
-            (e.read_time = 0 OR e.read_time > :since)
+            (e.read_time = 0 OR e.read_time > :since OR e.pinned_time > 0)
         ORDER BY
             COALESCE(e.publish_time, e.insert_time)
     """)
@@ -70,13 +71,14 @@ abstract class MainDao {
             e.author,
             COALESCE(e.publish_time, e.insert_time) AS formatted_date,
             COALESCE(e.publish_time, e.insert_time) AS formatted_time,
-            e.read_time AS read_time,
-            e.read_time > 0 AS type
+            e.read_time,
+            e.pinned_time,
+            (e.read_time > 0 AND e.pinned_time = 0) AS type
         FROM
             entries e
             LEFT JOIN feeds f ON f.id = e.feed_id
         WHERE
-            (e.read_time = 0 OR e.read_time > :since)
+            (e.read_time = 0 OR e.read_time > :since OR e.pinned_time > 0)
         ORDER BY
             COALESCE(e.publish_time, e.insert_time)
     """)

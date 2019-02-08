@@ -136,5 +136,8 @@ data class Entry(
         val updateTime: Long,
 
         @ColumnInfo(name = "read_time")
-        val readTime: Long = 0
+        val readTime: Long = 0,
+
+        @ColumnInfo(name = "pinned_time")
+        val pinnedTime: Long = 0
 )
