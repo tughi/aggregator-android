@@ -54,7 +54,7 @@ abstract class MainDao {
             LEFT JOIN feeds f ON f.id = e.feed_id
         WHERE
             e.feed_id = :feedId AND
-            (e.read_time = 0 OR e.read_time > :since OR e.pinned_time > 0)
+            (e.read_time = 0 OR e.read_time > :since)
         ORDER BY
             COALESCE(e.publish_time, e.insert_time)
     """)
@@ -78,7 +78,7 @@ abstract class MainDao {
             entries e
             LEFT JOIN feeds f ON f.id = e.feed_id
         WHERE
-            (e.read_time = 0 OR e.read_time > :since OR e.pinned_time > 0)
+            (e.read_time = 0 OR e.read_time > :since)
         ORDER BY
             COALESCE(e.publish_time, e.insert_time)
     """)
