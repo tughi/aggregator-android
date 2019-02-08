@@ -12,13 +12,16 @@ abstract class ReaderDao {
 
     @Query("""
         SELECT
+            e.id,
             e.title,
             e.link,
             e.content,
             e.author,
             COALESCE(e.publish_time, e.insert_time) AS publish_time,
             COALESCE(f.custom_title, f.title) AS feed_title,
-            f.language AS feed_language
+            f.language AS feed_language,
+            e.read_time,
+            e.pinned_time
         FROM
             entries e
             LEFT JOIN feeds f ON f.id = e.feed_id

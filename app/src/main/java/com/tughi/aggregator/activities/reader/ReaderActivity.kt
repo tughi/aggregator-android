@@ -85,14 +85,6 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
         super.onSaveInstanceState(outState)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        super.onCreateOptionsMenu(menu)
-
-        menuInflater.inflate(R.menu.reader_activity, menu)
-
-        return true
-    }
-
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item?.itemId) {
             android.R.id.home -> {
