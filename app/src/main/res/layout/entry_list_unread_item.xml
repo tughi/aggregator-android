@@ -45,7 +45,8 @@
         android:layout_marginEnd="4dp"
         android:scaleType="fitXY"
         android:src="@drawable/entry_state_pinned"
-        android:textAppearance="?textAppearanceBody2" />
+        android:textAppearance="?textAppearanceBody2"
+        android:tint="?colorAccent" />
 
     <TextView
         android:id="@+id/time"
