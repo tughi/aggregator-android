@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.tughi.aggregator.data.EntriesQuery
+import com.tughi.aggregator.data.EntriesSortOrderByDateAsc
 import com.tughi.aggregator.data.FeedEntriesQuery
 
 class FeedEntriesFragment : EntriesFragment() {
@@ -21,7 +22,7 @@ class FeedEntriesFragment : EntriesFragment() {
     }
 
     override fun getEntriesQuery(): EntriesQuery {
-        return FeedEntriesQuery(feedId, since = sessionTime)
+        return FeedEntriesQuery(feedId = feedId, since = sessionTime, sortOrder = EntriesSortOrderByDateAsc)
     }
 
     override fun onNavigationClick() {
