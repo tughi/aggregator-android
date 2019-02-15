@@ -6,8 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import com.tughi.aggregator.R
 import com.tughi.aggregator.data.EntriesQuery
-import com.tughi.aggregator.data.EntriesSortOrderByDateAsc
 import com.tughi.aggregator.data.MyFeedEntriesQuery
+import com.tughi.aggregator.preferences.EntryListSettings
 
 class MyFeedFragment : EntriesFragment() {
 
@@ -20,7 +20,7 @@ class MyFeedFragment : EntriesFragment() {
     }
 
     override fun getEntriesQuery(): EntriesQuery {
-        return MyFeedEntriesQuery(since = sessionTime, sortOrder = EntriesSortOrderByDateAsc)
+        return MyFeedEntriesQuery(since = sessionTime, sortOrder = EntryListSettings.entriesSortOrder)
     }
 
     override fun onNavigationClick() {
