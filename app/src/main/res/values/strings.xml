@@ -10,6 +10,10 @@
     <string name="action__save">Save</string>
     <string name="action__settings">Settings</string>
     <string name="action__share">Share</string>
+    <string name="action__sort_entries">Sort entries …</string>
+    <string name="action__sort_entries__by_date__asc">by date, ascending</string>
+    <string name="action__sort_entries__by_date__desc">by date, descending</string>
+    <string name="action__sort_entries__by_title">by title</string>
     <string name="action__subscribe">Subscribe</string>
     <string name="action__tag">Tag</string>
     <string name="action__unsubscribe">Unsubscribe</string>

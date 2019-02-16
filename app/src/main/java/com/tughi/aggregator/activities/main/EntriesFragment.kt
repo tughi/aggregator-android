@@ -17,6 +17,10 @@ import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.reader.ReaderActivity
 import com.tughi.aggregator.data.EntriesQuery
+import com.tughi.aggregator.data.EntriesSortOrderByDateAsc
+import com.tughi.aggregator.data.EntriesSortOrderByDateDesc
+import com.tughi.aggregator.data.EntriesSortOrderByTitle
+import com.tughi.aggregator.preferences.EntryListSettings
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -51,6 +55,31 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
         })
         toolbar.setNavigationOnClickListener { onNavigationClick() }
 
+        toolbar.inflateMenu(R.menu.entry_list_fragment)
+        toolbar.setOnMenuItemClickListener {
+            val entriesSortOrder = when (it?.itemId) {
+                R.id.sort_by_date_asc -> EntriesSortOrderByDateAsc
+                R.id.sort_by_date_desc -> EntriesSortOrderByDateDesc
+                R.id.sort_by_title -> EntriesSortOrderByTitle
+                else -> return@setOnMenuItemClickListener false
+            }
+
+            EntryListSettings.entriesSortOrder.value = entriesSortOrder
+
+            return@setOnMenuItemClickListener true
+        }
+
+        EntryListSettings.entriesSortOrder.observe(this, Observer { entriesSortOrder ->
+            toolbar.menu?.let {
+                val sortMenuItemId = when (entriesSortOrder) {
+                    EntriesSortOrderByDateAsc -> R.id.sort_by_date_asc
+                    EntriesSortOrderByDateDesc -> R.id.sort_by_date_desc
+                    EntriesSortOrderByTitle -> R.id.sort_by_title
+                }
+                it.findItem(sortMenuItemId).isChecked = true
+            }
+        })
+
         return fragmentView
     }
 
@@ -71,6 +100,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
             startActivity(
                     Intent(this, ReaderActivity::class.java)
                             .putExtra(ReaderActivity.EXTRA_ENTRIES_QUERY, getEntriesQuery())
+                            .putExtra(ReaderActivity.EXTRA_ENTRIES_SORT_ORDER, EntryListSettings.entriesSortOrder.value)
                             .putExtra(ReaderActivity.EXTRA_ENTRIES_POSITION, position)
             )
         }

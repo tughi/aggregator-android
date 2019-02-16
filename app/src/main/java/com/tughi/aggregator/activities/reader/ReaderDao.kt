@@ -15,7 +15,6 @@ import com.tughi.aggregator.data.Entry
 import com.tughi.aggregator.data.Feed
 import com.tughi.aggregator.data.FeedEntriesQuery
 import com.tughi.aggregator.data.MyFeedEntriesQuery
-import com.tughi.aggregator.preferences.EntryListSettings
 
 @Dao
 abstract class ReaderDao {
@@ -39,7 +38,7 @@ abstract class ReaderDao {
     """)
     abstract fun getReaderFragmentEntry(entryId: Long): LiveData<ReaderFragmentEntry>
 
-    fun getReaderActivityEntries(entriesQuery: EntriesQuery, entriesSortOrder: EntriesSortOrder = EntryListSettings.entriesSortOrder): LiveData<Array<ReaderActivityEntry>> {
+    fun getReaderActivityEntries(entriesQuery: EntriesQuery, entriesSortOrder: EntriesSortOrder): LiveData<Array<ReaderActivityEntry>> {
         var query = """
             SELECT
                 e.id,

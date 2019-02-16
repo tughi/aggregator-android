@@ -2,10 +2,12 @@ package com.tughi.aggregator.activities.main
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.data.EntriesQuery
+import com.tughi.aggregator.preferences.EntryListSettings
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
@@ -13,7 +15,9 @@ import kotlinx.coroutines.launch
 
 class EntriesFragmentViewModel(entriesQuery: EntriesQuery) : ViewModel() {
 
-    private val databaseEntries = AppDatabase.instance.mainDao().getEntriesFragmentEntries(entriesQuery)
+    private val databaseEntries = Transformations.switchMap(EntryListSettings.entriesSortOrder) {
+        AppDatabase.instance.mainDao().getEntriesFragmentEntries(entriesQuery, it)
+    }
 
     val entries: LiveData<List<EntriesFragmentEntry>> = MediatorLiveData<List<EntriesFragmentEntry>>().also {
         var currentJob: Job? = null

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:title="@string/action__sort_entries">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/sort_by_date_asc"
+                    android:title="@string/action__sort_entries__by_date__asc" />
+                <item
+                    android:id="@+id/sort_by_date_desc"
+                    android:title="@string/action__sort_entries__by_date__desc" />
+                <item
+                    android:id="@+id/sort_by_title"
+                    android:title="@string/action__sort_entries__by_title" />
+            </group>
+        </menu>
+    </item>
+</menu>

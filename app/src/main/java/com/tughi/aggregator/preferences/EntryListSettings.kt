@@ -1,5 +1,6 @@
 package com.tughi.aggregator.preferences
 
+import androidx.lifecycle.MutableLiveData
 import com.tughi.aggregator.App
 import com.tughi.aggregator.data.EntriesSortOrder
 import com.tughi.aggregator.data.EntriesSortOrderByDateAsc
@@ -10,18 +11,17 @@ object EntryListSettings {
 
     private val preferences = App.preferences
 
-    var entriesSortOrder: EntriesSortOrder
-        get() {
-            val value = preferences.getString(PREFERENCE_ENTRIES_SORT_ORDER, null)
-            if (value != null) {
-                return EntriesSortOrder.deserialize(value)
-            }
-            return EntriesSortOrderByDateAsc
-        }
-        set(sortOrder) {
+    val entriesSortOrder = object : MutableLiveData<EntriesSortOrder>() {
+        override fun setValue(value: EntriesSortOrder?) {
+            super.setValue(value)
+
             preferences.edit()
-                    .putString(PREFERENCE_ENTRIES_SORT_ORDER, sortOrder.serialize())
+                    .putString(PREFERENCE_ENTRIES_SORT_ORDER, value!!.serialize())
                     .apply()
         }
+    }.also {
+        val value = preferences.getString(PREFERENCE_ENTRIES_SORT_ORDER, null)
+        it.value = if (value != null) EntriesSortOrder.deserialize(value) else EntriesSortOrderByDateAsc
+    }
 
 }
