@@ -53,14 +53,27 @@ abstract class ReaderDao {
             is EntriesSortOrderByTitle -> "ORDER BY e.title ASC, COALESCE(e.publish_time, e.insert_time) ASC"
         }
 
-        query = when (entriesQuery) {
-            is FeedEntriesQuery -> "$query WHERE e.feed_id = ? AND (e.read_time = 0 OR e.read_time > ?) $orderBy"
-            is MyFeedEntriesQuery -> "$query WHERE (e.read_time = 0 OR e.read_time > ?) $orderBy"
-        }
+        val queryArgs: Array<out Any>
+        if (entriesQuery.showRead) {
+            query = when (entriesQuery) {
+                is FeedEntriesQuery -> "$query WHERE e.feed_id = ? $orderBy"
+                is MyFeedEntriesQuery -> "$query $orderBy"
+            }
 
-        val queryArgs = when (entriesQuery) {
-            is FeedEntriesQuery -> arrayOf(entriesQuery.feedId, entriesQuery.since)
-            is MyFeedEntriesQuery -> arrayOf(entriesQuery.since)
+            queryArgs = when (entriesQuery) {
+                is FeedEntriesQuery -> arrayOf(entriesQuery.feedId)
+                is MyFeedEntriesQuery -> emptyArray()
+            }
+        } else {
+            query = when (entriesQuery) {
+                is FeedEntriesQuery -> "$query WHERE e.feed_id = ? AND (e.read_time = 0 OR e.read_time > ?) $orderBy"
+                is MyFeedEntriesQuery -> "$query WHERE e.read_time = 0 OR e.read_time > ? $orderBy"
+            }
+
+            queryArgs = when (entriesQuery) {
+                is FeedEntriesQuery -> arrayOf(entriesQuery.feedId, entriesQuery.since)
+                is MyFeedEntriesQuery -> arrayOf(entriesQuery.since)
+            }
         }
 
         return getReaderActivityEntries(SimpleSQLiteQuery(query, queryArgs))

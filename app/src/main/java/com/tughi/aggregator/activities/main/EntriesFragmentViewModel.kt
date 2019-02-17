@@ -96,6 +96,15 @@ class EntriesFragmentViewModel(initialEntriesQuery: EntriesQuery) : ViewModel() 
         }
     }
 
+    fun changeShowRead(showRead: Boolean) {
+        entriesQuery.value?.let { value ->
+            entriesQuery.value = when (value) {
+                is FeedEntriesQuery -> value.copy(showRead = showRead)
+                is MyFeedEntriesQuery -> value.copy(showRead = showRead)
+            }
+        }
+    }
+
     class Factory(private val initialEntriesQuery: EntriesQuery) : ViewModelProvider.Factory {
 
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

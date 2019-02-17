@@ -61,6 +61,9 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
         toolbar.inflateMenu(R.menu.entry_list_fragment)
         toolbar.setOnMenuItemClickListener {
             when (it?.itemId) {
+                R.id.show_read_entries -> {
+                    viewModel.changeShowRead(!it.isChecked)
+                }
                 R.id.sort_by_date_asc -> {
                     viewModel.changeEntriesSortOrder(EntriesSortOrderByDateAsc)
                 }
@@ -89,6 +92,8 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
                     EntriesSortOrderByTitle -> R.id.sort_by_title
                 }
                 it.findItem(sortMenuItemId).isChecked = true
+
+                it.findItem(R.id.show_read_entries).isChecked = entriesQuery.showRead
             }
         })
 
