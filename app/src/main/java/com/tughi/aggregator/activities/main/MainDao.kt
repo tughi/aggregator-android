@@ -85,8 +85,8 @@ abstract class MainDao {
         var query = "UPDATE entries SET read_time = ?"
 
         query = when (entriesQuery) {
-            is FeedEntriesQuery -> "$query WHERE feed_id = ? AND read_time = 0"
-            is MyFeedEntriesQuery -> "$query WHERE read_time = 0"
+            is FeedEntriesQuery -> "$query WHERE feed_id = ? AND pinned_time = 0 AND read_time = 0"
+            is MyFeedEntriesQuery -> "$query WHERE pinned_time = 0 AND read_time = 0"
         }
 
         val readTime = System.currentTimeMillis()
