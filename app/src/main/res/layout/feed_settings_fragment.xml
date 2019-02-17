@@ -80,6 +80,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
+            android:textColor="@android:color/white"
             android:text="@string/action__unsubscribe" />
 
     </FrameLayout>
