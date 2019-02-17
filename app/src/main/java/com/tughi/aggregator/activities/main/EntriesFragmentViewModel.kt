@@ -2,21 +2,27 @@ package com.tughi.aggregator.activities.main
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.data.EntriesQuery
+import com.tughi.aggregator.data.EntriesSortOrder
+import com.tughi.aggregator.data.FeedEntriesQuery
+import com.tughi.aggregator.data.MyFeedEntriesQuery
 import com.tughi.aggregator.preferences.EntryListSettings
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-class EntriesFragmentViewModel(entriesQuery: EntriesQuery) : ViewModel() {
+class EntriesFragmentViewModel(initialEntriesQuery: EntriesQuery) : ViewModel() {
 
-    private val databaseEntries = Transformations.switchMap(EntryListSettings.entriesSortOrder) {
-        AppDatabase.instance.mainDao().getEntriesFragmentEntries(entriesQuery, it)
+    val entriesQuery = MutableLiveData<EntriesQuery>().also { it.value = initialEntriesQuery }
+
+    private val databaseEntries = Transformations.switchMap(entriesQuery) { entriesQuery ->
+        AppDatabase.instance.mainDao().getEntriesFragmentEntries(entriesQuery)
     }
 
     val entries: LiveData<List<EntriesFragmentEntry>> = MediatorLiveData<List<EntriesFragmentEntry>>().also {
@@ -79,12 +85,23 @@ class EntriesFragmentViewModel(entriesQuery: EntriesQuery) : ViewModel() {
         }
     }
 
-    class Factory(private val entriesQuery: EntriesQuery) : ViewModelProvider.Factory {
+    fun changeEntriesSortOrder(entriesSortOrder: EntriesSortOrder) {
+        EntryListSettings.entriesSortOrder = entriesSortOrder
+
+        entriesQuery.value?.let { value ->
+            entriesQuery.value = when (value) {
+                is FeedEntriesQuery -> value.copy(sortOrder = entriesSortOrder)
+                is MyFeedEntriesQuery -> value.copy(sortOrder = entriesSortOrder)
+            }
+        }
+    }
+
+    class Factory(private val initialEntriesQuery: EntriesQuery) : ViewModelProvider.Factory {
 
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(EntriesFragmentViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
-                return EntriesFragmentViewModel(entriesQuery) as T
+                return EntriesFragmentViewModel(initialEntriesQuery) as T
             }
             throw UnsupportedOperationException()
         }

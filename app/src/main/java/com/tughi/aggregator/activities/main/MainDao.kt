@@ -7,7 +7,6 @@ import androidx.room.RawQuery
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.tughi.aggregator.data.EntriesQuery
-import com.tughi.aggregator.data.EntriesSortOrder
 import com.tughi.aggregator.data.EntriesSortOrderByDateAsc
 import com.tughi.aggregator.data.EntriesSortOrderByDateDesc
 import com.tughi.aggregator.data.EntriesSortOrderByTitle
@@ -39,7 +38,7 @@ abstract class MainDao {
     """)
     abstract fun getFeedsFragmentFeeds(): LiveData<List<FeedsFragmentFeed>>
 
-    fun getEntriesFragmentEntries(entriesQuery: EntriesQuery, entriesSortOrder: EntriesSortOrder): LiveData<Array<EntriesFragmentEntry>> {
+    fun getEntriesFragmentEntries(entriesQuery: EntriesQuery): LiveData<Array<EntriesFragmentEntry>> {
         var query = """
             SELECT
                 e.id,
@@ -59,7 +58,7 @@ abstract class MainDao {
                 LEFT JOIN feeds f ON f.id = e.feed_id
         """.trim().replace(Regex("\\s+"), " ")
 
-        val orderBy = when (entriesSortOrder) {
+        val orderBy = when (entriesQuery.sortOrder) {
             is EntriesSortOrderByDateAsc -> "ORDER BY COALESCE(e.publish_time, e.insert_time) ASC"
             is EntriesSortOrderByDateDesc -> "ORDER BY COALESCE(e.publish_time, e.insert_time) DESC"
             is EntriesSortOrderByTitle -> "ORDER BY e.title ASC, COALESCE(e.publish_time, e.insert_time) ASC"

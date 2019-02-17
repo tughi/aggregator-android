@@ -13,7 +13,6 @@ import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.R
 import com.tughi.aggregator.data.EntriesQuery
-import com.tughi.aggregator.data.EntriesSortOrder
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -21,7 +20,6 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
 
     companion object {
         const val EXTRA_ENTRIES_QUERY = "entries_query"
-        const val EXTRA_ENTRIES_SORT_ORDER = "entries_sort_order"
         const val EXTRA_ENTRIES_POSITION = "entries_position"
     }
 
@@ -48,9 +46,8 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
         adapter = ReaderAdapter()
 
         val entriesQuery = intent.getSerializableExtra(EXTRA_ENTRIES_QUERY) as EntriesQuery
-        val entriesSortOrder = intent.getSerializableExtra(EXTRA_ENTRIES_SORT_ORDER) as EntriesSortOrder
 
-        val viewModelFactory = ReaderActivityViewModel.Factory(entriesQuery, entriesSortOrder)
+        val viewModelFactory = ReaderActivityViewModel.Factory(entriesQuery)
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(ReaderActivityViewModel::class.java)
 
         viewModel.entries.observe(this, Observer { entries ->

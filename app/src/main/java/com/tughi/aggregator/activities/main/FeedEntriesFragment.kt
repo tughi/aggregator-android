@@ -5,6 +5,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.tughi.aggregator.data.EntriesQuery
 import com.tughi.aggregator.data.FeedEntriesQuery
+import com.tughi.aggregator.preferences.EntryListSettings
 
 class FeedEntriesFragment : EntriesFragment() {
 
@@ -20,8 +21,8 @@ class FeedEntriesFragment : EntriesFragment() {
         })
     }
 
-    override fun getEntriesQuery(): EntriesQuery {
-        return FeedEntriesQuery(feedId = feedId, since = sessionTime)
+    override fun createInitialEntriesQuery(): EntriesQuery {
+        return FeedEntriesQuery(feedId = feedId, since = sessionTime, sortOrder = EntryListSettings.entriesSortOrder)
     }
 
     override fun onNavigationClick() {
