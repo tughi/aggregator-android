@@ -9,6 +9,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -145,9 +146,11 @@ class ReaderFragment : Fragment() {
             }
             R.id.share -> {
                 // TODO: share entry
+                Toast.makeText(context!!, "Not implemented yet", Toast.LENGTH_SHORT).show()
             }
             R.id.tag -> {
                 // TODO: tag entry
+                Toast.makeText(context!!, "Not implemented yet", Toast.LENGTH_SHORT).show()
             }
             else -> {
                 return super.onOptionsItemSelected(item)
