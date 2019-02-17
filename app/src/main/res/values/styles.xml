@@ -9,6 +9,7 @@
         <item name="colorBottomNavigation">@color/dark_theme__bottom_navigation</item>
         <item name="colorEntryListHeader">@color/dark_theme__entry_list_header</item>
         <item name="android:keepScreenOn">@bool/debug</item>
+        <item name="toolbarStyle">@style/DarkTheme.Widget.Toolbar</item>
     </style>
 
     <style name="DarkTheme.NoActionBar" parent="Theme.MaterialComponents.NoActionBar">
@@ -20,6 +21,11 @@
         <item name="colorBottomNavigation">@color/dark_theme__bottom_navigation</item>
         <item name="colorEntryListHeader">@color/dark_theme__entry_list_header</item>
         <item name="android:keepScreenOn">@bool/debug</item>
+        <item name="toolbarStyle">@style/DarkTheme.Widget.Toolbar</item>
+    </style>
+
+    <style name="DarkTheme.Widget.Toolbar" parent="Widget.MaterialComponents.Toolbar">
+        <item name="popupTheme">@style/PopupTheme</item>
     </style>
 
     <style name="LightTheme" parent="Theme.MaterialComponents.Light">
@@ -31,6 +37,7 @@
         <item name="colorBottomNavigation">@color/light_theme__bottom_navigation</item>
         <item name="colorEntryListHeader">@color/light_theme__entry_list_header</item>
         <item name="android:keepScreenOn">@bool/debug</item>
+        <item name="toolbarStyle">@style/LightTheme.Widget.Toolbar</item>
     </style>
 
     <style name="LightTheme.NoActionBar" parent="Theme.MaterialComponents.Light.NoActionBar">
@@ -42,6 +49,15 @@
         <item name="colorBottomNavigation">@color/light_theme__bottom_navigation</item>
         <item name="colorEntryListHeader">@color/light_theme__entry_list_header</item>
         <item name="android:keepScreenOn">@bool/debug</item>
+        <item name="toolbarStyle">@style/LightTheme.Widget.Toolbar</item>
+    </style>
+
+    <style name="LightTheme.Widget.Toolbar" parent="Widget.MaterialComponents.Toolbar">
+        <item name="popupTheme">@style/PopupTheme</item>
+    </style>
+
+    <style name="PopupTheme" parent="ThemeOverlay.MaterialComponents.Light">
+        <item name="android:colorBackground">@color/popup_background</item>
     </style>
 
 </resources>

@@ -15,4 +15,6 @@
     <color name="light_theme__bottom_navigation">#ff6600</color>
     <color name="light_theme__entry_list_header">#eeeeee</color>
 
+    <color name="popup_background">#FFD180</color>
+
 </resources>
