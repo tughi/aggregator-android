@@ -81,4 +81,30 @@ abstract class MainDao {
     @RawQuery(observedEntities = [Entry::class, Feed::class])
     protected abstract fun getEntriesFragmentEntries(query: SupportSQLiteQuery): LiveData<Array<EntriesFragmentEntry>>
 
+    fun markAllEntriesRead(entriesQuery: EntriesQuery): Int {
+        var query = "UPDATE entries SET read_time = ?"
+
+        query = when (entriesQuery) {
+            is FeedEntriesQuery -> "$query WHERE feed_id = ? AND read_time = 0"
+            is MyFeedEntriesQuery -> "$query WHERE read_time = 0"
+        }
+
+        val readTime = System.currentTimeMillis()
+
+        val queryArgs = when (entriesQuery) {
+            is FeedEntriesQuery -> arrayOf(readTime, entriesQuery.feedId)
+            is MyFeedEntriesQuery -> arrayOf(readTime)
+        }
+
+        markAllEntriesRead(SimpleSQLiteQuery(query, queryArgs))
+
+        return triggerMarkAllEntriesRead(readTime)
+    }
+
+    @RawQuery
+    protected abstract fun markAllEntriesRead(query: SupportSQLiteQuery): Int
+
+    @Query("UPDATE entries SET read_time = :readTime WHERE read_time = :readTime")
+    protected abstract fun triggerMarkAllEntriesRead(readTime: Long): Int
+
 }

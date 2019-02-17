@@ -2,6 +2,7 @@
     <string name="app_name" translatable="false">Aggregator</string>
 
     <string name="action__invert_selection">Invert selection</string>
+    <string name="action__mark_all_read">Mark all as read</string>
     <string name="action__mark_done">Mark as done</string>
     <string name="action__mark_pinned">Keep as unread</string>
     <string name="action__no">No</string>

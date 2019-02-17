@@ -15,4 +15,7 @@
             </group>
         </menu>
     </item>
+    <item
+        android:id="@+id/mark_all_read"
+        android:title="@string/action__mark_all_read" />
 </menu>

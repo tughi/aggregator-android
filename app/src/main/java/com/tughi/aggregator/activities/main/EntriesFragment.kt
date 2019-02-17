@@ -43,6 +43,8 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
             viewModel.entries.observe(this, Observer { entries ->
                 adapter.submitList(entries)
 
+                // TODO: add paging support (large arrays cause ANR)
+
                 progressBar.visibility = View.GONE
             })
         }
@@ -57,15 +59,22 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
 
         toolbar.inflateMenu(R.menu.entry_list_fragment)
         toolbar.setOnMenuItemClickListener {
-            val entriesSortOrder = when (it?.itemId) {
-                R.id.sort_by_date_asc -> EntriesSortOrderByDateAsc
-                R.id.sort_by_date_desc -> EntriesSortOrderByDateDesc
-                R.id.sort_by_title -> EntriesSortOrderByTitle
-                else -> return@setOnMenuItemClickListener false
+            when (it?.itemId) {
+                R.id.sort_by_date_asc -> {
+                    EntryListSettings.entriesSortOrder.value = EntriesSortOrderByDateAsc
+                }
+                R.id.sort_by_date_desc -> {
+                    EntryListSettings.entriesSortOrder.value = EntriesSortOrderByDateDesc
+                }
+                R.id.sort_by_title -> {
+                    EntryListSettings.entriesSortOrder.value = EntriesSortOrderByTitle
+                }
+                R.id.mark_all_read -> {
+                    GlobalScope.launch {
+                        AppDatabase.instance.mainDao().markAllEntriesRead(getEntriesQuery())
+                    }
+                }
             }
-
-            EntryListSettings.entriesSortOrder.value = entriesSortOrder
-
             return@setOnMenuItemClickListener true
         }
 
