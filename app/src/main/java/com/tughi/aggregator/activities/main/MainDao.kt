@@ -6,6 +6,7 @@ import androidx.room.Query
 import androidx.room.RawQuery
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
+import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.data.EntriesQuery
 import com.tughi.aggregator.data.EntriesSortOrderByDateAsc
 import com.tughi.aggregator.data.EntriesSortOrderByDateDesc
@@ -93,7 +94,7 @@ abstract class MainDao {
     @RawQuery(observedEntities = [Entry::class, Feed::class])
     protected abstract fun getEntriesFragmentEntries(query: SupportSQLiteQuery): LiveData<Array<EntriesFragmentEntry>>
 
-    fun markAllEntriesRead(entriesQuery: EntriesQuery): Int {
+    fun markAllEntriesRead(entriesQuery: EntriesQuery) {
         var query = "UPDATE entries SET read_time = ?"
 
         query = when (entriesQuery) {
@@ -110,13 +111,10 @@ abstract class MainDao {
 
         markAllEntriesRead(SimpleSQLiteQuery(query, queryArgs))
 
-        return triggerMarkAllEntriesRead(readTime)
+        AppDatabase.instance.invalidationTracker.refreshVersionsAsync()
     }
 
     @RawQuery
     protected abstract fun markAllEntriesRead(query: SupportSQLiteQuery): Int
-
-    @Query("UPDATE entries SET read_time = :readTime WHERE read_time = :readTime")
-    protected abstract fun triggerMarkAllEntriesRead(readTime: Long): Int
 
 }
