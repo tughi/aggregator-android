@@ -66,7 +66,7 @@ class ReaderFragment : Fragment() {
                 builtInZoomControls = true
                 displayZoomControls = false
             }
-            webView.scrollBarStyle = WebView.SCROLLBARS_INSIDE_OVERLAY;
+            webView.scrollBarStyle = WebView.SCROLLBARS_INSIDE_OVERLAY
 
             val attributes = context!!.obtainStyledAttributes(intArrayOf(android.R.attr.colorBackground))
             webView.setBackgroundColor(attributes.getColor(0, 0))
@@ -89,7 +89,7 @@ class ReaderFragment : Fragment() {
                         .replace("{{ layout_direction }}", if (Language.isRightToLeft(entryFeedLanguage)) "rtl" else "ltr")
                         .replace("{{ entry.feed_name }}", entryFeedTitle)
                         .replace("{{ entry.link }}", entryLink ?: "#")
-                        .replace("{{ entry.date }}", DateUtils.formatDateTime(activity, entryPublished, 0))
+                        .replace("{{ entry.date }}", DateUtils.formatDateTime(activity, entryPublished, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_YEAR))
                         .replace("{{ entry.title }}", entryTitle ?: "")
                         .replace("{{ entry.author }}", entryAuthor ?: "")
                         .replace("{{ entry.content }}", entryContent ?: "")
