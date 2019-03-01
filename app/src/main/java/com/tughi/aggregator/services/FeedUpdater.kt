@@ -85,9 +85,9 @@ object FeedUpdater {
 
     private suspend fun removeUpdatingFeed(feedId: Long): Unit = suspendCoroutine {
         GlobalScope.launch(Dispatchers.Main) {
-            val feedIds = updatingFeedIds.value ?: mutableSetOf()
-            feedIds.remove(feedId)
-            updatingFeedIds.value = feedIds
+            val feedIds = updatingFeedIds.value
+            feedIds?.remove(feedId)
+            updatingFeedIds.value = if (feedIds?.size != 0) feedIds else null
 
             it.resume(Unit)
         }
