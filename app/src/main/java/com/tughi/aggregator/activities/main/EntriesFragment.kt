@@ -40,15 +40,14 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
         val entriesRecyclerView = fragmentView.findViewById<RecyclerView>(R.id.entries)
         val progressBar = fragmentView.findViewById<ProgressBar>(R.id.progress)
 
-        entriesRecyclerView.adapter = EntriesFragmentEntryAdapter(this).also { adapter ->
-            viewModel.entries.observe(this, Observer { entries ->
-                adapter.submitList(entries)
+        val adapter = EntriesFragmentEntryAdapter(this)
+        viewModel.entries.observe(this, Observer { entries ->
+            adapter.submitList(entries)
 
-                // TODO: add paging support (large arrays cause ANR)
+            progressBar.visibility = View.GONE
+        })
 
-                progressBar.visibility = View.GONE
-            })
-        }
+        entriesRecyclerView.adapter = adapter
         ItemTouchHelper(SwipeItemTouchHelper()).attachToRecyclerView(entriesRecyclerView)
 
         toolbar = fragmentView.findViewById(R.id.toolbar)
@@ -85,6 +84,9 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
         }
 
         viewModel.entriesQuery.observe(this, Observer { entriesQuery ->
+            adapter.submitList(null)
+            progressBar.visibility = View.VISIBLE
+
             toolbar.menu?.let {
                 val sortMenuItemId = when (entriesQuery.sortOrder) {
                     EntriesSortOrderByDateAsc -> R.id.sort_by_date_asc
