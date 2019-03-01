@@ -14,40 +14,23 @@ class FeedsFragmentViewModel(application: Application) : AndroidViewModel(applic
 
     private val expandedFeedId = MutableLiveData<Long>()
 
-    private val liveFeeds = MediatorLiveData<List<FeedsFragmentFeed>>().also {
+    val feeds: LiveData<List<FeedsFragmentFeed>> = MediatorLiveData<List<FeedsFragmentFeed>>().also {
         it.addSource(databaseFeeds) { feeds ->
-            val expandedFeedId = expandedFeedId.value
-            val updatingFeedIds = FeedUpdater.updatingFeedIds.value ?: emptySet<Long>()
-            it.value = feeds?.map { feed ->
-                val expanded = feed.id == expandedFeedId
-                val updating = updatingFeedIds.contains(feed.id)
-                if (expanded || updating) feed.copy(expanded = expanded, updating = updating) else feed
-            } ?: emptyList()
+            it.value = transformFeeds(feeds, expandedFeedId.value, FeedUpdater.updatingFeedIds.value.orEmpty())
         }
         it.addSource(expandedFeedId) { expandedFeedId ->
-            val feeds = databaseFeeds.value
-            val updatingFeedIds = FeedUpdater.updatingFeedIds.value ?: emptySet<Long>()
-            it.value = feeds?.map { feed ->
-                val expanded = feed.id == expandedFeedId
-                val updating = updatingFeedIds.contains(feed.id)
-                if (expanded || updating) feed.copy(expanded = expanded, updating = updating) else feed
-            } ?: emptyList()
+            it.value = transformFeeds(databaseFeeds.value, expandedFeedId, FeedUpdater.updatingFeedIds.value.orEmpty())
         }
         it.addSource(FeedUpdater.updatingFeedIds) { updatingFeedIds ->
-            val feeds = databaseFeeds.value
-            val expandedFeedId = expandedFeedId.value
-            it.value = feeds?.map { feed ->
-                val expanded = feed.id == expandedFeedId
-                val updating = updatingFeedIds.contains(feed.id)
-                if (expanded || updating) feed.copy(expanded = expanded, updating = updating) else feed
-            } ?: emptyList()
+            it.value = transformFeeds(databaseFeeds.value, expandedFeedId.value, updatingFeedIds.orEmpty())
         }
     }
 
-    val feeds: LiveData<List<FeedsFragmentFeed>>
-        get() {
-            return liveFeeds
-        }
+    private fun transformFeeds(feeds: List<FeedsFragmentFeed>?, expandedFeedId: Long?, updatingFeedIds: Set<Long>) = feeds?.map { feed ->
+        val expanded = feed.id == expandedFeedId
+        val updating = updatingFeedIds.contains(feed.id)
+        if (expanded || updating) feed.copy(expanded = expanded, updating = updating) else feed
+    }
 
     fun toggleFeed(feed: FeedsFragmentFeed) {
         if (expandedFeedId.value == feed.id) {

@@ -38,7 +38,7 @@ class FeedListFragment : Fragment(), FeedsFragmentFeedAdapterListener {
                 adapter.submitList(feeds)
 
                 progressBar.visibility = View.GONE
-                if (feeds.isEmpty()) {
+                if (feeds?.size == 0) {
                     emptyView.visibility = View.VISIBLE
                     feedsRecyclerView.visibility = View.GONE
                 } else {
