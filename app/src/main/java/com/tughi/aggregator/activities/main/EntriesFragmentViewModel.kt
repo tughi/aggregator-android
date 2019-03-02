@@ -25,7 +25,7 @@ class EntriesFragmentViewModel(initialEntriesQuery: EntriesQuery) : ViewModel() 
         AppDatabase.instance.mainDao().getEntriesFragmentEntries(entriesQuery)
     }
 
-    val entries: LiveData<List<EntriesFragmentEntry>> = MediatorLiveData<List<EntriesFragmentEntry>>().also {
+    private val transformedEntries = MediatorLiveData<List<EntriesFragmentEntry>>().also {
         var currentJob: Job? = null
 
         it.addSource(databaseEntries) { databaseEntries ->
@@ -85,9 +85,13 @@ class EntriesFragmentViewModel(initialEntriesQuery: EntriesQuery) : ViewModel() 
         }
     }
 
+    val entries: LiveData<List<EntriesFragmentEntry>>
+        get() = transformedEntries
+
     fun changeEntriesSortOrder(entriesSortOrder: EntriesSortOrder) {
         EntryListSettings.entriesSortOrder = entriesSortOrder
 
+        transformedEntries.value = null
         entriesQuery.value?.let { value ->
             entriesQuery.value = when (value) {
                 is FeedEntriesQuery -> value.copy(sortOrder = entriesSortOrder)
@@ -97,6 +101,7 @@ class EntriesFragmentViewModel(initialEntriesQuery: EntriesQuery) : ViewModel() 
     }
 
     fun changeShowRead(showRead: Boolean) {
+        transformedEntries.value = null
         entriesQuery.value?.let { value ->
             entriesQuery.value = when (value) {
                 is FeedEntriesQuery -> value.copy(showRead = showRead)

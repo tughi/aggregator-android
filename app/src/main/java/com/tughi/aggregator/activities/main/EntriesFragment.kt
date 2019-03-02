@@ -44,7 +44,11 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
         viewModel.entries.observe(this, Observer { entries ->
             adapter.submitList(entries)
 
-            progressBar.visibility = View.GONE
+            if (entries == null) {
+                progressBar.visibility = View.VISIBLE
+            } else {
+                progressBar.visibility = View.GONE
+            }
         })
 
         entriesRecyclerView.adapter = adapter
@@ -84,9 +88,6 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
         }
 
         viewModel.entriesQuery.observe(this, Observer { entriesQuery ->
-            adapter.submitList(null)
-            progressBar.visibility = View.VISIBLE
-
             toolbar.menu?.let {
                 val sortMenuItemId = when (entriesQuery.sortOrder) {
                     EntriesSortOrderByDateAsc -> R.id.sort_by_date_asc
