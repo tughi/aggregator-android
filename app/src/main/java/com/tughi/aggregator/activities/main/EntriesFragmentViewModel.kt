@@ -19,7 +19,14 @@ import kotlinx.coroutines.launch
 
 class EntriesFragmentViewModel(initialEntriesQuery: EntriesQuery) : ViewModel() {
 
-    val entriesQuery = MutableLiveData<EntriesQuery>().also { it.value = initialEntriesQuery }
+    private val sessionTime = System.currentTimeMillis()
+
+    val entriesQuery = MutableLiveData<EntriesQuery>().apply {
+        value = when (initialEntriesQuery) {
+            is FeedEntriesQuery -> initialEntriesQuery.copy(sessionTime = sessionTime)
+            is MyFeedEntriesQuery -> initialEntriesQuery.copy(sessionTime = sessionTime)
+        }
+    }
 
     private val databaseEntries = Transformations.switchMap(entriesQuery) { entriesQuery ->
         AppDatabase.instance.mainDao().getEntriesFragmentEntries(entriesQuery)
@@ -104,8 +111,8 @@ class EntriesFragmentViewModel(initialEntriesQuery: EntriesQuery) : ViewModel() 
         transformedEntries.value = null
         entriesQuery.value?.let { value ->
             entriesQuery.value = when (value) {
-                is FeedEntriesQuery -> value.copy(showRead = showRead)
-                is MyFeedEntriesQuery -> value.copy(showRead = showRead)
+                is FeedEntriesQuery -> value.copy(sessionTime = if (showRead) 0 else sessionTime)
+                is MyFeedEntriesQuery -> value.copy(sessionTime = if (showRead) 0 else sessionTime)
             }
         }
     }

@@ -1,12 +1,13 @@
 package com.tughi.aggregator.data
 
+import com.tughi.aggregator.preferences.EntryListSettings
 import java.io.Serializable
 
 sealed class EntriesQuery : Serializable {
+    abstract val sessionTime: Long
     abstract val sortOrder: EntriesSortOrder
-    abstract val showRead: Boolean
 }
 
-data class FeedEntriesQuery(val feedId: Long, val since: Long, override val sortOrder: EntriesSortOrder, override val showRead: Boolean = false) : EntriesQuery()
+data class FeedEntriesQuery(val feedId: Long, override val sessionTime: Long = 0, override val sortOrder: EntriesSortOrder = EntryListSettings.entriesSortOrder) : EntriesQuery()
 
-data class MyFeedEntriesQuery(val since: Long, override val sortOrder: EntriesSortOrder, override val showRead: Boolean = false) : EntriesQuery()
+data class MyFeedEntriesQuery(override val sessionTime: Long = 0, override val sortOrder: EntriesSortOrder = EntryListSettings.entriesSortOrder) : EntriesQuery()

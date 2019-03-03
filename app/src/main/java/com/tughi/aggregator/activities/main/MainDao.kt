@@ -66,7 +66,7 @@ abstract class MainDao {
         }
 
         val queryArgs: Array<out Any>
-        if (entriesQuery.showRead) {
+        if (entriesQuery.sessionTime == 0L) {
             query = when (entriesQuery) {
                 is FeedEntriesQuery -> "$query WHERE e.feed_id = ? $orderBy"
                 is MyFeedEntriesQuery -> "$query $orderBy"
@@ -83,8 +83,8 @@ abstract class MainDao {
             }
 
             queryArgs = when (entriesQuery) {
-                is FeedEntriesQuery -> arrayOf(entriesQuery.feedId, entriesQuery.since)
-                is MyFeedEntriesQuery -> arrayOf(entriesQuery.since)
+                is FeedEntriesQuery -> arrayOf(entriesQuery.feedId, entriesQuery.sessionTime)
+                is MyFeedEntriesQuery -> arrayOf(entriesQuery.sessionTime)
             }
         }
 

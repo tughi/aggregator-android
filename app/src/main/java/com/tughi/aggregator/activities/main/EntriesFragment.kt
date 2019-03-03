@@ -29,8 +29,6 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
 
     private lateinit var toolbar: Toolbar
 
-    protected val sessionTime = System.currentTimeMillis()
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val fragmentView = inflater.inflate(R.layout.entry_list_fragment, container, false)
 
@@ -96,7 +94,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
                 }
                 it.findItem(sortMenuItemId).isChecked = true
 
-                it.findItem(R.id.show_read_entries).isChecked = entriesQuery.showRead
+                it.findItem(R.id.show_read_entries).isChecked = entriesQuery.sessionTime == 0L
             }
         })
 
