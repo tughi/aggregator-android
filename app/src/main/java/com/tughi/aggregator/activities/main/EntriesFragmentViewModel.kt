@@ -1,13 +1,14 @@
 package com.tughi.aggregator.activities.main
 
+import android.database.Cursor
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.data.EntriesQuery
+import com.tughi.aggregator.data.EntriesRepository
 import com.tughi.aggregator.data.EntriesSortOrder
 import com.tughi.aggregator.data.FeedEntriesQuery
 import com.tughi.aggregator.data.MyFeedEntriesQuery
@@ -28,14 +29,47 @@ class EntriesFragmentViewModel(initialEntriesQuery: EntriesQuery) : ViewModel() 
         }
     }
 
-    private val databaseEntries = Transformations.switchMap(entriesQuery) { entriesQuery ->
-        AppDatabase.instance.mainDao().getEntriesFragmentEntries(entriesQuery)
+    private val repository = EntriesRepository(
+            arrayOf(
+                    EntriesRepository.Column.ID,
+                    EntriesRepository.Column.FEED_ID,
+                    EntriesRepository.Column.AUTHOR,
+                    EntriesRepository.Column.FEED_FAVICON_URL,
+                    EntriesRepository.Column.FEED_TITLE,
+                    EntriesRepository.Column.FORMATTED_DATE,
+                    EntriesRepository.Column.FORMATTED_TIME,
+                    EntriesRepository.Column.LINK,
+                    EntriesRepository.Column.PINNED_TIME,
+                    EntriesRepository.Column.READ_TIME,
+                    EntriesRepository.Column.TITLE,
+                    EntriesRepository.Column.TYPE
+            ),
+            object : EntriesRepository.Mapper<EntriesFragmentEntry> {
+                override fun map(cursor: Cursor) = EntriesFragmentEntry(
+                        id = cursor.getLong(0),
+                        feedId = cursor.getLong(1),
+                        author = cursor.getString(2),
+                        faviconUrl = cursor.getString(3),
+                        feedTitle = cursor.getString(4),
+                        formattedDate = FormattedDate(cursor.getString(5)),
+                        formattedTime = FormattedTime(cursor.getString(6)),
+                        link = cursor.getString(7),
+                        pinnedTime = cursor.getLong(8),
+                        readTime = cursor.getLong(9),
+                        title = cursor.getString(10),
+                        type = EntriesFragmentEntryType.valueOf(cursor.getString(11))
+                )
+            }
+    )
+
+    private val storedEntries = Transformations.switchMap(entriesQuery) { entriesQuery ->
+        repository.liveQuery(entriesQuery)
     }
 
     private val transformedEntries = MediatorLiveData<List<EntriesFragmentEntry>>().also {
         var currentJob: Job? = null
 
-        it.addSource(databaseEntries) { databaseEntries ->
+        it.addSource(storedEntries) { storedEntries ->
             currentJob?.run {
                 cancel()
             }
@@ -46,10 +80,10 @@ class EntriesFragmentViewModel(initialEntriesQuery: EntriesQuery) : ViewModel() 
                 }
 
                 val oldEntries = it.value
-                if (oldEntries != null && oldEntries.size == databaseEntries.size * 2) {
+                if (oldEntries != null && oldEntries.size == storedEntries.size * 2) {
                     var changed = false
-                    for (index in 0 until databaseEntries.size) {
-                        if (oldEntries[index * 2 + 1] != databaseEntries[index]) {
+                    for (index in 0 until storedEntries.size) {
+                        if (oldEntries[index * 2 + 1] != storedEntries[index]) {
                             changed = true
                             break
                         }
@@ -63,23 +97,23 @@ class EntriesFragmentViewModel(initialEntriesQuery: EntriesQuery) : ViewModel() 
                     return@launch
                 }
 
-                val newEntries = Array(databaseEntries.size * 2) { index ->
+                val newEntries = Array(storedEntries.size * 2) { index ->
                     when {
-                        index == 0 -> databaseEntries[0].let { entry ->
+                        index == 0 -> storedEntries[0].let { entry ->
                             entry.copy(
                                     id = -entry.id,
                                     readTime = 0,
                                     type = EntriesFragmentEntryType.HEADER
                             )
                         }
-                        index % 2 == 0 -> databaseEntries[index / 2].let { entry ->
+                        index % 2 == 0 -> storedEntries[index / 2].let { entry ->
                             entry.copy(
                                     id = -entry.id,
                                     readTime = 0,
-                                    type = if (entry.formattedDate != databaseEntries[index / 2 - 1].formattedDate) EntriesFragmentEntryType.HEADER else EntriesFragmentEntryType.DIVIDER
+                                    type = if (entry.formattedDate != storedEntries[index / 2 - 1].formattedDate) EntriesFragmentEntryType.HEADER else EntriesFragmentEntryType.DIVIDER
                             )
                         }
-                        else -> databaseEntries[index / 2]
+                        else -> storedEntries[index / 2]
                     }
                 }
 
