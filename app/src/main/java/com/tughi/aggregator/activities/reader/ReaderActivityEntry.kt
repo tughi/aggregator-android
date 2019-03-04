@@ -1,14 +1,12 @@
 package com.tughi.aggregator.activities.reader
 
-import androidx.room.ColumnInfo
-
 data class ReaderActivityEntry(
-        @ColumnInfo
+//        @ColumnInfo
         val id: Long,
 
-        @ColumnInfo(name = "read_time")
+//        @ColumnInfo(name = "read_time")
         val readTime: Long,
 
-        @ColumnInfo(name = "pinned_time")
+//        @ColumnInfo(name = "pinned_time")
         val pinnedTime: Long
 )

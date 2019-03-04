@@ -1,35 +1,33 @@
 package com.tughi.aggregator.activities.reader
 
-import androidx.room.ColumnInfo
-
 data class ReaderFragmentEntry(
-        @ColumnInfo
+//        @ColumnInfo
         val id: Long,
 
-        @ColumnInfo
+//        @ColumnInfo
         val title: String?,
 
-        @ColumnInfo
+//        @ColumnInfo
         val link: String?,
 
-        @ColumnInfo
+//        @ColumnInfo
         val content: String?,
 
-        @ColumnInfo
+//        @ColumnInfo
         val author: String?,
 
-        @ColumnInfo(name = "publish_time")
+//        @ColumnInfo(name = "publish_time")
         val publishTime: Long,
 
-        @ColumnInfo(name = "feed_title")
+//        @ColumnInfo(name = "feed_title")
         val feedTitle: String,
 
-        @ColumnInfo(name = "feed_language")
+//        @ColumnInfo(name = "feed_language")
         val feedLanguage: String?,
 
-        @ColumnInfo(name = "read_time")
+//        @ColumnInfo(name = "read_time")
         val readTime: Long,
 
-        @ColumnInfo(name = "pinned_time")
+//        @ColumnInfo(name = "pinned_time")
         val pinnedTime: Long
 )

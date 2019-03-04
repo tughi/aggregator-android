@@ -1,7 +1,6 @@
 package com.tughi.aggregator.activities.main
 
 import android.text.format.DateUtils
-import androidx.room.TypeConverter
 import com.tughi.aggregator.App
 
 object MainTypeConverters {
@@ -11,19 +10,19 @@ object MainTypeConverters {
 
     private val context by lazy { App.instance.applicationContext }
 
-    @TypeConverter
+//    @TypeConverter
     @JvmStatic
     fun formatDate(timestamp: Long): FormattedDate {
         return FormattedDate(DateUtils.formatDateTime(context, timestamp, DATE_FORMAT))
     }
 
-    @TypeConverter
+//    @TypeConverter
     @JvmStatic
     fun formatTime(timestamp: Long): FormattedTime {
         return FormattedTime(DateUtils.formatDateTime(context, timestamp, TIME_FORMAT))
     }
 
-    @TypeConverter
+//    @TypeConverter
     @JvmStatic
     fun convertEntriesFragmentEntryType(type: Int): EntriesFragmentEntryType {
         return EntriesFragmentEntryType.values()[type]

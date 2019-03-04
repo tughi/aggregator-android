@@ -1,42 +1,36 @@
 package com.tughi.aggregator.activities.main
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.RawQuery
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
-import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.data.EntriesQuery
 import com.tughi.aggregator.data.EntriesSortOrderByDateAsc
 import com.tughi.aggregator.data.EntriesSortOrderByDateDesc
 import com.tughi.aggregator.data.EntriesSortOrderByTitle
-import com.tughi.aggregator.data.Entry
-import com.tughi.aggregator.data.Feed
 import com.tughi.aggregator.data.FeedEntriesQuery
 import com.tughi.aggregator.data.MyFeedEntriesQuery
 
-@Dao
+//@Dao
 abstract class MainDao {
 
-    @Query("""
-        SELECT
-            f.id,
-            COALESCE(f.custom_title, f.title) AS title,
-            f.favicon_url,
-            f.last_update_time,
-            f.last_update_error,
-            f.next_update_time,
-            f.next_update_retry,
-            f.update_mode,
-            (SELECT COUNT(1) FROM entries e WHERE f.id = e.feed_id AND e.read_time = 0) AS unread_entry_count,
-            0 AS expanded,
-            0 AS updating
-        FROM
-            feeds f
-        ORDER BY
-            title
-    """)
+//    @Query("""
+//        SELECT
+//            f.id,
+//            COALESCE(f.custom_title, f.title) AS title,
+//            f.favicon_url,
+//            f.last_update_time,
+//            f.last_update_error,
+//            f.next_update_time,
+//            f.next_update_retry,
+//            f.update_mode,
+//            (SELECT COUNT(1) FROM entries e WHERE f.id = e.feed_id AND e.read_time = 0) AS unread_entry_count,
+//            0 AS expanded,
+//            0 AS updating
+//        FROM
+//            feeds f
+//        ORDER BY
+//            title
+//    """)
     abstract fun getFeedsFragmentFeeds(): LiveData<List<FeedsFragmentFeed>>
 
     fun getEntriesFragmentEntries(entriesQuery: EntriesQuery): LiveData<Array<EntriesFragmentEntry>> {
@@ -91,7 +85,7 @@ abstract class MainDao {
         return getEntriesFragmentEntries(SimpleSQLiteQuery(query, queryArgs))
     }
 
-    @RawQuery(observedEntities = [Entry::class, Feed::class])
+//    @RawQuery(observedEntities = [Entry::class, Feed::class])
     protected abstract fun getEntriesFragmentEntries(query: SupportSQLiteQuery): LiveData<Array<EntriesFragmentEntry>>
 
     fun markAllEntriesRead(entriesQuery: EntriesQuery) {
@@ -111,10 +105,10 @@ abstract class MainDao {
 
         markAllEntriesRead(SimpleSQLiteQuery(query, queryArgs))
 
-        AppDatabase.instance.invalidationTracker.refreshVersionsAsync()
+//        AppDatabase.instance.invalidationTracker.refreshVersionsAsync()
     }
 
-    @RawQuery
+//    @RawQuery
     protected abstract fun markAllEntriesRead(query: SupportSQLiteQuery): Int
 
 }

@@ -1,58 +1,52 @@
 package com.tughi.aggregator.data
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.Index
-import androidx.room.PrimaryKey
-
-@Entity(
-        tableName = "feeds"
-)
+//@Entity(
+//        tableName = "feeds"
+//)
 data class Feed(
-        @PrimaryKey(autoGenerate = true)
+//        @PrimaryKey(autoGenerate = true)
         val id: Long? = null,
 
-        @ColumnInfo
+//        @ColumnInfo
         val url: String,
 
-        @ColumnInfo
+//        @ColumnInfo
         val title: String,
 
-        @ColumnInfo
+//        @ColumnInfo
         val link: String? = null,
 
-        @ColumnInfo
+//        @ColumnInfo
         val language: String? = null,
 
-        @ColumnInfo(name = "custom_title")
+//        @ColumnInfo(name = "custom_title")
         val customTitle: String? = null,
 
-        @ColumnInfo(name = "favicon_url")
+//        @ColumnInfo(name = "favicon_url")
         val faviconUrl: String? = null,
 
-        @ColumnInfo(name = "favicon_content")
+//        @ColumnInfo(name = "favicon_content")
         val faviconContent: ByteArray? = null,
 
-        @ColumnInfo(name = "update_mode")
+//        @ColumnInfo(name = "update_mode")
         val updateMode: UpdateMode = DefaultUpdateMode,
 
-        @ColumnInfo(name = "last_update_time")
+//        @ColumnInfo(name = "last_update_time")
         val lastUpdateTime: Long = 0,
 
-        @ColumnInfo(name = "last_update_error")
+//        @ColumnInfo(name = "last_update_error")
         val lastUpdateError: String? = null,
 
-        @ColumnInfo(name = "next_update_retry")
+//        @ColumnInfo(name = "next_update_retry")
         val nextUpdateRetry: Int = 0,
 
-        @ColumnInfo(name = "next_update_time")
+//        @ColumnInfo(name = "next_update_time")
         val nextUpdateTime: Long = 0,
 
-        @ColumnInfo(name = "http_etag")
+//        @ColumnInfo(name = "http_etag")
         val httpEtag: String? = null,
 
-        @ColumnInfo(name = "http_last_modified")
+//        @ColumnInfo(name = "http_last_modified")
         val httpLastModified: String? = null
 ) {
     override fun equals(other: Any?): Boolean {
@@ -90,54 +84,54 @@ data class Feed(
     }
 }
 
-@Entity(
-        tableName = "entries",
-        foreignKeys = [
-            ForeignKey(
-                    entity = Feed::class,
-                    parentColumns = ["id"],
-                    childColumns = ["feed_id"],
-                    onDelete = ForeignKey.CASCADE
-            )
-        ],
-        indices = [
-            Index("feed_id", "uid", unique = true)
-        ]
-)
+//@Entity(
+//        tableName = "entries",
+//        foreignKeys = [
+//            ForeignKey(
+//                    entity = Feed::class,
+//                    parentColumns = ["id"],
+//                    childColumns = ["feed_id"],
+//                    onDelete = ForeignKey.CASCADE
+//            )
+//        ],
+//        indices = [
+//            Index("feed_id", "uid", unique = true)
+//        ]
+//)
 data class Entry(
-        @PrimaryKey(autoGenerate = true)
+//        @PrimaryKey(autoGenerate = true)
         val id: Long? = null,
 
-        @ColumnInfo(name = "feed_id")
+//        @ColumnInfo(name = "feed_id")
         val feedId: Long,
 
-        @ColumnInfo
+//        @ColumnInfo
         val uid: String,
 
-        @ColumnInfo
+//        @ColumnInfo
         val title: String? = null,
 
-        @ColumnInfo
+//        @ColumnInfo
         val link: String? = null,
 
-        @ColumnInfo
+//        @ColumnInfo
         val content: String? = null,
 
-        @ColumnInfo
+//        @ColumnInfo
         val author: String? = null,
 
-        @ColumnInfo(name = "publish_time")
+//        @ColumnInfo(name = "publish_time")
         val publishTime: Long? = null,
 
-        @ColumnInfo(name = "insert_time")
+//        @ColumnInfo(name = "insert_time")
         val insertTime: Long,
 
-        @ColumnInfo(name = "update_time")
+//        @ColumnInfo(name = "update_time")
         val updateTime: Long,
 
-        @ColumnInfo(name = "read_time")
+//        @ColumnInfo(name = "read_time")
         val readTime: Long = 0,
 
-        @ColumnInfo(name = "pinned_time")
+//        @ColumnInfo(name = "pinned_time")
         val pinnedTime: Long = 0
 )

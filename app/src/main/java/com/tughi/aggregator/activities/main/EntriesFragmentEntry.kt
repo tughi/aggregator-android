@@ -1,41 +1,39 @@
 package com.tughi.aggregator.activities.main
 
-import androidx.room.ColumnInfo
-
 data class EntriesFragmentEntry(
-        @ColumnInfo
+//        @ColumnInfo
         val id: Long,
 
-        @ColumnInfo(name = "feed_id")
+//        @ColumnInfo(name = "feed_id")
         val feedId: Long,
 
-        @ColumnInfo(name = "feed_title")
+//        @ColumnInfo(name = "feed_title")
         val feedTitle: String,
 
-        @ColumnInfo(name = "favicon_url")
+//        @ColumnInfo(name = "favicon_url")
         val faviconUrl: String?,
 
-        @ColumnInfo
+//        @ColumnInfo
         val title: String?,
 
-        @ColumnInfo
+//        @ColumnInfo
         val link: String?,
 
-        @ColumnInfo
+//        @ColumnInfo
         val author: String?,
 
-        @ColumnInfo(name = "formatted_date")
+//        @ColumnInfo(name = "formatted_date")
         val formattedDate: FormattedDate,
 
-        @ColumnInfo(name = "formatted_time")
+//        @ColumnInfo(name = "formatted_time")
         val formattedTime: FormattedTime,
 
-        @ColumnInfo(name = "read_time")
+//        @ColumnInfo(name = "read_time")
         val readTime: Long,
 
-        @ColumnInfo(name = "pinned_time")
+//        @ColumnInfo(name = "pinned_time")
         val pinnedTime: Long,
 
-        @ColumnInfo
+//        @ColumnInfo
         val type: EntriesFragmentEntryType
 )

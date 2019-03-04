@@ -1,40 +1,35 @@
 package com.tughi.aggregator.activities.reader
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.RawQuery
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.tughi.aggregator.data.EntriesQuery
 import com.tughi.aggregator.data.EntriesSortOrderByDateAsc
 import com.tughi.aggregator.data.EntriesSortOrderByDateDesc
 import com.tughi.aggregator.data.EntriesSortOrderByTitle
-import com.tughi.aggregator.data.Entry
-import com.tughi.aggregator.data.Feed
 import com.tughi.aggregator.data.FeedEntriesQuery
 import com.tughi.aggregator.data.MyFeedEntriesQuery
 
-@Dao
+//@Dao
 abstract class ReaderDao {
 
-    @Query("""
-        SELECT
-            e.id,
-            e.title,
-            e.link,
-            e.content,
-            e.author,
-            COALESCE(e.publish_time, e.insert_time) AS publish_time,
-            COALESCE(f.custom_title, f.title) AS feed_title,
-            f.language AS feed_language,
-            e.read_time,
-            e.pinned_time
-        FROM
-            entries e
-            LEFT JOIN feeds f ON f.id = e.feed_id
-        WHERE e.id = :entryId
-    """)
+//    @Query("""
+//        SELECT
+//            e.id,
+//            e.title,
+//            e.link,
+//            e.content,
+//            e.author,
+//            COALESCE(e.publish_time, e.insert_time) AS publish_time,
+//            COALESCE(f.custom_title, f.title) AS feed_title,
+//            f.language AS feed_language,
+//            e.read_time,
+//            e.pinned_time
+//        FROM
+//            entries e
+//            LEFT JOIN feeds f ON f.id = e.feed_id
+//        WHERE e.id = :entryId
+//    """)
     abstract fun getReaderFragmentEntry(entryId: Long): LiveData<ReaderFragmentEntry>
 
     fun getReaderActivityEntries(entriesQuery: EntriesQuery): LiveData<Array<ReaderActivityEntry>> {
@@ -79,7 +74,7 @@ abstract class ReaderDao {
         return getReaderActivityEntries(SimpleSQLiteQuery(query, queryArgs))
     }
 
-    @RawQuery(observedEntities = [Entry::class, Feed::class])
+//    @RawQuery(observedEntities = [Entry::class, Feed::class])
     protected abstract fun getReaderActivityEntries(query: SupportSQLiteQuery): LiveData<Array<ReaderActivityEntry>>
 
 }

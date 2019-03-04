@@ -1,31 +1,27 @@
 package com.tughi.aggregator.data
 
 import androidx.lifecycle.LiveData
-import androidx.room.ColumnInfo
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
 
-@Dao
+//@Dao
 interface FeedDao {
 
-    @Insert
+//    @Insert
     fun insertFeed(feed: Feed): Long
 
-    @Query("""
-        UPDATE feeds SET
-            url = :url,
-            title = :title,
-            link = :link,
-            language = :language,
-            last_update_error = NULL,
-            last_update_time = :lastUpdateTime,
-            next_update_retry = 0,
-            next_update_time = :nextUpdateTime,
-            http_etag = :httpEtag,
-            http_last_modified = :httpLastModified
-        WHERE id = :id
-    """)
+//    @Query("""
+//        UPDATE feeds SET
+//            url = :url,
+//            title = :title,
+//            link = :link,
+//            language = :language,
+//            last_update_error = NULL,
+//            last_update_time = :lastUpdateTime,
+//            next_update_retry = 0,
+//            next_update_time = :nextUpdateTime,
+//            http_etag = :httpEtag,
+//            http_last_modified = :httpLastModified
+//        WHERE id = :id
+//    """)
     fun updateFeed(
             id: Long,
             url: String,
@@ -39,139 +35,139 @@ interface FeedDao {
 
     ): Int
 
-    @Query("""
-        UPDATE feeds SET
-            url = :url,
-            custom_title = :customTitle,
-            update_mode = :updateMode
-        WHERE id = :id
-    """)
+//    @Query("""
+//        UPDATE feeds SET
+//            url = :url,
+//            custom_title = :customTitle,
+//            update_mode = :updateMode
+//        WHERE id = :id
+//    """)
     fun updateFeed(id: Long, url: String, customTitle: String?, updateMode: UpdateMode): Int
 
-    @Query("""
-        UPDATE feeds SET
-            next_update_time = :nextUpdateTime,
-            next_update_retry = :nextUpdateRetry,
-            last_update_error = :lastUpdateError
-        WHERE id = :id
-    """)
+//    @Query("""
+//        UPDATE feeds SET
+//            next_update_time = :nextUpdateTime,
+//            next_update_retry = :nextUpdateRetry,
+//            last_update_error = :lastUpdateError
+//        WHERE id = :id
+//    """)
     fun updateFeed(id: Long, nextUpdateTime: Long, nextUpdateRetry: Int = 0, lastUpdateError: String? = null): Int
 
-    @Query("""
-        UPDATE feeds SET
-            favicon_url = :faviconUrl,
-            favicon_content = :faviconContent
-        WHERE id = :id
-    """)
+//    @Query("""
+//        UPDATE feeds SET
+//            favicon_url = :faviconUrl,
+//            favicon_content = :faviconContent
+//        WHERE id = :id
+//    """)
     fun updateFeed(id: Long, faviconUrl: String, faviconContent: ByteArray): Int
 
-    @Query("DELETE FROM feeds WHERE id = :feedId")
+//    @Query("DELETE FROM feeds WHERE id = :feedId")
     fun deleteFeed(feedId: Long): Int
 
-    @Query("SELECT id FROM feeds WHERE (next_update_time > 0 AND next_update_time < :now) OR next_update_time = -1")
+//    @Query("SELECT id FROM feeds WHERE (next_update_time > 0 AND next_update_time < :now) OR next_update_time = -1")
     fun queryOutdatedFeeds(now: Long): LongArray
 
-    @Query("SELECT id FROM feeds WHERE next_update_time > 0 AND next_update_time < :now")
+//    @Query("SELECT id FROM feeds WHERE next_update_time > 0 AND next_update_time < :now")
     fun queryUpdatableFeeds(now: Long): LongArray
 
-    @Query("SELECT * FROM feeds WHERE id = :id")
+//    @Query("SELECT * FROM feeds WHERE id = :id")
     fun queryFeed(id: Long): Feed
 
-    @Query("SELECT COUNT(1) FROM feeds")
+//    @Query("SELECT COUNT(1) FROM feeds")
     fun queryFeedCount(): Int
 
-    @Query("SELECT id, last_update_time, update_mode FROM feeds WHERE id = :feedId")
+//    @Query("SELECT id, last_update_time, update_mode FROM feeds WHERE id = :feedId")
     fun querySchedulerFeed(feedId: Long): SchedulerFeed?
 
-    @Query("SELECT id, last_update_time, update_mode FROM feeds WHERE update_mode = :updateMode")
+//    @Query("SELECT id, last_update_time, update_mode FROM feeds WHERE update_mode = :updateMode")
     fun querySchedulerFeeds(updateMode: UpdateMode): Array<SchedulerFeed>
 
-    @Query("""
-        SELECT
-            url,
-            title,
-            link,
-            custom_title,
-            update_mode,
-            0 AS excluded
-        FROM
-            feeds
-        ORDER BY
-            title
-    """)
+//    @Query("""
+//        SELECT
+//            url,
+//            title,
+//            link,
+//            custom_title,
+//            update_mode,
+//            0 AS excluded
+//        FROM
+//            feeds
+//        ORDER BY
+//            title
+//    """)
     fun queryOpmlFeeds(): List<OpmlFeed>
 
-    @Query("SELECT * FROM feeds WHERE id = :id")
+//    @Query("SELECT * FROM feeds WHERE id = :id")
     fun getFeed(id: Long): LiveData<Feed>
 
-    @Query("SELECT MIN(next_update_time) FROM feeds WHERE next_update_time > 0")
+//    @Query("SELECT MIN(next_update_time) FROM feeds WHERE next_update_time > 0")
     fun queryNextUpdateTime(): Long?
 
 }
 
 data class OpmlFeed(
-        @ColumnInfo
+//        @ColumnInfo
         val url: String,
 
-        @ColumnInfo
+//        @ColumnInfo
         val title: String,
 
-        @ColumnInfo
+//        @ColumnInfo
         val link: String?,
 
-        @ColumnInfo(name = "custom_title")
+//        @ColumnInfo(name = "custom_title")
         val customTitle: String?,
 
-        @ColumnInfo(name = "update_mode")
+//        @ColumnInfo(name = "update_mode")
         val updateMode: UpdateMode,
 
-        @ColumnInfo
+//        @ColumnInfo
         val excluded: Boolean
 )
 
 data class SchedulerFeed(
-        @ColumnInfo
+//        @ColumnInfo
         val id: Long,
 
-        @ColumnInfo(name = "last_update_time")
+//        @ColumnInfo(name = "last_update_time")
         val lastUpdateTime: Long,
 
-        @ColumnInfo(name = "update_mode")
+//        @ColumnInfo(name = "update_mode")
         val updateMode: UpdateMode
 )
 
-@Dao
+//@Dao
 abstract class EntryDao {
 
-    @Insert
+//    @Insert
     abstract fun insertEntry(entry: Entry): Long
 
-    @Query("""
-        UPDATE entries SET
-            title = :title,
-            link = :link,
-            content = :content,
-            author = :author,
-            publish_time = :publishTime,
-            update_time = :updateTime
-        WHERE id = :id
-    """)
+//    @Query("""
+//        UPDATE entries SET
+//            title = :title,
+//            link = :link,
+//            content = :content,
+//            author = :author,
+//            publish_time = :publishTime,
+//            update_time = :updateTime
+//        WHERE id = :id
+//    """)
     abstract fun updateEntry(id: Long, title: String?, link: String?, content: String?, author: String?, publishTime: Long?, updateTime: Long): Int
 
-    @Query("SELECT * FROM entries WHERE feed_id = :feedId AND uid = :uid")
+//    @Query("SELECT * FROM entries WHERE feed_id = :feedId AND uid = :uid")
     abstract fun queryEntry(feedId: Long, uid: String): Entry?
 
-    @Query("""
-        UPDATE entries SET read_time = :readTime, pinned_time = 0 WHERE id = :entryId
-    """)
+//    @Query("""
+//        UPDATE entries SET read_time = :readTime, pinned_time = 0 WHERE id = :entryId
+//    """)
     abstract fun markEntryRead(entryId: Long, readTime: Long): Int
 
-    @Query("""
-        UPDATE entries SET read_time = 0, pinned_time = :pinnedTime WHERE id = :entryId
-    """)
+//    @Query("""
+//        UPDATE entries SET read_time = 0, pinned_time = :pinnedTime WHERE id = :entryId
+//    """)
     abstract fun markEntryPinned(entryId: Long, pinnedTime: Long): Int
 
-    @Query("SELECT COUNT(1) FROM entries WHERE feed_id = :feedId AND COALESCE(publish_time, insert_time) > :since")
+//    @Query("SELECT COUNT(1) FROM entries WHERE feed_id = :feedId AND COALESCE(publish_time, insert_time) > :since")
     abstract fun countAggregatedEntries(feedId: Long, since: Long): Int
 
 }

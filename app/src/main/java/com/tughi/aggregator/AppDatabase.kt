@@ -1,36 +1,12 @@
 package com.tughi.aggregator
 
 import android.content.Context
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
-import androidx.sqlite.db.SupportSQLiteDatabase
 import com.tughi.aggregator.activities.main.MainDao
-import com.tughi.aggregator.activities.main.MainTypeConverters
 import com.tughi.aggregator.activities.reader.ReaderDao
-import com.tughi.aggregator.data.CustomTypeConverters
-import com.tughi.aggregator.data.Entry
 import com.tughi.aggregator.data.EntryDao
-import com.tughi.aggregator.data.Feed
 import com.tughi.aggregator.data.FeedDao
-import com.tughi.aggregator.utilities.DATABASE_NAME
-import com.tughi.aggregator.utilities.restoreFeeds
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
-@androidx.room.Database(
-        entities = [
-            Entry::class,
-            Feed::class
-        ],
-        version = 16
-)
-@TypeConverters(
-        CustomTypeConverters::class,
-        MainTypeConverters::class
-)
-abstract class AppDatabase : RoomDatabase() {
+abstract class AppDatabase {
 
     abstract fun entryDao(): EntryDao
     abstract fun feedDao(): FeedDao
@@ -38,23 +14,40 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun mainDao(): MainDao
     abstract fun readerDao(): ReaderDao
 
+    fun beginTransaction() {
+        throw UnsupportedOperationException()
+    }
+
+    fun setTransactionSuccessful() {
+        throw UnsupportedOperationException()
+    }
+
+    fun endTransaction() {
+        throw UnsupportedOperationException()
+    }
+
     companion object {
 
         val instance: AppDatabase by lazy { create(App.instance) }
 
         private fun create(context: Context): AppDatabase {
-            return Room.databaseBuilder(context, AppDatabase::class.java, DATABASE_NAME)
-                    .fallbackToDestructiveMigration()
-                    .addCallback(object : Callback() {
-                        override fun onOpen(db: SupportSQLiteDatabase) {
-                            super.onOpen(db)
+            return object : AppDatabase() {
+                override fun entryDao(): EntryDao {
+                    throw UnsupportedOperationException()
+                }
 
-                            GlobalScope.launch(Dispatchers.IO) {
-                                restoreFeeds()
-                            }
-                        }
-                    })
-                    .build()
+                override fun feedDao(): FeedDao {
+                    throw UnsupportedOperationException()
+                }
+
+                override fun mainDao(): MainDao {
+                    throw UnsupportedOperationException()
+                }
+
+                override fun readerDao(): ReaderDao {
+                    throw UnsupportedOperationException()
+                }
+            }
         }
 
     }
