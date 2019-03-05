@@ -4,10 +4,7 @@ import android.content.ContentValues
 import android.database.Cursor
 import androidx.core.content.contentValuesOf
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.sqlite.db.SupportSQLiteQueryBuilder
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
 class EntriesRepository<T>(private val columns: Array<Column>, private val mapper: Mapper<T>) {
 
@@ -45,14 +42,8 @@ class EntriesRepository<T>(private val columns: Array<Column>, private val mappe
         return emptyList()
     }
 
-    fun liveQuery(criteria: EntriesQuery): LiveData<List<T>> {
-        val liveData = MutableLiveData<List<T>>()
-
-        GlobalScope.launch {
-            liveData.postValue(query(criteria))
-        }
-
-        return liveData
+    fun liveQuery(criteria: EntriesQuery): LiveData<List<T>> = Storage.createLiveData("entries") {
+        query(criteria)
     }
 
     companion object {
@@ -60,7 +51,7 @@ class EntriesRepository<T>(private val columns: Array<Column>, private val mappe
         private fun update(entryId: Long, values: ContentValues): Int {
             val result = Storage.writableDatabase.update("entries", 0, values, "id = ?", arrayOf(entryId))
             if (result > 0) {
-                // TODO: notify change
+                Storage.invalidateLiveData("entries", entryId)
             }
             return result
         }
