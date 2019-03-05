@@ -14,8 +14,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.tughi.aggregator.App
-import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.R
+import com.tughi.aggregator.data.EntriesRepository
 import com.tughi.aggregator.utilities.Language
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -131,16 +131,14 @@ class ReaderFragment : Fragment() {
             R.id.mark_done -> {
                 loadedEntry?.let {
                     GlobalScope.launch {
-                        AppDatabase.instance.entryDao()
-                                .markEntryRead(it.id, System.currentTimeMillis())
+                        EntriesRepository.markEntryRead(it.id)
                     }
                 }
             }
             R.id.mark_pinned -> {
                 loadedEntry?.let {
                     GlobalScope.launch {
-                        AppDatabase.instance.entryDao()
-                                .markEntryPinned(it.id, System.currentTimeMillis())
+                        EntriesRepository.markEntryPinned(it.id)
                     }
                 }
             }

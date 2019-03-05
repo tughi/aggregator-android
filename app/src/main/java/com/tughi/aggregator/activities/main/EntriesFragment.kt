@@ -17,6 +17,7 @@ import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.reader.ReaderActivity
 import com.tughi.aggregator.data.EntriesQuery
+import com.tughi.aggregator.data.EntriesRepository
 import com.tughi.aggregator.data.EntriesSortOrderByDateAsc
 import com.tughi.aggregator.data.EntriesSortOrderByDateDesc
 import com.tughi.aggregator.data.EntriesSortOrderByTitle
@@ -140,12 +141,10 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
             if (viewHolder is EntriesFragmentEntryViewHolder) {
                 val entry = viewHolder.entry
                 GlobalScope.launch {
-                    AppDatabase.instance.entryDao().run {
-                        if (entry.readTime == 0L || entry.pinnedTime != 0L) {
-                            markEntryRead(entry.id, System.currentTimeMillis())
-                        } else {
-                            markEntryPinned(entry.id, System.currentTimeMillis())
-                        }
+                    if (entry.readTime == 0L || entry.pinnedTime != 0L) {
+                        EntriesRepository.markEntryRead(entry.id)
+                    } else {
+                        EntriesRepository.markEntryPinned(entry.id)
                     }
                 }
             }

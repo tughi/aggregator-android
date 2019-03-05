@@ -10,9 +10,9 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.viewpager.widget.ViewPager
 import com.tughi.aggregator.AppActivity
-import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.R
 import com.tughi.aggregator.data.EntriesQuery
+import com.tughi.aggregator.data.EntriesRepository
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -115,8 +115,7 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
 
             if (entry.readTime == 0L && entry.pinnedTime == 0L) {
                 GlobalScope.launch {
-                    AppDatabase.instance.entryDao()
-                            .markEntryRead(entry.id, System.currentTimeMillis())
+                    EntriesRepository.markEntryRead(entry.id)
                 }
             }
         }

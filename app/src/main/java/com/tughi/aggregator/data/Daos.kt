@@ -157,16 +157,6 @@ abstract class EntryDao {
 //    @Query("SELECT * FROM entries WHERE feed_id = :feedId AND uid = :uid")
     abstract fun queryEntry(feedId: Long, uid: String): Entry?
 
-//    @Query("""
-//        UPDATE entries SET read_time = :readTime, pinned_time = 0 WHERE id = :entryId
-//    """)
-    abstract fun markEntryRead(entryId: Long, readTime: Long): Int
-
-//    @Query("""
-//        UPDATE entries SET read_time = 0, pinned_time = :pinnedTime WHERE id = :entryId
-//    """)
-    abstract fun markEntryPinned(entryId: Long, pinnedTime: Long): Int
-
 //    @Query("SELECT COUNT(1) FROM entries WHERE feed_id = :feedId AND COALESCE(publish_time, insert_time) > :since")
     abstract fun countAggregatedEntries(feedId: Long, since: Long): Int
 
