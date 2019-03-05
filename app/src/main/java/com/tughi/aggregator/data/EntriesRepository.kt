@@ -19,7 +19,7 @@ class EntriesRepository<T>(private val columns: Array<Column>, private val mappe
         PUBLISH_TIME("publish_time", "COALESCE(e.publish_time, e.insert_time)"),
         READ_TIME("read_time", "e.read_time"),
         PINNED_TIME("pinned_time", "e.pinned_time"),
-        TYPE("type", "CASE WHEN e.read_time > 0 AND e.pinned_time = 0 THEN 'UNREAD' ELSE 'READ' END")
+        TYPE("type", "CASE WHEN e.read_time > 0 AND e.pinned_time = 0 THEN 'READ' ELSE 'UNREAD' END")
     }
 
     fun query(criteria: EntriesQuery): List<T> {
