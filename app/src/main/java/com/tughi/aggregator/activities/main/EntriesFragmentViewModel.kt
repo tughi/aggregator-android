@@ -1,12 +1,14 @@
 package com.tughi.aggregator.activities.main
 
 import android.database.Cursor
+import android.text.format.DateUtils
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.tughi.aggregator.App
 import com.tughi.aggregator.data.EntriesQuery
 import com.tughi.aggregator.data.EntriesRepository
 import com.tughi.aggregator.data.EntriesSortOrder
@@ -36,8 +38,7 @@ class EntriesFragmentViewModel(initialEntriesQuery: EntriesQuery) : ViewModel() 
                     EntriesRepository.Column.AUTHOR,
                     EntriesRepository.Column.FEED_FAVICON_URL,
                     EntriesRepository.Column.FEED_TITLE,
-                    EntriesRepository.Column.FORMATTED_DATE,
-                    EntriesRepository.Column.FORMATTED_TIME,
+                    EntriesRepository.Column.PUBLISH_TIME,
                     EntriesRepository.Column.LINK,
                     EntriesRepository.Column.PINNED_TIME,
                     EntriesRepository.Column.READ_TIME,
@@ -45,19 +46,21 @@ class EntriesFragmentViewModel(initialEntriesQuery: EntriesQuery) : ViewModel() 
                     EntriesRepository.Column.TYPE
             ),
             object : EntriesRepository.Mapper<EntriesFragmentEntry> {
+                private val context = App.instance
+
                 override fun map(cursor: Cursor) = EntriesFragmentEntry(
                         id = cursor.getLong(0),
                         feedId = cursor.getLong(1),
                         author = cursor.getString(2),
                         faviconUrl = cursor.getString(3),
                         feedTitle = cursor.getString(4),
-                        formattedDate = FormattedDate(cursor.getString(5)),
-                        formattedTime = FormattedTime(cursor.getString(6)),
-                        link = cursor.getString(7),
-                        pinnedTime = cursor.getLong(8),
-                        readTime = cursor.getLong(9),
-                        title = cursor.getString(10),
-                        type = EntriesFragmentEntryType.valueOf(cursor.getString(11))
+                        formattedDate = DateUtils.formatDateTime(context, cursor.getLong(5), DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_YEAR),
+                        formattedTime = DateUtils.formatDateTime(context, cursor.getLong(5), DateUtils.FORMAT_SHOW_TIME),
+                        link = cursor.getString(6),
+                        pinnedTime = cursor.getLong(7),
+                        readTime = cursor.getLong(8),
+                        title = cursor.getString(9),
+                        type = EntriesFragmentEntryType.valueOf(cursor.getString(10))
                 )
             }
     )

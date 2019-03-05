@@ -23,10 +23,10 @@ data class EntriesFragmentEntry(
         val author: String?,
 
 //        @ColumnInfo(name = "formatted_date")
-        val formattedDate: FormattedDate,
+        val formattedDate: String,
 
 //        @ColumnInfo(name = "formatted_time")
-        val formattedTime: FormattedTime,
+        val formattedTime: String,
 
 //        @ColumnInfo(name = "read_time")
         val readTime: Long,

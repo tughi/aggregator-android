@@ -40,7 +40,7 @@ internal abstract class EntriesFragmentEntryViewHolder(itemView: View, private v
 
         feedTitle.text = entry.feedTitle
         title.text = entry.title
-        time.text = entry.formattedTime.toString()
+        time.text = entry.formattedTime
 
         if (entry.author != null) {
             author.visibility = View.VISIBLE
@@ -67,7 +67,7 @@ internal class EntriesFragmentHeaderViewHolder(itemView: View) : EntriesFragment
     override fun onBind(entry: EntriesFragmentEntry) {
         super.onBind(entry)
 
-        header.text = entry.formattedDate.toString()
+        header.text = entry.formattedDate
     }
 
 }
