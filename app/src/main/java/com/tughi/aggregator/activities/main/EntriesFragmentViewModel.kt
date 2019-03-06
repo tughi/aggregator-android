@@ -10,25 +10,22 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.App
 import com.tughi.aggregator.data.DataMapper
-import com.tughi.aggregator.data.EntriesQuery
 import com.tughi.aggregator.data.EntriesRepository
 import com.tughi.aggregator.data.EntriesSortOrder
-import com.tughi.aggregator.data.FeedEntriesQuery
-import com.tughi.aggregator.data.MyFeedEntriesQuery
 import com.tughi.aggregator.preferences.EntryListSettings
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-class EntriesFragmentViewModel(initialEntriesQuery: EntriesQuery) : ViewModel() {
+class EntriesFragmentViewModel(initialQueryCriteria: EntriesRepository.QueryCriteria) : ViewModel() {
 
     private val sessionTime = System.currentTimeMillis()
 
-    val entriesQuery = MutableLiveData<EntriesQuery>().apply {
-        value = when (initialEntriesQuery) {
-            is FeedEntriesQuery -> initialEntriesQuery.copy(sessionTime = sessionTime)
-            is MyFeedEntriesQuery -> initialEntriesQuery.copy(sessionTime = sessionTime)
+    val queryCriteria = MutableLiveData<EntriesRepository.QueryCriteria>().apply {
+        value = when (initialQueryCriteria) {
+            is EntriesRepository.QueryCriteria.FeedEntries -> initialQueryCriteria.copy(sessionTime = sessionTime)
+            is EntriesRepository.QueryCriteria.MyFeedEntries -> initialQueryCriteria.copy(sessionTime = sessionTime)
         }
     }
 
@@ -66,11 +63,8 @@ class EntriesFragmentViewModel(initialEntriesQuery: EntriesQuery) : ViewModel() 
             }
     )
 
-    private val storedEntries = Transformations.switchMap(entriesQuery) { entriesQuery ->
-        repository.liveQuery(when (entriesQuery) {
-            is FeedEntriesQuery -> EntriesRepository.QueryCriteria.FeedEntries(entriesQuery.feedId, entriesQuery.sessionTime, entriesQuery.sortOrder)
-            is MyFeedEntriesQuery -> EntriesRepository.QueryCriteria.MyFeedEntries(entriesQuery.sessionTime, entriesQuery.sortOrder)
-        })
+    private val storedEntries = Transformations.switchMap(queryCriteria) { queryCriteria ->
+        repository.liveQuery(queryCriteria)
     }
 
     private val transformedEntries = MediatorLiveData<List<Entry>>().also {
@@ -140,20 +134,20 @@ class EntriesFragmentViewModel(initialEntriesQuery: EntriesQuery) : ViewModel() 
         EntryListSettings.entriesSortOrder = entriesSortOrder
 
         transformedEntries.value = null
-        entriesQuery.value?.let { value ->
-            entriesQuery.value = when (value) {
-                is FeedEntriesQuery -> value.copy(sortOrder = entriesSortOrder)
-                is MyFeedEntriesQuery -> value.copy(sortOrder = entriesSortOrder)
+        queryCriteria.value?.let { value ->
+            queryCriteria.value = when (value) {
+                is EntriesRepository.QueryCriteria.FeedEntries -> value.copy(sortOrder = entriesSortOrder)
+                is EntriesRepository.QueryCriteria.MyFeedEntries -> value.copy(sortOrder = entriesSortOrder)
             }
         }
     }
 
     fun changeShowRead(showRead: Boolean) {
         transformedEntries.value = null
-        entriesQuery.value?.let { value ->
-            entriesQuery.value = when (value) {
-                is FeedEntriesQuery -> value.copy(sessionTime = if (showRead) 0 else sessionTime)
-                is MyFeedEntriesQuery -> value.copy(sessionTime = if (showRead) 0 else sessionTime)
+        queryCriteria.value?.let { value ->
+            queryCriteria.value = when (value) {
+                is EntriesRepository.QueryCriteria.FeedEntries -> value.copy(sessionTime = if (showRead) 0 else sessionTime)
+                is EntriesRepository.QueryCriteria.MyFeedEntries -> value.copy(sessionTime = if (showRead) 0 else sessionTime)
             }
         }
     }
@@ -173,12 +167,12 @@ class EntriesFragmentViewModel(initialEntriesQuery: EntriesQuery) : ViewModel() 
             val type: EntriesFragmentEntryType
     )
 
-    class Factory(private val initialEntriesQuery: EntriesQuery) : ViewModelProvider.Factory {
+    class Factory(private val initialQueryCriteria: EntriesRepository.QueryCriteria) : ViewModelProvider.Factory {
 
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(EntriesFragmentViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
-                return EntriesFragmentViewModel(initialEntriesQuery) as T
+                return EntriesFragmentViewModel(initialQueryCriteria) as T
             }
             throw UnsupportedOperationException()
         }

@@ -3,17 +3,14 @@ package com.tughi.aggregator.activities.reader
 import androidx.lifecycle.LiveData
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
-import com.tughi.aggregator.data.EntriesQuery
+import com.tughi.aggregator.data.EntriesRepository
 import com.tughi.aggregator.data.EntriesSortOrderByDateAsc
 import com.tughi.aggregator.data.EntriesSortOrderByDateDesc
 import com.tughi.aggregator.data.EntriesSortOrderByTitle
-import com.tughi.aggregator.data.FeedEntriesQuery
-import com.tughi.aggregator.data.MyFeedEntriesQuery
 
-//@Dao
 abstract class ReaderDao {
 
-//    @Query("""
+    //    @Query("""
 //        SELECT
 //            e.id,
 //            e.title,
@@ -32,7 +29,7 @@ abstract class ReaderDao {
 //    """)
     abstract fun getReaderFragmentEntry(entryId: Long): LiveData<ReaderFragmentEntry>
 
-    fun getReaderActivityEntries(entriesQuery: EntriesQuery): LiveData<Array<ReaderActivityEntry>> {
+    fun getReaderActivityEntries(queryCriteria: EntriesRepository.QueryCriteria): LiveData<Array<ReaderActivityEntry>> {
         var query = """
             SELECT
                 e.id,
@@ -42,39 +39,39 @@ abstract class ReaderDao {
                 entries e
         """.trim().replace(Regex("\\s+"), " ")
 
-        val orderBy = when (entriesQuery.sortOrder) {
+        val orderBy = when (queryCriteria.sortOrder) {
             is EntriesSortOrderByDateAsc -> "ORDER BY COALESCE(e.publish_time, e.insert_time) ASC"
             is EntriesSortOrderByDateDesc -> "ORDER BY COALESCE(e.publish_time, e.insert_time) DESC"
             is EntriesSortOrderByTitle -> "ORDER BY e.title ASC, COALESCE(e.publish_time, e.insert_time) ASC"
         }
 
-        val queryArgs: Array<out Any>
-        if (entriesQuery.sessionTime == 0L) {
-            query = when (entriesQuery) {
-                is FeedEntriesQuery -> "$query WHERE e.feed_id = ? $orderBy"
-                is MyFeedEntriesQuery -> "$query $orderBy"
+        val queryArgs: Array<out Any?>
+        if (queryCriteria.sessionTime == null) {
+            query = when (queryCriteria) {
+                is EntriesRepository.QueryCriteria.FeedEntries -> "$query WHERE e.feed_id = ? $orderBy"
+                is EntriesRepository.QueryCriteria.MyFeedEntries -> "$query $orderBy"
             }
 
-            queryArgs = when (entriesQuery) {
-                is FeedEntriesQuery -> arrayOf(entriesQuery.feedId)
-                is MyFeedEntriesQuery -> emptyArray()
+            queryArgs = when (queryCriteria) {
+                is EntriesRepository.QueryCriteria.FeedEntries -> arrayOf(queryCriteria.feedId)
+                is EntriesRepository.QueryCriteria.MyFeedEntries -> emptyArray()
             }
         } else {
-            query = when (entriesQuery) {
-                is FeedEntriesQuery -> "$query WHERE e.feed_id = ? AND (e.read_time = 0 OR e.read_time > ?) $orderBy"
-                is MyFeedEntriesQuery -> "$query WHERE e.read_time = 0 OR e.read_time > ? $orderBy"
+            query = when (queryCriteria) {
+                is EntriesRepository.QueryCriteria.FeedEntries -> "$query WHERE e.feed_id = ? AND (e.read_time = 0 OR e.read_time > ?) $orderBy"
+                is EntriesRepository.QueryCriteria.MyFeedEntries -> "$query WHERE e.read_time = 0 OR e.read_time > ? $orderBy"
             }
 
-            queryArgs = when (entriesQuery) {
-                is FeedEntriesQuery -> arrayOf(entriesQuery.feedId, entriesQuery.sessionTime)
-                is MyFeedEntriesQuery -> arrayOf(entriesQuery.sessionTime)
+            queryArgs = when (queryCriteria) {
+                is EntriesRepository.QueryCriteria.FeedEntries -> arrayOf(queryCriteria.feedId, queryCriteria.sessionTime)
+                is EntriesRepository.QueryCriteria.MyFeedEntries -> arrayOf(queryCriteria.sessionTime)
             }
         }
 
         return getReaderActivityEntries(SimpleSQLiteQuery(query, queryArgs))
     }
 
-//    @RawQuery(observedEntities = [Entry::class, Feed::class])
+    //    @RawQuery(observedEntities = [Entry::class, Feed::class])
     protected abstract fun getReaderActivityEntries(query: SupportSQLiteQuery): LiveData<Array<ReaderActivityEntry>>
 
 }

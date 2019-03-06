@@ -4,6 +4,7 @@ import android.content.ContentValues
 import androidx.core.content.contentValuesOf
 import androidx.lifecycle.LiveData
 import androidx.sqlite.db.SupportSQLiteQueryBuilder
+import java.io.Serializable
 
 class EntriesRepository<T>(private val columns: Array<Column>, private val mapper: DataMapper<T>) {
 
@@ -97,11 +98,13 @@ class EntriesRepository<T>(private val columns: Array<Column>, private val mappe
 
     }
 
-    sealed class QueryCriteria(val sessionTime: Long?, val sortOrder: EntriesSortOrder) {
+    sealed class QueryCriteria : Serializable {
+        abstract val sessionTime: Long?
+        abstract val sortOrder: EntriesSortOrder
 
-        class FeedEntries(val feedId: Long, sessionTime: Long, sortOrder: EntriesSortOrder) : QueryCriteria(sessionTime, sortOrder)
+        data class FeedEntries(val feedId: Long, override val sessionTime: Long? = null, override val sortOrder: EntriesSortOrder) : QueryCriteria()
 
-        class MyFeedEntries(sessionTime: Long, sortOrder: EntriesSortOrder) : QueryCriteria(sessionTime, sortOrder)
+        data class MyFeedEntries(override val sessionTime: Long? = null, override val sortOrder: EntriesSortOrder) : QueryCriteria()
 
     }
 

@@ -3,8 +3,8 @@ package com.tughi.aggregator.activities.main
 import android.os.Bundle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import com.tughi.aggregator.data.EntriesQuery
-import com.tughi.aggregator.data.FeedEntriesQuery
+import com.tughi.aggregator.data.EntriesRepository
+import com.tughi.aggregator.preferences.EntryListSettings
 
 class FeedEntriesFragment : EntriesFragment() {
 
@@ -20,9 +20,8 @@ class FeedEntriesFragment : EntriesFragment() {
         })
     }
 
-    override fun createInitialEntriesQuery(): EntriesQuery {
-        return FeedEntriesQuery(feedId = feedId)
-    }
+    override val initialEntriesQuery: EntriesRepository.QueryCriteria
+        get() = EntriesRepository.QueryCriteria.FeedEntries(feedId = feedId, sortOrder = EntryListSettings.entriesSortOrder)
 
     override fun onNavigationClick() {
         fragmentManager?.popBackStack()

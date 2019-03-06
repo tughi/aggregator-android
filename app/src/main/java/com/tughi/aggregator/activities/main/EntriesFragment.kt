@@ -15,13 +15,10 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.reader.ReaderActivity
-import com.tughi.aggregator.data.EntriesQuery
 import com.tughi.aggregator.data.EntriesRepository
 import com.tughi.aggregator.data.EntriesSortOrderByDateAsc
 import com.tughi.aggregator.data.EntriesSortOrderByDateDesc
 import com.tughi.aggregator.data.EntriesSortOrderByTitle
-import com.tughi.aggregator.data.FeedEntriesQuery
-import com.tughi.aggregator.data.MyFeedEntriesQuery
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -34,7 +31,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val fragmentView = inflater.inflate(R.layout.entry_list_fragment, container, false)
 
-        val viewModelFactory = EntriesFragmentViewModel.Factory(createInitialEntriesQuery())
+        val viewModelFactory = EntriesFragmentViewModel.Factory(initialEntriesQuery)
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(EntriesFragmentViewModel::class.java)
 
         val entriesRecyclerView = fragmentView.findViewById<RecyclerView>(R.id.entries)
@@ -77,12 +74,9 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
                     viewModel.changeEntriesSortOrder(EntriesSortOrderByTitle)
                 }
                 R.id.mark_all_read -> {
-                    viewModel.entriesQuery.value?.let { entriesQuery ->
+                    viewModel.queryCriteria.value?.let { queryCriteria ->
                         GlobalScope.launch {
-                            EntriesRepository.markEntriesRead(when (entriesQuery) {
-                                is FeedEntriesQuery -> EntriesRepository.QueryCriteria.FeedEntries(entriesQuery.feedId, entriesQuery.sessionTime, entriesQuery.sortOrder)
-                                is MyFeedEntriesQuery -> EntriesRepository.QueryCriteria.MyFeedEntries(entriesQuery.sessionTime, entriesQuery.sortOrder)
-                            })
+                            EntriesRepository.markEntriesRead(queryCriteria)
                         }
                     }
                 }
@@ -90,7 +84,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
             return@setOnMenuItemClickListener true
         }
 
-        viewModel.entriesQuery.observe(this, Observer { entriesQuery ->
+        viewModel.queryCriteria.observe(this, Observer { entriesQuery ->
             toolbar.menu?.let {
                 val sortMenuItemId = when (entriesQuery.sortOrder) {
                     EntriesSortOrderByDateAsc -> R.id.sort_by_date_asc
@@ -106,7 +100,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
         return fragmentView
     }
 
-    internal abstract fun createInitialEntriesQuery(): EntriesQuery
+    internal abstract val initialEntriesQuery: EntriesRepository.QueryCriteria
 
     abstract fun onNavigationClick()
 
@@ -122,7 +116,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
         context?.run {
             startActivity(
                     Intent(this, ReaderActivity::class.java)
-                            .putExtra(ReaderActivity.EXTRA_ENTRIES_QUERY, viewModel.entriesQuery.value)
+                            .putExtra(ReaderActivity.EXTRA_ENTRIES_QUERY_CRITERIA, viewModel.queryCriteria.value)
                             .putExtra(ReaderActivity.EXTRA_ENTRIES_POSITION, position)
             )
         }

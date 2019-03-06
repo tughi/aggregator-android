@@ -4,19 +4,18 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.AppDatabase
-import com.tughi.aggregator.data.EntriesQuery
-import com.tughi.aggregator.data.EntriesSortOrder
+import com.tughi.aggregator.data.EntriesRepository
 
-class ReaderActivityViewModel(entriesQuery: EntriesQuery) : ViewModel() {
+class ReaderActivityViewModel(queryCriteria: EntriesRepository.QueryCriteria) : ViewModel() {
 
-    val entries: LiveData<Array<ReaderActivityEntry>> = AppDatabase.instance.readerDao().getReaderActivityEntries(entriesQuery)
+    val entries: LiveData<Array<ReaderActivityEntry>> = AppDatabase.instance.readerDao().getReaderActivityEntries(queryCriteria)
 
-    class Factory(private val entriesQuery: EntriesQuery) : ViewModelProvider.Factory {
+    class Factory(private val queryCriteria: EntriesRepository.QueryCriteria) : ViewModelProvider.Factory {
 
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(ReaderActivityViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
-                return ReaderActivityViewModel(entriesQuery) as T
+                return ReaderActivityViewModel(queryCriteria) as T
             }
             throw UnsupportedOperationException()
         }
