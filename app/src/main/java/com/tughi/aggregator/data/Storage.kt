@@ -1,9 +1,11 @@
 package com.tughi.aggregator.data
 
+import android.content.ContentValues
+import android.database.Cursor
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
+import androidx.sqlite.db.SupportSQLiteQuery
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import com.tughi.aggregator.App
 import com.tughi.aggregator.utilities.DATABASE_NAME
@@ -28,6 +30,8 @@ object Storage {
                     .build()
     )
 
+    private val tableObservers = mutableSetOf<TableObserver>()
+
     private fun createDatabase(database: SupportSQLiteDatabase) {
         throw UnsupportedOperationException()
     }
@@ -36,91 +40,83 @@ object Storage {
         throw UnsupportedOperationException()
     }
 
-    val readableDatabase: SupportSQLiteDatabase
-        get() = sqlite.readableDatabase
+    fun query(sqliteQuery: SupportSQLiteQuery?): Cursor = sqlite.readableDatabase.query(sqliteQuery)
 
-    val writableDatabase: SupportSQLiteDatabase
-        get() = sqlite.writableDatabase
-
-    private val observers = mutableSetOf<Observer>()
-
-    private fun addObserver(observer: Observer) {
-        if (observer.table != "entries" && observer.table != "feeds") {
-            throw IllegalArgumentException("Unknown table: ${observer.table}")
+    fun update(table: String, values: ContentValues, selection: String?, selectionArgs: Array<Any>?, recordId: Any? = null): Int {
+        val database = sqlite.writableDatabase
+        val result = database.update(table, 0, values, selection, selectionArgs)
+        if (result > 0) {
+            if (database.inTransaction()) {
+                TODO("delay table invalidation until the transaction was committed")
+            } else {
+                invalidateTable(table, recordId)
+            }
         }
-
-        synchronized(this) {
-            observers.add(WeakObserver(observer))
-        }
+        return result
     }
 
-    fun invalidateLiveData(table: String, id: Any? = null) {
+    private fun invalidateTable(table: String, recordId: Any? = null) {
         synchronized(this) {
-            if (observers.size > 0) {
-                val vanishedObservers = mutableListOf<Observer>()
+            if (tableObservers.size > 0) {
+                val vanishedObservers = mutableListOf<TableObserver>()
 
-                for (observer in observers) {
-                    try {
-                        if (observer.table == table && (observer.id == null || observer.id == id)) {
-                            observer.onInvalidated()
+                for (tableObserver in tableObservers) {
+                    if (tableObserver.table == table && (tableObserver.recordId == null || tableObserver.recordId == recordId)) {
+                        val listener = tableObserver.listener
+                        if (listener != null) {
+                            listener.onInvalidated()
+                        } else {
+                            vanishedObservers.add(tableObserver)
                         }
-                    } catch (vanished: WeakObserver.VanishedException) {
-                        vanishedObservers.add(observer)
                     }
                 }
 
-                for (observer in vanishedObservers) {
-                    observers.remove(observer)
+                for (tableObserver in vanishedObservers) {
+                    tableObservers.remove(tableObserver)
                 }
             }
         }
     }
 
-    fun <T> createLiveData(table: String, id: Any? = null, loadData: () -> T): LiveData<T> = object : MutableLiveData<T>() {
-        private val observer = object : Observer(table, id) {
+    fun <T> createLiveData(table: String, recordId: Any? = null, loadData: () -> T): LiveData<T> {
+        val liveData = object : LiveData<T>(), TableObserver.Listener {
+            override fun onActive() {
+                if (value == null) {
+                    update()
+                }
+            }
+
             override fun onInvalidated() {
                 update()
             }
-        }
 
-        init {
-            addObserver(observer)
-        }
-
-        override fun onActive() {
-            if (value == null) {
-                update()
+            private fun update() {
+                GlobalScope.launch {
+                    val data = loadData()
+                    postValue(data)
+                }
             }
         }
 
-        private fun update() {
-            GlobalScope.launch {
-                val data = loadData()
-                postValue(data)
-            }
+        synchronized(tableObservers) {
+            tableObservers.add(TableObserver(table, recordId, liveData))
         }
+
+        return liveData
     }
 
-    private abstract class Observer(val table: String, val id: Any? = null) {
+    private class TableObserver(val table: String, val recordId: Any?, listener: Listener) {
 
-        abstract fun onInvalidated()
+        private val reference = WeakReference(listener)
 
-    }
+        val listener
+            get() = reference.get()
 
-    private class WeakObserver(observer: Observer) : Observer(observer.table, observer.id) {
+        interface Listener {
 
-        private val observerReference = WeakReference(observer)
+            fun onInvalidated()
 
-        override fun onInvalidated() {
-            val observer = observerReference.get()
-            if (observer != null) {
-                observer.onInvalidated()
-            } else {
-                throw VanishedException()
-            }
         }
-
-        class VanishedException : Exception()
 
     }
 

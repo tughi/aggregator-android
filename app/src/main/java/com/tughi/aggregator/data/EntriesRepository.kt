@@ -23,11 +23,13 @@ class EntriesRepository<T>(private val columns: Array<Column>, private val mappe
     }
 
     fun query(criteria: EntriesQuery): List<T> {
+        // TODO: use criteria to build the query
+
         val sqliteQuery = SupportSQLiteQueryBuilder.builder("entries e LEFT JOIN feeds f ON e.feed_id = f.id")
                 .columns(Array(columns.size) { index -> "${columns[index].projection} AS ${columns[index].column}" })
                 .create()
 
-        Storage.readableDatabase.query(sqliteQuery).use { cursor ->
+        Storage.query(sqliteQuery).use { cursor ->
             if (cursor.moveToFirst()) {
                 val entries = mutableListOf<T>()
 
@@ -48,13 +50,7 @@ class EntriesRepository<T>(private val columns: Array<Column>, private val mappe
 
     companion object {
 
-        private fun update(entryId: Long, values: ContentValues): Int {
-            val result = Storage.writableDatabase.update("entries", 0, values, "id = ?", arrayOf(entryId))
-            if (result > 0) {
-                Storage.invalidateLiveData("entries", entryId)
-            }
-            return result
-        }
+        private fun update(entryId: Long, values: ContentValues): Int = Storage.update("entries", values, "id = ?", arrayOf(entryId), entryId)
 
         fun markEntryRead(entryId: Long): Int = update(entryId, contentValuesOf("read_time" to System.currentTimeMillis(), "pinned_time" to 0))
 
