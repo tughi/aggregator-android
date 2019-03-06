@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import com.tughi.aggregator.R
 
-internal class EntriesFragmentEntryAdapter(private val listener: EntriesFragmentAdapterListener) : ListAdapter<EntriesFragmentEntry, EntriesFragmentViewHolder>(DiffCallback) {
+internal class EntriesFragmentEntryAdapter(private val listener: EntriesFragmentAdapterListener) : ListAdapter<EntriesFragmentViewModel.Entry, EntriesFragmentViewHolder>(DiffCallback) {
 
     override fun getItemViewType(position: Int): Int = getItem(position).type.ordinal
 
@@ -19,13 +19,13 @@ internal class EntriesFragmentEntryAdapter(private val listener: EntriesFragment
 
     override fun onBindViewHolder(holder: EntriesFragmentViewHolder, position: Int) = holder.onBind(getItem(position))
 
-    private object DiffCallback : DiffUtil.ItemCallback<EntriesFragmentEntry>() {
+    private object DiffCallback : DiffUtil.ItemCallback<EntriesFragmentViewModel.Entry>() {
 
-        override fun areItemsTheSame(oldItem: EntriesFragmentEntry, newItem: EntriesFragmentEntry): Boolean {
+        override fun areItemsTheSame(oldItem: EntriesFragmentViewModel.Entry, newItem: EntriesFragmentViewModel.Entry): Boolean {
             return oldItem.id == newItem.id
         }
 
-        override fun areContentsTheSame(oldItem: EntriesFragmentEntry, newItem: EntriesFragmentEntry): Boolean {
+        override fun areContentsTheSame(oldItem: EntriesFragmentViewModel.Entry, newItem: EntriesFragmentViewModel.Entry): Boolean {
             return oldItem == newItem
         }
 

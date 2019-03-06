@@ -114,7 +114,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
         toolbar.title = title
     }
 
-    override fun onEntryClicked(entry: EntriesFragmentEntry, position: Int) {
+    override fun onEntryClicked(entry: EntriesFragmentViewModel.Entry, position: Int) {
         context?.run {
             startActivity(
                     Intent(this, ReaderActivity::class.java)

@@ -9,10 +9,10 @@ import com.tughi.aggregator.utilities.Favicons
 
 internal sealed class EntriesFragmentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-    lateinit var entry: EntriesFragmentEntry
+    lateinit var entry: EntriesFragmentViewModel.Entry
         protected set
 
-    open fun onBind(entry: EntriesFragmentEntry) {
+    open fun onBind(entry: EntriesFragmentViewModel.Entry) {
         this.entry = entry
     }
 
@@ -35,7 +35,7 @@ internal abstract class EntriesFragmentEntryViewHolder(itemView: View, private v
         }
     }
 
-    override fun onBind(entry: EntriesFragmentEntry) {
+    override fun onBind(entry: EntriesFragmentViewModel.Entry) {
         super.onBind(entry)
 
         feedTitle.text = entry.feedTitle
@@ -64,7 +64,7 @@ internal class EntriesFragmentHeaderViewHolder(itemView: View) : EntriesFragment
 
     val header: TextView = itemView.findViewById(R.id.header)
 
-    override fun onBind(entry: EntriesFragmentEntry) {
+    override fun onBind(entry: EntriesFragmentViewModel.Entry) {
         super.onBind(entry)
 
         header.text = entry.formattedDate

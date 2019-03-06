@@ -46,10 +46,10 @@ class EntriesFragmentViewModel(initialEntriesQuery: EntriesQuery) : ViewModel() 
                     EntriesRepository.Column.TITLE,
                     EntriesRepository.Column.TYPE
             ),
-            object : DataMapper<EntriesFragmentEntry> {
+            object : DataMapper<Entry> {
                 private val context = App.instance
 
-                override fun map(cursor: Cursor) = EntriesFragmentEntry(
+                override fun map(cursor: Cursor) = Entry(
                         id = cursor.getLong(0),
                         feedId = cursor.getLong(1),
                         author = cursor.getString(2),
@@ -73,7 +73,7 @@ class EntriesFragmentViewModel(initialEntriesQuery: EntriesQuery) : ViewModel() 
         })
     }
 
-    private val transformedEntries = MediatorLiveData<List<EntriesFragmentEntry>>().also {
+    private val transformedEntries = MediatorLiveData<List<Entry>>().also {
         var currentJob: Job? = null
 
         it.addSource(storedEntries) { storedEntries ->
@@ -133,7 +133,7 @@ class EntriesFragmentViewModel(initialEntriesQuery: EntriesQuery) : ViewModel() 
         }
     }
 
-    val entries: LiveData<List<EntriesFragmentEntry>>
+    val entries: LiveData<List<Entry>>
         get() = transformedEntries
 
     fun changeEntriesSortOrder(entriesSortOrder: EntriesSortOrder) {
@@ -157,6 +157,21 @@ class EntriesFragmentViewModel(initialEntriesQuery: EntriesQuery) : ViewModel() 
             }
         }
     }
+
+    data class Entry(
+            val id: Long,
+            val feedId: Long,
+            val feedTitle: String,
+            val faviconUrl: String?,
+            val title: String?,
+            val link: String?,
+            val author: String?,
+            val formattedDate: String,
+            val formattedTime: String,
+            val readTime: Long,
+            val pinnedTime: Long,
+            val type: EntriesFragmentEntryType
+    )
 
     class Factory(private val initialEntriesQuery: EntriesQuery) : ViewModelProvider.Factory {
 

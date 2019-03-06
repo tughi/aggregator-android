@@ -4,13 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.tughi.aggregator.data.EntriesQuery
-import com.tughi.aggregator.data.EntriesSortOrderByDateAsc
-import com.tughi.aggregator.data.EntriesSortOrderByDateDesc
-import com.tughi.aggregator.data.EntriesSortOrderByTitle
 import com.tughi.aggregator.data.FeedEntriesQuery
 import com.tughi.aggregator.data.MyFeedEntriesQuery
 
-//@Dao
 abstract class MainDao {
 
 //    @Query("""
@@ -32,61 +28,6 @@ abstract class MainDao {
 //            title
 //    """)
     abstract fun getFeedsFragmentFeeds(): LiveData<List<FeedsFragmentFeed>>
-
-    fun getEntriesFragmentEntries(entriesQuery: EntriesQuery): LiveData<Array<EntriesFragmentEntry>> {
-        var query = """
-            SELECT
-                e.id,
-                f.id AS feed_id,
-                COALESCE(f.custom_title, f.title) AS feed_title,
-                f.favicon_url,
-                e.title,
-                e.link,
-                e.author,
-                COALESCE(e.publish_time, e.insert_time) AS formatted_date,
-                COALESCE(e.publish_time, e.insert_time) AS formatted_time,
-                e.read_time,
-                e.pinned_time,
-                (e.read_time > 0 AND e.pinned_time = 0) AS type
-            FROM
-                entries e
-                LEFT JOIN feeds f ON f.id = e.feed_id
-        """.trim().replace(Regex("\\s+"), " ")
-
-        val orderBy = when (entriesQuery.sortOrder) {
-            is EntriesSortOrderByDateAsc -> "ORDER BY COALESCE(e.publish_time, e.insert_time) ASC"
-            is EntriesSortOrderByDateDesc -> "ORDER BY COALESCE(e.publish_time, e.insert_time) DESC"
-            is EntriesSortOrderByTitle -> "ORDER BY e.title ASC, COALESCE(e.publish_time, e.insert_time) ASC"
-        }
-
-        val queryArgs: Array<out Any>
-        if (entriesQuery.sessionTime == 0L) {
-            query = when (entriesQuery) {
-                is FeedEntriesQuery -> "$query WHERE e.feed_id = ? $orderBy"
-                is MyFeedEntriesQuery -> "$query $orderBy"
-            }
-
-            queryArgs = when (entriesQuery) {
-                is FeedEntriesQuery -> arrayOf(entriesQuery.feedId)
-                is MyFeedEntriesQuery -> emptyArray()
-            }
-        } else {
-            query = when (entriesQuery) {
-                is FeedEntriesQuery -> "$query WHERE e.feed_id = ? AND (e.read_time = 0 OR e.read_time > ?) $orderBy"
-                is MyFeedEntriesQuery -> "$query WHERE e.read_time = 0 OR e.read_time > ? $orderBy"
-            }
-
-            queryArgs = when (entriesQuery) {
-                is FeedEntriesQuery -> arrayOf(entriesQuery.feedId, entriesQuery.sessionTime)
-                is MyFeedEntriesQuery -> arrayOf(entriesQuery.sessionTime)
-            }
-        }
-
-        return getEntriesFragmentEntries(SimpleSQLiteQuery(query, queryArgs))
-    }
-
-//    @RawQuery(observedEntities = [Entry::class, Feed::class])
-    protected abstract fun getEntriesFragmentEntries(query: SupportSQLiteQuery): LiveData<Array<EntriesFragmentEntry>>
 
     fun markAllEntriesRead(entriesQuery: EntriesQuery) {
         var query = "UPDATE entries SET read_time = ?"
