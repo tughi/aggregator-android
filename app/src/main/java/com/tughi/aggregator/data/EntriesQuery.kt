@@ -3,6 +3,8 @@ package com.tughi.aggregator.data
 import com.tughi.aggregator.preferences.EntryListSettings
 import java.io.Serializable
 
+// TODO: replace EntriesQuery by EntriesRepository.QueryCriteria
+
 sealed class EntriesQuery : Serializable {
     abstract val sessionTime: Long
     abstract val sortOrder: EntriesSortOrder
