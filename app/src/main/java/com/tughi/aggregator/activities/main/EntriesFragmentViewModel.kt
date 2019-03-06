@@ -68,8 +68,8 @@ class EntriesFragmentViewModel(initialEntriesQuery: EntriesQuery) : ViewModel() 
 
     private val storedEntries = Transformations.switchMap(entriesQuery) { entriesQuery ->
         repository.liveQuery(when (entriesQuery) {
-            is FeedEntriesQuery -> EntriesRepository.FeedEntriesCriteria(entriesQuery.feedId, entriesQuery.sessionTime, entriesQuery.sortOrder)
-            is MyFeedEntriesQuery -> EntriesRepository.MyFeedCriteria(entriesQuery.sessionTime, entriesQuery.sortOrder)
+            is FeedEntriesQuery -> EntriesRepository.QueryCriteria.FeedEntries(entriesQuery.feedId, entriesQuery.sessionTime, entriesQuery.sortOrder)
+            is MyFeedEntriesQuery -> EntriesRepository.QueryCriteria.MyFeedEntries(entriesQuery.sessionTime, entriesQuery.sortOrder)
         })
     }
 

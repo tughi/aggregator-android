@@ -57,7 +57,7 @@ class EntriesRepository<T>(private val columns: Array<Column>, private val mappe
 
     }
 
-    abstract class QueryCriteria(val sessionTime: Long?, val sortOrder: EntriesSortOrder) {
+    sealed class QueryCriteria(val sessionTime: Long?, val sortOrder: EntriesSortOrder) {
 
         internal abstract val selection: String?
 
@@ -70,37 +70,37 @@ class EntriesRepository<T>(private val columns: Array<Column>, private val mappe
                 is EntriesSortOrderByTitle -> "e.title ASC, COALESCE(e.publish_time, e.insert_time) ASC"
             }
 
-    }
+        class FeedEntries(val feedId: Long, sessionTime: Long, sortOrder: EntriesSortOrder) : QueryCriteria(sessionTime, sortOrder) {
 
-    class FeedEntriesCriteria(val feedId: Long, sessionTime: Long, sortOrder: EntriesSortOrder) : QueryCriteria(sessionTime, sortOrder) {
+            override val selection: String?
+                get() = when {
+                    sessionTime != null -> "e.feed_id = ? AND (e.read_time = 0 OR e.read_time > ?)"
+                    else -> "e.feed_id = ?"
+                }
 
-        override val selection: String?
-            get() = when {
-                sessionTime != null -> "e.feed_id = ? AND (e.read_time = 0 OR e.read_time > ?)"
-                else -> "e.feed_id = ?"
-            }
+            override val selectionArgs: Array<Any>?
+                get() = when {
+                    sessionTime != null -> arrayOf(feedId, sessionTime)
+                    else -> arrayOf(feedId)
+                }
 
-        override val selectionArgs: Array<Any>?
-            get() = when {
-                sessionTime != null -> arrayOf(feedId, sessionTime)
-                else -> arrayOf(feedId)
-            }
+        }
 
-    }
+        class MyFeedEntries(sessionTime: Long, sortOrder: EntriesSortOrder) : QueryCriteria(sessionTime, sortOrder) {
 
-    class MyFeedCriteria(sessionTime: Long, sortOrder: EntriesSortOrder) : QueryCriteria(sessionTime, sortOrder) {
+            override val selection: String?
+                get() = when {
+                    sessionTime != null -> "e.read_time = 0 OR e.read_time > ?"
+                    else -> null
+                }
 
-        override val selection: String?
-            get() = when {
-                sessionTime != null -> "e.read_time = 0 OR e.read_time > ?"
-                else -> null
-            }
+            override val selectionArgs: Array<Any>?
+                get() = when {
+                    sessionTime != null -> arrayOf(sessionTime)
+                    else -> null
+                }
 
-        override val selectionArgs: Array<Any>?
-            get() = when {
-                sessionTime != null -> arrayOf(sessionTime)
-                else -> null
-            }
+        }
 
     }
 
