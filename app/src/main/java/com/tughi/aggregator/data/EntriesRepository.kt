@@ -46,9 +46,9 @@ class EntriesRepository<T>(private val columns: Array<Column>, private val mappe
         }
 
         val orderBy = when (criteria.sortOrder) {
-            is EntriesSortOrderByDateAsc -> "COALESCE(e.publish_time, e.insert_time) ASC"
-            is EntriesSortOrderByDateDesc -> "COALESCE(e.publish_time, e.insert_time) DESC"
-            is EntriesSortOrderByTitle -> "e.title ASC, COALESCE(e.publish_time, e.insert_time) ASC"
+            is SortOrder.ByDateAscending -> "COALESCE(e.publish_time, e.insert_time) ASC"
+            is SortOrder.ByDateDescending -> "COALESCE(e.publish_time, e.insert_time) DESC"
+            is SortOrder.ByTitle -> "e.title ASC, COALESCE(e.publish_time, e.insert_time) ASC"
         }
 
         val query = SupportSQLiteQueryBuilder.builder("entries e LEFT JOIN feeds f ON e.feed_id = f.id")
@@ -99,12 +99,40 @@ class EntriesRepository<T>(private val columns: Array<Column>, private val mappe
     }
 
     sealed class QueryCriteria : Serializable {
+
         abstract val sessionTime: Long?
-        abstract val sortOrder: EntriesSortOrder
+        abstract val sortOrder: SortOrder
 
-        data class FeedEntries(val feedId: Long, override val sessionTime: Long? = null, override val sortOrder: EntriesSortOrder) : QueryCriteria()
+        data class FeedEntries(val feedId: Long, override val sessionTime: Long? = null, override val sortOrder: SortOrder) : QueryCriteria()
 
-        data class MyFeedEntries(override val sessionTime: Long? = null, override val sortOrder: EntriesSortOrder) : QueryCriteria()
+        data class MyFeedEntries(override val sessionTime: Long? = null, override val sortOrder: SortOrder) : QueryCriteria()
+
+    }
+
+    sealed class SortOrder : Serializable {
+
+        abstract fun serialize(): String
+
+        companion object {
+            fun deserialize(value: String) = when (value) {
+                "date-asc" -> ByDateAscending
+                "date-desc" -> ByDateDescending
+                "title-asc" -> ByTitle
+                else -> ByDateAscending
+            }
+        }
+
+        object ByDateAscending : SortOrder() {
+            override fun serialize(): String = "date-asc"
+        }
+
+        object ByDateDescending : SortOrder() {
+            override fun serialize(): String = "date-desc"
+        }
+
+        object ByTitle : SortOrder() {
+            override fun serialize(): String = "title-asc"
+        }
 
     }
 

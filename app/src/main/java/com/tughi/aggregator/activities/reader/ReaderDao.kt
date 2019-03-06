@@ -4,9 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.tughi.aggregator.data.EntriesRepository
-import com.tughi.aggregator.data.EntriesSortOrderByDateAsc
-import com.tughi.aggregator.data.EntriesSortOrderByDateDesc
-import com.tughi.aggregator.data.EntriesSortOrderByTitle
 
 abstract class ReaderDao {
 
@@ -40,9 +37,9 @@ abstract class ReaderDao {
         """.trim().replace(Regex("\\s+"), " ")
 
         val orderBy = when (queryCriteria.sortOrder) {
-            is EntriesSortOrderByDateAsc -> "ORDER BY COALESCE(e.publish_time, e.insert_time) ASC"
-            is EntriesSortOrderByDateDesc -> "ORDER BY COALESCE(e.publish_time, e.insert_time) DESC"
-            is EntriesSortOrderByTitle -> "ORDER BY e.title ASC, COALESCE(e.publish_time, e.insert_time) ASC"
+            is EntriesRepository.SortOrder.ByDateAscending -> "ORDER BY COALESCE(e.publish_time, e.insert_time) ASC"
+            is EntriesRepository.SortOrder.ByDateDescending -> "ORDER BY COALESCE(e.publish_time, e.insert_time) DESC"
+            is EntriesRepository.SortOrder.ByTitle -> "ORDER BY e.title ASC, COALESCE(e.publish_time, e.insert_time) ASC"
         }
 
         val queryArgs: Array<out Any?>

@@ -16,9 +16,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.reader.ReaderActivity
 import com.tughi.aggregator.data.EntriesRepository
-import com.tughi.aggregator.data.EntriesSortOrderByDateAsc
-import com.tughi.aggregator.data.EntriesSortOrderByDateDesc
-import com.tughi.aggregator.data.EntriesSortOrderByTitle
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -65,13 +62,13 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
                     viewModel.changeShowRead(!it.isChecked)
                 }
                 R.id.sort_by_date_asc -> {
-                    viewModel.changeEntriesSortOrder(EntriesSortOrderByDateAsc)
+                    viewModel.changeSortOrder(EntriesRepository.SortOrder.ByDateAscending)
                 }
                 R.id.sort_by_date_desc -> {
-                    viewModel.changeEntriesSortOrder(EntriesSortOrderByDateDesc)
+                    viewModel.changeSortOrder(EntriesRepository.SortOrder.ByDateDescending)
                 }
                 R.id.sort_by_title -> {
-                    viewModel.changeEntriesSortOrder(EntriesSortOrderByTitle)
+                    viewModel.changeSortOrder(EntriesRepository.SortOrder.ByTitle)
                 }
                 R.id.mark_all_read -> {
                     viewModel.queryCriteria.value?.let { queryCriteria ->
@@ -87,13 +84,13 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
         viewModel.queryCriteria.observe(this, Observer { entriesQuery ->
             toolbar.menu?.let {
                 val sortMenuItemId = when (entriesQuery.sortOrder) {
-                    EntriesSortOrderByDateAsc -> R.id.sort_by_date_asc
-                    EntriesSortOrderByDateDesc -> R.id.sort_by_date_desc
-                    EntriesSortOrderByTitle -> R.id.sort_by_title
+                    EntriesRepository.SortOrder.ByDateAscending -> R.id.sort_by_date_asc
+                    EntriesRepository.SortOrder.ByDateDescending -> R.id.sort_by_date_desc
+                    EntriesRepository.SortOrder.ByTitle -> R.id.sort_by_title
                 }
                 it.findItem(sortMenuItemId).isChecked = true
 
-                it.findItem(R.id.show_read_entries).isChecked = entriesQuery.sessionTime == 0L
+                it.findItem(R.id.show_read_entries).isChecked = entriesQuery.sessionTime == null
             }
         })
 

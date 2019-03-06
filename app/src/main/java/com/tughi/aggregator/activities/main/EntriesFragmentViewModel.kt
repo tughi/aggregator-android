@@ -11,7 +11,6 @@ import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.App
 import com.tughi.aggregator.data.DataMapper
 import com.tughi.aggregator.data.EntriesRepository
-import com.tughi.aggregator.data.EntriesSortOrder
 import com.tughi.aggregator.preferences.EntryListSettings
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -130,14 +129,14 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesRepository.QueryCrit
     val entries: LiveData<List<Entry>>
         get() = transformedEntries
 
-    fun changeEntriesSortOrder(entriesSortOrder: EntriesSortOrder) {
-        EntryListSettings.entriesSortOrder = entriesSortOrder
+    fun changeSortOrder(sortOrder: EntriesRepository.SortOrder) {
+        EntryListSettings.entriesSortOrder = sortOrder
 
         transformedEntries.value = null
         queryCriteria.value?.let { value ->
             queryCriteria.value = when (value) {
-                is EntriesRepository.QueryCriteria.FeedEntries -> value.copy(sortOrder = entriesSortOrder)
-                is EntriesRepository.QueryCriteria.MyFeedEntries -> value.copy(sortOrder = entriesSortOrder)
+                is EntriesRepository.QueryCriteria.FeedEntries -> value.copy(sortOrder = sortOrder)
+                is EntriesRepository.QueryCriteria.MyFeedEntries -> value.copy(sortOrder = sortOrder)
             }
         }
     }
@@ -146,8 +145,8 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesRepository.QueryCrit
         transformedEntries.value = null
         queryCriteria.value?.let { value ->
             queryCriteria.value = when (value) {
-                is EntriesRepository.QueryCriteria.FeedEntries -> value.copy(sessionTime = if (showRead) 0 else sessionTime)
-                is EntriesRepository.QueryCriteria.MyFeedEntries -> value.copy(sessionTime = if (showRead) 0 else sessionTime)
+                is EntriesRepository.QueryCriteria.FeedEntries -> value.copy(sessionTime = if (showRead) null else sessionTime)
+                is EntriesRepository.QueryCriteria.MyFeedEntries -> value.copy(sessionTime = if (showRead) null else sessionTime)
             }
         }
     }

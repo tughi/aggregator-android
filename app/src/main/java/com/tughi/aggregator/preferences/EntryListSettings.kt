@@ -1,8 +1,7 @@
 package com.tughi.aggregator.preferences
 
 import com.tughi.aggregator.App
-import com.tughi.aggregator.data.EntriesSortOrder
-import com.tughi.aggregator.data.EntriesSortOrderByDateAsc
+import com.tughi.aggregator.data.EntriesRepository
 
 object EntryListSettings {
 
@@ -10,13 +9,13 @@ object EntryListSettings {
 
     private val preferences = App.preferences
 
-    var entriesSortOrder: EntriesSortOrder
+    var entriesSortOrder: EntriesRepository.SortOrder
         get() {
             val value = preferences.getString(PREFERENCE_ENTRIES_SORT_ORDER, null)
             if (value != null) {
-                return EntriesSortOrder.deserialize(value)
+                return EntriesRepository.SortOrder.deserialize(value)
             }
-            return EntriesSortOrderByDateAsc
+            return EntriesRepository.SortOrder.ByDateAscending
         }
         set(value) {
             preferences.edit()
