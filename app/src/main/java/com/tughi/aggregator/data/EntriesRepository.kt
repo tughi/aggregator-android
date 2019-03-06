@@ -22,13 +22,41 @@ class EntriesRepository<T>(private val columns: Array<Column>, private val mappe
     }
 
     fun query(criteria: QueryCriteria): List<T> {
-        val sqliteQuery = SupportSQLiteQueryBuilder.builder("entries e LEFT JOIN feeds f ON e.feed_id = f.id")
+        val selection = when {
+            criteria.sessionTime != null -> when (criteria) {
+                is QueryCriteria.FeedEntries -> "e.feed_id = ? AND (e.read_time = 0 OR e.read_time > ?)"
+                is QueryCriteria.MyFeedEntries -> "e.read_time = 0 OR e.read_time > ?"
+            }
+            else -> when (criteria) {
+                is QueryCriteria.FeedEntries -> "e.feed_id = ?"
+                is QueryCriteria.MyFeedEntries -> null
+            }
+        }
+
+        val selectionArgs = when {
+            criteria.sessionTime != null -> when (criteria) {
+                is QueryCriteria.FeedEntries -> arrayOf(criteria.feedId, criteria.sessionTime)
+                is QueryCriteria.MyFeedEntries -> arrayOf(criteria.sessionTime)
+            }
+            else -> when (criteria) {
+                is QueryCriteria.FeedEntries -> arrayOf(criteria.feedId)
+                is QueryCriteria.MyFeedEntries -> null
+            }
+        }
+
+        val orderBy = when (criteria.sortOrder) {
+            is EntriesSortOrderByDateAsc -> "COALESCE(e.publish_time, e.insert_time) ASC"
+            is EntriesSortOrderByDateDesc -> "COALESCE(e.publish_time, e.insert_time) DESC"
+            is EntriesSortOrderByTitle -> "e.title ASC, COALESCE(e.publish_time, e.insert_time) ASC"
+        }
+
+        val query = SupportSQLiteQueryBuilder.builder("entries e LEFT JOIN feeds f ON e.feed_id = f.id")
                 .columns(Array(columns.size) { index -> "${columns[index].projection} AS ${columns[index].column}" })
-                .selection(criteria.selection, criteria.selectionArgs)
-                .orderBy(criteria.orderBy)
+                .selection(selection, selectionArgs)
+                .orderBy(orderBy)
                 .create()
 
-        Storage.query(sqliteQuery).use { cursor ->
+        Storage.query(query).use { cursor ->
             if (cursor.moveToFirst()) {
                 val entries = mutableListOf<T>()
 
@@ -55,52 +83,25 @@ class EntriesRepository<T>(private val columns: Array<Column>, private val mappe
 
         fun markEntryPinned(entryId: Long): Int = update(entryId, contentValuesOf("read_time" to 0, "pinned_time" to System.currentTimeMillis()))
 
+        fun markEntriesRead(criteria: QueryCriteria): Int {
+            val selection = when (criteria) {
+                is QueryCriteria.FeedEntries -> "feed_id = ? AND pinned_time = 0 AND read_time = 0"
+                is QueryCriteria.MyFeedEntries -> "pinned_time = 0 AND read_time = 0"
+            }
+            val selectionArgs: Array<Any>? = when (criteria) {
+                is QueryCriteria.FeedEntries -> arrayOf(criteria.feedId)
+                is QueryCriteria.MyFeedEntries -> null
+            }
+            return Storage.update("entries", contentValuesOf("read_time" to System.currentTimeMillis()), selection, selectionArgs)
+        }
+
     }
 
     sealed class QueryCriteria(val sessionTime: Long?, val sortOrder: EntriesSortOrder) {
 
-        internal abstract val selection: String?
+        class FeedEntries(val feedId: Long, sessionTime: Long, sortOrder: EntriesSortOrder) : QueryCriteria(sessionTime, sortOrder)
 
-        internal abstract val selectionArgs: Array<Any>?
-
-        internal val orderBy: String
-            get() = when (sortOrder) {
-                is EntriesSortOrderByDateAsc -> "COALESCE(e.publish_time, e.insert_time) ASC"
-                is EntriesSortOrderByDateDesc -> "COALESCE(e.publish_time, e.insert_time) DESC"
-                is EntriesSortOrderByTitle -> "e.title ASC, COALESCE(e.publish_time, e.insert_time) ASC"
-            }
-
-        class FeedEntries(val feedId: Long, sessionTime: Long, sortOrder: EntriesSortOrder) : QueryCriteria(sessionTime, sortOrder) {
-
-            override val selection: String?
-                get() = when {
-                    sessionTime != null -> "e.feed_id = ? AND (e.read_time = 0 OR e.read_time > ?)"
-                    else -> "e.feed_id = ?"
-                }
-
-            override val selectionArgs: Array<Any>?
-                get() = when {
-                    sessionTime != null -> arrayOf(feedId, sessionTime)
-                    else -> arrayOf(feedId)
-                }
-
-        }
-
-        class MyFeedEntries(sessionTime: Long, sortOrder: EntriesSortOrder) : QueryCriteria(sessionTime, sortOrder) {
-
-            override val selection: String?
-                get() = when {
-                    sessionTime != null -> "e.read_time = 0 OR e.read_time > ?"
-                    else -> null
-                }
-
-            override val selectionArgs: Array<Any>?
-                get() = when {
-                    sessionTime != null -> arrayOf(sessionTime)
-                    else -> null
-                }
-
-        }
+        class MyFeedEntries(sessionTime: Long, sortOrder: EntriesSortOrder) : QueryCriteria(sessionTime, sortOrder)
 
     }
 

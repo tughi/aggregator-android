@@ -13,7 +13,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.reader.ReaderActivity
 import com.tughi.aggregator.data.EntriesQuery
@@ -21,6 +20,8 @@ import com.tughi.aggregator.data.EntriesRepository
 import com.tughi.aggregator.data.EntriesSortOrderByDateAsc
 import com.tughi.aggregator.data.EntriesSortOrderByDateDesc
 import com.tughi.aggregator.data.EntriesSortOrderByTitle
+import com.tughi.aggregator.data.FeedEntriesQuery
+import com.tughi.aggregator.data.MyFeedEntriesQuery
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -78,7 +79,10 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
                 R.id.mark_all_read -> {
                     viewModel.entriesQuery.value?.let { entriesQuery ->
                         GlobalScope.launch {
-                            AppDatabase.instance.mainDao().markAllEntriesRead(entriesQuery)
+                            EntriesRepository.markEntriesRead(when (entriesQuery) {
+                                is FeedEntriesQuery -> EntriesRepository.QueryCriteria.FeedEntries(entriesQuery.feedId, entriesQuery.sessionTime, entriesQuery.sortOrder)
+                                is MyFeedEntriesQuery -> EntriesRepository.QueryCriteria.MyFeedEntries(entriesQuery.sessionTime, entriesQuery.sortOrder)
+                            })
                         }
                     }
                 }
