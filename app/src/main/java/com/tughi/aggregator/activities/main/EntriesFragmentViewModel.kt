@@ -9,6 +9,7 @@ import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.App
+import com.tughi.aggregator.data.DataMapper
 import com.tughi.aggregator.data.EntriesQuery
 import com.tughi.aggregator.data.EntriesRepository
 import com.tughi.aggregator.data.EntriesSortOrder
@@ -45,7 +46,7 @@ class EntriesFragmentViewModel(initialEntriesQuery: EntriesQuery) : ViewModel() 
                     EntriesRepository.Column.TITLE,
                     EntriesRepository.Column.TYPE
             ),
-            object : EntriesRepository.Mapper<EntriesFragmentEntry> {
+            object : DataMapper<EntriesFragmentEntry> {
                 private val context = App.instance
 
                 override fun map(cursor: Cursor) = EntriesFragmentEntry(

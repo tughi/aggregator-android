@@ -1,12 +1,11 @@
 package com.tughi.aggregator.data
 
 import android.content.ContentValues
-import android.database.Cursor
 import androidx.core.content.contentValuesOf
 import androidx.lifecycle.LiveData
 import androidx.sqlite.db.SupportSQLiteQueryBuilder
 
-class EntriesRepository<T>(private val columns: Array<Column>, private val mapper: Mapper<T>) {
+class EntriesRepository<T>(private val columns: Array<Column>, private val mapper: DataMapper<T>) {
 
     enum class Column(internal val column: String, internal val projection: String) {
         ID("id", "e.id"),
@@ -55,12 +54,6 @@ class EntriesRepository<T>(private val columns: Array<Column>, private val mappe
         fun markEntryRead(entryId: Long): Int = update(entryId, contentValuesOf("read_time" to System.currentTimeMillis(), "pinned_time" to 0))
 
         fun markEntryPinned(entryId: Long): Int = update(entryId, contentValuesOf("read_time" to 0, "pinned_time" to System.currentTimeMillis()))
-
-    }
-
-    interface Mapper<T> {
-
-        fun map(cursor: Cursor): T
 
     }
 
