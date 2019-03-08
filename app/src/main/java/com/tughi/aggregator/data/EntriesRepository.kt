@@ -24,7 +24,7 @@ class EntriesRepository<T>(private val columns: Array<Column>, private val mappe
 
     fun query(criteria: QueryCriteria): List<T> {
         val selection = when {
-            criteria.sessionTime != null -> when (criteria) {
+            criteria.sessionTime != 0L -> when (criteria) {
                 is QueryCriteria.FeedEntries -> "e.feed_id = ? AND (e.read_time = 0 OR e.read_time > ?)"
                 is QueryCriteria.MyFeedEntries -> "e.read_time = 0 OR e.read_time > ?"
             }
@@ -35,7 +35,7 @@ class EntriesRepository<T>(private val columns: Array<Column>, private val mappe
         }
 
         val selectionArgs = when {
-            criteria.sessionTime != null -> when (criteria) {
+            criteria.sessionTime != 0L -> when (criteria) {
                 is QueryCriteria.FeedEntries -> arrayOf(criteria.feedId, criteria.sessionTime)
                 is QueryCriteria.MyFeedEntries -> arrayOf(criteria.sessionTime)
             }
@@ -100,12 +100,12 @@ class EntriesRepository<T>(private val columns: Array<Column>, private val mappe
 
     sealed class QueryCriteria : Serializable {
 
-        abstract val sessionTime: Long?
+        abstract val sessionTime: Long
         abstract val sortOrder: SortOrder
 
-        data class FeedEntries(val feedId: Long, override val sessionTime: Long? = null, override val sortOrder: SortOrder) : QueryCriteria()
+        data class FeedEntries(val feedId: Long, override val sessionTime: Long = 0, override val sortOrder: SortOrder) : QueryCriteria()
 
-        data class MyFeedEntries(override val sessionTime: Long? = null, override val sortOrder: SortOrder) : QueryCriteria()
+        data class MyFeedEntries(override val sessionTime: Long = 0, override val sortOrder: SortOrder) : QueryCriteria()
 
     }
 

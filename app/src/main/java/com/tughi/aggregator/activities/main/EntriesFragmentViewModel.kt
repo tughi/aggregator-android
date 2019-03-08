@@ -145,8 +145,8 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesRepository.QueryCrit
         transformedEntries.value = null
         queryCriteria.value?.let { value ->
             queryCriteria.value = when (value) {
-                is EntriesRepository.QueryCriteria.FeedEntries -> value.copy(sessionTime = if (showRead) null else sessionTime)
-                is EntriesRepository.QueryCriteria.MyFeedEntries -> value.copy(sessionTime = if (showRead) null else sessionTime)
+                is EntriesRepository.QueryCriteria.FeedEntries -> value.copy(sessionTime = if (showRead) 0 else sessionTime)
+                is EntriesRepository.QueryCriteria.MyFeedEntries -> value.copy(sessionTime = if (showRead) 0 else sessionTime)
             }
         }
     }
