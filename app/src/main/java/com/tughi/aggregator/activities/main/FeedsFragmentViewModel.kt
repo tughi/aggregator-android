@@ -16,17 +16,17 @@ class FeedsFragmentViewModel(application: Application) : AndroidViewModel(applic
 
     private val repository = FeedsRepository(
             arrayOf(
-                    FeedsRepository.Column.ID,
-                    FeedsRepository.Column.TITLE,
-                    FeedsRepository.Column.FAVICON_URL,
-                    FeedsRepository.Column.LAST_UPDATE_TIME,
-                    FeedsRepository.Column.LAST_UPDATE_ERROR,
-                    FeedsRepository.Column.NEXT_UPDATE_TIME,
-                    FeedsRepository.Column.NEXT_UPDATE_RETRY,
-                    FeedsRepository.Column.UPDATE_MODE,
-                    FeedsRepository.Column.UNREAD_ENTRY_COUNT
+                    FeedsRepository.ID,
+                    FeedsRepository.TITLE,
+                    FeedsRepository.FAVICON_URL,
+                    FeedsRepository.LAST_UPDATE_TIME,
+                    FeedsRepository.LAST_UPDATE_ERROR,
+                    FeedsRepository.NEXT_UPDATE_TIME,
+                    FeedsRepository.NEXT_UPDATE_RETRY,
+                    FeedsRepository.UPDATE_MODE,
+                    FeedsRepository.UNREAD_ENTRY_COUNT
             ),
-            object : DataMapper<Feed> {
+            object : DataMapper<Feed>() {
                 override fun map(cursor: Cursor) = Feed(
                         id = cursor.getLong(0),
                         title = cursor.getString(1),

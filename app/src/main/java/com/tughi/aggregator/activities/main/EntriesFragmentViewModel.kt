@@ -42,7 +42,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesRepository.QueryCrit
                     EntriesRepository.Column.TITLE,
                     EntriesRepository.Column.TYPE
             ),
-            object : DataMapper<Entry> {
+            object : DataMapper<Entry>() {
                 private val context = App.instance
 
                 override fun map(cursor: Cursor) = Entry(

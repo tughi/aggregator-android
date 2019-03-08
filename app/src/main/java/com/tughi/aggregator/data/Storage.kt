@@ -2,6 +2,7 @@ package com.tughi.aggregator.data
 
 import android.content.ContentValues
 import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
 import androidx.lifecycle.LiveData
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
@@ -42,9 +43,22 @@ object Storage {
 
     fun query(sqliteQuery: SupportSQLiteQuery?): Cursor = sqlite.readableDatabase.query(sqliteQuery)
 
+    fun insert(table: String, values: ContentValues): Long {
+        val database = sqlite.writableDatabase
+        val id = database.insert(table, SQLiteDatabase.CONFLICT_FAIL, values)
+        if (id != -1L) {
+            if (database.inTransaction()) {
+                TODO("delay table invalidation until the transaction was committed")
+            } else {
+                invalidateTable(table)
+            }
+        }
+        return id
+    }
+
     fun update(table: String, values: ContentValues, selection: String?, selectionArgs: Array<Any>?, recordId: Any? = null): Int {
         val database = sqlite.writableDatabase
-        val result = database.update(table, 0, values, selection, selectionArgs)
+        val result = database.update(table, SQLiteDatabase.CONFLICT_FAIL, values, selection, selectionArgs)
         if (result > 0) {
             if (database.inTransaction()) {
                 TODO("delay table invalidation until the transaction was committed")

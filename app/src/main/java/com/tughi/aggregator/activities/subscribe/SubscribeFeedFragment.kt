@@ -15,16 +15,14 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.updatemode.UpdateModeActivity
-import com.tughi.aggregator.data.DefaultUpdateMode
-import com.tughi.aggregator.data.Feed
-import com.tughi.aggregator.data.UpdateMode
-import com.tughi.aggregator.services.FaviconUpdaterService
-import com.tughi.aggregator.services.AutoUpdateScheduler
 import com.tughi.aggregator.activities.updatemode.startUpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.toString
+import com.tughi.aggregator.data.DefaultUpdateMode
+import com.tughi.aggregator.data.UpdateMode
+import com.tughi.aggregator.services.AutoUpdateScheduler
+import com.tughi.aggregator.services.FaviconUpdaterService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -107,12 +105,12 @@ class SubscribeFeedFragment : Fragment() {
                 val link = arguments.getString(ARG_LINK)!!
 
                 GlobalScope.launch(Dispatchers.IO) {
-                    val feedId = AppDatabase.instance.feedDao().insertFeed(Feed(
+                    val feedId = viewModel.repository.insert(SubscribeFeedFragmentViewModel.Feed(
                             url = urlTextView.text.toString(),
                             title = title,
-                            customTitle = if (customTitle != title) customTitle else null,
                             link = link,
-                            updateMode = viewModel.updateMode.value ?: DefaultUpdateMode
+                            updateMode = viewModel.updateMode.value ?: DefaultUpdateMode,
+                            customTitle = if (customTitle != title) customTitle else null
                     ))
 
                     launch {

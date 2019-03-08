@@ -18,8 +18,8 @@ object Favicons {
     private val cache: LruCache<String, Bitmap>
 
     private val repository = FeedsRepository(
-            arrayOf(FeedsRepository.Column.FAVICON_CONTENT),
-            object : DataMapper<Feed> {
+            arrayOf(FeedsRepository.FAVICON_CONTENT),
+            object : DataMapper<Feed>() {
                 override fun map(cursor: Cursor) = Feed(cursor.getBlob(0))
             }
     )
