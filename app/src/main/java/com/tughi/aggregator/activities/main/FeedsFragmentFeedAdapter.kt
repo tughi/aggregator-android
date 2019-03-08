@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import com.tughi.aggregator.R
 
-internal class FeedsFragmentFeedAdapter(private val listener: FeedsFragmentFeedAdapterListener) : ListAdapter<FeedsFragmentFeed, FeedsFragmentFeedViewHolder>(DiffCallback()) {
+internal class FeedsFragmentFeedAdapter(private val listener: FeedsFragmentFeedAdapterListener) : ListAdapter<FeedsFragmentViewModel.Feed, FeedsFragmentFeedViewHolder>(DiffCallback()) {
 
     override fun getItemViewType(position: Int): Int = when (getItem(position).expanded) {
         true -> R.layout.feeds_item_expanded
@@ -40,13 +40,13 @@ internal class FeedsFragmentFeedAdapter(private val listener: FeedsFragmentFeedA
         holder.onBind(getItem(position))
     }
 
-    private class DiffCallback : DiffUtil.ItemCallback<FeedsFragmentFeed>() {
+    private class DiffCallback : DiffUtil.ItemCallback<FeedsFragmentViewModel.Feed>() {
 
-        override fun areItemsTheSame(oldFeed: FeedsFragmentFeed, newFeed: FeedsFragmentFeed): Boolean {
+        override fun areItemsTheSame(oldFeed: FeedsFragmentViewModel.Feed, newFeed: FeedsFragmentViewModel.Feed): Boolean {
             return oldFeed.id == newFeed.id
         }
 
-        override fun areContentsTheSame(oldFeed: FeedsFragmentFeed, newFeed: FeedsFragmentFeed): Boolean {
+        override fun areContentsTheSame(oldFeed: FeedsFragmentViewModel.Feed, newFeed: FeedsFragmentViewModel.Feed): Boolean {
             return oldFeed == newFeed
         }
 

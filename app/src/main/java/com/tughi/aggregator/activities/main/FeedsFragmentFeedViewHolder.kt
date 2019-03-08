@@ -6,8 +6,8 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.tughi.aggregator.activities.feedsettings.FeedSettingsActivity
 import com.tughi.aggregator.R
+import com.tughi.aggregator.activities.feedsettings.FeedSettingsActivity
 import com.tughi.aggregator.services.AutoUpdateScheduler
 import com.tughi.aggregator.utilities.Favicons
 
@@ -18,9 +18,9 @@ internal sealed class FeedsFragmentFeedViewHolder(itemView: View) : RecyclerView
     val count: TextView = itemView.findViewById(R.id.count)
     val toggle: View = itemView.findViewById(R.id.toggle)
 
-    lateinit var feed: FeedsFragmentFeed
+    lateinit var feed: FeedsFragmentViewModel.Feed
 
-    open fun onBind(feed: FeedsFragmentFeed) {
+    open fun onBind(feed: FeedsFragmentViewModel.Feed) {
         this.feed = feed
 
         title.text = feed.title
@@ -45,7 +45,7 @@ internal class FeedsFragmentCollapsedFeedViewHolder(itemView: View) : FeedsFragm
 
     val toggleImageView: ImageView = itemView.findViewById(R.id.toggle)
 
-    override fun onBind(feed: FeedsFragmentFeed) {
+    override fun onBind(feed: FeedsFragmentViewModel.Feed) {
         super.onBind(feed)
 
         if (feed.nextUpdateRetry > 2) {
@@ -75,7 +75,7 @@ internal class FeedsFragmentExpandedFeedViewHolder(itemView: View) : FeedsFragme
         }
     }
 
-    override fun onBind(feed: FeedsFragmentFeed) {
+    override fun onBind(feed: FeedsFragmentViewModel.Feed) {
         super.onBind(feed)
 
         val context = itemView.context

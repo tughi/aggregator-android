@@ -1,7 +1,6 @@
 package com.tughi.aggregator
 
 import android.content.Context
-import com.tughi.aggregator.activities.main.MainDao
 import com.tughi.aggregator.activities.reader.ReaderDao
 import com.tughi.aggregator.data.EntryDao
 import com.tughi.aggregator.data.FeedDao
@@ -11,7 +10,6 @@ abstract class AppDatabase {
     abstract fun entryDao(): EntryDao
     abstract fun feedDao(): FeedDao
 
-    abstract fun mainDao(): MainDao
     abstract fun readerDao(): ReaderDao
 
     fun beginTransaction() {
@@ -37,10 +35,6 @@ abstract class AppDatabase {
                 }
 
                 override fun feedDao(): FeedDao {
-                    throw UnsupportedOperationException()
-                }
-
-                override fun mainDao(): MainDao {
                     throw UnsupportedOperationException()
                 }
 

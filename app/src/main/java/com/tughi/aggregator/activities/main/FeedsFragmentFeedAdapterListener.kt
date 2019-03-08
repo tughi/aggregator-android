@@ -2,10 +2,10 @@ package com.tughi.aggregator.activities.main
 
 internal interface FeedsFragmentFeedAdapterListener {
 
-    fun onFeedClicked(feed: FeedsFragmentFeed)
+    fun onFeedClicked(feed: FeedsFragmentViewModel.Feed)
 
-    fun onToggleFeed(feed: FeedsFragmentFeed)
+    fun onToggleFeed(feed: FeedsFragmentViewModel.Feed)
 
-    fun onUpdateFeed(feed: FeedsFragmentFeed)
+    fun onUpdateFeed(feed: FeedsFragmentViewModel.Feed)
 
 }

@@ -77,7 +77,7 @@ class FeedListFragment : Fragment(), FeedsFragmentFeedAdapterListener {
         return fragmentView
     }
 
-    override fun onFeedClicked(feed: FeedsFragmentFeed) {
+    override fun onFeedClicked(feed: FeedsFragmentViewModel.Feed) {
         fragmentManager!!.beginTransaction()
                 .setCustomAnimations(R.anim.slide_in, 0, 0, R.anim.fade_out)
                 .add(id, FeedEntriesFragment.newInstance(feedId = feed.id), TAG)
@@ -85,11 +85,11 @@ class FeedListFragment : Fragment(), FeedsFragmentFeedAdapterListener {
                 .commit()
     }
 
-    override fun onToggleFeed(feed: FeedsFragmentFeed) {
+    override fun onToggleFeed(feed: FeedsFragmentViewModel.Feed) {
         viewModel.toggleFeed(feed)
     }
 
-    override fun onUpdateFeed(feed: FeedsFragmentFeed) {
+    override fun onUpdateFeed(feed: FeedsFragmentViewModel.Feed) {
         GlobalScope.launch(Dispatchers.IO) {
             FeedUpdater.updateFeed(feed.id)
 
