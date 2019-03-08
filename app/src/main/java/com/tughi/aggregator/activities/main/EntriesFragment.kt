@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.reader.ReaderActivity
-import com.tughi.aggregator.data.EntriesRepository
+import com.tughi.aggregator.data.Entries
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -28,7 +28,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val fragmentView = inflater.inflate(R.layout.entry_list_fragment, container, false)
 
-        val viewModelFactory = EntriesFragmentViewModel.Factory(initialEntriesQuery)
+        val viewModelFactory = EntriesFragmentViewModel.Factory(initialQueryCriteria)
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(EntriesFragmentViewModel::class.java)
 
         val entriesRecyclerView = fragmentView.findViewById<RecyclerView>(R.id.entries)
@@ -62,18 +62,18 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
                     viewModel.changeShowRead(!it.isChecked)
                 }
                 R.id.sort_by_date_asc -> {
-                    viewModel.changeSortOrder(EntriesRepository.SortOrder.ByDateAscending)
+                    viewModel.changeSortOrder(Entries.SortOrder.ByDateAscending)
                 }
                 R.id.sort_by_date_desc -> {
-                    viewModel.changeSortOrder(EntriesRepository.SortOrder.ByDateDescending)
+                    viewModel.changeSortOrder(Entries.SortOrder.ByDateDescending)
                 }
                 R.id.sort_by_title -> {
-                    viewModel.changeSortOrder(EntriesRepository.SortOrder.ByTitle)
+                    viewModel.changeSortOrder(Entries.SortOrder.ByTitle)
                 }
                 R.id.mark_all_read -> {
                     viewModel.queryCriteria.value?.let { queryCriteria ->
                         GlobalScope.launch {
-                            EntriesRepository.markEntriesRead(queryCriteria)
+                            Entries.markRead(queryCriteria)
                         }
                     }
                 }
@@ -84,9 +84,9 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
         viewModel.queryCriteria.observe(this, Observer { entriesQuery ->
             toolbar.menu?.let {
                 val sortMenuItemId = when (entriesQuery.sortOrder) {
-                    EntriesRepository.SortOrder.ByDateAscending -> R.id.sort_by_date_asc
-                    EntriesRepository.SortOrder.ByDateDescending -> R.id.sort_by_date_desc
-                    EntriesRepository.SortOrder.ByTitle -> R.id.sort_by_title
+                    Entries.SortOrder.ByDateAscending -> R.id.sort_by_date_asc
+                    Entries.SortOrder.ByDateDescending -> R.id.sort_by_date_desc
+                    Entries.SortOrder.ByTitle -> R.id.sort_by_title
                 }
                 it.findItem(sortMenuItemId).isChecked = true
 
@@ -97,7 +97,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
         return fragmentView
     }
 
-    internal abstract val initialEntriesQuery: EntriesRepository.QueryCriteria
+    internal abstract val initialQueryCriteria: Entries.QueryCriteria
 
     abstract fun onNavigationClick()
 
@@ -137,9 +137,9 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
                 val entry = viewHolder.entry
                 GlobalScope.launch {
                     if (entry.readTime == 0L || entry.pinnedTime != 0L) {
-                        EntriesRepository.markEntryRead(entry.id)
+                        Entries.markRead(entry.id)
                     } else {
-                        EntriesRepository.markEntryPinned(entry.id)
+                        Entries.markPinned(entry.id)
                     }
                 }
             }

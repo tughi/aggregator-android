@@ -2,7 +2,7 @@ package com.tughi.aggregator.data
 
 import androidx.sqlite.db.SupportSQLiteQueryBuilder
 
-class FeedsRepository<T>(private val columns: Array<String>, private val mapper: DataMapper<T>) {
+class Feeds<T>(columns: Array<String>, mapper: Repository.DataMapper<T>) : Repository<T>(columns, mapper) {
 
     companion object {
         internal const val TABLE = "feeds"
@@ -40,7 +40,7 @@ class FeedsRepository<T>(private val columns: Array<String>, private val mapper:
                 NEXT_UPDATE_RETRY to "f.$NEXT_UPDATE_RETRY",
                 HTTP_ETAG to "f.$HTTP_ETAG",
                 HTTP_LAST_MODIFIED to "f.$HTTP_LAST_MODIFIED",
-                UNREAD_ENTRY_COUNT to "(SELECT COUNT(1) FROM entries e WHERE f.$ID = e.feed_id AND e.read_time = 0)"
+                UNREAD_ENTRY_COUNT to "(SELECT COUNT(1) FROM ${Entries.TABLE} e WHERE f.$ID = e.${Entries.FEED_ID} AND e.${Entries.READ_TIME} = 0)"
         )
     }
 

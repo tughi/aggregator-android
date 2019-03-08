@@ -6,8 +6,8 @@ import android.graphics.BitmapFactory
 import android.widget.ImageView
 import androidx.collection.LruCache
 import com.tughi.aggregator.R
-import com.tughi.aggregator.data.DataMapper
-import com.tughi.aggregator.data.FeedsRepository
+import com.tughi.aggregator.data.Feeds
+import com.tughi.aggregator.data.Repository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -17,9 +17,9 @@ object Favicons {
 
     private val cache: LruCache<String, Bitmap>
 
-    private val repository = FeedsRepository(
-            arrayOf(FeedsRepository.FAVICON_CONTENT),
-            object : DataMapper<Feed>() {
+    private val repository = Feeds(
+            arrayOf(Feeds.FAVICON_CONTENT),
+            object : Repository.DataMapper<Feed>() {
                 override fun map(cursor: Cursor) = Feed(cursor.getBlob(0))
             }
     )

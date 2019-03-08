@@ -9,40 +9,40 @@ import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.App
-import com.tughi.aggregator.data.DataMapper
-import com.tughi.aggregator.data.EntriesRepository
+import com.tughi.aggregator.data.Entries
+import com.tughi.aggregator.data.Repository
 import com.tughi.aggregator.preferences.EntryListSettings
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-class EntriesFragmentViewModel(initialQueryCriteria: EntriesRepository.QueryCriteria) : ViewModel() {
+class EntriesFragmentViewModel(initialQueryCriteria: Entries.QueryCriteria) : ViewModel() {
 
     private val sessionTime = System.currentTimeMillis()
 
-    val queryCriteria = MutableLiveData<EntriesRepository.QueryCriteria>().apply {
+    val queryCriteria = MutableLiveData<Entries.QueryCriteria>().apply {
         value = when (initialQueryCriteria) {
-            is EntriesRepository.QueryCriteria.FeedEntries -> initialQueryCriteria.copy(sessionTime = sessionTime)
-            is EntriesRepository.QueryCriteria.MyFeedEntries -> initialQueryCriteria.copy(sessionTime = sessionTime)
+            is Entries.QueryCriteria.FeedEntries -> initialQueryCriteria.copy(sessionTime = sessionTime)
+            is Entries.QueryCriteria.MyFeedEntries -> initialQueryCriteria.copy(sessionTime = sessionTime)
         }
     }
 
-    private val repository = EntriesRepository(
+    private val repository = Entries(
             arrayOf(
-                    EntriesRepository.ID,
-                    EntriesRepository.FEED_ID,
-                    EntriesRepository.AUTHOR,
-                    EntriesRepository.FEED_FAVICON_URL,
-                    EntriesRepository.FEED_TITLE,
-                    EntriesRepository.PUBLISH_TIME,
-                    EntriesRepository.LINK,
-                    EntriesRepository.PINNED_TIME,
-                    EntriesRepository.READ_TIME,
-                    EntriesRepository.TITLE,
-                    EntriesRepository.TYPE
+                    Entries.ID,
+                    Entries.FEED_ID,
+                    Entries.AUTHOR,
+                    Entries.FEED_FAVICON_URL,
+                    Entries.FEED_TITLE,
+                    Entries.PUBLISH_TIME,
+                    Entries.LINK,
+                    Entries.PINNED_TIME,
+                    Entries.READ_TIME,
+                    Entries.TITLE,
+                    Entries.TYPE
             ),
-            object : DataMapper<Entry>() {
+            object : Repository.DataMapper<Entry>() {
                 private val context = App.instance
 
                 override fun map(cursor: Cursor) = Entry(
@@ -129,14 +129,14 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesRepository.QueryCrit
     val entries: LiveData<List<Entry>>
         get() = transformedEntries
 
-    fun changeSortOrder(sortOrder: EntriesRepository.SortOrder) {
+    fun changeSortOrder(sortOrder: Entries.SortOrder) {
         EntryListSettings.entriesSortOrder = sortOrder
 
         transformedEntries.value = null
         queryCriteria.value?.let { value ->
             queryCriteria.value = when (value) {
-                is EntriesRepository.QueryCriteria.FeedEntries -> value.copy(sortOrder = sortOrder)
-                is EntriesRepository.QueryCriteria.MyFeedEntries -> value.copy(sortOrder = sortOrder)
+                is Entries.QueryCriteria.FeedEntries -> value.copy(sortOrder = sortOrder)
+                is Entries.QueryCriteria.MyFeedEntries -> value.copy(sortOrder = sortOrder)
             }
         }
     }
@@ -145,8 +145,8 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesRepository.QueryCrit
         transformedEntries.value = null
         queryCriteria.value?.let { value ->
             queryCriteria.value = when (value) {
-                is EntriesRepository.QueryCriteria.FeedEntries -> value.copy(sessionTime = if (showRead) 0 else sessionTime)
-                is EntriesRepository.QueryCriteria.MyFeedEntries -> value.copy(sessionTime = if (showRead) 0 else sessionTime)
+                is Entries.QueryCriteria.FeedEntries -> value.copy(sessionTime = if (showRead) 0 else sessionTime)
+                is Entries.QueryCriteria.MyFeedEntries -> value.copy(sessionTime = if (showRead) 0 else sessionTime)
             }
         }
     }
@@ -166,7 +166,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesRepository.QueryCrit
             val type: EntriesFragmentEntryType
     )
 
-    class Factory(private val initialQueryCriteria: EntriesRepository.QueryCriteria) : ViewModelProvider.Factory {
+    class Factory(private val initialQueryCriteria: Entries.QueryCriteria) : ViewModelProvider.Factory {
 
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(EntriesFragmentViewModel::class.java)) {

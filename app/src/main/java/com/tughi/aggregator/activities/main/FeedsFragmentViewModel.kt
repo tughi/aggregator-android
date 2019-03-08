@@ -6,27 +6,27 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
-import com.tughi.aggregator.data.DataMapper
-import com.tughi.aggregator.data.FeedsRepository
+import com.tughi.aggregator.data.Feeds
+import com.tughi.aggregator.data.Repository
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.FeedUpdater
 import java.io.Serializable
 
 class FeedsFragmentViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = FeedsRepository(
+    private val repository = Feeds(
             arrayOf(
-                    FeedsRepository.ID,
-                    FeedsRepository.TITLE,
-                    FeedsRepository.FAVICON_URL,
-                    FeedsRepository.LAST_UPDATE_TIME,
-                    FeedsRepository.LAST_UPDATE_ERROR,
-                    FeedsRepository.NEXT_UPDATE_TIME,
-                    FeedsRepository.NEXT_UPDATE_RETRY,
-                    FeedsRepository.UPDATE_MODE,
-                    FeedsRepository.UNREAD_ENTRY_COUNT
+                    Feeds.ID,
+                    Feeds.TITLE,
+                    Feeds.FAVICON_URL,
+                    Feeds.LAST_UPDATE_TIME,
+                    Feeds.LAST_UPDATE_ERROR,
+                    Feeds.NEXT_UPDATE_TIME,
+                    Feeds.NEXT_UPDATE_RETRY,
+                    Feeds.UPDATE_MODE,
+                    Feeds.UNREAD_ENTRY_COUNT
             ),
-            object : DataMapper<Feed>() {
+            object : Repository.DataMapper<Feed>() {
                 override fun map(cursor: Cursor) = Feed(
                         id = cursor.getLong(0),
                         title = cursor.getString(1),

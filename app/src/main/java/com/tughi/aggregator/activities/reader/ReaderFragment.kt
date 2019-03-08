@@ -15,7 +15,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.tughi.aggregator.App
 import com.tughi.aggregator.R
-import com.tughi.aggregator.data.EntriesRepository
+import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.utilities.Language
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -131,14 +131,14 @@ class ReaderFragment : Fragment() {
             R.id.mark_done -> {
                 loadedEntry?.let {
                     GlobalScope.launch {
-                        EntriesRepository.markEntryRead(it.id)
+                        Entries.markRead(it.id)
                     }
                 }
             }
             R.id.mark_pinned -> {
                 loadedEntry?.let {
                     GlobalScope.launch {
-                        EntriesRepository.markEntryPinned(it.id)
+                        Entries.markPinned(it.id)
                     }
                 }
             }

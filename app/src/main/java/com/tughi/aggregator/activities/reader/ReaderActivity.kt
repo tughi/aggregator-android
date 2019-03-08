@@ -11,7 +11,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.viewpager.widget.ViewPager
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
-import com.tughi.aggregator.data.EntriesRepository
+import com.tughi.aggregator.data.Entries
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -44,7 +44,7 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
 
         adapter = ReaderAdapter()
 
-        val queryCriteria = intent.getSerializableExtra(EXTRA_ENTRIES_QUERY_CRITERIA) as EntriesRepository.QueryCriteria
+        val queryCriteria = intent.getSerializableExtra(EXTRA_ENTRIES_QUERY_CRITERIA) as Entries.QueryCriteria
 
         val viewModelFactory = ReaderActivityViewModel.Factory(queryCriteria)
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(ReaderActivityViewModel::class.java)
@@ -114,7 +114,7 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
 
             if (entry.readTime == 0L && entry.pinnedTime == 0L) {
                 GlobalScope.launch {
-                    EntriesRepository.markEntryRead(entry.id)
+                    Entries.markRead(entry.id)
                 }
             }
         }

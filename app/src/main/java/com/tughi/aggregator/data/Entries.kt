@@ -6,7 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.sqlite.db.SupportSQLiteQueryBuilder
 import java.io.Serializable
 
-class EntriesRepository<T>(private val columns: Array<String>, private val mapper: DataMapper<T>) {
+class Entries<T>(columns: Array<String>, mapper: DataMapper<T>) : Repository<T>(columns, mapper) {
 
     companion object {
         internal const val TABLE = "entries"
@@ -27,8 +27,8 @@ class EntriesRepository<T>(private val columns: Array<String>, private val mappe
         internal val projectionMap = mapOf(
                 ID to "e.$ID",
                 FEED_ID to "e.$FEED_ID",
-                FEED_TITLE to "COALESCE(f.${FeedsRepository.CUSTOM_TITLE}, f.${FeedsRepository.TITLE})",
-                FEED_FAVICON_URL to "f.${FeedsRepository.FAVICON_URL}",
+                FEED_TITLE to "COALESCE(f.${Feeds.CUSTOM_TITLE}, f.${Feeds.TITLE})",
+                FEED_FAVICON_URL to "f.${Feeds.FAVICON_URL}",
                 TITLE to "e.$TITLE",
                 LINK to "e.$LINK",
                 AUTHOR to "e.$AUTHOR",
@@ -40,11 +40,11 @@ class EntriesRepository<T>(private val columns: Array<String>, private val mappe
 
         private fun update(entryId: Long, values: ContentValues): Int = Storage.update(TABLE, values, "$ID = ?", arrayOf(entryId), entryId)
 
-        fun markEntryRead(entryId: Long): Int = update(entryId, contentValuesOf(READ_TIME to System.currentTimeMillis(), PINNED_TIME to 0))
+        fun markRead(entryId: Long): Int = update(entryId, contentValuesOf(READ_TIME to System.currentTimeMillis(), PINNED_TIME to 0))
 
-        fun markEntryPinned(entryId: Long): Int = update(entryId, contentValuesOf(READ_TIME to 0, PINNED_TIME to System.currentTimeMillis()))
+        fun markPinned(entryId: Long): Int = update(entryId, contentValuesOf(READ_TIME to 0, PINNED_TIME to System.currentTimeMillis()))
 
-        fun markEntriesRead(criteria: QueryCriteria): Int {
+        fun markRead(criteria: QueryCriteria): Int {
             val selection = when (criteria) {
                 is QueryCriteria.FeedEntries -> "$FEED_ID = ? AND $PINNED_TIME = 0 AND $READ_TIME = 0"
                 is QueryCriteria.MyFeedEntries -> "$PINNED_TIME = 0 AND $READ_TIME = 0"
@@ -87,7 +87,7 @@ class EntriesRepository<T>(private val columns: Array<String>, private val mappe
             is SortOrder.ByTitle -> "e.$TITLE ASC, COALESCE(e.$PUBLISH_TIME, e.$INSERT_TIME) ASC"
         }
 
-        val query = SupportSQLiteQueryBuilder.builder("$TABLE e LEFT JOIN ${FeedsRepository.TABLE} f ON e.$FEED_ID = f.${FeedsRepository.ID}")
+        val query = SupportSQLiteQueryBuilder.builder("$TABLE e LEFT JOIN ${Feeds.TABLE} f ON e.$FEED_ID = f.${Feeds.ID}")
                 .columns(Array(columns.size) { index -> "${projectionMap[columns[index]]} AS ${columns[index]}" })
                 .selection(selection, selectionArgs)
                 .orderBy(orderBy)
@@ -108,7 +108,7 @@ class EntriesRepository<T>(private val columns: Array<String>, private val mappe
         return emptyList()
     }
 
-    fun liveQuery(criteria: QueryCriteria): LiveData<List<T>> = Storage.createLiveData("entries") {
+    fun liveQuery(criteria: QueryCriteria): LiveData<List<T>> = Storage.createLiveData(TABLE) {
         query(criteria)
     }
 
