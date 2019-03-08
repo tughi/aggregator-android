@@ -24,7 +24,7 @@ class FeedsRepository<T>(private val columns: Array<String>, private val mapper:
         const val HTTP_LAST_MODIFIED = "http_last_modified"
         const val UNREAD_ENTRY_COUNT = "unread_entry_count"
 
-        internal val projections = mapOf(
+        internal val projectionMap = mapOf(
                 ID to "f.$ID",
                 URL to "f.$URL",
                 TITLE to "COALESCE(f.$CUSTOM_TITLE, f.$TITLE)",
@@ -48,7 +48,7 @@ class FeedsRepository<T>(private val columns: Array<String>, private val mapper:
 
     fun query(id: Long): T? {
         val query = SupportSQLiteQueryBuilder.builder("$TABLE f")
-                .columns(Array(columns.size) { index -> "${projections[columns[index]]} AS ${columns[index]}" })
+                .columns(Array(columns.size) { index -> "${projectionMap[columns[index]]} AS ${columns[index]}" })
                 .selection("f.$ID = ?", arrayOf(id))
                 .create()
 
@@ -63,7 +63,7 @@ class FeedsRepository<T>(private val columns: Array<String>, private val mapper:
 
     fun query(): List<T> {
         val query = SupportSQLiteQueryBuilder.builder("$TABLE f").run {
-            columns(Array(columns.size) { index -> "${projections[columns[index]]} AS ${columns[index]}" })
+            columns(Array(columns.size) { index -> "${projectionMap[columns[index]]} AS ${columns[index]}" })
             if (columns.contains(TITLE)) {
                 orderBy(TITLE)
             }

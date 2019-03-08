@@ -6,30 +6,66 @@ import androidx.lifecycle.LiveData
 import androidx.sqlite.db.SupportSQLiteQueryBuilder
 import java.io.Serializable
 
-class EntriesRepository<T>(private val columns: Array<Column>, private val mapper: DataMapper<T>) {
+class EntriesRepository<T>(private val columns: Array<String>, private val mapper: DataMapper<T>) {
 
-    enum class Column(internal val column: String, internal val projection: String) {
-        ID("id", "e.id"),
-        FEED_ID("feed_id", "e.feed_id"),
-        FEED_TITLE("feed_title", "COALESCE(f.custom_title, f.title)"),
-        FEED_FAVICON_URL("feed_favicon_url", "f.favicon_url"),
-        TITLE("title", "e.title"),
-        LINK("link", "e.link"),
-        AUTHOR("author", "e.author"),
-        PUBLISH_TIME("publish_time", "COALESCE(e.publish_time, e.insert_time)"),
-        READ_TIME("read_time", "e.read_time"),
-        PINNED_TIME("pinned_time", "e.pinned_time"),
-        TYPE("type", "CASE WHEN e.read_time > 0 AND e.pinned_time = 0 THEN 'READ' ELSE 'UNREAD' END")
+    companion object {
+        internal const val TABLE = "entries"
+
+        const val ID = "id"
+        const val FEED_ID = "feed_id"
+        const val FEED_TITLE = "feed_title"
+        const val FEED_FAVICON_URL = "feed_favicon_url"
+        const val TITLE = "title"
+        const val LINK = "link"
+        const val AUTHOR = "author"
+        const val PUBLISH_TIME = "publish_time"
+        const val INSERT_TIME = "insert_time"
+        const val READ_TIME = "read_time"
+        const val PINNED_TIME = "pinned_time"
+        const val TYPE = "type"
+
+        internal val projectionMap = mapOf(
+                ID to "e.$ID",
+                FEED_ID to "e.$FEED_ID",
+                FEED_TITLE to "COALESCE(f.${FeedsRepository.CUSTOM_TITLE}, f.${FeedsRepository.TITLE})",
+                FEED_FAVICON_URL to "f.${FeedsRepository.FAVICON_URL}",
+                TITLE to "e.$TITLE",
+                LINK to "e.$LINK",
+                AUTHOR to "e.$AUTHOR",
+                PUBLISH_TIME to "COALESCE(e.$PUBLISH_TIME, e.$INSERT_TIME)",
+                READ_TIME to "e.$READ_TIME",
+                PINNED_TIME to "e.$PINNED_TIME",
+                TYPE to "CASE WHEN e.$READ_TIME > 0 AND e.$PINNED_TIME = 0 THEN 'READ' ELSE 'UNREAD' END"
+        )
+
+        private fun update(entryId: Long, values: ContentValues): Int = Storage.update(TABLE, values, "$ID = ?", arrayOf(entryId), entryId)
+
+        fun markEntryRead(entryId: Long): Int = update(entryId, contentValuesOf(READ_TIME to System.currentTimeMillis(), PINNED_TIME to 0))
+
+        fun markEntryPinned(entryId: Long): Int = update(entryId, contentValuesOf(READ_TIME to 0, PINNED_TIME to System.currentTimeMillis()))
+
+        fun markEntriesRead(criteria: QueryCriteria): Int {
+            val selection = when (criteria) {
+                is QueryCriteria.FeedEntries -> "$FEED_ID = ? AND $PINNED_TIME = 0 AND $READ_TIME = 0"
+                is QueryCriteria.MyFeedEntries -> "$PINNED_TIME = 0 AND $READ_TIME = 0"
+            }
+            val selectionArgs: Array<Any>? = when (criteria) {
+                is QueryCriteria.FeedEntries -> arrayOf(criteria.feedId)
+                is QueryCriteria.MyFeedEntries -> null
+            }
+            return Storage.update(TABLE, contentValuesOf(READ_TIME to System.currentTimeMillis()), selection, selectionArgs)
+        }
+
     }
 
     fun query(criteria: QueryCriteria): List<T> {
         val selection = when {
             criteria.sessionTime != 0L -> when (criteria) {
-                is QueryCriteria.FeedEntries -> "e.feed_id = ? AND (e.read_time = 0 OR e.read_time > ?)"
-                is QueryCriteria.MyFeedEntries -> "e.read_time = 0 OR e.read_time > ?"
+                is QueryCriteria.FeedEntries -> "e.$FEED_ID = ? AND (e.$READ_TIME = 0 OR e.$READ_TIME > ?)"
+                is QueryCriteria.MyFeedEntries -> "e.$READ_TIME = 0 OR e.$READ_TIME > ?"
             }
             else -> when (criteria) {
-                is QueryCriteria.FeedEntries -> "e.feed_id = ?"
+                is QueryCriteria.FeedEntries -> "e.$FEED_ID = ?"
                 is QueryCriteria.MyFeedEntries -> null
             }
         }
@@ -46,13 +82,13 @@ class EntriesRepository<T>(private val columns: Array<Column>, private val mappe
         }
 
         val orderBy = when (criteria.sortOrder) {
-            is SortOrder.ByDateAscending -> "COALESCE(e.publish_time, e.insert_time) ASC"
-            is SortOrder.ByDateDescending -> "COALESCE(e.publish_time, e.insert_time) DESC"
-            is SortOrder.ByTitle -> "e.title ASC, COALESCE(e.publish_time, e.insert_time) ASC"
+            is SortOrder.ByDateAscending -> "COALESCE(e.$PUBLISH_TIME, e.$INSERT_TIME) ASC"
+            is SortOrder.ByDateDescending -> "COALESCE(e.$PUBLISH_TIME, e.$INSERT_TIME) DESC"
+            is SortOrder.ByTitle -> "e.$TITLE ASC, COALESCE(e.$PUBLISH_TIME, e.$INSERT_TIME) ASC"
         }
 
-        val query = SupportSQLiteQueryBuilder.builder("entries e LEFT JOIN feeds f ON e.feed_id = f.id")
-                .columns(Array(columns.size) { index -> "${columns[index].projection} AS ${columns[index].column}" })
+        val query = SupportSQLiteQueryBuilder.builder("$TABLE e LEFT JOIN ${FeedsRepository.TABLE} f ON e.$FEED_ID = f.${FeedsRepository.ID}")
+                .columns(Array(columns.size) { index -> "${projectionMap[columns[index]]} AS ${columns[index]}" })
                 .selection(selection, selectionArgs)
                 .orderBy(orderBy)
                 .create()
@@ -74,28 +110,6 @@ class EntriesRepository<T>(private val columns: Array<Column>, private val mappe
 
     fun liveQuery(criteria: QueryCriteria): LiveData<List<T>> = Storage.createLiveData("entries") {
         query(criteria)
-    }
-
-    companion object {
-
-        private fun update(entryId: Long, values: ContentValues): Int = Storage.update("entries", values, "id = ?", arrayOf(entryId), entryId)
-
-        fun markEntryRead(entryId: Long): Int = update(entryId, contentValuesOf("read_time" to System.currentTimeMillis(), "pinned_time" to 0))
-
-        fun markEntryPinned(entryId: Long): Int = update(entryId, contentValuesOf("read_time" to 0, "pinned_time" to System.currentTimeMillis()))
-
-        fun markEntriesRead(criteria: QueryCriteria): Int {
-            val selection = when (criteria) {
-                is QueryCriteria.FeedEntries -> "feed_id = ? AND pinned_time = 0 AND read_time = 0"
-                is QueryCriteria.MyFeedEntries -> "pinned_time = 0 AND read_time = 0"
-            }
-            val selectionArgs: Array<Any>? = when (criteria) {
-                is QueryCriteria.FeedEntries -> arrayOf(criteria.feedId)
-                is QueryCriteria.MyFeedEntries -> null
-            }
-            return Storage.update("entries", contentValuesOf("read_time" to System.currentTimeMillis()), selection, selectionArgs)
-        }
-
     }
 
     sealed class QueryCriteria : Serializable {

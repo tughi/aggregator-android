@@ -30,17 +30,17 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesRepository.QueryCrit
 
     private val repository = EntriesRepository(
             arrayOf(
-                    EntriesRepository.Column.ID,
-                    EntriesRepository.Column.FEED_ID,
-                    EntriesRepository.Column.AUTHOR,
-                    EntriesRepository.Column.FEED_FAVICON_URL,
-                    EntriesRepository.Column.FEED_TITLE,
-                    EntriesRepository.Column.PUBLISH_TIME,
-                    EntriesRepository.Column.LINK,
-                    EntriesRepository.Column.PINNED_TIME,
-                    EntriesRepository.Column.READ_TIME,
-                    EntriesRepository.Column.TITLE,
-                    EntriesRepository.Column.TYPE
+                    EntriesRepository.ID,
+                    EntriesRepository.FEED_ID,
+                    EntriesRepository.AUTHOR,
+                    EntriesRepository.FEED_FAVICON_URL,
+                    EntriesRepository.FEED_TITLE,
+                    EntriesRepository.PUBLISH_TIME,
+                    EntriesRepository.LINK,
+                    EntriesRepository.PINNED_TIME,
+                    EntriesRepository.READ_TIME,
+                    EntriesRepository.TITLE,
+                    EntriesRepository.TYPE
             ),
             object : DataMapper<Entry>() {
                 private val context = App.instance
