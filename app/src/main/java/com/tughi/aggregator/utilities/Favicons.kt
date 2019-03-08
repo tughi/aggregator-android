@@ -1,11 +1,13 @@
 package com.tughi.aggregator.utilities
 
+import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.widget.ImageView
 import androidx.collection.LruCache
-import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.R
+import com.tughi.aggregator.data.DataMapper
+import com.tughi.aggregator.data.FeedsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -14,6 +16,13 @@ import java.lang.ref.WeakReference
 object Favicons {
 
     private val cache: LruCache<String, Bitmap>
+
+    private val repository = FeedsRepository(
+            arrayOf(FeedsRepository.Column.FAVICON_CONTENT),
+            object : DataMapper<Feed> {
+                override fun map(cursor: Cursor) = Feed(cursor.getBlob(0))
+            }
+    )
 
     init {
         val maxMemory = Math.min(Runtime.getRuntime().maxMemory(), Integer.MAX_VALUE.toLong()).toInt()
@@ -38,22 +47,23 @@ object Favicons {
                 target.setImageResource(R.drawable.favicon_placeholder)
 
                 if (!faviconUrl.isEmpty()) {
-                    val placeholder = target.drawable
                     val targetReference = WeakReference(target)
 
                     GlobalScope.launch {
-                        val feedDao = AppDatabase.instance.feedDao()
-                        val feed = feedDao.queryFeed(feedId)
-                        val bitmap = if (feed.faviconContent != null) BitmapFactory.decodeByteArray(feed.faviconContent, 0, feed.faviconContent.size) else null
+                        val feed = repository.query(feedId) ?: return@launch
+                        val decodedBitmap = when {
+                            feed.faviconContent != null -> BitmapFactory.decodeByteArray(feed.faviconContent, 0, feed.faviconContent.size)
+                            else -> null
+                        }
 
-                        launch(Dispatchers.Main) {
-                            if (bitmap != null) {
+                        if (decodedBitmap != null) {
+                            launch(Dispatchers.Main) {
                                 if (cache.get(faviconUrl) == null) {
-                                    cache.put(faviconUrl, bitmap)
+                                    cache.put(faviconUrl, decodedBitmap)
                                 }
-                                val target = targetReference.get()
-                                if (target != null && target.drawable == placeholder) {
-                                    target.setImageBitmap(bitmap)
+
+                                targetReference.get()?.run {
+                                    setImageBitmap(decodedBitmap)
                                 }
                             }
                         }
@@ -62,5 +72,7 @@ object Favicons {
             }
         }
     }
+
+    class Feed(val faviconContent: ByteArray?)
 
 }

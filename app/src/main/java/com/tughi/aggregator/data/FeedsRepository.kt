@@ -8,12 +8,28 @@ class FeedsRepository<T>(private val columns: Array<Column>, private val mapper:
         ID("id", "f.id"),
         TITLE("title", "COALESCE(f.custom_title, f.title)"),
         FAVICON_URL("favicon_url", "f.favicon_url"),
+        FAVICON_CONTENT("favicon_content", "f.favicon_content"),
         LAST_UPDATE_TIME("last_update_time", "f.last_update_time"),
         LAST_UPDATE_ERROR("last_update_error", "f.last_update_error"),
         NEXT_UPDATE_TIME("next_update_time", "f.next_update_time"),
         NEXT_UPDATE_RETRY("next_update_retry", "f.next_update_retry"),
         UPDATE_MODE("update_mode", "f.update_mode"),
         UNREAD_ENTRY_COUNT("unread_entry_count", "(SELECT COUNT(1) FROM entries e WHERE f.id = e.feed_id AND e.read_time = 0)"),
+    }
+
+    fun query(feedId: Long): T? {
+        val query = SupportSQLiteQueryBuilder.builder("feeds f")
+                .columns(Array(columns.size) { index -> "${columns[index].projection} AS ${columns[index].column}" })
+                .selection("f.id = ?", arrayOf(feedId))
+                .create()
+
+        Storage.query(query).use { cursor ->
+            if (cursor.moveToFirst()) {
+                return mapper.map(cursor)
+            }
+        }
+
+        return null
     }
 
     fun query(): List<T> {
