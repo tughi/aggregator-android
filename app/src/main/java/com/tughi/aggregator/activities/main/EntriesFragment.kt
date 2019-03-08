@@ -90,7 +90,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
                 }
                 it.findItem(sortMenuItemId).isChecked = true
 
-                it.findItem(R.id.show_read_entries).isChecked = entriesQuery.sessionTime == null
+                it.findItem(R.id.show_read_entries).isChecked = entriesQuery.sessionTime == 0L
             }
         })
 
