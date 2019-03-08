@@ -15,14 +15,14 @@ class SubscribeFeedFragmentViewModel : ViewModel() {
             emptyArray(),
             object : DataMapper<Feed>() {
                 override fun map(data: Feed) = ContentValues().apply {
-                    put(FeedsRepository.URL.name, data.url)
-                    put(FeedsRepository.TITLE.name, data.title)
-                    put(FeedsRepository.LINK.name, data.link)
-                    put(FeedsRepository.UPDATE_MODE.name, data.updateMode.serialize())
-                    put(FeedsRepository.CUSTOM_TITLE.name, data.customTitle)
-                    put(FeedsRepository.LAST_UPDATE_TIME.name, 0) // TODO: fix table schema to avoid this
-                    put(FeedsRepository.NEXT_UPDATE_RETRY.name, 0) // TODO: fix table schema to avoid this
-                    put(FeedsRepository.NEXT_UPDATE_TIME.name, 0) // TODO: fix table schema to avoid this
+                    put(FeedsRepository.URL, data.url)
+                    put(FeedsRepository.TITLE, data.title)
+                    put(FeedsRepository.LINK, data.link)
+                    put(FeedsRepository.UPDATE_MODE, data.updateMode.serialize())
+                    put(FeedsRepository.CUSTOM_TITLE, data.customTitle)
+                    put(FeedsRepository.LAST_UPDATE_TIME, 0) // TODO: fix table schema to avoid this
+                    put(FeedsRepository.NEXT_UPDATE_RETRY, 0) // TODO: fix table schema to avoid this
+                    put(FeedsRepository.NEXT_UPDATE_TIME, 0) // TODO: fix table schema to avoid this
                 }
             }
     )
