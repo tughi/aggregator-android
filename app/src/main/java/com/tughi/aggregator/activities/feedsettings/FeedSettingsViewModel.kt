@@ -1,32 +1,58 @@
 package com.tughi.aggregator.activities.feedsettings
 
+import android.database.Cursor
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.tughi.aggregator.AppDatabase
-import com.tughi.aggregator.data.Feed
+import com.tughi.aggregator.data.Feeds
+import com.tughi.aggregator.data.Repository
 import com.tughi.aggregator.data.UpdateMode
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class FeedSettingsViewModel(feedId: Long) : ViewModel() {
 
-    private val liveFeed = MediatorLiveData<Feed>()
-    var newUpdateMode: UpdateMode? = null
+    val repository = Feeds(
+            columns = arrayOf(
+                    Feeds.ID,
+                    Feeds.URL,
+                    Feeds.TITLE,
+                    Feeds.CUSTOM_TITLE,
+                    Feeds.UPDATE_MODE
+            ),
+            mapper = object : Repository.DataMapper<Feed>() {
+                override fun map(cursor: Cursor) = Feed(
+                        cursor.getLong(0),
+                        cursor.getString(1),
+                        cursor.getString(2),
+                        cursor.getString(3),
+                        UpdateMode.deserialize(cursor.getString(4))
+                )
+            }
+    )
 
     val feed: LiveData<Feed>
-        get() = liveFeed
+
+    var newUpdateMode: UpdateMode? = null
 
     init {
-        val databaseFeed = AppDatabase.instance.feedDao().getFeed(feedId)
+        val liveFeed = MutableLiveData<Feed>()
 
-        liveFeed.addSource(databaseFeed) { newFeed ->
-            if (liveFeed.value == null) {
-                liveFeed.value = newFeed
-
-                liveFeed.removeSource(databaseFeed)
-            }
+        GlobalScope.launch {
+            liveFeed.postValue(repository.query(feedId))
         }
+
+        feed = liveFeed
     }
+
+    class Feed(
+            val id: Long,
+            val url: String,
+            val title: String,
+            val customTitle: String?,
+            val updateMode: UpdateMode
+    )
 
     class Factory(private val feedId: Long) : ViewModelProvider.Factory {
 

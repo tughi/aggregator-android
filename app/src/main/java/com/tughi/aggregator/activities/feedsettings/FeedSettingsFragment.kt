@@ -16,11 +16,11 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.updatemode.UpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.startUpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.toString
+import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.AutoUpdateScheduler
 import com.tughi.aggregator.services.FaviconUpdaterService
@@ -78,17 +78,15 @@ class FeedSettingsFragment : Fragment() {
         viewModel.feed.observe(this, Observer { feed ->
             if (feed != null) {
                 urlEditText.setText(feed.url)
-                titleEditText.setText(feed.customTitle ?: feed.title)
+                titleEditText.setText(feed.title)
 
                 updateModeTextView.apply { text = feed.updateMode.toString(context) }
             }
         })
 
         fragmentView.findViewById<View>(R.id.unsubscribe).setOnClickListener {
-            val feed = viewModel.feed.value
-            if (feed != null) {
-                val feedTitle = feed.customTitle ?: feed.title
-                UnsubscribeDialogFragment.show(fragmentManager!!, feedId, feedTitle, true)
+            viewModel.feed.value?.let {
+                UnsubscribeDialogFragment.show(fragmentManager!!, it.id, it.title, true)
             }
         }
 
@@ -120,23 +118,20 @@ class FeedSettingsFragment : Fragment() {
         val title = titleEditText.text.toString().trim()
         val updateMode = viewModel.newUpdateMode
 
-        val feed = viewModel.feed.value
-        if (feed?.id != null) {
+        viewModel.feed.value?.let { feed ->
             GlobalScope.launch {
-                val feedDao = AppDatabase.instance.feedDao()
-
-                feedDao.updateFeed(
-                        id = feed.id,
-                        url = url,
-                        customTitle = if (title.isEmpty()) null else title,
-                        updateMode = updateMode ?: feed.updateMode
+                viewModel.repository.update(
+                        feed.id,
+                        Feeds.URL to url,
+                        Feeds.CUSTOM_TITLE to if (title.isEmpty()) null else title,
+                        Feeds.UPDATE_MODE to (updateMode ?: feed.updateMode).serialize()
                 )
 
                 if (updateMode != null && updateMode != feed.updateMode) {
                     AutoUpdateScheduler.scheduleFeed(feed.id)
                 }
 
-                GlobalScope.launch(Dispatchers.IO) {
+                GlobalScope.launch {
                     backupFeeds()
                 }
 
