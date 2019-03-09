@@ -2,7 +2,7 @@ package com.tughi.aggregator.data
 
 import androidx.sqlite.db.SupportSQLiteQueryBuilder
 
-class Feeds<T>(columns: Array<String>, mapper: Repository.DataMapper<T>) : Repository<T>(columns, mapper) {
+class Feeds<T>(columns: Array<String> = emptyArray(), mapper: Repository.DataMapper<T>) : Repository<T>(columns, mapper) {
 
     companion object {
         internal const val TABLE = "feeds"
@@ -44,7 +44,7 @@ class Feeds<T>(columns: Array<String>, mapper: Repository.DataMapper<T>) : Repos
         )
     }
 
-    fun insert(data: T): Long = Storage.insert(TABLE, mapper.map(data))
+    fun insert(vararg data: Pair<String, Any?>): Long = Storage.insert(TABLE, mapper.map(data))
 
     fun query(id: Long): T? {
         val query = SupportSQLiteQueryBuilder.builder("$TABLE f")

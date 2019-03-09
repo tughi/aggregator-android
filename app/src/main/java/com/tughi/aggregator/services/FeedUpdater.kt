@@ -5,8 +5,9 @@ import android.util.Xml
 import androidx.lifecycle.MutableLiveData
 import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.BuildConfig
-import com.tughi.aggregator.data.Entry
+import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.data.Feed
+import com.tughi.aggregator.data.Repository
 import com.tughi.aggregator.feeds.FeedParser
 import com.tughi.aggregator.utilities.Failure
 import com.tughi.aggregator.utilities.Http
@@ -30,6 +31,18 @@ import kotlin.coroutines.suspendCoroutine
 
 
 object FeedUpdater {
+
+    private val entries = Entries(
+            columns = arrayOf(
+                    Entries.ID,
+                    Entries.TITLE,
+                    Entries.LINK,
+                    Entries.CONTENT,
+                    Entries.AUTHOR,
+                    Entries.PUBLISH_TIME
+            ),
+            mapper = object : Repository.DataMapper<Entry>() {}
+    )
 
     private val database = AppDatabase.instance
 
@@ -224,39 +237,37 @@ object FeedUpdater {
             Log.d(javaClass.name, "saveEntry($feedId, $uid, $title, $link, ...)")
         }
 
-        val entryDao = database.entryDao()
-
         try {
             database.beginTransaction()
 
-            val entry = entryDao.queryEntry(feedId, uid)
+            val entry = entries.query(feedId, uid)
             val publishTime = publishDate?.time
             if (entry == null) {
                 val now = System.currentTimeMillis()
-                val entryId = entryDao.insertEntry(Entry(
-                        feedId = feedId,
-                        uid = uid,
-                        title = title,
-                        link = link,
-                        content = content,
-                        author = author,
-                        insertTime = now,
-                        publishTime = publishTime,
-                        updateTime = now
-                ))
+                val entryId = entries.insert(
+                        Entries.FEED_ID to feedId,
+                        Entries.UID to uid,
+                        Entries.TITLE to title,
+                        Entries.LINK to link,
+                        Entries.CONTENT to content,
+                        Entries.AUTHOR to author,
+                        Entries.PUBLISH_TIME to publishTime,
+                        Entries.INSERT_TIME to now,
+                        Entries.UPDATE_TIME to now
+                )
                 if (entryId == -1L) {
                     // TODO: report that an entry couldn't be inserted
                 }
             } else if (entry.title != title || entry.link != link || entry.content != content || entry.author != author || entry.publishTime != publishTime) {
                 val now = System.currentTimeMillis()
-                val updated = entryDao.updateEntry(
-                        id = entry.id!!,
-                        title = title,
-                        link = link,
-                        content = content,
-                        author = author,
-                        publishTime = publishTime,
-                        updateTime = now
+                val updated = entries.update(
+                        entry.id,
+                        Entries.TITLE to title,
+                        Entries.LINK to link,
+                        Entries.CONTENT to content,
+                        Entries.AUTHOR to author,
+                        Entries.PUBLISH_TIME to publishTime,
+                        Entries.UPDATE_TIME to now
                 )
                 if (updated != 1) {
                     // TODO: report that an entry couldn't be updated
@@ -315,6 +326,15 @@ object FeedUpdater {
             database.endTransaction()
         }
     }
+
+    class Entry(
+            val id: Long,
+            val title: String?,
+            val link: String?,
+            val content: String?,
+            val author: String?,
+            val publishTime: Long?
+    )
 
     class UnexpectedHttpResponseException(response: Response) : Exception("Unexpected HTTP response: $response")
 

@@ -20,6 +20,7 @@ import com.tughi.aggregator.activities.updatemode.UpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.startUpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.toString
 import com.tughi.aggregator.data.DefaultUpdateMode
+import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.AutoUpdateScheduler
 import com.tughi.aggregator.services.FaviconUpdaterService
@@ -105,13 +106,13 @@ class SubscribeFeedFragment : Fragment() {
                 val link = arguments.getString(ARG_LINK)!!
 
                 GlobalScope.launch(Dispatchers.IO) {
-                    val feedId = viewModel.repository.insert(SubscribeFeedFragmentViewModel.Feed(
-                            url = urlTextView.text.toString(),
-                            title = title,
-                            link = link,
-                            updateMode = viewModel.updateMode.value ?: DefaultUpdateMode,
-                            customTitle = if (customTitle != title) customTitle else null
-                    ))
+                    val feedId = viewModel.repository.insert(
+                            Feeds.URL to urlTextView.text.toString(),
+                            Feeds.TITLE to title,
+                            Feeds.LINK to link,
+                            Feeds.UPDATE_MODE to (viewModel.updateMode.value ?: DefaultUpdateMode),
+                            Feeds.CUSTOM_TITLE to if (customTitle != title) customTitle else null
+                    )
 
                     launch {
                         AutoUpdateScheduler.scheduleFeed(feedId)

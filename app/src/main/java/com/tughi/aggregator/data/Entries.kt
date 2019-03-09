@@ -12,20 +12,25 @@ class Entries<T>(columns: Array<String>, mapper: DataMapper<T>) : Repository<T>(
         internal const val TABLE = "entries"
 
         const val ID = "id"
+        const val UID = "uid"
         const val FEED_ID = "feed_id"
         const val FEED_TITLE = "feed_title"
         const val FEED_FAVICON_URL = "feed_favicon_url"
         const val TITLE = "title"
         const val LINK = "link"
+        const val CONTENT = "content"
         const val AUTHOR = "author"
         const val PUBLISH_TIME = "publish_time"
         const val INSERT_TIME = "insert_time"
+        const val UPDATE_TIME = "update_time"
         const val READ_TIME = "read_time"
         const val PINNED_TIME = "pinned_time"
+
         const val TYPE = "type"
 
         internal val projectionMap = mapOf(
                 ID to "e.$ID",
+                UID to "e.$UID",
                 FEED_ID to "e.$FEED_ID",
                 FEED_TITLE to "COALESCE(f.${Feeds.CUSTOM_TITLE}, f.${Feeds.TITLE})",
                 FEED_FAVICON_URL to "f.${Feeds.FAVICON_URL}",
@@ -56,6 +61,25 @@ class Entries<T>(columns: Array<String>, mapper: DataMapper<T>) : Repository<T>(
             return Storage.update(TABLE, contentValuesOf(READ_TIME to System.currentTimeMillis()), selection, selectionArgs)
         }
 
+    }
+
+    fun insert(vararg data: Pair<String, Any?>): Long = Storage.insert(TABLE, mapper.map(data))
+
+    fun update(id: Long, vararg data: Pair<String, Any?>) = Storage.update(TABLE, mapper.map(data), "$ID = ?", arrayOf(id), id)
+
+    fun query(feedId: Long, uid: String): T? {
+        val query = SupportSQLiteQueryBuilder.builder("$TABLE e")
+                .columns(Array(columns.size) { index -> "${projectionMap[columns[index]]} AS ${columns[index]}" })
+                .selection("e.$FEED_ID = ? AND e.$UID = ?", arrayOf(feedId, uid))
+                .create()
+
+        Storage.query(query).use { cursor ->
+            if (cursor.moveToFirst()) {
+                return mapper.map(cursor)
+            }
+        }
+
+        return null
     }
 
     fun query(criteria: QueryCriteria): List<T> {
