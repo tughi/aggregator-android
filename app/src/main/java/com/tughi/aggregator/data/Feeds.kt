@@ -64,6 +64,8 @@ class Feeds<T>(columns: Array<String> = emptyArray(), mapper: Repository.DataMap
         return null
     }
 
+    fun liveQuery(id: Long) = Storage.createLiveData(TABLE) { query(id) }
+
     fun query(criteria: Criteria): List<T> {
         Storage.query(criteria.query).use { cursor ->
             if (cursor.moveToFirst()) {
