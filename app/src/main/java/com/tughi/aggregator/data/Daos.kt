@@ -135,29 +135,3 @@ data class SchedulerFeed(
 //        @ColumnInfo(name = "update_mode")
         val updateMode: UpdateMode
 )
-
-//@Dao
-abstract class EntryDao {
-
-//    @Insert
-    abstract fun insertEntry(entry: Entry): Long
-
-//    @Query("""
-//        UPDATE entries SET
-//            title = :title,
-//            link = :link,
-//            content = :content,
-//            author = :author,
-//            publish_time = :publishTime,
-//            update_time = :updateTime
-//        WHERE id = :id
-//    """)
-    abstract fun updateEntry(id: Long, title: String?, link: String?, content: String?, author: String?, publishTime: Long?, updateTime: Long): Int
-
-//    @Query("SELECT * FROM entries WHERE feed_id = :feedId AND uid = :uid")
-    abstract fun queryEntry(feedId: Long, uid: String): Entry?
-
-//    @Query("SELECT COUNT(1) FROM entries WHERE feed_id = :feedId AND COALESCE(publish_time, insert_time) > :since")
-    abstract fun countAggregatedEntries(feedId: Long, since: Long): Int
-
-}

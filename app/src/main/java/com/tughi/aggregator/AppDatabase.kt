@@ -2,12 +2,10 @@ package com.tughi.aggregator
 
 import android.content.Context
 import com.tughi.aggregator.activities.reader.ReaderDao
-import com.tughi.aggregator.data.EntryDao
 import com.tughi.aggregator.data.FeedDao
 
 abstract class AppDatabase {
 
-    abstract fun entryDao(): EntryDao
     abstract fun feedDao(): FeedDao
 
     abstract fun readerDao(): ReaderDao
@@ -30,10 +28,6 @@ abstract class AppDatabase {
 
         private fun create(context: Context): AppDatabase {
             return object : AppDatabase() {
-                override fun entryDao(): EntryDao {
-                    throw UnsupportedOperationException()
-                }
-
                 override fun feedDao(): FeedDao {
                     throw UnsupportedOperationException()
                 }

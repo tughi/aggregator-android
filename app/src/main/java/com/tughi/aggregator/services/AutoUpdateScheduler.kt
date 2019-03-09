@@ -8,10 +8,10 @@ import android.text.format.DateUtils
 import android.util.Log
 import com.tughi.aggregator.App
 import com.tughi.aggregator.AppDatabase
-import com.tughi.aggregator.preferences.UpdateSettings
 import com.tughi.aggregator.data.AdaptiveUpdateMode
 import com.tughi.aggregator.data.DefaultUpdateMode
 import com.tughi.aggregator.data.DisabledUpdateMode
+import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.data.Every15MinutesUpdateMode
 import com.tughi.aggregator.data.Every2HoursUpdateMode
 import com.tughi.aggregator.data.Every30MinutesUpdateMode
@@ -24,6 +24,7 @@ import com.tughi.aggregator.data.EveryHourUpdateMode
 import com.tughi.aggregator.data.OnAppLaunchUpdateMode
 import com.tughi.aggregator.data.SchedulerFeed
 import com.tughi.aggregator.data.UpdateMode
+import com.tughi.aggregator.preferences.UpdateSettings
 import com.tughi.aggregator.utilities.JOB_SERVICE_FEEDS_UPDATER
 import java.util.*
 import kotlin.math.max
@@ -127,13 +128,11 @@ object AutoUpdateScheduler {
     }
 
     private fun calculateNextAdaptiveUpdateTime(feedId: Long, lastUpdateTime: Long): Long {
-        val entryDao = AppDatabase.instance.entryDao()
-
-        val aggregatedEntriesSinceYesterday = entryDao.countAggregatedEntries(feedId, lastUpdateTime - DateUtils.DAY_IN_MILLIS)
+        val aggregatedEntriesSinceYesterday = Entries.count(feedId, lastUpdateTime - DateUtils.DAY_IN_MILLIS)
         val updateRate = if (aggregatedEntriesSinceYesterday > 0) {
             max(DateUtils.DAY_IN_MILLIS / aggregatedEntriesSinceYesterday, DateUtils.HOUR_IN_MILLIS / 2) / 2
         } else {
-            val aggregatedEntriesSinceLastWeek = entryDao.countAggregatedEntries(feedId, lastUpdateTime - DateUtils.WEEK_IN_MILLIS)
+            val aggregatedEntriesSinceLastWeek = Entries.count(feedId, lastUpdateTime - DateUtils.WEEK_IN_MILLIS)
             if (aggregatedEntriesSinceLastWeek > 0) {
                 min(DateUtils.WEEK_IN_MILLIS / aggregatedEntriesSinceLastWeek, DateUtils.DAY_IN_MILLIS / 2) / 2
             } else {

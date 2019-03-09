@@ -3,6 +3,7 @@ package com.tughi.aggregator.data
 import android.content.ContentValues
 import androidx.core.content.contentValuesOf
 import androidx.lifecycle.LiveData
+import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQueryBuilder
 import java.io.Serializable
 
@@ -59,6 +60,14 @@ class Entries<T>(columns: Array<String>, mapper: DataMapper<T>) : Repository<T>(
                 is QueryCriteria.MyFeedEntries -> null
             }
             return Storage.update(TABLE, contentValuesOf(READ_TIME to System.currentTimeMillis()), selection, selectionArgs)
+        }
+
+        fun count(feedId: Long, since: Long): Int {
+            val query = SimpleSQLiteQuery("SELECT COUNT(1) FROM $TABLE WHERE $FEED_ID = ? AND COALESCE($PUBLISH_TIME, $INSERT_TIME) > ?", arrayOf(feedId, since))
+            Storage.query(query).use { cursor ->
+                cursor.moveToNext()
+                return cursor.getInt(0)
+            }
         }
 
     }
