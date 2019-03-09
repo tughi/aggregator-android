@@ -3,6 +3,7 @@ package com.tughi.aggregator.data
 import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
@@ -41,6 +42,12 @@ object Storage {
         throw UnsupportedOperationException()
     }
 
+    fun beginTransaction() = sqlite.writableDatabase.beginTransaction()
+
+    fun setTransactionSuccessful() = sqlite.writableDatabase.setTransactionSuccessful()
+
+    fun endTransaction() = sqlite.writableDatabase.endTransaction()
+
     fun query(sqliteQuery: SupportSQLiteQuery?): Cursor = sqlite.readableDatabase.query(sqliteQuery)
 
     fun insert(table: String, values: ContentValues): Long {
@@ -48,7 +55,8 @@ object Storage {
         val id = database.insert(table, SQLiteDatabase.CONFLICT_FAIL, values)
         if (id != -1L) {
             if (database.inTransaction()) {
-                TODO("delay table invalidation until the transaction was committed")
+                // TODO: delay table invalidation until the transaction was committed
+                Log.e(Storage.javaClass.name, "Table '$table' cannot be invalidated from a transaction")
             } else {
                 invalidateTable(table)
             }
@@ -61,7 +69,8 @@ object Storage {
         val result = database.update(table, SQLiteDatabase.CONFLICT_FAIL, values, selection, selectionArgs)
         if (result > 0) {
             if (database.inTransaction()) {
-                TODO("delay table invalidation until the transaction was committed")
+                // TODO: delay table invalidation until the transaction was committed
+                Log.e(Storage.javaClass.name, "Table '$table' cannot be invalidated from a transaction")
             } else {
                 invalidateTable(table, recordId)
             }

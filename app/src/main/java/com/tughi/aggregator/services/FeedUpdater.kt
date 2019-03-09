@@ -219,16 +219,41 @@ object FeedUpdater {
 
             val feedParser = FeedParser(feed.url, object : FeedParser.Listener() {
                 override fun onParsedEntry(uid: String, title: String?, link: String?, content: String?, author: String?, publishDate: Date?, publishDateText: String?) {
-                    saveEntry(
-                            feedId = feed.id,
-                            uid = uid,
-                            title = title,
-                            link = link,
-                            content = content,
-                            author = author,
-                            publishDate = publishDate,
-                            publishDateText = publishDateText
-                    )
+                    try {
+                        entries.beginTransaction()
+
+                        val now = System.currentTimeMillis()
+                        val result = entries.update(
+                                feed.id,
+                                uid,
+                                Entries.TITLE to title,
+                                Entries.LINK to link,
+                                Entries.CONTENT to content,
+                                Entries.AUTHOR to author,
+                                Entries.PUBLISH_TIME to publishDate?.time,
+                                Entries.UPDATE_TIME to now
+                        )
+
+                        if (result == 0) {
+                            entries.insert(
+                                    Entries.FEED_ID to feed.id,
+                                    Entries.UID to uid,
+                                    Entries.TITLE to title,
+                                    Entries.LINK to link,
+                                    Entries.CONTENT to content,
+                                    Entries.AUTHOR to author,
+                                    Entries.PUBLISH_TIME to publishDate?.time,
+                                    Entries.READ_TIME to 0, // TODO: add default value to the table schema
+                                    Entries.PINNED_TIME to 0, // TODO: add default value to the table schema
+                                    Entries.INSERT_TIME to now,
+                                    Entries.UPDATE_TIME to now
+                            )
+                        }
+
+                        entries.setTransactionSuccessful()
+                    } finally {
+                        entries.endTransaction()
+                    }
                 }
 
                 override fun onParsedFeed(title: String, link: String?, language: String?) {
@@ -253,68 +278,6 @@ object FeedUpdater {
             } catch (exception: Exception) {
                 saveUpdateError(feed, exception)
             }
-        }
-    }
-
-    private fun saveEntry(
-            feedId: Long,
-            uid: String,
-            title: String?,
-            link: String?,
-            content: String?,
-            author: String?,
-            publishDate: Date?,
-            publishDateText: String?
-    ) {
-        if (BuildConfig.DEBUG) {
-            Log.d(javaClass.name, "saveEntry($feedId, $uid, $title, $link, ...)")
-        }
-
-        try {
-            database.beginTransaction()
-
-            val entry = entries.query(feedId, uid)
-            val publishTime = publishDate?.time
-            if (entry == null) {
-                val now = System.currentTimeMillis()
-                val entryId = entries.insert(
-                        Entries.FEED_ID to feedId,
-                        Entries.UID to uid,
-                        Entries.TITLE to title,
-                        Entries.LINK to link,
-                        Entries.CONTENT to content,
-                        Entries.AUTHOR to author,
-                        Entries.PUBLISH_TIME to publishTime,
-                        Entries.INSERT_TIME to now,
-                        Entries.UPDATE_TIME to now
-                )
-                if (entryId == -1L) {
-                    // TODO: report that an entry couldn't be inserted
-                }
-            } else if (entry.title != title || entry.link != link || entry.content != content || entry.author != author || entry.publishTime != publishTime) {
-                val now = System.currentTimeMillis()
-                val updated = entries.update(
-                        entry.id,
-                        Entries.TITLE to title,
-                        Entries.LINK to link,
-                        Entries.CONTENT to content,
-                        Entries.AUTHOR to author,
-                        Entries.PUBLISH_TIME to publishTime,
-                        Entries.UPDATE_TIME to now
-                )
-                if (updated != 1) {
-                    // TODO: report that an entry couldn't be updated
-                }
-            }
-
-            if (publishDate == null && publishDateText != null) {
-                // TODO: report unsupported date format
-                Log.e(javaClass.name, "Unsupported date format: $publishDateText")
-            }
-
-            database.setTransactionSuccessful()
-        } finally {
-            database.endTransaction()
         }
     }
 

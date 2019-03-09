@@ -76,6 +76,8 @@ class Entries<T>(columns: Array<String>, mapper: DataMapper<T>) : Repository<T>(
 
     fun update(id: Long, vararg data: Pair<String, Any?>) = Storage.update(TABLE, mapper.map(data), "$ID = ?", arrayOf(id), id)
 
+    fun update(feedId: Long, uid: String, vararg data: Pair<String, Any?>) = Storage.update(TABLE, mapper.map(data), "$FEED_ID = ? AND $UID = ?", arrayOf(feedId, uid))
+
     fun query(feedId: Long, uid: String): T? {
         val query = SupportSQLiteQueryBuilder.builder("$TABLE e")
                 .columns(Array(columns.size) { index -> "${projectionMap[columns[index]]} AS ${columns[index]}" })
