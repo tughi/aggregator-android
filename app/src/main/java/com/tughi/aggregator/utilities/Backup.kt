@@ -21,9 +21,7 @@ fun backupFeeds() {
         backupFile.parentFile.mkdirs()
 
         backupFile.outputStream().use { outputStream ->
-            val feedDao = AppDatabase.instance.feedDao()
-
-            OpmlGenerator.generate(feedDao.queryOpmlFeeds(), outputStream)
+            OpmlGenerator.generate(OpmlGenerator.repository.query(OpmlGenerator.repository.AllCriteria()), outputStream)
         }
     }
 }

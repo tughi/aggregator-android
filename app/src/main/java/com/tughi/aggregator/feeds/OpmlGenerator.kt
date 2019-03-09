@@ -1,13 +1,35 @@
 package com.tughi.aggregator.feeds
 
+import android.database.Cursor
 import android.util.Xml
-import com.tughi.aggregator.data.OpmlFeed
+import com.tughi.aggregator.data.Feeds
+import com.tughi.aggregator.data.Repository
+import com.tughi.aggregator.data.UpdateMode
 import org.xmlpull.v1.XmlSerializer
 import java.io.OutputStream
 
 object OpmlGenerator {
 
-    fun generate(feeds: List<OpmlFeed>, outputStream: OutputStream) {
+    val repository = Feeds(
+            arrayOf(
+                    Feeds.URL,
+                    Feeds.TITLE,
+                    Feeds.CUSTOM_TITLE,
+                    Feeds.LINK,
+                    Feeds.UPDATE_MODE
+            ),
+            object : Repository.DataMapper<Feed>() {
+                override fun map(cursor: Cursor) = Feed(
+                        url = cursor.getString(0),
+                        title = cursor.getString(1),
+                        customTitle = cursor.getString(2),
+                        link = cursor.getString(3),
+                        updateMode = UpdateMode.deserialize(cursor.getString(4))
+                )
+            }
+    )
+
+    fun generate(feeds: List<Feed>, outputStream: OutputStream) {
         val xml = Xml.newSerializer()
 
         xml.setOutput(outputStream, "utf-8")
@@ -69,5 +91,14 @@ object OpmlGenerator {
         }
 
     }
+
+    data class Feed(
+            val url: String,
+            val title: String,
+            val link: String?,
+            val customTitle: String?,
+            val updateMode: UpdateMode,
+            val excluded: Boolean = false
+    )
 
 }
