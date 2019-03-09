@@ -4,7 +4,6 @@ import android.database.Cursor
 import android.util.Log
 import android.util.Xml
 import androidx.lifecycle.MutableLiveData
-import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.data.Feeds
@@ -73,8 +72,6 @@ object FeedUpdater {
             }
     )
 
-    private val database = AppDatabase.instance
-
     val updatingFeedIds = MutableLiveData<MutableSet<Long>>()
 
     suspend fun updateFeed(feedId: Long) {
@@ -87,7 +84,7 @@ object FeedUpdater {
         try {
             val result = requestFeed(feed)
             when (result) {
-                is Failure -> saveUpdateError(feed, result.error)
+                is Failure -> updateFeedContent(feed, result.error)
                 is Success -> parseFeed(feed, result.data)
             }
         } finally {
@@ -181,38 +178,9 @@ object FeedUpdater {
                 })
     }
 
-    private fun saveUpdateError(feed: Feed, error: Throwable?) {
-        if (BuildConfig.DEBUG) {
-            Log.d(javaClass.name, "Update error: $error", error)
-        }
-
-        val updateError = when (error) {
-            null -> "Unknown error"
-            else -> error.message ?: error::class.java.simpleName
-        }
-
-        val nextUpdateRetry = feed.nextUpdateRetry + 1
-        val nextUpdateTime = AutoUpdateScheduler.calculateNextUpdateRetryTime(feed.updateMode, nextUpdateRetry)
-
-        feeds.update(
-                feed.id,
-                Feeds.LAST_UPDATE_ERROR to updateError,
-                Feeds.NEXT_UPDATE_RETRY to nextUpdateRetry,
-                Feeds.NEXT_UPDATE_TIME to nextUpdateTime
-        )
-    }
-
     private fun parseFeed(feed: Feed, response: Response) {
         if (response.code() == 304) {
-            updateFeed(
-                    feed = feed,
-                    url = feed.url,
-                    title = feed.title,
-                    link = feed.link,
-                    language = feed.language,
-                    httpEtag = feed.httpEtag,
-                    httpLastModified = feed.httpLastModified
-            )
+            updateFeedContent(feed)
         } else {
             val httpEtag = response.header("Etag")
             val httpLastModified = response.header("Last-Modified")
@@ -257,15 +225,13 @@ object FeedUpdater {
                 }
 
                 override fun onParsedFeed(title: String, link: String?, language: String?) {
-                    // TODO: save URL for permanently redirected feed
-                    updateFeed(
-                            feed = feed,
-                            url = feed.url,
-                            title = title,
-                            link = link,
-                            language = language,
-                            httpEtag = httpEtag,
-                            httpLastModified = httpLastModified
+                    updateFeedContent(
+                            feed,
+                            Feeds.TITLE to title,
+                            Feeds.LINK to link,
+                            Feeds.LANGUAGE to language,
+                            Feeds.HTTP_ETAG to httpEtag,
+                            Feeds.HTTP_LAST_MODIFIED to httpLastModified
                     )
                 }
             })
@@ -276,50 +242,60 @@ object FeedUpdater {
                     Xml.parse(responseBody?.charStream(), feedParser.feedContentHandler)
                 }
             } catch (exception: Exception) {
-                saveUpdateError(feed, exception)
+                updateFeedContent(feed, exception)
             }
         }
     }
 
-    private fun updateFeed(
-            feed: Feed,
-            url: String,
-            title: String,
-            link: String?,
-            language: String?,
-            httpEtag: String?,
-            httpLastModified: String?
-    ) {
-        if (BuildConfig.DEBUG) {
-            Log.d(javaClass.name, "updateFeed($title, $link, $language, ...)")
-        }
-
+    private fun updateFeedContent(feed: Feed, vararg data: Pair<String, Any?>) {
         try {
-            database.beginTransaction()
+            feeds.beginTransaction()
 
             val feedId = feed.id
             val lastUpdateTime = System.currentTimeMillis()
-
             val nextUpdateTime = AutoUpdateScheduler.calculateNextUpdateTime(feedId, feed.updateMode, lastUpdateTime)
 
-            val updated = database.feedDao().updateFeed(
-                    id = feedId,
-                    url = url,
-                    title = title,
-                    link = link,
-                    language = language,
-                    lastUpdateTime = lastUpdateTime,
-                    nextUpdateTime = nextUpdateTime,
-                    httpEtag = httpEtag,
-                    httpLastModified = httpLastModified
+            feeds.update(
+                    feedId,
+                    Feeds.LAST_UPDATE_TIME to lastUpdateTime,
+                    Feeds.LAST_UPDATE_ERROR to null,
+                    Feeds.NEXT_UPDATE_TIME to nextUpdateTime,
+                    Feeds.NEXT_UPDATE_RETRY to 0,
+                    *data
             )
-            if (updated != 1) {
-                // TODO: report that the feed couldn't be updated
+
+            feeds.setTransactionSuccessful()
+        } finally {
+            feeds.endTransaction()
+        }
+    }
+
+    private fun updateFeedContent(feed: Feed, error: Throwable?) {
+        if (BuildConfig.DEBUG) {
+            Log.d(javaClass.name, "Update error: $error", error)
+        }
+
+        try {
+            feeds.beginTransaction()
+
+            val updateError = when (error) {
+                null -> "Unknown error"
+                else -> error.message ?: error::class.java.simpleName
             }
 
-            database.setTransactionSuccessful()
+            val nextUpdateRetry = feed.nextUpdateRetry + 1
+            val nextUpdateTime = AutoUpdateScheduler.calculateNextUpdateRetryTime(feed.updateMode, nextUpdateRetry)
+
+            feeds.update(
+                    feed.id,
+                    Feeds.LAST_UPDATE_ERROR to updateError,
+                    Feeds.NEXT_UPDATE_RETRY to nextUpdateRetry,
+                    Feeds.NEXT_UPDATE_TIME to nextUpdateTime
+            )
+
+            feeds.setTransactionSuccessful()
         } finally {
-            database.endTransaction()
+            feeds.endTransaction()
         }
     }
 
