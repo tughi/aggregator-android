@@ -1,5 +1,6 @@
 package com.tughi.aggregator.data
 
+import androidx.sqlite.db.SupportSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQueryBuilder
 
 class Feeds<T>(columns: Array<String> = emptyArray(), mapper: Repository.DataMapper<T>) : Repository<T>(columns, mapper) {
@@ -61,16 +62,8 @@ class Feeds<T>(columns: Array<String> = emptyArray(), mapper: Repository.DataMap
         return null
     }
 
-    fun query(): List<T> {
-        val query = SupportSQLiteQueryBuilder.builder("$TABLE f").run {
-            columns(Array(columns.size) { index -> "${projectionMap[columns[index]]} AS ${columns[index]}" })
-            if (columns.contains(TITLE)) {
-                orderBy(TITLE)
-            }
-            create()
-        }
-
-        Storage.query(query).use { cursor ->
+    fun query(criteria: Criteria): List<T> {
+        Storage.query(criteria.query).use { cursor ->
             if (cursor.moveToFirst()) {
                 val entries = mutableListOf<T>()
 
@@ -85,6 +78,22 @@ class Feeds<T>(columns: Array<String> = emptyArray(), mapper: Repository.DataMap
         return emptyList()
     }
 
-    fun liveQuery() = Storage.createLiveData(TABLE) { query() }
+    fun liveQuery(criteria: Criteria) = Storage.createLiveData(TABLE) { query(criteria) }
+
+    interface Criteria {
+        val query: SupportSQLiteQuery
+
+    }
+
+    inner class AllFeeds : Criteria {
+        override val query: SupportSQLiteQuery = SupportSQLiteQueryBuilder.builder("$TABLE f").run {
+            columns(Array(columns.size) { index -> "${projectionMap[columns[index]]} AS ${columns[index]}" })
+            if (columns.contains(TITLE)) {
+                orderBy(TITLE)
+            }
+            create()
+        }
+    }
+
 
 }

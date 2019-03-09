@@ -41,7 +41,7 @@ class FeedsFragmentViewModel(application: Application) : AndroidViewModel(applic
             }
     )
 
-    private val databaseFeeds = repository.liveQuery()
+    private val databaseFeeds = repository.liveQuery(repository.AllFeeds())
 
     private val expandedFeedId = MutableLiveData<Long>()
 
