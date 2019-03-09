@@ -78,6 +78,20 @@ object Storage {
         return result
     }
 
+    fun delete(table: String, selection: String?, selectionArgs: Array<Any>?): Int {
+        val database = sqlite.writableDatabase
+        val result = database.delete(table, selection, selectionArgs)
+        if (result > 0) {
+            if (database.inTransaction()) {
+                // TODO: delay table invalidation until the transaction was committed
+                Log.e(Storage.javaClass.name, "Table '$table' cannot be invalidated from a transaction")
+            } else {
+                invalidateTable(table)
+            }
+        }
+        return result
+    }
+
     private fun invalidateTable(table: String, recordId: Any? = null) {
         synchronized(this) {
             if (tableObservers.size > 0) {

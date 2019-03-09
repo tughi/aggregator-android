@@ -43,6 +43,9 @@ class Feeds<T>(columns: Array<String> = emptyArray(), mapper: Repository.DataMap
                 HTTP_LAST_MODIFIED to "f.$HTTP_LAST_MODIFIED",
                 UNREAD_ENTRY_COUNT to "(SELECT COUNT(1) FROM ${Entries.TABLE} e WHERE f.$ID = e.${Entries.FEED_ID} AND e.${Entries.READ_TIME} = 0)"
         )
+
+        fun delete(id: Long) = Storage.delete(TABLE, "$ID = ?", arrayOf(id))
+
     }
 
     fun insert(vararg data: Pair<String, Any?>): Long = Storage.insert(TABLE, mapper.map(data))

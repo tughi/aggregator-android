@@ -1,21 +1,10 @@
 package com.tughi.aggregator.data
 
-import androidx.lifecycle.LiveData
-
 //@Dao
 interface FeedDao {
 
 //    @Insert
     fun insertFeed(feed: Feed): Long
-
-//    @Query("""
-//        UPDATE feeds SET
-//            url = :url,
-//            custom_title = :customTitle,
-//            update_mode = :updateMode
-//        WHERE id = :id
-//    """)
-    fun updateFeed(id: Long, url: String, customTitle: String?, updateMode: UpdateMode): Int
 
 //    @Query("""
 //        UPDATE feeds SET
@@ -33,9 +22,6 @@ interface FeedDao {
 //        WHERE id = :id
 //    """)
     fun updateFeed(id: Long, faviconUrl: String, faviconContent: ByteArray): Int
-
-//    @Query("DELETE FROM feeds WHERE id = :feedId")
-    fun deleteFeed(feedId: Long): Int
 
 //    @Query("SELECT id FROM feeds WHERE next_update_time > 0 AND next_update_time < :now")
     fun queryUpdatableFeeds(now: Long): LongArray
@@ -66,9 +52,6 @@ interface FeedDao {
 //            title
 //    """)
     fun queryOpmlFeeds(): List<OpmlFeed>
-
-//    @Query("SELECT * FROM feeds WHERE id = :id")
-    fun getFeed(id: Long): LiveData<Feed>
 
 //    @Query("SELECT MIN(next_update_time) FROM feeds WHERE next_update_time > 0")
     fun queryNextUpdateTime(): Long?
