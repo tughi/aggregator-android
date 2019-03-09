@@ -14,7 +14,7 @@ class SubscribeFeedFragmentViewModel : ViewModel() {
             mapper = object : Repository.DataMapper<Feed>() {
                 override fun convert(value: Any) = when (value) {
                     is UpdateMode -> value.serialize()
-                    else -> throw IllegalArgumentException()
+                    else -> super.convert(value)
                 }
             }
     )

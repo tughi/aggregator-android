@@ -19,12 +19,14 @@ abstract class Repository<T>(protected val columns: Array<String>, protected val
 
         private fun ContentValues.put(column: String, value: Any?): Unit = when (value) {
             null -> putNull(column)
+            is Int -> put(column, value)
             is Long -> put(column, value)
+            is String -> put(column, value)
             else -> put(column, convert(value))
         }
 
         open fun convert(value: Any): Any? {
-            throw UnsupportedOperationException()
+            throw UnsupportedOperationException("Cannot convert type: ${value.javaClass}")
         }
 
     }

@@ -47,6 +47,8 @@ class Feeds<T>(columns: Array<String> = emptyArray(), mapper: Repository.DataMap
 
     fun insert(vararg data: Pair<String, Any?>): Long = Storage.insert(TABLE, mapper.map(data))
 
+    fun update(id: Long, vararg data: Pair<String, Any?>) = Storage.update(TABLE, mapper.map(data), "$ID = ?", arrayOf(id), id)
+
     fun query(id: Long): T? {
         val query = SupportSQLiteQueryBuilder.builder("$TABLE f")
                 .columns(Array(columns.size) { index -> "${projectionMap[columns[index]]} AS ${columns[index]}" })
@@ -80,20 +82,29 @@ class Feeds<T>(columns: Array<String> = emptyArray(), mapper: Repository.DataMap
 
     fun liveQuery(criteria: Criteria) = Storage.createLiveData(TABLE) { query(criteria) }
 
-    interface Criteria {
-        val query: SupportSQLiteQuery
+    abstract inner class Criteria {
+
+        val query: SupportSQLiteQuery = SupportSQLiteQueryBuilder.builder("$TABLE f").also {
+            it.columns(Array(columns.size) { index -> "${projectionMap[columns[index]]} AS ${columns[index]}" })
+            init(it)
+        }.create()
+
+        abstract fun init(builder: SupportSQLiteQueryBuilder)
 
     }
 
-    inner class AllFeeds : Criteria {
-        override val query: SupportSQLiteQuery = SupportSQLiteQueryBuilder.builder("$TABLE f").run {
-            columns(Array(columns.size) { index -> "${projectionMap[columns[index]]} AS ${columns[index]}" })
+    inner class AllCriteria : Criteria() {
+        override fun init(builder: SupportSQLiteQueryBuilder) {
             if (columns.contains(TITLE)) {
-                orderBy(TITLE)
+                builder.orderBy(TITLE)
             }
-            create()
         }
     }
 
+    inner class OutdatedCriteria(private val now: Long) : Criteria() {
+        override fun init(builder: SupportSQLiteQueryBuilder) {
+            builder.selection("($NEXT_UPDATE_TIME > 0 AND $NEXT_UPDATE_TIME < ?) OR $NEXT_UPDATE_TIME = -1", arrayOf(now))
+        }
+    }
 
 }

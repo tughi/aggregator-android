@@ -1,13 +1,15 @@
 package com.tughi.aggregator.services
 
+import android.database.Cursor
 import android.util.Log
 import android.util.Xml
 import androidx.lifecycle.MutableLiveData
 import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.data.Entries
-import com.tughi.aggregator.data.Feed
+import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.Repository
+import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.feeds.FeedParser
 import com.tughi.aggregator.utilities.Failure
 import com.tughi.aggregator.utilities.Http
@@ -44,42 +46,70 @@ object FeedUpdater {
             mapper = object : Repository.DataMapper<Entry>() {}
     )
 
+    private val feeds = Feeds(
+            columns = arrayOf(
+                    Feeds.ID,
+                    Feeds.URL,
+                    Feeds.TITLE,
+                    Feeds.LINK,
+                    Feeds.LANGUAGE,
+                    Feeds.UPDATE_MODE,
+                    Feeds.NEXT_UPDATE_RETRY,
+                    Feeds.HTTP_ETAG,
+                    Feeds.HTTP_LAST_MODIFIED
+            ),
+            mapper = object : Repository.DataMapper<Feed>() {
+                override fun map(cursor: Cursor) = Feed(
+                        cursor.getLong(0),
+                        cursor.getString(1),
+                        cursor.getString(2),
+                        cursor.getString(3),
+                        cursor.getString(4),
+                        UpdateMode.deserialize(cursor.getString(5)),
+                        cursor.getInt(6),
+                        cursor.getString(7),
+                        cursor.getString(8)
+                )
+            }
+    )
+
     private val database = AppDatabase.instance
 
     val updatingFeedIds = MutableLiveData<MutableSet<Long>>()
 
     suspend fun updateFeed(feedId: Long) {
-        addUpdatingFeed(feedId)
+        val feed = feeds.query(feedId) ?: return
+        updateFeed(feed)
+    }
 
+    private suspend fun updateFeed(feed: Feed) {
+        addUpdatingFeed(feed.id)
         try {
-            val feed = database.feedDao().queryFeed(feedId)
-
             val result = requestFeed(feed)
             when (result) {
                 is Failure -> saveUpdateError(feed, result.error)
                 is Success -> parseFeed(feed, result.data)
             }
-
         } finally {
             withContext(NonCancellable) {
-                removeUpdatingFeed(feedId)
+                removeUpdatingFeed(feed.id)
             }
         }
     }
 
     suspend fun updateOutdatedFeeds() {
-        GlobalScope.launch(Dispatchers.IO) {
-            val feeds = database.feedDao().queryOutdatedFeeds(System.currentTimeMillis())
+        GlobalScope.launch {
+            val feeds = feeds.query(feeds.OutdatedCriteria(System.currentTimeMillis()))
 
-            val jobs = feeds.map { feedId ->
-                async { FeedUpdater.updateFeed(feedId) }
+            val jobs = feeds.map { feed ->
+                async { FeedUpdater.updateFeed(feed) }
             }
             jobs.forEach {
                 it.await()
             }
         }.also {
             it.invokeOnCompletion {
-                GlobalScope.launch(Dispatchers.IO) {
+                GlobalScope.launch {
                     AutoUpdateScheduler.schedule()
                 }
             }
@@ -153,19 +183,22 @@ object FeedUpdater {
 
     private fun saveUpdateError(feed: Feed, error: Throwable?) {
         if (BuildConfig.DEBUG) {
-            Log.d(javaClass.name, "Update error: $error")
+            Log.d(javaClass.name, "Update error: $error", error)
+        }
+
+        val updateError = when (error) {
+            null -> "Unknown error"
+            else -> error.message ?: error::class.java.simpleName
         }
 
         val nextUpdateRetry = feed.nextUpdateRetry + 1
+        val nextUpdateTime = AutoUpdateScheduler.calculateNextUpdateRetryTime(feed.updateMode, nextUpdateRetry)
 
-        database.feedDao().updateFeed(
-                id = feed.id!!,
-                lastUpdateError = when (error) {
-                    null -> "Unknown error"
-                    else -> error.message ?: error::class.java.simpleName
-                },
-                nextUpdateRetry = nextUpdateRetry,
-                nextUpdateTime = AutoUpdateScheduler.calculateNextUpdateRetryTime(feed.updateMode, nextUpdateRetry)
+        feeds.update(
+                feed.id,
+                Feeds.LAST_UPDATE_ERROR to updateError,
+                Feeds.NEXT_UPDATE_RETRY to nextUpdateRetry,
+                Feeds.NEXT_UPDATE_TIME to nextUpdateTime
         )
     }
 
@@ -187,7 +220,7 @@ object FeedUpdater {
             val feedParser = FeedParser(feed.url, object : FeedParser.Listener() {
                 override fun onParsedEntry(uid: String, title: String?, link: String?, content: String?, author: String?, publishDate: Date?, publishDateText: String?) {
                     saveEntry(
-                            feedId = feed.id!!,
+                            feedId = feed.id,
                             uid = uid,
                             title = title,
                             link = link,
@@ -301,7 +334,7 @@ object FeedUpdater {
         try {
             database.beginTransaction()
 
-            val feedId = feed.id!!
+            val feedId = feed.id
             val lastUpdateTime = System.currentTimeMillis()
 
             val nextUpdateTime = AutoUpdateScheduler.calculateNextUpdateTime(feedId, feed.updateMode, lastUpdateTime)
@@ -334,6 +367,18 @@ object FeedUpdater {
             val content: String?,
             val author: String?,
             val publishTime: Long?
+    )
+
+    class Feed(
+            val id: Long,
+            val url: String,
+            val title: String,
+            val link: String?,
+            val language: String?,
+            val updateMode: UpdateMode,
+            val nextUpdateRetry: Int,
+            val httpEtag: String?,
+            val httpLastModified: String?
     )
 
     class UnexpectedHttpResponseException(response: Response) : Exception("Unexpected HTTP response: $response")

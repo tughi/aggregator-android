@@ -64,9 +64,6 @@ interface FeedDao {
 //    @Query("DELETE FROM feeds WHERE id = :feedId")
     fun deleteFeed(feedId: Long): Int
 
-//    @Query("SELECT id FROM feeds WHERE (next_update_time > 0 AND next_update_time < :now) OR next_update_time = -1")
-    fun queryOutdatedFeeds(now: Long): LongArray
-
 //    @Query("SELECT id FROM feeds WHERE next_update_time > 0 AND next_update_time < :now")
     fun queryUpdatableFeeds(now: Long): LongArray
 
