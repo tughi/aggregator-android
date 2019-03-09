@@ -109,9 +109,12 @@ class SubscribeFeedFragment : Fragment() {
                     val feedId = viewModel.repository.insert(
                             Feeds.URL to urlTextView.text.toString(),
                             Feeds.TITLE to title,
+                            Feeds.CUSTOM_TITLE to if (customTitle != title) customTitle else null,
                             Feeds.LINK to link,
                             Feeds.UPDATE_MODE to (viewModel.updateMode.value ?: DefaultUpdateMode),
-                            Feeds.CUSTOM_TITLE to if (customTitle != title) customTitle else null
+                            Feeds.LAST_UPDATE_TIME to 0, // TODO: fix feeds table schema
+                            Feeds.NEXT_UPDATE_TIME to 0, // TODO: fix feeds table schema
+                            Feeds.NEXT_UPDATE_RETRY to 0 // TODO: fix feeds table schema
                     )
 
                     launch {

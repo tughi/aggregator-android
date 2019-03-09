@@ -21,6 +21,10 @@ object Storage {
             SupportSQLiteOpenHelper.Configuration.builder(App.instance)
                     .name(DATABASE_NAME)
                     .callback(object : SupportSQLiteOpenHelper.Callback(16) {
+                        override fun onConfigure(db: SupportSQLiteDatabase?) {
+                            db?.setForeignKeyConstraintsEnabled(true)
+                        }
+
                         override fun onCreate(db: SupportSQLiteDatabase?) {
                             createDatabase(db ?: throw IllegalStateException("Null database"))
                         }
