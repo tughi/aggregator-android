@@ -1,8 +1,7 @@
 package com.tughi.aggregator.utilities
 
 import com.tughi.aggregator.App
-import com.tughi.aggregator.AppDatabase
-import com.tughi.aggregator.data.Feed
+import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.feeds.OpmlGenerator
 import com.tughi.aggregator.feeds.OpmlParser
@@ -21,30 +20,35 @@ fun backupFeeds() {
         backupFile.parentFile.mkdirs()
 
         backupFile.outputStream().use { outputStream ->
-            OpmlGenerator.generate(OpmlGenerator.repository.query(OpmlGenerator.repository.AllCriteria()), outputStream)
+            val repository = OpmlGenerator.repository
+            OpmlGenerator.generate(repository.query(repository.AllCriteria()), outputStream)
         }
     }
 }
 
 fun restoreFeeds() {
-    val feedDao = AppDatabase.instance.feedDao()
-    if (feedDao.queryFeedCount() == 0) {
+    if (Feeds.count() == 0) {
         App.instance.getExternalFilesDir(null)?.also { externalFilesDir ->
             val backupFile = File(externalFilesDir, BACKUP_FILENAME)
             if (backupFile.exists()) {
                 backupFile.inputStream().use { inputStream ->
                     OpmlParser.parse(inputStream, object : OpmlParser.Listener {
                         override fun onFeedParsed(url: String, title: String, link: String?, customTitle: String?, category: String?, updateMode: UpdateMode) {
-                            val feedId = feedDao.insertFeed(Feed(
-                                    url = url,
-                                    title = title,
-                                    link = link,
-                                    customTitle = customTitle,
-                                    updateMode = updateMode
-                            ))
+                            val repository = OpmlGenerator.repository
+
+                            val feedId = repository.insert(
+                                    Feeds.URL to url,
+                                    Feeds.TITLE to title,
+                                    Feeds.LINK to link,
+                                    Feeds.CUSTOM_TITLE to customTitle,
+                                    Feeds.UPDATE_MODE to updateMode
+                            )
 
                             if (feedId > 0) {
-                                feedDao.updateFeed(feedId, AutoUpdateScheduler.calculateNextUpdateTime(feedId, updateMode, 0))
+                                repository.update(
+                                        feedId,
+                                        Feeds.NEXT_UPDATE_TIME to AutoUpdateScheduler.calculateNextUpdateTime(feedId, updateMode, 0)
+                                )
 
                                 GlobalScope.launch(Dispatchers.Main) {
                                     FaviconUpdaterService.start(feedId)

@@ -1,5 +1,6 @@
 package com.tughi.aggregator.data
 
+import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQueryBuilder
 
@@ -45,6 +46,34 @@ class Feeds<T>(columns: Array<String> = emptyArray(), mapper: Repository.DataMap
         )
 
         fun delete(id: Long) = Storage.delete(TABLE, "$ID = ?", arrayOf(id))
+
+        fun count(): Int {
+            Storage.query(SimpleSQLiteQuery("SELECT COUNT(1) FROM $TABLE")).use { cursor ->
+                cursor.moveToFirst()
+                return cursor.getInt(0)
+            }
+        }
+
+        fun queryNextUpdateTime(): Long? {
+            Storage.query(SimpleSQLiteQuery("SELECT MIN($NEXT_UPDATE_TIME) FROM $TABLE WHERE $NEXT_UPDATE_TIME > 0")).use { cursor ->
+                cursor.moveToFirst()
+                return cursor.getLong(0)
+            }
+        }
+
+        fun queryOutdatedFeedIds(now: Long): List<Long> {
+            val query = SimpleSQLiteQuery("SELECT $ID FROM $TABLE WHERE $NEXT_UPDATE_TIME > 0 AND $NEXT_UPDATE_TIME < ?", arrayOf(now))
+            Storage.query(query).use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val result = mutableListOf<Long>()
+                    do {
+                        result.add(cursor.getLong(0))
+                    } while (cursor.moveToNext())
+                    return result
+                }
+            }
+            return emptyList()
+        }
 
     }
 
@@ -109,6 +138,12 @@ class Feeds<T>(columns: Array<String> = emptyArray(), mapper: Repository.DataMap
     inner class OutdatedCriteria(private val now: Long) : Criteria() {
         override fun init(builder: SupportSQLiteQueryBuilder) {
             builder.selection("($NEXT_UPDATE_TIME > 0 AND $NEXT_UPDATE_TIME < ?) OR $NEXT_UPDATE_TIME = -1", arrayOf(now))
+        }
+    }
+
+    inner class UpdateModeCriteria(private val updateMode: UpdateMode) : Criteria() {
+        override fun init(builder: SupportSQLiteQueryBuilder) {
+            builder.selection("$UPDATE_MODE = ?", arrayOf(updateMode.serialize()))
         }
     }
 

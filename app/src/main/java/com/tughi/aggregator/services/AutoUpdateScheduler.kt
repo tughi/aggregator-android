@@ -4,10 +4,10 @@ import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.content.ComponentName
 import android.content.Context
+import android.database.Cursor
 import android.text.format.DateUtils
 import android.util.Log
 import com.tughi.aggregator.App
-import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.data.AdaptiveUpdateMode
 import com.tughi.aggregator.data.DefaultUpdateMode
 import com.tughi.aggregator.data.DisabledUpdateMode
@@ -21,8 +21,9 @@ import com.tughi.aggregator.data.Every4HoursUpdateMode
 import com.tughi.aggregator.data.Every6HoursUpdateMode
 import com.tughi.aggregator.data.Every8HoursUpdateMode
 import com.tughi.aggregator.data.EveryHourUpdateMode
+import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.OnAppLaunchUpdateMode
-import com.tughi.aggregator.data.SchedulerFeed
+import com.tughi.aggregator.data.Repository
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.preferences.UpdateSettings
 import com.tughi.aggregator.utilities.JOB_SERVICE_FEEDS_UPDATER
@@ -35,41 +36,51 @@ object AutoUpdateScheduler {
     const val NEXT_UPDATE_TIME__DISABLED = 0L
     const val NEXT_UPDATE_TIME__ON_APP_LAUNCH = -1L
 
-    fun scheduleFeed(feedId: Long) {
-        val database = AppDatabase.instance
-        val feedDao = database.feedDao()
+    private val repository = Feeds(
+            columns = arrayOf(
+                    Feeds.ID,
+                    Feeds.LAST_UPDATE_TIME,
+                    Feeds.UPDATE_MODE
+            ),
+            mapper = object : Repository.DataMapper<Feed>() {
+                override fun map(cursor: Cursor) = Feed(
+                        id = cursor.getLong(0),
+                        lastUpdateTime = cursor.getLong(1),
+                        updateMode = UpdateMode.deserialize(cursor.getString(2))
+                )
+            }
+    )
 
-        feedDao.querySchedulerFeed(feedId)?.also {
+    fun scheduleFeed(feedId: Long) {
+        repository.query(feedId)?.also {
             scheduleFeeds(it)
         }
     }
 
     fun scheduleFeedsWithDefaultUpdateMode() {
-        val database = AppDatabase.instance
-        val feedDao = database.feedDao()
-
-        scheduleFeeds(*feedDao.querySchedulerFeeds(DefaultUpdateMode))
+        val feeds = repository.query(repository.UpdateModeCriteria(DefaultUpdateMode))
+        scheduleFeeds(*feeds.toTypedArray())
     }
 
-    private fun scheduleFeeds(vararg feeds: SchedulerFeed) {
-        val database = AppDatabase.instance
-        val feedDao = database.feedDao()
-
-        database.beginTransaction()
+    private fun scheduleFeeds(vararg feeds: Feed) {
+        repository.beginTransaction()
         try {
             feeds.forEach { feed ->
-                feedDao.updateFeed(feed.id, calculateNextUpdateTime(feed.id, feed.updateMode, feed.lastUpdateTime))
+                repository.update(
+                        feed.id,
+                        Feeds.NEXT_UPDATE_TIME to calculateNextUpdateTime(feed.id, feed.updateMode, feed.lastUpdateTime)
+                )
             }
-            database.setTransactionSuccessful()
+            repository.setTransactionSuccessful()
         } finally {
-            database.endTransaction()
+            repository.endTransaction()
         }
 
         schedule()
     }
 
     fun schedule() {
-        val nextUpdateTime = AppDatabase.instance.feedDao().queryNextUpdateTime() ?: return
+        val nextUpdateTime = Feeds.queryNextUpdateTime() ?: return
         val nextUpdateDelay = nextUpdateTime - System.currentTimeMillis()
 
         val context: Context = App.instance
@@ -154,5 +165,11 @@ object AutoUpdateScheduler {
         val minutesInMillis = minutes * 60000
         return midnight + ((lastUpdateTime - midnight) / minutesInMillis + 1) * minutesInMillis
     }
+
+    data class Feed(
+            val id: Long,
+            val lastUpdateTime: Long,
+            val updateMode: UpdateMode
+    )
 
 }

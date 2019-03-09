@@ -2,10 +2,9 @@ package com.tughi.aggregator.services
 
 import android.app.job.JobParameters
 import android.app.job.JobService
-import com.tughi.aggregator.AppDatabase
+import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.preferences.UpdateSettings
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -17,10 +16,10 @@ class AutoUpdateService : JobService() {
 
     override fun onStartJob(params: JobParameters?): Boolean {
         if (UpdateSettings.backgroundUpdates) {
-            currentJob = GlobalScope.launch(Dispatchers.IO) {
-                val feeds = AppDatabase.instance.feedDao().queryUpdatableFeeds(System.currentTimeMillis())
+            currentJob = GlobalScope.launch {
+                val feedIds = Feeds.queryOutdatedFeedIds(System.currentTimeMillis())
 
-                val jobs = feeds.map { feedId ->
+                val jobs = feedIds.map { feedId ->
                     async { FeedUpdater.updateFeed(feedId) }
                 }
                 jobs.forEach {
@@ -30,7 +29,7 @@ class AutoUpdateService : JobService() {
                 it.invokeOnCompletion { error ->
                     jobFinished(params, error != null && error !is CancellationException)
 
-                    GlobalScope.launch(Dispatchers.IO) {
+                    GlobalScope.launch {
                         AutoUpdateScheduler.schedule()
                     }
                 }
