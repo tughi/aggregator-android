@@ -2,9 +2,11 @@ package com.tughi.aggregator.services
 
 import android.app.IntentService
 import android.content.Intent
+import android.database.Cursor
 import android.graphics.BitmapFactory
 import com.tughi.aggregator.App
-import com.tughi.aggregator.AppDatabase
+import com.tughi.aggregator.data.Feeds
+import com.tughi.aggregator.data.Repository
 import com.tughi.aggregator.utilities.Http
 import com.tughi.aggregator.utilities.toAbsoluteUrl
 import okhttp3.Request
@@ -22,11 +24,21 @@ class FaviconUpdaterService : IntentService("FaviconUpdater") {
         }
     }
 
+    private val repository = Feeds(
+            arrayOf(
+                    Feeds.LINK
+            ),
+            object : Repository.DataMapper<Feed>() {
+                override fun map(cursor: Cursor) = Feed(
+                        cursor.getString(0)
+                )
+            }
+    )
+
     override fun onHandleIntent(intent: Intent?) {
         val feedId = intent?.getLongExtra(EXTRA_FEED_ID, 0) ?: return
-        val feedDao = AppDatabase.instance.feedDao()
-        val feed = feedDao.queryFeed(feedId)
-        val feedLink = feed.link ?: return
+        val feed = repository.query(feedId)
+        val feedLink = feed?.link ?: return
 
         var icon = detectWebsiteFavicon(feedLink)
         if (icon == null) {
@@ -34,7 +46,7 @@ class FaviconUpdaterService : IntentService("FaviconUpdater") {
         }
 
         if (icon?.content != null) {
-            feedDao.updateFeed(id = feedId, faviconUrl = icon.url, faviconContent = icon.content!!)
+            repository.update(feedId, Feeds.FAVICON_URL to icon.url, Feeds.FAVICON_CONTENT to icon.content!!)
         }
     }
 
@@ -140,5 +152,7 @@ class FaviconUpdaterService : IntentService("FaviconUpdater") {
             return url.hashCode()
         }
     }
+
+    class Feed(val link: String?)
 
 }

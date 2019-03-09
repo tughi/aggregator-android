@@ -15,19 +15,8 @@ interface FeedDao {
 //    """)
     fun updateFeed(id: Long, nextUpdateTime: Long, nextUpdateRetry: Int = 0, lastUpdateError: String? = null): Int
 
-//    @Query("""
-//        UPDATE feeds SET
-//            favicon_url = :faviconUrl,
-//            favicon_content = :faviconContent
-//        WHERE id = :id
-//    """)
-    fun updateFeed(id: Long, faviconUrl: String, faviconContent: ByteArray): Int
-
 //    @Query("SELECT id FROM feeds WHERE next_update_time > 0 AND next_update_time < :now")
     fun queryUpdatableFeeds(now: Long): LongArray
-
-//    @Query("SELECT * FROM feeds WHERE id = :id")
-    fun queryFeed(id: Long): Feed
 
 //    @Query("SELECT COUNT(1) FROM feeds")
     fun queryFeedCount(): Int
