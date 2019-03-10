@@ -11,12 +11,7 @@ import com.tughi.aggregator.data.UpdateMode
 class SubscribeFeedFragmentViewModel : ViewModel() {
 
     val repository = Feeds(
-            mapper = object : Repository.DataMapper<Feed>() {
-                override fun convert(value: Any) = when (value) {
-                    is UpdateMode -> value.serialize()
-                    else -> super.convert(value)
-                }
-            }
+            mapper = object : Repository.DataMapper<Feed>() {}
     )
 
     var updateMode = MutableLiveData<UpdateMode>().apply { value = DefaultUpdateMode }

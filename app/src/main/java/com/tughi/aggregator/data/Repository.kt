@@ -30,11 +30,7 @@ abstract class Repository<T>(protected val columns: Array<String>, protected val
             is Long -> put(column, value)
             is String -> put(column, value)
             is UpdateMode -> put(column, value.serialize())
-            else -> put(column, convert(value))
-        }
-
-        open fun convert(value: Any): Any? {
-            throw UnsupportedOperationException("Cannot convert type: ${value.javaClass}")
+            else -> throw UnsupportedOperationException("Cannot convert type: ${value.javaClass}")
         }
 
     }
