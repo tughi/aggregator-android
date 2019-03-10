@@ -10,12 +10,13 @@ import com.tughi.aggregator.data.Repository
 class ReaderActivityViewModel(queryCriteria: Entries.QueryCriteria) : ViewModel() {
 
     private val repository = Entries(
-            arrayOf(
-                    Entries.ID,
-                    Entries.PINNED_TIME,
-                    Entries.READ_TIME
-            ),
             object : Repository.Factory<Entry>() {
+                override val columns = arrayOf(
+                        Entries.ID,
+                        Entries.PINNED_TIME,
+                        Entries.READ_TIME
+                )
+
                 override fun create(cursor: Cursor) = Entry(
                         id = cursor.getLong(0),
                         pinnedTime = cursor.getLong(1),

@@ -25,10 +25,11 @@ class FaviconUpdaterService : IntentService("FaviconUpdater") {
     }
 
     private val repository = Feeds(
-            arrayOf(
-                    Feeds.LINK
-            ),
             object : Repository.Factory<Feed>() {
+                override val columns = arrayOf(
+                        Feeds.LINK
+                )
+
                 override fun create(cursor: Cursor) = Feed(
                         cursor.getString(0)
                 )

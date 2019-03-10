@@ -37,12 +37,13 @@ object AutoUpdateScheduler {
     const val NEXT_UPDATE_TIME__ON_APP_LAUNCH = -1L
 
     private val repository = Feeds(
-            columns = arrayOf(
-                    Feeds.ID,
-                    Feeds.LAST_UPDATE_TIME,
-                    Feeds.UPDATE_MODE
-            ),
-            factory = object : Repository.Factory<Feed>() {
+            object : Repository.Factory<Feed>() {
+                override val columns = arrayOf(
+                        Feeds.ID,
+                        Feeds.LAST_UPDATE_TIME,
+                        Feeds.UPDATE_MODE
+                )
+
                 override fun create(cursor: Cursor) = Feed(
                         id = cursor.getLong(0),
                         lastUpdateTime = cursor.getLong(1),

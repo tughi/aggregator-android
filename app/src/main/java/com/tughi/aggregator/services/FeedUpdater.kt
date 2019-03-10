@@ -34,30 +34,32 @@ import kotlin.coroutines.suspendCoroutine
 object FeedUpdater {
 
     private val entries = Entries(
-            columns = arrayOf(
-                    Entries.ID,
-                    Entries.TITLE,
-                    Entries.LINK,
-                    Entries.CONTENT,
-                    Entries.AUTHOR,
-                    Entries.PUBLISH_TIME
-            ),
-            factory = object : Repository.Factory<Entry>() {}
+            object : Repository.Factory<Entry>() {
+                override val columns = arrayOf(
+                        Entries.ID,
+                        Entries.TITLE,
+                        Entries.LINK,
+                        Entries.CONTENT,
+                        Entries.AUTHOR,
+                        Entries.PUBLISH_TIME
+                )
+            }
     )
 
     private val feeds = Feeds(
-            columns = arrayOf(
-                    Feeds.ID,
-                    Feeds.URL,
-                    Feeds.TITLE,
-                    Feeds.LINK,
-                    Feeds.LANGUAGE,
-                    Feeds.UPDATE_MODE,
-                    Feeds.NEXT_UPDATE_RETRY,
-                    Feeds.HTTP_ETAG,
-                    Feeds.HTTP_LAST_MODIFIED
-            ),
-            factory = object : Repository.Factory<Feed>() {
+            object : Repository.Factory<Feed>() {
+                override val columns = arrayOf(
+                        Feeds.ID,
+                        Feeds.URL,
+                        Feeds.TITLE,
+                        Feeds.LINK,
+                        Feeds.LANGUAGE,
+                        Feeds.UPDATE_MODE,
+                        Feeds.NEXT_UPDATE_RETRY,
+                        Feeds.HTTP_ETAG,
+                        Feeds.HTTP_LAST_MODIFIED
+                )
+
                 override fun create(cursor: Cursor) = Feed(
                         cursor.getLong(0),
                         cursor.getString(1),

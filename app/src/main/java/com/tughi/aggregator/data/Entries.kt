@@ -7,7 +7,7 @@ import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQueryBuilder
 import java.io.Serializable
 
-class Entries<T>(columns: Array<String>, factory: Factory<T>) : Repository<T>(columns, factory) {
+class Entries<T>(factory: Factory<T>) : Repository<T>(factory) {
 
     companion object {
         internal const val TABLE = "entries"
@@ -85,7 +85,7 @@ class Entries<T>(columns: Array<String>, factory: Factory<T>) : Repository<T>(co
 
     fun query(id: Long): T? {
         val query = SupportSQLiteQueryBuilder.builder("$TABLE e LEFT JOIN ${Feeds.TABLE} f ON e.$FEED_ID = f.${Feeds.ID}")
-                .columns(Array(columns.size) { index -> "${projectionMap[columns[index]]} AS ${columns[index]}" })
+                .columns(Array(factory.columns.size) { index -> "${projectionMap[factory.columns[index]]} AS ${factory.columns[index]}" })
                 .selection("e.$ID = ?", arrayOf(id))
                 .create()
 
@@ -130,7 +130,7 @@ class Entries<T>(columns: Array<String>, factory: Factory<T>) : Repository<T>(co
         }
 
         val query = SupportSQLiteQueryBuilder.builder("$TABLE e LEFT JOIN ${Feeds.TABLE} f ON e.$FEED_ID = f.${Feeds.ID}")
-                .columns(Array(columns.size) { index -> "${projectionMap[columns[index]]} AS ${columns[index]}" })
+                .columns(Array(factory.columns.size) { index -> "${projectionMap[factory.columns[index]]} AS ${factory.columns[index]}" })
                 .selection(selection, selectionArgs)
                 .orderBy(orderBy)
                 .create()

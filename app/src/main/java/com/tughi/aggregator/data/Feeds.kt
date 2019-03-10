@@ -4,7 +4,7 @@ import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQueryBuilder
 
-class Feeds<T>(columns: Array<String> = emptyArray(), factory: Repository.Factory<T>) : Repository<T>(columns, factory) {
+class Feeds<T>(factory: Repository.Factory<T>) : Repository<T>(factory) {
 
     companion object {
         internal const val TABLE = "feeds"
@@ -83,7 +83,7 @@ class Feeds<T>(columns: Array<String> = emptyArray(), factory: Repository.Factor
 
     fun query(id: Long): T? {
         val query = SupportSQLiteQueryBuilder.builder("$TABLE f")
-                .columns(Array(columns.size) { index -> "${projectionMap[columns[index]]} AS ${columns[index]}" })
+                .columns(Array(factory.columns.size) { index -> "${projectionMap[factory.columns[index]]} AS ${factory.columns[index]}" })
                 .selection("f.$ID = ?", arrayOf(id))
                 .create()
 
@@ -119,7 +119,7 @@ class Feeds<T>(columns: Array<String> = emptyArray(), factory: Repository.Factor
     abstract inner class Criteria {
 
         val query: SupportSQLiteQuery = SupportSQLiteQueryBuilder.builder("$TABLE f").also {
-            it.columns(Array(columns.size) { index -> "${projectionMap[columns[index]]} AS ${columns[index]}" })
+            it.columns(Array(factory.columns.size) { index -> "${projectionMap[factory.columns[index]]} AS ${factory.columns[index]}" })
             init(it)
         }.create()
 
@@ -129,7 +129,7 @@ class Feeds<T>(columns: Array<String> = emptyArray(), factory: Repository.Factor
 
     inner class AllCriteria : Criteria() {
         override fun init(builder: SupportSQLiteQueryBuilder) {
-            if (columns.contains(TITLE)) {
+            if (factory.columns.contains(TITLE)) {
                 builder.orderBy(TITLE)
             }
         }

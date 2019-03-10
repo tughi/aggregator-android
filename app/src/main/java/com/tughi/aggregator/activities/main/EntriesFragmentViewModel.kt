@@ -29,20 +29,21 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.QueryCriteria) : Vi
     }
 
     private val repository = Entries(
-            arrayOf(
-                    Entries.ID,
-                    Entries.FEED_ID,
-                    Entries.AUTHOR,
-                    Entries.FEED_FAVICON_URL,
-                    Entries.FEED_TITLE,
-                    Entries.PUBLISH_TIME,
-                    Entries.LINK,
-                    Entries.PINNED_TIME,
-                    Entries.READ_TIME,
-                    Entries.TITLE,
-                    Entries.TYPE
-            ),
             object : Repository.Factory<Entry>() {
+                override val columns = arrayOf(
+                        Entries.ID,
+                        Entries.FEED_ID,
+                        Entries.AUTHOR,
+                        Entries.FEED_FAVICON_URL,
+                        Entries.FEED_TITLE,
+                        Entries.PUBLISH_TIME,
+                        Entries.LINK,
+                        Entries.PINNED_TIME,
+                        Entries.READ_TIME,
+                        Entries.TITLE,
+                        Entries.TYPE
+                )
+
                 private val context = App.instance
 
                 override fun create(cursor: Cursor) = Entry(

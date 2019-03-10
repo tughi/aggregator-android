@@ -10,10 +10,11 @@ import com.tughi.aggregator.data.Repository
 class FeedEntriesFragmentViewModel(feedId: Long) : ViewModel() {
 
     private val feeds = Feeds(
-            columns = arrayOf(
-                    Feeds.TITLE
-            ),
-            factory = object : Repository.Factory<Feed>() {
+            object : Repository.Factory<Feed>() {
+                override val columns = arrayOf(
+                        Feeds.TITLE
+                )
+
                 override fun create(cursor: Cursor) = Feed(
                         cursor.getString(0)
                 )

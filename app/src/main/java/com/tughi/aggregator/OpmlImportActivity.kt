@@ -33,7 +33,9 @@ import java.io.IOException
 internal class OpmlImportViewModel : ViewModel() {
 
     val feedsRepository = Feeds(
-            factory = object : Repository.Factory<OpmlFeed>() {}
+            factory = object : Repository.Factory<OpmlFeed>() {
+                override val columns: Array<String> = emptyArray()
+            }
     )
 
     val feeds = MutableLiveData<List<OpmlFeed>>()

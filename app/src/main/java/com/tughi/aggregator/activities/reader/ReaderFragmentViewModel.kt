@@ -9,19 +9,20 @@ import com.tughi.aggregator.data.Repository
 internal class ReaderFragmentViewModel(entryId: Long, entryReadTime: Long) : ViewModel() {
 
     private val repository = Entries(
-            arrayOf(
-                    Entries.ID,
-                    Entries.TITLE,
-                    Entries.LINK,
-                    Entries.CONTENT,
-                    Entries.AUTHOR,
-                    Entries.PUBLISH_TIME,
-                    Entries.FEED_TITLE,
-                    Entries.FEED_LANGUAGE,
-                    Entries.PINNED_TIME,
-                    Entries.READ_TIME
-            ),
             object : Repository.Factory<Entry>() {
+                override val columns = arrayOf(
+                        Entries.ID,
+                        Entries.TITLE,
+                        Entries.LINK,
+                        Entries.CONTENT,
+                        Entries.AUTHOR,
+                        Entries.PUBLISH_TIME,
+                        Entries.FEED_TITLE,
+                        Entries.FEED_LANGUAGE,
+                        Entries.PINNED_TIME,
+                        Entries.READ_TIME
+                )
+
                 override fun create(cursor: Cursor) = Entry(
                         id = cursor.getLong(0),
                         title = cursor.getString(1),

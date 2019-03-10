@@ -11,14 +11,15 @@ import java.io.OutputStream
 object OpmlGenerator {
 
     val repository = Feeds(
-            arrayOf(
-                    Feeds.URL,
-                    Feeds.TITLE,
-                    Feeds.CUSTOM_TITLE,
-                    Feeds.LINK,
-                    Feeds.UPDATE_MODE
-            ),
             object : Repository.Factory<OpmlFeed>() {
+                override val columns = arrayOf(
+                        Feeds.URL,
+                        Feeds.TITLE,
+                        Feeds.CUSTOM_TITLE,
+                        Feeds.LINK,
+                        Feeds.UPDATE_MODE
+                )
+
                 override fun create(cursor: Cursor) = OpmlFeed(
                         url = cursor.getString(0),
                         title = cursor.getString(1),

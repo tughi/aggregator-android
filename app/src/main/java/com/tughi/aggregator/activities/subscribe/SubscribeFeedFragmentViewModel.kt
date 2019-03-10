@@ -11,7 +11,9 @@ import com.tughi.aggregator.data.UpdateMode
 class SubscribeFeedFragmentViewModel : ViewModel() {
 
     val repository = Feeds(
-            factory = object : Repository.Factory<Feed>() {}
+            factory = object : Repository.Factory<Feed>() {
+                override val columns: Array<String> = emptyArray()
+            }
     )
 
     var updateMode = MutableLiveData<UpdateMode>().apply { value = DefaultUpdateMode }

@@ -15,18 +15,19 @@ import java.io.Serializable
 class FeedsFragmentViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = Feeds(
-            arrayOf(
-                    Feeds.ID,
-                    Feeds.TITLE,
-                    Feeds.FAVICON_URL,
-                    Feeds.LAST_UPDATE_TIME,
-                    Feeds.LAST_UPDATE_ERROR,
-                    Feeds.NEXT_UPDATE_TIME,
-                    Feeds.NEXT_UPDATE_RETRY,
-                    Feeds.UPDATE_MODE,
-                    Feeds.UNREAD_ENTRY_COUNT
-            ),
             object : Repository.Factory<Feed>() {
+                override val columns = arrayOf(
+                        Feeds.ID,
+                        Feeds.TITLE,
+                        Feeds.FAVICON_URL,
+                        Feeds.LAST_UPDATE_TIME,
+                        Feeds.LAST_UPDATE_ERROR,
+                        Feeds.NEXT_UPDATE_TIME,
+                        Feeds.NEXT_UPDATE_RETRY,
+                        Feeds.UPDATE_MODE,
+                        Feeds.UNREAD_ENTRY_COUNT
+                )
+
                 override fun create(cursor: Cursor) = Feed(
                         id = cursor.getLong(0),
                         title = cursor.getString(1),

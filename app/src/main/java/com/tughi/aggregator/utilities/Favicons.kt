@@ -18,8 +18,9 @@ object Favicons {
     private val cache: LruCache<String, Bitmap>
 
     private val repository = Feeds(
-            arrayOf(Feeds.FAVICON_CONTENT),
             object : Repository.Factory<Feed>() {
+                override val columns = arrayOf(Feeds.FAVICON_CONTENT)
+
                 override fun create(cursor: Cursor) = Feed(cursor.getBlob(0))
             }
     )

@@ -14,14 +14,15 @@ import kotlinx.coroutines.launch
 class FeedSettingsViewModel(feedId: Long) : ViewModel() {
 
     val repository = Feeds(
-            columns = arrayOf(
-                    Feeds.ID,
-                    Feeds.URL,
-                    Feeds.TITLE,
-                    Feeds.CUSTOM_TITLE,
-                    Feeds.UPDATE_MODE
-            ),
-            factory = object : Repository.Factory<Feed>() {
+            object : Repository.Factory<Feed>() {
+                override val columns = arrayOf(
+                        Feeds.ID,
+                        Feeds.URL,
+                        Feeds.TITLE,
+                        Feeds.CUSTOM_TITLE,
+                        Feeds.UPDATE_MODE
+                )
+
                 override fun create(cursor: Cursor) = Feed(
                         cursor.getLong(0),
                         cursor.getString(1),
