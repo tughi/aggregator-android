@@ -19,8 +19,9 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.tughi.aggregator.data.Feed
-import com.tughi.aggregator.data.UpdateMode
+import com.tughi.aggregator.data.Feeds
+import com.tughi.aggregator.data.Repository
+import com.tughi.aggregator.feeds.OpmlFeed
 import com.tughi.aggregator.feeds.OpmlParser
 import com.tughi.aggregator.services.AutoUpdateScheduler
 import com.tughi.aggregator.services.FaviconUpdaterService
@@ -29,9 +30,11 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.IOException
 
-data class OpmlFeed(val feed: Feed, val excluded: Boolean)
-
 internal class OpmlImportViewModel : ViewModel() {
+
+    val feedsRepository = Feeds(
+            mapper = object : Repository.DataMapper<OpmlFeed>() {}
+    )
 
     val feeds = MutableLiveData<List<OpmlFeed>>()
 
@@ -42,17 +45,8 @@ internal class OpmlImportViewModel : ViewModel() {
 
                 try {
                     OpmlParser.parse(it, object : OpmlParser.Listener {
-                        override fun onFeedParsed(url: String, title: String, link: String?, customTitle: String?, category: String?, updateMode: UpdateMode) {
-                            feeds.add(OpmlFeed(
-                                    feed = Feed(
-                                            url = url,
-                                            title = title,
-                                            link = link,
-                                            customTitle = customTitle,
-                                            updateMode = updateMode
-                                    ),
-                                    excluded = false
-                            ))
+                        override fun onFeedParsed(feed: OpmlFeed) {
+                            feeds.add(feed)
                         }
                     })
                 } catch (exception: IOException) {
@@ -70,7 +64,7 @@ internal class OpmlImportViewModel : ViewModel() {
         val newFeeds = mutableListOf<OpmlFeed>()
 
         feeds.value?.forEach {
-            newFeeds.add(it.copy(feed = it.feed, excluded = !it.excluded))
+            newFeeds.add(it.copy(excluded = !it.excluded))
         }
 
         feeds.value = newFeeds
@@ -81,7 +75,7 @@ internal class OpmlImportViewModel : ViewModel() {
 
         feeds.value?.forEach {
             if (it === feed) {
-                newFeeds.add(it.copy(feed = it.feed, excluded = !it.excluded))
+                newFeeds.add(it.copy(excluded = !it.excluded))
             } else {
                 newFeeds.add(it)
             }
@@ -114,17 +108,24 @@ class OpmlImportActivity : AppActivity() {
 
         val subscribeButton = findViewById<Button>(R.id.subscribe)
 
-        subscribeButton.setOnClickListener { _ ->
+        subscribeButton.setOnClickListener {
             viewModel.feeds.value?.let { feeds ->
                 GlobalScope.launch(Dispatchers.IO) {
-                    val feedDao = AppDatabase.instance.feedDao()
-
                     feeds.forEach {
                         if (!it.excluded) {
-                            val feedId = feedDao.insertFeed(it.feed)
+                            val feedId = viewModel.feedsRepository.insert(
+                                    Feeds.URL to it.url,
+                                    Feeds.LINK to it.link,
+                                    Feeds.TITLE to it.title,
+                                    Feeds.CUSTOM_TITLE to it.customTitle,
+                                    Feeds.UPDATE_MODE to it.updateMode.serialize()
+                            )
 
                             if (feedId > 0) {
-                                feedDao.updateFeed(feedId, AutoUpdateScheduler.calculateNextUpdateTime(feedId, it.feed.updateMode, 0))
+                                viewModel.feedsRepository.update(
+                                        feedId,
+                                        Feeds.NEXT_UPDATE_TIME to AutoUpdateScheduler.calculateNextUpdateTime(feedId, it.updateMode, 0)
+                                )
 
                                 GlobalScope.launch(Dispatchers.Main) {
                                     FaviconUpdaterService.start(feedId)
@@ -199,8 +200,8 @@ internal class OpmlFeedViewHolder(itemView: View) : RecyclerView.ViewHolder(item
         } else {
             checkbox.setImageResource(R.drawable.check_box_checked)
         }
-        title.text = feed.feed.customTitle ?: feed.feed.title
-        url.text = feed.feed.url
+        title.text = feed.customTitle ?: feed.title
+        url.text = feed.url
     }
 
 }
@@ -226,8 +227,8 @@ internal class OpmlFeedsAdapter(val viewModel: OpmlImportViewModel) : ListAdapte
 
 object FeedDiffUtil : DiffUtil.ItemCallback<OpmlFeed>() {
 
-    override fun areItemsTheSame(oldItem: OpmlFeed, newItem: OpmlFeed): Boolean = oldItem.feed === newItem.feed
+    override fun areItemsTheSame(oldItem: OpmlFeed, newItem: OpmlFeed) = oldItem === newItem
 
-    override fun areContentsTheSame(oldItem: OpmlFeed, newItem: OpmlFeed): Boolean = oldItem.excluded == newItem.excluded
+    override fun areContentsTheSame(oldItem: OpmlFeed, newItem: OpmlFeed) = oldItem == newItem
 
 }

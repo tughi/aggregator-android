@@ -56,14 +56,14 @@ object OpmlParser {
                     }
                     val feedCategory = if (path.isEmpty()) null else path[0]
 
-                    listener.onFeedParsed(
+                    listener.onFeedParsed(OpmlFeed(
                             url = feedUrl,
                             title = feedTitle,
                             link = feedLink,
                             category = feedCategory,
                             customTitle = feedCustomTitle,
                             updateMode = feedUpdateMode
-                    )
+                    ))
                 }
 
                 path.add(text)
@@ -82,14 +82,7 @@ object OpmlParser {
     }
 
     interface Listener {
-        fun onFeedParsed(
-                url: String,
-                title: String,
-                link: String?,
-                customTitle: String?,
-                category: String?,
-                updateMode: UpdateMode
-        )
+        fun onFeedParsed(feed: OpmlFeed)
     }
 
 }

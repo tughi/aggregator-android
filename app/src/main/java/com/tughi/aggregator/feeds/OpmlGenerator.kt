@@ -18,8 +18,8 @@ object OpmlGenerator {
                     Feeds.LINK,
                     Feeds.UPDATE_MODE
             ),
-            object : Repository.DataMapper<Feed>() {
-                override fun map(cursor: Cursor) = Feed(
+            object : Repository.DataMapper<OpmlFeed>() {
+                override fun map(cursor: Cursor) = OpmlFeed(
                         url = cursor.getString(0),
                         title = cursor.getString(1),
                         customTitle = cursor.getString(2),
@@ -29,7 +29,7 @@ object OpmlGenerator {
             }
     )
 
-    fun generate(feeds: List<Feed>, outputStream: OutputStream) {
+    fun generate(feeds: List<OpmlFeed>, outputStream: OutputStream) {
         val xml = Xml.newSerializer()
 
         xml.setOutput(outputStream, "utf-8")
@@ -91,14 +91,5 @@ object OpmlGenerator {
         }
 
     }
-
-    data class Feed(
-            val url: String,
-            val title: String,
-            val link: String?,
-            val customTitle: String?,
-            val updateMode: UpdateMode,
-            val excluded: Boolean = false
-    )
 
 }
