@@ -21,8 +21,8 @@ internal class ReaderFragmentViewModel(entryId: Long, entryReadTime: Long) : Vie
                     Entries.PINNED_TIME,
                     Entries.READ_TIME
             ),
-            object : Repository.DataMapper<Entry>() {
-                override fun map(cursor: Cursor) = Entry(
+            object : Repository.Factory<Entry>() {
+                override fun create(cursor: Cursor) = Entry(
                         id = cursor.getLong(0),
                         title = cursor.getString(1),
                         link = cursor.getString(2),

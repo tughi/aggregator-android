@@ -42,7 +42,7 @@ object FeedUpdater {
                     Entries.AUTHOR,
                     Entries.PUBLISH_TIME
             ),
-            mapper = object : Repository.DataMapper<Entry>() {}
+            factory = object : Repository.Factory<Entry>() {}
     )
 
     private val feeds = Feeds(
@@ -57,8 +57,8 @@ object FeedUpdater {
                     Feeds.HTTP_ETAG,
                     Feeds.HTTP_LAST_MODIFIED
             ),
-            mapper = object : Repository.DataMapper<Feed>() {
-                override fun map(cursor: Cursor) = Feed(
+            factory = object : Repository.Factory<Feed>() {
+                override fun create(cursor: Cursor) = Feed(
                         cursor.getLong(0),
                         cursor.getString(1),
                         cursor.getString(2),

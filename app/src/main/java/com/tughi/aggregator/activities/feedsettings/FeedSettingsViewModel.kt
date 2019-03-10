@@ -21,8 +21,8 @@ class FeedSettingsViewModel(feedId: Long) : ViewModel() {
                     Feeds.CUSTOM_TITLE,
                     Feeds.UPDATE_MODE
             ),
-            mapper = object : Repository.DataMapper<Feed>() {
-                override fun map(cursor: Cursor) = Feed(
+            factory = object : Repository.Factory<Feed>() {
+                override fun create(cursor: Cursor) = Feed(
                         cursor.getLong(0),
                         cursor.getString(1),
                         cursor.getString(2),

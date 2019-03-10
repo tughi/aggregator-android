@@ -42,8 +42,8 @@ object AutoUpdateScheduler {
                     Feeds.LAST_UPDATE_TIME,
                     Feeds.UPDATE_MODE
             ),
-            mapper = object : Repository.DataMapper<Feed>() {
-                override fun map(cursor: Cursor) = Feed(
+            factory = object : Repository.Factory<Feed>() {
+                override fun create(cursor: Cursor) = Feed(
                         id = cursor.getLong(0),
                         lastUpdateTime = cursor.getLong(1),
                         updateMode = UpdateMode.deserialize(cursor.getString(2))

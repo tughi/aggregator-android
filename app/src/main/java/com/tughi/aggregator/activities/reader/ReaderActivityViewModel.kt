@@ -15,8 +15,8 @@ class ReaderActivityViewModel(queryCriteria: Entries.QueryCriteria) : ViewModel(
                     Entries.PINNED_TIME,
                     Entries.READ_TIME
             ),
-            object : Repository.DataMapper<Entry>() {
-                override fun map(cursor: Cursor) = Entry(
+            object : Repository.Factory<Entry>() {
+                override fun create(cursor: Cursor) = Entry(
                         id = cursor.getLong(0),
                         pinnedTime = cursor.getLong(1),
                         readTime = cursor.getLong(2)

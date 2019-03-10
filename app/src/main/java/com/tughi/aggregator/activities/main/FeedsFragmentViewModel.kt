@@ -26,8 +26,8 @@ class FeedsFragmentViewModel(application: Application) : AndroidViewModel(applic
                     Feeds.UPDATE_MODE,
                     Feeds.UNREAD_ENTRY_COUNT
             ),
-            object : Repository.DataMapper<Feed>() {
-                override fun map(cursor: Cursor) = Feed(
+            object : Repository.Factory<Feed>() {
+                override fun create(cursor: Cursor) = Feed(
                         id = cursor.getLong(0),
                         title = cursor.getString(1),
                         faviconUrl = cursor.getString(2),

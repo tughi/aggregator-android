@@ -42,10 +42,10 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.QueryCriteria) : Vi
                     Entries.TITLE,
                     Entries.TYPE
             ),
-            object : Repository.DataMapper<Entry>() {
+            object : Repository.Factory<Entry>() {
                 private val context = App.instance
 
-                override fun map(cursor: Cursor) = Entry(
+                override fun create(cursor: Cursor) = Entry(
                         id = cursor.getLong(0),
                         feedId = cursor.getLong(1),
                         author = cursor.getString(2),

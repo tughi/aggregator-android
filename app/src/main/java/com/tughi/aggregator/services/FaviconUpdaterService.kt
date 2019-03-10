@@ -28,8 +28,8 @@ class FaviconUpdaterService : IntentService("FaviconUpdater") {
             arrayOf(
                     Feeds.LINK
             ),
-            object : Repository.DataMapper<Feed>() {
-                override fun map(cursor: Cursor) = Feed(
+            object : Repository.Factory<Feed>() {
+                override fun create(cursor: Cursor) = Feed(
                         cursor.getString(0)
                 )
             }

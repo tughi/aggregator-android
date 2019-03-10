@@ -13,8 +13,8 @@ class FeedEntriesFragmentViewModel(feedId: Long) : ViewModel() {
             columns = arrayOf(
                     Feeds.TITLE
             ),
-            mapper = object : Repository.DataMapper<Feed>() {
-                override fun map(cursor: Cursor) = Feed(
+            factory = object : Repository.Factory<Feed>() {
+                override fun create(cursor: Cursor) = Feed(
                         cursor.getString(0)
                 )
             }

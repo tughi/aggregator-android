@@ -4,7 +4,7 @@ import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQueryBuilder
 
-class Feeds<T>(columns: Array<String> = emptyArray(), mapper: Repository.DataMapper<T>) : Repository<T>(columns, mapper) {
+class Feeds<T>(columns: Array<String> = emptyArray(), factory: Repository.Factory<T>) : Repository<T>(columns, factory) {
 
     companion object {
         internal const val TABLE = "feeds"
@@ -89,7 +89,7 @@ class Feeds<T>(columns: Array<String> = emptyArray(), mapper: Repository.DataMap
 
         Storage.query(query).use { cursor ->
             if (cursor.moveToFirst()) {
-                return mapper.map(cursor)
+                return factory.create(cursor)
             }
         }
 
@@ -104,7 +104,7 @@ class Feeds<T>(columns: Array<String> = emptyArray(), mapper: Repository.DataMap
                 val entries = mutableListOf<T>()
 
                 do {
-                    entries.add(mapper.map(cursor))
+                    entries.add(factory.create(cursor))
                 } while (cursor.moveToNext())
 
                 return entries

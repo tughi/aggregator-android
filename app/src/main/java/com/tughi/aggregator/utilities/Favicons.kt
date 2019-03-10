@@ -19,8 +19,8 @@ object Favicons {
 
     private val repository = Feeds(
             arrayOf(Feeds.FAVICON_CONTENT),
-            object : Repository.DataMapper<Feed>() {
-                override fun map(cursor: Cursor) = Feed(cursor.getBlob(0))
+            object : Repository.Factory<Feed>() {
+                override fun create(cursor: Cursor) = Feed(cursor.getBlob(0))
             }
     )
 

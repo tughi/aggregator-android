@@ -18,8 +18,8 @@ object OpmlGenerator {
                     Feeds.LINK,
                     Feeds.UPDATE_MODE
             ),
-            object : Repository.DataMapper<OpmlFeed>() {
-                override fun map(cursor: Cursor) = OpmlFeed(
+            object : Repository.Factory<OpmlFeed>() {
+                override fun create(cursor: Cursor) = OpmlFeed(
                         url = cursor.getString(0),
                         title = cursor.getString(1),
                         customTitle = cursor.getString(2),

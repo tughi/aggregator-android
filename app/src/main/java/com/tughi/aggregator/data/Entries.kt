@@ -7,7 +7,7 @@ import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQueryBuilder
 import java.io.Serializable
 
-class Entries<T>(columns: Array<String>, mapper: DataMapper<T>) : Repository<T>(columns, mapper) {
+class Entries<T>(columns: Array<String>, factory: Factory<T>) : Repository<T>(columns, factory) {
 
     companion object {
         internal const val TABLE = "entries"
@@ -91,7 +91,7 @@ class Entries<T>(columns: Array<String>, mapper: DataMapper<T>) : Repository<T>(
 
         Storage.query(query).use { cursor ->
             if (cursor.moveToFirst()) {
-                return mapper.map(cursor)
+                return factory.create(cursor)
             }
         }
 
@@ -140,7 +140,7 @@ class Entries<T>(columns: Array<String>, mapper: DataMapper<T>) : Repository<T>(
                 val entries = mutableListOf<T>()
 
                 do {
-                    entries.add(mapper.map(cursor))
+                    entries.add(factory.create(cursor))
                 } while (cursor.moveToNext())
 
                 return entries

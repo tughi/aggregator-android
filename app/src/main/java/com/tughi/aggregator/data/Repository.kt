@@ -2,7 +2,7 @@ package com.tughi.aggregator.data
 
 import android.database.Cursor
 
-abstract class Repository<T>(protected val columns: Array<String>, protected val mapper: DataMapper<T>) {
+abstract class Repository<T>(protected val columns: Array<String>, protected val factory: Factory<T>) {
 
     fun beginTransaction() = Storage.beginTransaction()
 
@@ -10,9 +10,9 @@ abstract class Repository<T>(protected val columns: Array<String>, protected val
 
     fun endTransaction() = Storage.endTransaction()
 
-    open class DataMapper<T> {
+    open class Factory<T> {
 
-        open fun map(cursor: Cursor): T {
+        open fun create(cursor: Cursor): T {
             throw UnsupportedOperationException()
         }
 
