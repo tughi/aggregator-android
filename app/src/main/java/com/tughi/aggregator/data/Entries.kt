@@ -77,11 +77,11 @@ class Entries<T>(columns: Array<String>, mapper: DataMapper<T>) : Repository<T>(
 
     }
 
-    fun insert(vararg data: Pair<String, Any?>): Long = Storage.insert(TABLE, mapper.map(data))
+    fun insert(vararg data: Pair<String, Any?>): Long = Storage.insert(TABLE, data.toContentValues())
 
-    fun update(id: Long, vararg data: Pair<String, Any?>) = Storage.update(TABLE, mapper.map(data), "$ID = ?", arrayOf(id), id)
+    fun update(id: Long, vararg data: Pair<String, Any?>) = Storage.update(TABLE, data.toContentValues(), "$ID = ?", arrayOf(id), id)
 
-    fun update(feedId: Long, uid: String, vararg data: Pair<String, Any?>) = Storage.update(TABLE, mapper.map(data), "$FEED_ID = ? AND $UID = ?", arrayOf(feedId, uid))
+    fun update(feedId: Long, uid: String, vararg data: Pair<String, Any?>) = Storage.update(TABLE, data.toContentValues(), "$FEED_ID = ? AND $UID = ?", arrayOf(feedId, uid))
 
     fun query(id: Long): T? {
         val query = SupportSQLiteQueryBuilder.builder("$TABLE e LEFT JOIN ${Feeds.TABLE} f ON e.$FEED_ID = f.${Feeds.ID}")

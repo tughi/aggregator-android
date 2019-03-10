@@ -77,9 +77,9 @@ class Feeds<T>(columns: Array<String> = emptyArray(), mapper: Repository.DataMap
 
     }
 
-    fun insert(vararg data: Pair<String, Any?>): Long = Storage.insert(TABLE, mapper.map(data))
+    fun insert(vararg data: Pair<String, Any?>): Long = Storage.insert(TABLE, data.toContentValues())
 
-    fun update(id: Long, vararg data: Pair<String, Any?>) = Storage.update(TABLE, mapper.map(data), "$ID = ?", arrayOf(id), id)
+    fun update(id: Long, vararg data: Pair<String, Any?>) = Storage.update(TABLE, data.toContentValues(), "$ID = ?", arrayOf(id), id)
 
     fun query(id: Long): T? {
         val query = SupportSQLiteQueryBuilder.builder("$TABLE f")
