@@ -22,7 +22,7 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
         const val EXTRA_ENTRIES_POSITION = "entries_position"
     }
 
-    private var entries: Array<ReaderActivityEntry> = emptyArray()
+    private var entries: List<ReaderActivityViewModel.Entry> = emptyList()
 
     private lateinit var adapter: ReaderAdapter
 

@@ -39,7 +39,7 @@ class ReaderFragment : Fragment() {
     private lateinit var markDoneMenuItem: MenuItem
     private lateinit var markPinnedMenuItem: MenuItem
 
-    private var loadedEntry: ReaderFragmentEntry? = null
+    private var loadedEntry: ReaderFragmentViewModel.Entry? = null
     private var loadedEntryHtml: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,7 +73,7 @@ class ReaderFragment : Fragment() {
             attributes.recycle()
 
             viewModel.entry.observe(this, Observer { entry ->
-                loadedEntry = entry
+                loadedEntry = entry ?: return@Observer
 
                 val entryLink = entry.link
                 val entryTitle = entry.title

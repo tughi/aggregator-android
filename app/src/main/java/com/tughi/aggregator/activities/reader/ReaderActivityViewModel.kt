@@ -1,14 +1,36 @@
 package com.tughi.aggregator.activities.reader
 
+import android.database.Cursor
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.tughi.aggregator.AppDatabase
 import com.tughi.aggregator.data.Entries
+import com.tughi.aggregator.data.Repository
 
 class ReaderActivityViewModel(queryCriteria: Entries.QueryCriteria) : ViewModel() {
 
-    val entries: LiveData<Array<ReaderActivityEntry>> = AppDatabase.instance.readerDao().getReaderActivityEntries(queryCriteria)
+    private val repository = Entries(
+            arrayOf(
+                    Entries.ID,
+                    Entries.PINNED_TIME,
+                    Entries.READ_TIME
+            ),
+            object : Repository.DataMapper<Entry>() {
+                override fun map(cursor: Cursor) = Entry(
+                        id = cursor.getLong(0),
+                        pinnedTime = cursor.getLong(1),
+                        readTime = cursor.getLong(2)
+                )
+            }
+    )
+
+    val entries: LiveData<List<Entry>> = repository.liveQuery(queryCriteria)
+
+    data class Entry(
+            val id: Long,
+            val readTime: Long,
+            val pinnedTime: Long
+    )
 
     class Factory(private val queryCriteria: Entries.QueryCriteria) : ViewModelProvider.Factory {
 

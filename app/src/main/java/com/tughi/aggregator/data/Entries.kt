@@ -16,6 +16,7 @@ class Entries<T>(columns: Array<String>, mapper: DataMapper<T>) : Repository<T>(
         const val UID = "uid"
         const val FEED_ID = "feed_id"
         const val FEED_TITLE = "feed_title"
+        const val FEED_LANGUAGE = "feed_language"
         const val FEED_FAVICON_URL = "feed_favicon_url"
         const val TITLE = "title"
         const val LINK = "link"
@@ -34,11 +35,15 @@ class Entries<T>(columns: Array<String>, mapper: DataMapper<T>) : Repository<T>(
                 UID to "e.$UID",
                 FEED_ID to "e.$FEED_ID",
                 FEED_TITLE to "COALESCE(f.${Feeds.CUSTOM_TITLE}, f.${Feeds.TITLE})",
+                FEED_LANGUAGE to "f.${Feeds.LANGUAGE}",
                 FEED_FAVICON_URL to "f.${Feeds.FAVICON_URL}",
                 TITLE to "e.$TITLE",
                 LINK to "e.$LINK",
+                CONTENT to "e.$CONTENT",
                 AUTHOR to "e.$AUTHOR",
                 PUBLISH_TIME to "COALESCE(e.$PUBLISH_TIME, e.$INSERT_TIME)",
+                INSERT_TIME to "e.$INSERT_TIME",
+                UPDATE_TIME to "e.$UPDATE_TIME",
                 READ_TIME to "e.$READ_TIME",
                 PINNED_TIME to "e.$PINNED_TIME",
                 TYPE to "CASE WHEN e.$READ_TIME > 0 AND e.$PINNED_TIME = 0 THEN 'READ' ELSE 'UNREAD' END"
@@ -78,10 +83,10 @@ class Entries<T>(columns: Array<String>, mapper: DataMapper<T>) : Repository<T>(
 
     fun update(feedId: Long, uid: String, vararg data: Pair<String, Any?>) = Storage.update(TABLE, mapper.map(data), "$FEED_ID = ? AND $UID = ?", arrayOf(feedId, uid))
 
-    fun query(feedId: Long, uid: String): T? {
-        val query = SupportSQLiteQueryBuilder.builder("$TABLE e")
+    fun query(id: Long): T? {
+        val query = SupportSQLiteQueryBuilder.builder("$TABLE e LEFT JOIN ${Feeds.TABLE} f ON e.$FEED_ID = f.${Feeds.ID}")
                 .columns(Array(columns.size) { index -> "${projectionMap[columns[index]]} AS ${columns[index]}" })
-                .selection("e.$FEED_ID = ? AND e.$UID = ?", arrayOf(feedId, uid))
+                .selection("e.$ID = ?", arrayOf(id))
                 .create()
 
         Storage.query(query).use { cursor ->
@@ -92,6 +97,8 @@ class Entries<T>(columns: Array<String>, mapper: DataMapper<T>) : Repository<T>(
 
         return null
     }
+
+    fun liveQuery(id: Long) = Storage.createLiveData(TABLE) { query(id) }
 
     fun query(criteria: QueryCriteria): List<T> {
         val selection = when {
