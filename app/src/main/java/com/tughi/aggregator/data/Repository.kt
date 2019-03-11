@@ -7,12 +7,6 @@ abstract class Repository<TC : Repository.TableColumn, QC : Repository.Column> {
 
     protected abstract val tableName: String
 
-    fun beginTransaction() = Storage.beginTransaction()
-
-    fun setTransactionSuccessful() = Storage.setTransactionSuccessful()
-
-    fun endTransaction() = Storage.endTransaction()
-
     fun insert(vararg data: Pair<TC, Any?>): Long = Storage.insert(tableName, data.toContentValues())
 
     fun update(id: Long, vararg data: Pair<TC, Any?>) = Storage.update(tableName, data.toContentValues(), "id = ?", arrayOf(id), id)
