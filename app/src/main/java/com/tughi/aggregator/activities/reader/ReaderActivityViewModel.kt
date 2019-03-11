@@ -9,23 +9,21 @@ import com.tughi.aggregator.data.Repository
 
 class ReaderActivityViewModel(queryCriteria: Entries.QueryCriteria) : ViewModel() {
 
-    private val repository = Entries(
-            object : Repository.Factory<Entry>() {
-                override val columns = arrayOf(
-                        Entries.ID,
-                        Entries.PINNED_TIME,
-                        Entries.READ_TIME
-                )
+    private val entryFactory = object : Repository.Factory<Entry>() {
+        override val columns = arrayOf(
+                Entries.ID,
+                Entries.PINNED_TIME,
+                Entries.READ_TIME
+        )
 
-                override fun create(cursor: Cursor) = Entry(
-                        id = cursor.getLong(0),
-                        pinnedTime = cursor.getLong(1),
-                        readTime = cursor.getLong(2)
-                )
-            }
-    )
+        override fun create(cursor: Cursor) = Entry(
+                id = cursor.getLong(0),
+                pinnedTime = cursor.getLong(1),
+                readTime = cursor.getLong(2)
+        )
+    }
 
-    val entries: LiveData<List<Entry>> = repository.liveQuery(queryCriteria)
+    val entries: LiveData<List<Entry>> = Entries.liveQuery(queryCriteria, entryFactory)
 
     data class Entry(
             val id: Long,

@@ -106,7 +106,7 @@ class SubscribeFeedFragment : Fragment() {
                 val link = arguments.getString(ARG_LINK)!!
 
                 GlobalScope.launch(Dispatchers.IO) {
-                    val feedId = viewModel.repository.insert(
+                    val feedId = Feeds.insert(
                             Feeds.URL to urlTextView.text.toString(),
                             Feeds.TITLE to title,
                             Feeds.CUSTOM_TITLE to if (customTitle != title) customTitle else null,

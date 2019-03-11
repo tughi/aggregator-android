@@ -13,25 +13,23 @@ import kotlinx.coroutines.launch
 
 class FeedSettingsViewModel(feedId: Long) : ViewModel() {
 
-    val repository = Feeds(
-            object : Repository.Factory<Feed>() {
-                override val columns = arrayOf(
-                        Feeds.ID,
-                        Feeds.URL,
-                        Feeds.TITLE,
-                        Feeds.CUSTOM_TITLE,
-                        Feeds.UPDATE_MODE
-                )
+    private val feedsFactory = object : Repository.Factory<Feed>() {
+        override val columns = arrayOf(
+                Feeds.ID,
+                Feeds.URL,
+                Feeds.TITLE,
+                Feeds.CUSTOM_TITLE,
+                Feeds.UPDATE_MODE
+        )
 
-                override fun create(cursor: Cursor) = Feed(
-                        cursor.getLong(0),
-                        cursor.getString(1),
-                        cursor.getString(2),
-                        cursor.getString(3),
-                        UpdateMode.deserialize(cursor.getString(4))
-                )
-            }
-    )
+        override fun create(cursor: Cursor) = Feed(
+                cursor.getLong(0),
+                cursor.getString(1),
+                cursor.getString(2),
+                cursor.getString(3),
+                UpdateMode.deserialize(cursor.getString(4))
+        )
+    }
 
     val feed: LiveData<Feed>
 
@@ -41,7 +39,7 @@ class FeedSettingsViewModel(feedId: Long) : ViewModel() {
         val liveFeed = MutableLiveData<Feed>()
 
         GlobalScope.launch {
-            liveFeed.postValue(repository.query(feedId))
+            liveFeed.postValue(Feeds.query(feedId, feedsFactory))
         }
 
         feed = liveFeed

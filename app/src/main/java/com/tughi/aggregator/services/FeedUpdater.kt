@@ -33,51 +33,36 @@ import kotlin.coroutines.suspendCoroutine
 
 object FeedUpdater {
 
-    private val entries = Entries(
-            object : Repository.Factory<Entry>() {
-                override val columns = arrayOf(
-                        Entries.ID,
-                        Entries.TITLE,
-                        Entries.LINK,
-                        Entries.CONTENT,
-                        Entries.AUTHOR,
-                        Entries.PUBLISH_TIME
-                )
-            }
-    )
+    private val feedsFactory = object : Repository.Factory<Feed>() {
+        override val columns = arrayOf(
+                Feeds.ID,
+                Feeds.URL,
+                Feeds.TITLE,
+                Feeds.LINK,
+                Feeds.LANGUAGE,
+                Feeds.UPDATE_MODE,
+                Feeds.NEXT_UPDATE_RETRY,
+                Feeds.HTTP_ETAG,
+                Feeds.HTTP_LAST_MODIFIED
+        )
 
-    private val feeds = Feeds(
-            object : Repository.Factory<Feed>() {
-                override val columns = arrayOf(
-                        Feeds.ID,
-                        Feeds.URL,
-                        Feeds.TITLE,
-                        Feeds.LINK,
-                        Feeds.LANGUAGE,
-                        Feeds.UPDATE_MODE,
-                        Feeds.NEXT_UPDATE_RETRY,
-                        Feeds.HTTP_ETAG,
-                        Feeds.HTTP_LAST_MODIFIED
-                )
-
-                override fun create(cursor: Cursor) = Feed(
-                        cursor.getLong(0),
-                        cursor.getString(1),
-                        cursor.getString(2),
-                        cursor.getString(3),
-                        cursor.getString(4),
-                        UpdateMode.deserialize(cursor.getString(5)),
-                        cursor.getInt(6),
-                        cursor.getString(7),
-                        cursor.getString(8)
-                )
-            }
-    )
+        override fun create(cursor: Cursor) = Feed(
+                cursor.getLong(0),
+                cursor.getString(1),
+                cursor.getString(2),
+                cursor.getString(3),
+                cursor.getString(4),
+                UpdateMode.deserialize(cursor.getString(5)),
+                cursor.getInt(6),
+                cursor.getString(7),
+                cursor.getString(8)
+        )
+    }
 
     val updatingFeedIds = MutableLiveData<MutableSet<Long>>()
 
     suspend fun updateFeed(feedId: Long) {
-        val feed = feeds.query(feedId) ?: return
+        val feed = Feeds.query(feedId, feedsFactory) ?: return
         updateFeed(feed)
     }
 
@@ -98,7 +83,7 @@ object FeedUpdater {
 
     suspend fun updateOutdatedFeeds() {
         GlobalScope.launch {
-            val feeds = feeds.query(feeds.OutdatedCriteria(System.currentTimeMillis()))
+            val feeds = Feeds.query(Feeds.OutdatedCriteria(System.currentTimeMillis()), feedsFactory)
 
             val jobs = feeds.map { feed ->
                 async { FeedUpdater.updateFeed(feed) }
@@ -190,10 +175,10 @@ object FeedUpdater {
             val feedParser = FeedParser(feed.url, object : FeedParser.Listener() {
                 override fun onParsedEntry(uid: String, title: String?, link: String?, content: String?, author: String?, publishDate: Date?, publishDateText: String?) {
                     try {
-                        entries.beginTransaction()
+                        Entries.beginTransaction()
 
                         val now = System.currentTimeMillis()
-                        val result = entries.update(
+                        val result = Entries.update(
                                 feed.id,
                                 uid,
                                 Entries.TITLE to title,
@@ -205,7 +190,7 @@ object FeedUpdater {
                         )
 
                         if (result == 0) {
-                            entries.insert(
+                            Entries.insert(
                                     Entries.FEED_ID to feed.id,
                                     Entries.UID to uid,
                                     Entries.TITLE to title,
@@ -220,9 +205,9 @@ object FeedUpdater {
                             )
                         }
 
-                        entries.setTransactionSuccessful()
+                        Entries.setTransactionSuccessful()
                     } finally {
-                        entries.endTransaction()
+                        Entries.endTransaction()
                     }
                 }
 
@@ -251,13 +236,13 @@ object FeedUpdater {
 
     private fun updateFeedContent(feed: Feed, vararg data: Pair<String, Any?>) {
         try {
-            feeds.beginTransaction()
+            Feeds.beginTransaction()
 
             val feedId = feed.id
             val lastUpdateTime = System.currentTimeMillis()
             val nextUpdateTime = AutoUpdateScheduler.calculateNextUpdateTime(feedId, feed.updateMode, lastUpdateTime)
 
-            feeds.update(
+            Feeds.update(
                     feedId,
                     Feeds.LAST_UPDATE_TIME to lastUpdateTime,
                     Feeds.LAST_UPDATE_ERROR to null,
@@ -266,9 +251,9 @@ object FeedUpdater {
                     *data
             )
 
-            feeds.setTransactionSuccessful()
+            Feeds.setTransactionSuccessful()
         } finally {
-            feeds.endTransaction()
+            Feeds.endTransaction()
         }
     }
 
@@ -278,7 +263,7 @@ object FeedUpdater {
         }
 
         try {
-            feeds.beginTransaction()
+            Feeds.beginTransaction()
 
             val updateError = when (error) {
                 null -> "Unknown error"
@@ -288,16 +273,16 @@ object FeedUpdater {
             val nextUpdateRetry = feed.nextUpdateRetry + 1
             val nextUpdateTime = AutoUpdateScheduler.calculateNextUpdateRetryTime(feed.updateMode, nextUpdateRetry)
 
-            feeds.update(
+            Feeds.update(
                     feed.id,
                     Feeds.LAST_UPDATE_ERROR to updateError,
                     Feeds.NEXT_UPDATE_RETRY to nextUpdateRetry,
                     Feeds.NEXT_UPDATE_TIME to nextUpdateTime
             )
 
-            feeds.setTransactionSuccessful()
+            Feeds.setTransactionSuccessful()
         } finally {
-            feeds.endTransaction()
+            Feeds.endTransaction()
         }
     }
 

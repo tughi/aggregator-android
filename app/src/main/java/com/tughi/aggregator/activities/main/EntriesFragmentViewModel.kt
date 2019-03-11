@@ -28,43 +28,42 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.QueryCriteria) : Vi
         }
     }
 
-    private val repository = Entries(
-            object : Repository.Factory<Entry>() {
-                override val columns = arrayOf(
-                        Entries.ID,
-                        Entries.FEED_ID,
-                        Entries.AUTHOR,
-                        Entries.FEED_FAVICON_URL,
-                        Entries.FEED_TITLE,
-                        Entries.PUBLISH_TIME,
-                        Entries.LINK,
-                        Entries.PINNED_TIME,
-                        Entries.READ_TIME,
-                        Entries.TITLE,
-                        Entries.TYPE
-                )
+    private val entryFactory = object : Repository.Factory<Entry>() {
+        private val context = App.instance
 
-                private val context = App.instance
+        override val columns = arrayOf(
+                Entries.ID,
+                Entries.FEED_ID,
+                Entries.AUTHOR,
+                Entries.FEED_FAVICON_URL,
+                Entries.FEED_TITLE,
+                Entries.PUBLISH_TIME,
+                Entries.LINK,
+                Entries.PINNED_TIME,
+                Entries.READ_TIME,
+                Entries.TITLE,
+                Entries.TYPE
+        )
 
-                override fun create(cursor: Cursor) = Entry(
-                        id = cursor.getLong(0),
-                        feedId = cursor.getLong(1),
-                        author = cursor.getString(2),
-                        faviconUrl = cursor.getString(3),
-                        feedTitle = cursor.getString(4),
-                        formattedDate = DateUtils.formatDateTime(context, cursor.getLong(5), DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_YEAR),
-                        formattedTime = DateUtils.formatDateTime(context, cursor.getLong(5), DateUtils.FORMAT_SHOW_TIME),
-                        link = cursor.getString(6),
-                        pinnedTime = cursor.getLong(7),
-                        readTime = cursor.getLong(8),
-                        title = cursor.getString(9),
-                        type = EntriesFragmentEntryType.valueOf(cursor.getString(10))
-                )
-            }
-    )
+        override fun create(cursor: Cursor) = Entry(
+                id = cursor.getLong(0),
+                feedId = cursor.getLong(1),
+                author = cursor.getString(2),
+                faviconUrl = cursor.getString(3),
+                feedTitle = cursor.getString(4),
+                formattedDate = DateUtils.formatDateTime(context, cursor.getLong(5), DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_YEAR),
+                formattedTime = DateUtils.formatDateTime(context, cursor.getLong(5), DateUtils.FORMAT_SHOW_TIME),
+                link = cursor.getString(6),
+                pinnedTime = cursor.getLong(7),
+                readTime = cursor.getLong(8),
+                title = cursor.getString(9),
+                type = EntriesFragmentEntryType.valueOf(cursor.getString(10))
+        )
+    }
+
 
     private val storedEntries = Transformations.switchMap(queryCriteria) { queryCriteria ->
-        repository.liveQuery(queryCriteria)
+        Entries.liveQuery(queryCriteria, entryFactory)
     }
 
     private val transformedEntries = MediatorLiveData<List<Entry>>().also {

@@ -20,7 +20,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.data.Feeds
-import com.tughi.aggregator.data.Repository
 import com.tughi.aggregator.feeds.OpmlFeed
 import com.tughi.aggregator.feeds.OpmlParser
 import com.tughi.aggregator.services.AutoUpdateScheduler
@@ -31,12 +30,6 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 
 internal class OpmlImportViewModel : ViewModel() {
-
-    val feedsRepository = Feeds(
-            factory = object : Repository.Factory<OpmlFeed>() {
-                override val columns: Array<String> = emptyArray()
-            }
-    )
 
     val feeds = MutableLiveData<List<OpmlFeed>>()
 
@@ -115,7 +108,7 @@ class OpmlImportActivity : AppActivity() {
                 GlobalScope.launch(Dispatchers.IO) {
                     feeds.forEach {
                         if (!it.excluded) {
-                            val feedId = viewModel.feedsRepository.insert(
+                            val feedId = Feeds.insert(
                                     Feeds.URL to it.url,
                                     Feeds.LINK to it.link,
                                     Feeds.TITLE to it.title,
@@ -124,7 +117,7 @@ class OpmlImportActivity : AppActivity() {
                             )
 
                             if (feedId > 0) {
-                                viewModel.feedsRepository.update(
+                                Feeds.update(
                                         feedId,
                                         Feeds.NEXT_UPDATE_TIME to AutoUpdateScheduler.calculateNextUpdateTime(feedId, it.updateMode, 0)
                                 )

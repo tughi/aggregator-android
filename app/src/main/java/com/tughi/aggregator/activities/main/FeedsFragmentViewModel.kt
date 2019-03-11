@@ -14,35 +14,33 @@ import java.io.Serializable
 
 class FeedsFragmentViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = Feeds(
-            object : Repository.Factory<Feed>() {
-                override val columns = arrayOf(
-                        Feeds.ID,
-                        Feeds.TITLE,
-                        Feeds.FAVICON_URL,
-                        Feeds.LAST_UPDATE_TIME,
-                        Feeds.LAST_UPDATE_ERROR,
-                        Feeds.NEXT_UPDATE_TIME,
-                        Feeds.NEXT_UPDATE_RETRY,
-                        Feeds.UPDATE_MODE,
-                        Feeds.UNREAD_ENTRY_COUNT
-                )
+    private val feedsFactory = object : Repository.Factory<Feed>() {
+        override val columns = arrayOf(
+                Feeds.ID,
+                Feeds.TITLE,
+                Feeds.FAVICON_URL,
+                Feeds.LAST_UPDATE_TIME,
+                Feeds.LAST_UPDATE_ERROR,
+                Feeds.NEXT_UPDATE_TIME,
+                Feeds.NEXT_UPDATE_RETRY,
+                Feeds.UPDATE_MODE,
+                Feeds.UNREAD_ENTRY_COUNT
+        )
 
-                override fun create(cursor: Cursor) = Feed(
-                        id = cursor.getLong(0),
-                        title = cursor.getString(1),
-                        faviconUrl = cursor.getString(2),
-                        lastUpdateTime = cursor.getLong(3),
-                        lastUpdateError = cursor.getString(4),
-                        nextUpdateTime = cursor.getLong(5),
-                        nextUpdateRetry = cursor.getInt(6),
-                        updateMode = UpdateMode.deserialize(cursor.getString(7)),
-                        unreadEntryCount = cursor.getInt(8)
-                )
-            }
-    )
+        override fun create(cursor: Cursor) = Feed(
+                id = cursor.getLong(0),
+                title = cursor.getString(1),
+                faviconUrl = cursor.getString(2),
+                lastUpdateTime = cursor.getLong(3),
+                lastUpdateError = cursor.getString(4),
+                nextUpdateTime = cursor.getLong(5),
+                nextUpdateRetry = cursor.getInt(6),
+                updateMode = UpdateMode.deserialize(cursor.getString(7)),
+                unreadEntryCount = cursor.getInt(8)
+        )
+    }
 
-    private val databaseFeeds = repository.liveQuery(repository.AllCriteria())
+    private val databaseFeeds = Feeds.liveQuery(Feeds.AllCriteria(), feedsFactory)
 
     private val expandedFeedId = MutableLiveData<Long>()
 

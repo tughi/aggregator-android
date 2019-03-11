@@ -17,13 +17,11 @@ object Favicons {
 
     private val cache: LruCache<String, Bitmap>
 
-    private val repository = Feeds(
-            object : Repository.Factory<Feed>() {
-                override val columns = arrayOf(Feeds.FAVICON_CONTENT)
+    private val feedsFactory = object : Repository.Factory<Feed>() {
+        override val columns = arrayOf(Feeds.FAVICON_CONTENT)
 
-                override fun create(cursor: Cursor) = Feed(cursor.getBlob(0))
-            }
-    )
+        override fun create(cursor: Cursor) = Feed(cursor.getBlob(0))
+    }
 
     init {
         val maxMemory = Math.min(Runtime.getRuntime().maxMemory(), Integer.MAX_VALUE.toLong()).toInt()
@@ -51,7 +49,7 @@ object Favicons {
                     val targetReference = WeakReference(target)
 
                     GlobalScope.launch {
-                        val feed = repository.query(feedId) ?: return@launch
+                        val feed = Feeds.query(feedId, feedsFactory) ?: return@launch
                         val decodedBitmap = when {
                             feed.faviconContent != null -> BitmapFactory.decodeByteArray(feed.faviconContent, 0, feed.faviconContent.size)
                             else -> null

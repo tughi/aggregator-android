@@ -8,37 +8,35 @@ import com.tughi.aggregator.data.Repository
 
 internal class ReaderFragmentViewModel(entryId: Long, entryReadTime: Long) : ViewModel() {
 
-    private val repository = Entries(
-            object : Repository.Factory<Entry>() {
-                override val columns = arrayOf(
-                        Entries.ID,
-                        Entries.TITLE,
-                        Entries.LINK,
-                        Entries.CONTENT,
-                        Entries.AUTHOR,
-                        Entries.PUBLISH_TIME,
-                        Entries.FEED_TITLE,
-                        Entries.FEED_LANGUAGE,
-                        Entries.PINNED_TIME,
-                        Entries.READ_TIME
-                )
+    private val entriesFactory = object : Repository.Factory<Entry>() {
+        override val columns = arrayOf(
+                Entries.ID,
+                Entries.TITLE,
+                Entries.LINK,
+                Entries.CONTENT,
+                Entries.AUTHOR,
+                Entries.PUBLISH_TIME,
+                Entries.FEED_TITLE,
+                Entries.FEED_LANGUAGE,
+                Entries.PINNED_TIME,
+                Entries.READ_TIME
+        )
 
-                override fun create(cursor: Cursor) = Entry(
-                        id = cursor.getLong(0),
-                        title = cursor.getString(1),
-                        link = cursor.getString(2),
-                        content = cursor.getString(3),
-                        author = cursor.getString(4),
-                        publishTime = cursor.getLong(5),
-                        feedTitle = cursor.getString(6),
-                        feedLanguage = cursor.getString(7),
-                        readTime = cursor.getLong(8),
-                        pinnedTime = cursor.getLong(9)
-                )
-            }
-    )
+        override fun create(cursor: Cursor) = Entry(
+                id = cursor.getLong(0),
+                title = cursor.getString(1),
+                link = cursor.getString(2),
+                content = cursor.getString(3),
+                author = cursor.getString(4),
+                publishTime = cursor.getLong(5),
+                feedTitle = cursor.getString(6),
+                feedLanguage = cursor.getString(7),
+                readTime = cursor.getLong(8),
+                pinnedTime = cursor.getLong(9)
+        )
+    }
 
-    val entry = repository.liveQuery(entryId)
+    val entry = Entries.liveQuery(entryId, entriesFactory)
 
     data class Entry(
             val id: Long,

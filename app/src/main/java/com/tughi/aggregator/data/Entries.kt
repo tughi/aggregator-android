@@ -7,74 +7,71 @@ import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQueryBuilder
 import java.io.Serializable
 
-class Entries<T>(factory: Factory<T>) : Repository<T>(factory) {
+object Entries : Repository() {
 
-    companion object {
-        internal const val TABLE = "entries"
+    internal const val TABLE = "entries"
 
-        const val ID = "id"
-        const val UID = "uid"
-        const val FEED_ID = "feed_id"
-        const val FEED_TITLE = "feed_title"
-        const val FEED_LANGUAGE = "feed_language"
-        const val FEED_FAVICON_URL = "feed_favicon_url"
-        const val TITLE = "title"
-        const val LINK = "link"
-        const val CONTENT = "content"
-        const val AUTHOR = "author"
-        const val PUBLISH_TIME = "publish_time"
-        const val INSERT_TIME = "insert_time"
-        const val UPDATE_TIME = "update_time"
-        const val READ_TIME = "read_time"
-        const val PINNED_TIME = "pinned_time"
+    const val ID = "id"
+    const val UID = "uid"
+    const val FEED_ID = "feed_id"
+    const val FEED_TITLE = "feed_title"
+    const val FEED_LANGUAGE = "feed_language"
+    const val FEED_FAVICON_URL = "feed_favicon_url"
+    const val TITLE = "title"
+    const val LINK = "link"
+    const val CONTENT = "content"
+    const val AUTHOR = "author"
+    const val PUBLISH_TIME = "publish_time"
+    const val INSERT_TIME = "insert_time"
+    const val UPDATE_TIME = "update_time"
+    const val READ_TIME = "read_time"
+    const val PINNED_TIME = "pinned_time"
 
-        const val TYPE = "type"
+    const val TYPE = "type"
 
-        internal val projectionMap = mapOf(
-                ID to "e.$ID",
-                UID to "e.$UID",
-                FEED_ID to "e.$FEED_ID",
-                FEED_TITLE to "COALESCE(f.${Feeds.CUSTOM_TITLE}, f.${Feeds.TITLE})",
-                FEED_LANGUAGE to "f.${Feeds.LANGUAGE}",
-                FEED_FAVICON_URL to "f.${Feeds.FAVICON_URL}",
-                TITLE to "e.$TITLE",
-                LINK to "e.$LINK",
-                CONTENT to "e.$CONTENT",
-                AUTHOR to "e.$AUTHOR",
-                PUBLISH_TIME to "COALESCE(e.$PUBLISH_TIME, e.$INSERT_TIME)",
-                INSERT_TIME to "e.$INSERT_TIME",
-                UPDATE_TIME to "e.$UPDATE_TIME",
-                READ_TIME to "e.$READ_TIME",
-                PINNED_TIME to "e.$PINNED_TIME",
-                TYPE to "CASE WHEN e.$READ_TIME > 0 AND e.$PINNED_TIME = 0 THEN 'READ' ELSE 'UNREAD' END"
-        )
+    internal val projectionMap = mapOf(
+            ID to "e.$ID",
+            UID to "e.$UID",
+            FEED_ID to "e.$FEED_ID",
+            FEED_TITLE to "COALESCE(f.${Feeds.CUSTOM_TITLE}, f.${Feeds.TITLE})",
+            FEED_LANGUAGE to "f.${Feeds.LANGUAGE}",
+            FEED_FAVICON_URL to "f.${Feeds.FAVICON_URL}",
+            TITLE to "e.$TITLE",
+            LINK to "e.$LINK",
+            CONTENT to "e.$CONTENT",
+            AUTHOR to "e.$AUTHOR",
+            PUBLISH_TIME to "COALESCE(e.$PUBLISH_TIME, e.$INSERT_TIME)",
+            INSERT_TIME to "e.$INSERT_TIME",
+            UPDATE_TIME to "e.$UPDATE_TIME",
+            READ_TIME to "e.$READ_TIME",
+            PINNED_TIME to "e.$PINNED_TIME",
+            TYPE to "CASE WHEN e.$READ_TIME > 0 AND e.$PINNED_TIME = 0 THEN 'READ' ELSE 'UNREAD' END"
+    )
 
-        private fun update(entryId: Long, values: ContentValues): Int = Storage.update(TABLE, values, "$ID = ?", arrayOf(entryId), entryId)
+    private fun update(entryId: Long, values: ContentValues): Int = Storage.update(TABLE, values, "$ID = ?", arrayOf(entryId), entryId)
 
-        fun markRead(entryId: Long): Int = update(entryId, contentValuesOf(READ_TIME to System.currentTimeMillis(), PINNED_TIME to 0))
+    fun markRead(entryId: Long): Int = update(entryId, contentValuesOf(READ_TIME to System.currentTimeMillis(), PINNED_TIME to 0))
 
-        fun markPinned(entryId: Long): Int = update(entryId, contentValuesOf(READ_TIME to 0, PINNED_TIME to System.currentTimeMillis()))
+    fun markPinned(entryId: Long): Int = update(entryId, contentValuesOf(READ_TIME to 0, PINNED_TIME to System.currentTimeMillis()))
 
-        fun markRead(criteria: QueryCriteria): Int {
-            val selection = when (criteria) {
-                is QueryCriteria.FeedEntries -> "$FEED_ID = ? AND $PINNED_TIME = 0 AND $READ_TIME = 0"
-                is QueryCriteria.MyFeedEntries -> "$PINNED_TIME = 0 AND $READ_TIME = 0"
-            }
-            val selectionArgs: Array<Any>? = when (criteria) {
-                is QueryCriteria.FeedEntries -> arrayOf(criteria.feedId)
-                is QueryCriteria.MyFeedEntries -> null
-            }
-            return Storage.update(TABLE, contentValuesOf(READ_TIME to System.currentTimeMillis()), selection, selectionArgs)
+    fun markRead(criteria: QueryCriteria): Int {
+        val selection = when (criteria) {
+            is QueryCriteria.FeedEntries -> "$FEED_ID = ? AND $PINNED_TIME = 0 AND $READ_TIME = 0"
+            is QueryCriteria.MyFeedEntries -> "$PINNED_TIME = 0 AND $READ_TIME = 0"
         }
-
-        fun count(feedId: Long, since: Long): Int {
-            val query = SimpleSQLiteQuery("SELECT COUNT(1) FROM $TABLE WHERE $FEED_ID = ? AND COALESCE($PUBLISH_TIME, $INSERT_TIME) > ?", arrayOf(feedId, since))
-            Storage.query(query).use { cursor ->
-                cursor.moveToNext()
-                return cursor.getInt(0)
-            }
+        val selectionArgs: Array<Any>? = when (criteria) {
+            is QueryCriteria.FeedEntries -> arrayOf(criteria.feedId)
+            is QueryCriteria.MyFeedEntries -> null
         }
+        return Storage.update(TABLE, contentValuesOf(READ_TIME to System.currentTimeMillis()), selection, selectionArgs)
+    }
 
+    fun count(feedId: Long, since: Long): Int {
+        val query = SimpleSQLiteQuery("SELECT COUNT(1) FROM $TABLE WHERE $FEED_ID = ? AND COALESCE($PUBLISH_TIME, $INSERT_TIME) > ?", arrayOf(feedId, since))
+        Storage.query(query).use { cursor ->
+            cursor.moveToNext()
+            return cursor.getInt(0)
+        }
     }
 
     fun insert(vararg data: Pair<String, Any?>): Long = Storage.insert(TABLE, data.toContentValues())
@@ -83,24 +80,15 @@ class Entries<T>(factory: Factory<T>) : Repository<T>(factory) {
 
     fun update(feedId: Long, uid: String, vararg data: Pair<String, Any?>) = Storage.update(TABLE, data.toContentValues(), "$FEED_ID = ? AND $UID = ?", arrayOf(feedId, uid))
 
-    fun query(id: Long): T? {
-        val query = SupportSQLiteQueryBuilder.builder("$TABLE e LEFT JOIN ${Feeds.TABLE} f ON e.$FEED_ID = f.${Feeds.ID}")
-                .columns(Array(factory.columns.size) { index -> "${projectionMap[factory.columns[index]]} AS ${factory.columns[index]}" })
-                .selection("e.$ID = ?", arrayOf(id))
-                .create()
-
-        Storage.query(query).use { cursor ->
-            if (cursor.moveToFirst()) {
-                return factory.create(cursor)
-            }
-        }
-
-        return null
+    override fun createQueryBuilder(columns: Array<String>): SupportSQLiteQueryBuilder = SupportSQLiteQueryBuilder.builder("$TABLE e LEFT JOIN ${Feeds.TABLE} f ON e.$FEED_ID = f.${Feeds.ID}").also {
+        it.columns(Array(columns.size) { index -> "${projectionMap[columns[index]]} AS ${columns[index]}" })
     }
 
-    fun liveQuery(id: Long) = Storage.createLiveData(TABLE) { query(id) }
+    override fun createQueryOneSelection() = "e.$ID = ?"
 
-    fun query(criteria: QueryCriteria): List<T> {
+    fun <T> liveQuery(id: Long, factory: Factory<T>) = Storage.createLiveData(TABLE) { query(id, factory) }
+
+    fun <T> query(criteria: QueryCriteria, factory: Factory<T>): List<T> {
         val selection = when {
             criteria.sessionTime != 0L -> when (criteria) {
                 is QueryCriteria.FeedEntries -> "e.$FEED_ID = ? AND (e.$READ_TIME = 0 OR e.$READ_TIME > ?)"
@@ -150,8 +138,8 @@ class Entries<T>(factory: Factory<T>) : Repository<T>(factory) {
         return emptyList()
     }
 
-    fun liveQuery(criteria: QueryCriteria): LiveData<List<T>> = Storage.createLiveData(TABLE) {
-        query(criteria)
+    fun <T> liveQuery(criteria: QueryCriteria, factory: Factory<T>): LiveData<List<T>> = Storage.createLiveData(TABLE) {
+        query(criteria, factory)
     }
 
     sealed class QueryCriteria : Serializable {

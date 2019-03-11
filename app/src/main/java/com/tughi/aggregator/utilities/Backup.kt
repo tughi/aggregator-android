@@ -1,7 +1,10 @@
 package com.tughi.aggregator.utilities
 
+import android.database.Cursor
 import com.tughi.aggregator.App
 import com.tughi.aggregator.data.Feeds
+import com.tughi.aggregator.data.Repository
+import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.feeds.OpmlFeed
 import com.tughi.aggregator.feeds.OpmlGenerator
 import com.tughi.aggregator.feeds.OpmlParser
@@ -15,13 +18,30 @@ import java.io.File
 private const val BACKUP_FILENAME = "feeds.opml"
 
 fun backupFeeds() {
+    val feedsFactory = object : Repository.Factory<OpmlFeed>() {
+        override val columns = arrayOf(
+                Feeds.URL,
+                Feeds.TITLE,
+                Feeds.CUSTOM_TITLE,
+                Feeds.LINK,
+                Feeds.UPDATE_MODE
+        )
+
+        override fun create(cursor: Cursor) = OpmlFeed(
+                url = cursor.getString(0),
+                title = cursor.getString(1),
+                customTitle = cursor.getString(2),
+                link = cursor.getString(3),
+                updateMode = UpdateMode.deserialize(cursor.getString(4))
+        )
+    }
+
     App.instance.getExternalFilesDir(null)?.also { externalFilesDir ->
         val backupFile = File(externalFilesDir, BACKUP_FILENAME)
         backupFile.parentFile.mkdirs()
 
         backupFile.outputStream().use { outputStream ->
-            val repository = OpmlGenerator.repository
-            OpmlGenerator.generate(repository.query(repository.AllCriteria()), outputStream)
+            OpmlGenerator.generate(Feeds.query(Feeds.AllCriteria(), feedsFactory), outputStream)
         }
     }
 }
@@ -34,9 +54,7 @@ fun restoreFeeds() {
                 backupFile.inputStream().use { inputStream ->
                     OpmlParser.parse(inputStream, object : OpmlParser.Listener {
                         override fun onFeedParsed(feed: OpmlFeed) {
-                            val repository = OpmlGenerator.repository
-
-                            val feedId = repository.insert(
+                            val feedId = Feeds.insert(
                                     Feeds.URL to feed.url,
                                     Feeds.TITLE to feed.title,
                                     Feeds.CUSTOM_TITLE to feed.customTitle,
@@ -45,7 +63,7 @@ fun restoreFeeds() {
                             )
 
                             if (feedId > 0) {
-                                repository.update(
+                                Feeds.update(
                                         feedId,
                                         Feeds.NEXT_UPDATE_TIME to AutoUpdateScheduler.calculateNextUpdateTime(feedId, feed.updateMode, 0)
                                 )

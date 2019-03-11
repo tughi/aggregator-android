@@ -4,17 +4,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.data.DefaultUpdateMode
-import com.tughi.aggregator.data.Feeds
-import com.tughi.aggregator.data.Repository
 import com.tughi.aggregator.data.UpdateMode
 
 class SubscribeFeedFragmentViewModel : ViewModel() {
-
-    val repository = Feeds(
-            factory = object : Repository.Factory<Feed>() {
-                override val columns: Array<String> = emptyArray()
-            }
-    )
 
     var updateMode = MutableLiveData<UpdateMode>().apply { value = DefaultUpdateMode }
 

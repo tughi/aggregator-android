@@ -120,7 +120,7 @@ class FeedSettingsFragment : Fragment() {
 
         viewModel.feed.value?.let { feed ->
             GlobalScope.launch {
-                viewModel.repository.update(
+                Feeds.update(
                         feed.id,
                         Feeds.URL to url,
                         Feeds.CUSTOM_TITLE to if (title.isEmpty()) null else title,

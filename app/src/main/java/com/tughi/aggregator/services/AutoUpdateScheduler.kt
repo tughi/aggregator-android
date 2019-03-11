@@ -36,45 +36,43 @@ object AutoUpdateScheduler {
     const val NEXT_UPDATE_TIME__DISABLED = 0L
     const val NEXT_UPDATE_TIME__ON_APP_LAUNCH = -1L
 
-    private val repository = Feeds(
-            object : Repository.Factory<Feed>() {
-                override val columns = arrayOf(
-                        Feeds.ID,
-                        Feeds.LAST_UPDATE_TIME,
-                        Feeds.UPDATE_MODE
-                )
+    private val feedsFactory = object : Repository.Factory<Feed>() {
+        override val columns = arrayOf(
+                Feeds.ID,
+                Feeds.LAST_UPDATE_TIME,
+                Feeds.UPDATE_MODE
+        )
 
-                override fun create(cursor: Cursor) = Feed(
-                        id = cursor.getLong(0),
-                        lastUpdateTime = cursor.getLong(1),
-                        updateMode = UpdateMode.deserialize(cursor.getString(2))
-                )
-            }
-    )
+        override fun create(cursor: Cursor) = Feed(
+                id = cursor.getLong(0),
+                lastUpdateTime = cursor.getLong(1),
+                updateMode = UpdateMode.deserialize(cursor.getString(2))
+        )
+    }
 
     fun scheduleFeed(feedId: Long) {
-        repository.query(feedId)?.also {
+        Feeds.query(feedId, feedsFactory)?.also {
             scheduleFeeds(it)
         }
     }
 
     fun scheduleFeedsWithDefaultUpdateMode() {
-        val feeds = repository.query(repository.UpdateModeCriteria(DefaultUpdateMode))
+        val feeds = Feeds.query(Feeds.UpdateModeCriteria(DefaultUpdateMode), feedsFactory)
         scheduleFeeds(*feeds.toTypedArray())
     }
 
     private fun scheduleFeeds(vararg feeds: Feed) {
-        repository.beginTransaction()
+        Feeds.beginTransaction()
         try {
             feeds.forEach { feed ->
-                repository.update(
+                Feeds.update(
                         feed.id,
                         Feeds.NEXT_UPDATE_TIME to calculateNextUpdateTime(feed.id, feed.updateMode, feed.lastUpdateTime)
                 )
             }
-            repository.setTransactionSuccessful()
+            Feeds.setTransactionSuccessful()
         } finally {
-            repository.endTransaction()
+            Feeds.endTransaction()
         }
 
         schedule()
