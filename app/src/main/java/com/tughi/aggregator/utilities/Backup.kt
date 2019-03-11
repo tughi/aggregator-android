@@ -3,7 +3,6 @@ package com.tughi.aggregator.utilities
 import android.database.Cursor
 import com.tughi.aggregator.App
 import com.tughi.aggregator.data.Feeds
-import com.tughi.aggregator.data.Repository
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.feeds.OpmlFeed
 import com.tughi.aggregator.feeds.OpmlGenerator
@@ -18,8 +17,8 @@ import java.io.File
 private const val BACKUP_FILENAME = "feeds.opml"
 
 fun backupFeeds() {
-    val feedsFactory = object : Repository.Factory<OpmlFeed>() {
-        override val columns = arrayOf(
+    val feedsFactory = object : Feeds.Factory<OpmlFeed>() {
+        override val columns = arrayOf<Feeds.Column>(
                 Feeds.URL,
                 Feeds.TITLE,
                 Feeds.CUSTOM_TITLE,

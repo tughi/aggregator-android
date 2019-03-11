@@ -7,7 +7,6 @@ import android.widget.ImageView
 import androidx.collection.LruCache
 import com.tughi.aggregator.R
 import com.tughi.aggregator.data.Feeds
-import com.tughi.aggregator.data.Repository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -17,8 +16,8 @@ object Favicons {
 
     private val cache: LruCache<String, Bitmap>
 
-    private val feedsFactory = object : Repository.Factory<Feed>() {
-        override val columns = arrayOf(Feeds.FAVICON_CONTENT)
+    private val feedsFactory = object : Feeds.Factory<Feed>() {
+        override val columns = arrayOf<Feeds.Column>(Feeds.FAVICON_CONTENT)
 
         override fun create(cursor: Cursor) = Feed(cursor.getBlob(0))
     }

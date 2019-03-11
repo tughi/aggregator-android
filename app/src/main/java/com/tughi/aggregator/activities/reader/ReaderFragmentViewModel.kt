@@ -4,11 +4,10 @@ import android.database.Cursor
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.data.Entries
-import com.tughi.aggregator.data.Repository
 
 internal class ReaderFragmentViewModel(entryId: Long, entryReadTime: Long) : ViewModel() {
 
-    private val entriesFactory = object : Repository.Factory<Entry>() {
+    private val entriesFactory = object : Entries.Factory<Entry>() {
         override val columns = arrayOf(
                 Entries.ID,
                 Entries.TITLE,

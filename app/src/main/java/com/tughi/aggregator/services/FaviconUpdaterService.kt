@@ -6,7 +6,6 @@ import android.database.Cursor
 import android.graphics.BitmapFactory
 import com.tughi.aggregator.App
 import com.tughi.aggregator.data.Feeds
-import com.tughi.aggregator.data.Repository
 import com.tughi.aggregator.utilities.Http
 import com.tughi.aggregator.utilities.toAbsoluteUrl
 import okhttp3.Request
@@ -24,8 +23,8 @@ class FaviconUpdaterService : IntentService("FaviconUpdater") {
         }
     }
 
-    private val feedsFactory = object : Repository.Factory<Feed>() {
-        override val columns = arrayOf(
+    private val feedsFactory = object : Feeds.Factory<Feed>() {
+        override val columns = arrayOf<Feeds.Column>(
                 Feeds.LINK
         )
 

@@ -23,7 +23,6 @@ import com.tughi.aggregator.data.Every8HoursUpdateMode
 import com.tughi.aggregator.data.EveryHourUpdateMode
 import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.OnAppLaunchUpdateMode
-import com.tughi.aggregator.data.Repository
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.preferences.UpdateSettings
 import com.tughi.aggregator.utilities.JOB_SERVICE_FEEDS_UPDATER
@@ -36,8 +35,8 @@ object AutoUpdateScheduler {
     const val NEXT_UPDATE_TIME__DISABLED = 0L
     const val NEXT_UPDATE_TIME__ON_APP_LAUNCH = -1L
 
-    private val feedsFactory = object : Repository.Factory<Feed>() {
-        override val columns = arrayOf(
+    private val feedsFactory = object : Feeds.Factory<Feed>() {
+        override val columns = arrayOf<Feeds.Column>(
                 Feeds.ID,
                 Feeds.LAST_UPDATE_TIME,
                 Feeds.UPDATE_MODE

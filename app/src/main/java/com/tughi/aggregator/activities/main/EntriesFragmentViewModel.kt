@@ -10,7 +10,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.App
 import com.tughi.aggregator.data.Entries
-import com.tughi.aggregator.data.Repository
 import com.tughi.aggregator.preferences.EntryListSettings
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -28,7 +27,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.QueryCriteria) : Vi
         }
     }
 
-    private val entryFactory = object : Repository.Factory<Entry>() {
+    private val entryFactory = object : Entries.Factory<Entry>() {
         private val context = App.instance
 
         override val columns = arrayOf(

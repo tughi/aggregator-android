@@ -5,12 +5,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.data.Feeds
-import com.tughi.aggregator.data.Repository
 
 class FeedEntriesFragmentViewModel(feedId: Long) : ViewModel() {
 
-    private val feedsFactory = object : Repository.Factory<Feed>() {
-        override val columns = arrayOf(
+    private val feedsFactory = object : Feeds.Factory<Feed>() {
+        override val columns = arrayOf<Feeds.Column>(
                 Feeds.TITLE
         )
 

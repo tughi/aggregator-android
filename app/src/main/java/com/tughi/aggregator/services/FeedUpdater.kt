@@ -7,7 +7,6 @@ import androidx.lifecycle.MutableLiveData
 import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.data.Feeds
-import com.tughi.aggregator.data.Repository
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.feeds.FeedParser
 import com.tughi.aggregator.utilities.Failure
@@ -33,8 +32,8 @@ import kotlin.coroutines.suspendCoroutine
 
 object FeedUpdater {
 
-    private val feedsFactory = object : Repository.Factory<Feed>() {
-        override val columns = arrayOf(
+    private val feedsFactory = object : Feeds.Factory<Feed>() {
+        override val columns = arrayOf<Feeds.Column>(
                 Feeds.ID,
                 Feeds.URL,
                 Feeds.TITLE,
@@ -234,7 +233,7 @@ object FeedUpdater {
         }
     }
 
-    private fun updateFeedContent(feed: Feed, vararg data: Pair<String, Any?>) {
+    private fun updateFeedContent(feed: Feed, vararg data: Pair<Feeds.TableColumn, Any?>) {
         try {
             Feeds.beginTransaction()
 

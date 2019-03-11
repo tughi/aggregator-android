@@ -7,14 +7,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import com.tughi.aggregator.data.Feeds
-import com.tughi.aggregator.data.Repository
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.FeedUpdater
 import java.io.Serializable
 
 class FeedsFragmentViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val feedsFactory = object : Repository.Factory<Feed>() {
+    private val feedsFactory = object : Feeds.Factory<Feed>() {
         override val columns = arrayOf(
                 Feeds.ID,
                 Feeds.TITLE,

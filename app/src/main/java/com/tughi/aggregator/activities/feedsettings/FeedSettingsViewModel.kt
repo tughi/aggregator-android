@@ -6,15 +6,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.data.Feeds
-import com.tughi.aggregator.data.Repository
 import com.tughi.aggregator.data.UpdateMode
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class FeedSettingsViewModel(feedId: Long) : ViewModel() {
 
-    private val feedsFactory = object : Repository.Factory<Feed>() {
-        override val columns = arrayOf(
+    private val feedsFactory = object : Feeds.Factory<Feed>() {
+        override val columns = arrayOf<Feeds.Column>(
                 Feeds.ID,
                 Feeds.URL,
                 Feeds.TITLE,
@@ -23,11 +22,11 @@ class FeedSettingsViewModel(feedId: Long) : ViewModel() {
         )
 
         override fun create(cursor: Cursor) = Feed(
-                cursor.getLong(0),
-                cursor.getString(1),
-                cursor.getString(2),
-                cursor.getString(3),
-                UpdateMode.deserialize(cursor.getString(4))
+                id = cursor.getLong(0),
+                url = cursor.getString(1),
+                title = cursor.getString(2),
+                customTitle = cursor.getString(3),
+                updateMode = UpdateMode.deserialize(cursor.getString(4))
         )
     }
 

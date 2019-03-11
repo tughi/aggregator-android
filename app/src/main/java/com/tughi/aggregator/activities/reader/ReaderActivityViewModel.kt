@@ -5,12 +5,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.data.Entries
-import com.tughi.aggregator.data.Repository
 
 class ReaderActivityViewModel(queryCriteria: Entries.QueryCriteria) : ViewModel() {
 
-    private val entryFactory = object : Repository.Factory<Entry>() {
-        override val columns = arrayOf(
+    private val entryFactory = object : Entries.Factory<Entry>() {
+        override val columns = arrayOf<Entries.Column>(
                 Entries.ID,
                 Entries.PINNED_TIME,
                 Entries.READ_TIME
