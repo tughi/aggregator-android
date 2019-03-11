@@ -46,57 +46,47 @@ object Storage {
         throw UnsupportedOperationException()
     }
 
-    fun beginTransaction() = sqlite.writableDatabase.beginTransaction()
-
-    fun setTransactionSuccessful() = sqlite.writableDatabase.setTransactionSuccessful()
-
-    fun endTransaction() = sqlite.writableDatabase.endTransaction()
-
     fun query(sqliteQuery: SupportSQLiteQuery?): Cursor = sqlite.readableDatabase.query(sqliteQuery)
 
     fun insert(table: String, values: ContentValues): Long {
-        val database = sqlite.writableDatabase
-        val id = database.insert(table, SQLiteDatabase.CONFLICT_FAIL, values)
+        val id = sqlite.writableDatabase.insert(table, SQLiteDatabase.CONFLICT_FAIL, values)
         if (id != -1L) {
-            if (database.inTransaction()) {
-                // TODO: delay table invalidation until the transaction was committed
-                Log.e(Storage.javaClass.name, "Table '$table' cannot be invalidated from a transaction")
-            } else {
-                invalidateTable(table)
-            }
+            invalidateTable(table)
         }
         return id
     }
 
-    fun update(table: String, values: ContentValues, selection: String?, selectionArgs: Array<Any>?, recordId: Any? = null): Int {
-        val database = sqlite.writableDatabase
-        val result = database.update(table, SQLiteDatabase.CONFLICT_FAIL, values, selection, selectionArgs)
+    fun update(table: String, values: ContentValues, selection: String?, selectionArgs: Array<Any>?, recordId: Long? = null): Int {
+        val result = sqlite.writableDatabase.update(table, SQLiteDatabase.CONFLICT_FAIL, values, selection, selectionArgs)
         if (result > 0) {
-            if (database.inTransaction()) {
-                // TODO: delay table invalidation until the transaction was committed
-                Log.e(Storage.javaClass.name, "Table '$table' cannot be invalidated from a transaction")
-            } else {
-                invalidateTable(table, recordId)
-            }
+            invalidateTable(table, recordId)
         }
         return result
     }
 
     fun delete(table: String, selection: String?, selectionArgs: Array<Any>?): Int {
-        val database = sqlite.writableDatabase
-        val result = database.delete(table, selection, selectionArgs)
+        val result = sqlite.writableDatabase.delete(table, selection, selectionArgs)
         if (result > 0) {
-            if (database.inTransaction()) {
-                // TODO: delay table invalidation until the transaction was committed
-                Log.e(Storage.javaClass.name, "Table '$table' cannot be invalidated from a transaction")
-            } else {
-                invalidateTable(table)
-            }
+            invalidateTable(table)
         }
         return result
     }
 
-    private fun invalidateTable(table: String, recordId: Any? = null) {
+    private val invalidatedTables = mutableMapOf<String, MutableList<Long>>()
+
+    private fun invalidateTable(table: String, recordId: Long? = null) {
+        if (sqlite.writableDatabase.inTransaction()) {
+            synchronized(invalidatedTables) {
+                if (!invalidatedTables.containsKey(table)) {
+                    invalidatedTables[table] = mutableListOf()
+                }
+                if (recordId != null) {
+                    invalidatedTables[table]?.add(recordId)
+                }
+            }
+            return
+        }
+
         synchronized(this) {
             if (tableObservers.size > 0) {
                 val vanishedObservers = mutableListOf<TableObserver>()
@@ -114,6 +104,37 @@ object Storage {
 
                 for (tableObserver in vanishedObservers) {
                     tableObservers.remove(tableObserver)
+                }
+            }
+        }
+    }
+
+    fun beginTransaction() {
+        val database = sqlite.writableDatabase
+        if (!database.inTransaction()) {
+            synchronized(invalidatedTables) {
+                Log.i(javaClass.name, "Clear invalidated tables")
+                invalidatedTables.clear()
+            }
+        }
+        database.beginTransaction()
+    }
+
+    fun setTransactionSuccessful() = sqlite.writableDatabase.setTransactionSuccessful()
+
+    fun endTransaction() {
+        val database = sqlite.writableDatabase
+        database.endTransaction()
+        if (!database.inTransaction()) {
+            synchronized(invalidatedTables) {
+                for ((table, ids) in invalidatedTables) {
+                    if (ids.isEmpty()) {
+                        invalidateTable(table)
+                    } else {
+                        for (id in ids) {
+                            invalidateTable(table, id)
+                        }
+                    }
                 }
             }
         }
