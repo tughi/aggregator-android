@@ -7,7 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.data.Feeds
-import com.tughi.aggregator.data.Storage
+import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.feeds.FeedParser
 import com.tughi.aggregator.utilities.Failure
@@ -175,7 +175,7 @@ object FeedUpdater {
             val feedParser = FeedParser(feed.url, object : FeedParser.Listener() {
                 override fun onParsedEntry(uid: String, title: String?, link: String?, content: String?, author: String?, publishDate: Date?, publishDateText: String?) {
                     try {
-                        Storage.beginTransaction()
+                        Database.beginTransaction()
 
                         val now = System.currentTimeMillis()
                         val result = Entries.update(
@@ -205,9 +205,9 @@ object FeedUpdater {
                             )
                         }
 
-                        Storage.setTransactionSuccessful()
+                        Database.setTransactionSuccessful()
                     } finally {
-                        Storage.endTransaction()
+                        Database.endTransaction()
                     }
                 }
 
@@ -236,7 +236,7 @@ object FeedUpdater {
 
     private fun updateFeedContent(feed: Feed, vararg data: Pair<Feeds.TableColumn, Any?>) {
         try {
-            Storage.beginTransaction()
+            Database.beginTransaction()
 
             val feedId = feed.id
             val lastUpdateTime = System.currentTimeMillis()
@@ -251,9 +251,9 @@ object FeedUpdater {
                     *data
             )
 
-            Storage.setTransactionSuccessful()
+            Database.setTransactionSuccessful()
         } finally {
-            Storage.endTransaction()
+            Database.endTransaction()
         }
     }
 
@@ -263,7 +263,7 @@ object FeedUpdater {
         }
 
         try {
-            Storage.beginTransaction()
+            Database.beginTransaction()
 
             val updateError = when (error) {
                 null -> "Unknown error"
@@ -280,9 +280,9 @@ object FeedUpdater {
                     Feeds.NEXT_UPDATE_TIME to nextUpdateTime
             )
 
-            Storage.setTransactionSuccessful()
+            Database.setTransactionSuccessful()
         } finally {
-            Storage.endTransaction()
+            Database.endTransaction()
         }
     }
 

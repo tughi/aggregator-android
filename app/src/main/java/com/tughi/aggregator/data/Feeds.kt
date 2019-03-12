@@ -28,17 +28,17 @@ object Feeds : Repository<Feeds.TableColumn, Feeds.Column>() {
 
     override val tableName = "feeds"
 
-    fun delete(id: Long) = Storage.delete("feeds", "id = ?", arrayOf(id))
+    fun delete(id: Long) = Database.delete("feeds", "id = ?", arrayOf(id))
 
     fun count(): Int {
-        Storage.query(SimpleSQLiteQuery("SELECT COUNT(1) FROM feeds")).use { cursor ->
+        Database.query(SimpleSQLiteQuery("SELECT COUNT(1) FROM feeds")).use { cursor ->
             cursor.moveToFirst()
             return cursor.getInt(0)
         }
     }
 
     fun queryNextUpdateTime(): Long? {
-        Storage.query(SimpleSQLiteQuery("SELECT MIN(next_update_time) FROM feeds WHERE next_update_time > 0")).use { cursor ->
+        Database.query(SimpleSQLiteQuery("SELECT MIN(next_update_time) FROM feeds WHERE next_update_time > 0")).use { cursor ->
             cursor.moveToFirst()
             return cursor.getLong(0)
         }
@@ -46,7 +46,7 @@ object Feeds : Repository<Feeds.TableColumn, Feeds.Column>() {
 
     fun queryOutdatedFeedIds(now: Long): List<Long> {
         val query = SimpleSQLiteQuery("SELECT id FROM feeds WHERE next_update_time > 0 AND next_update_time < ?", arrayOf(now))
-        Storage.query(query).use { cursor ->
+        Database.query(query).use { cursor ->
             if (cursor.moveToFirst()) {
                 val result = mutableListOf<Long>()
                 do {

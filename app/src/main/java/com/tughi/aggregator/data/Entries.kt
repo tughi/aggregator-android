@@ -48,13 +48,13 @@ object Entries : Repository<Entries.TableColumn, Entries.Column>() {
 
     fun count(feedId: Long, since: Long): Int {
         val query = SimpleSQLiteQuery("SELECT COUNT(1) FROM entries WHERE feed_id = ? AND COALESCE(publish_time, insert_time) > ?", arrayOf(feedId, since))
-        Storage.query(query).use { cursor ->
+        Database.query(query).use { cursor ->
             cursor.moveToNext()
             return cursor.getInt(0)
         }
     }
 
-    fun update(feedId: Long, uid: String, vararg data: Pair<TableColumn, Any?>) = Storage.update("entries", data.toContentValues(), "feed_id = ? AND uid = ?", arrayOf(feedId, uid))
+    fun update(feedId: Long, uid: String, vararg data: Pair<TableColumn, Any?>) = Database.update("entries", data.toContentValues(), "feed_id = ? AND uid = ?", arrayOf(feedId, uid))
 
     override fun createQueryBuilder(columns: Array<Column>): SupportSQLiteQueryBuilder = SupportSQLiteQueryBuilder.builder("entries e LEFT JOIN feeds f ON e.feed_id = f.id").also {
         it.columns(Array(columns.size) { index -> "${columns[index].projection} AS ${columns[index].name}" })
@@ -97,7 +97,7 @@ object Entries : Repository<Entries.TableColumn, Entries.Column>() {
                 .orderBy(orderBy)
                 .create()
 
-        Storage.query(query).use { cursor ->
+        Database.query(query).use { cursor ->
             if (cursor.moveToFirst()) {
                 val entries = mutableListOf<T>()
 
@@ -112,7 +112,7 @@ object Entries : Repository<Entries.TableColumn, Entries.Column>() {
         return emptyList()
     }
 
-    fun <T> liveQuery(criteria: QueryCriteria, factory: Factory<T>): LiveData<List<T>> = Storage.createLiveData("entries") {
+    fun <T> liveQuery(criteria: QueryCriteria, factory: Factory<T>): LiveData<List<T>> = Database.createLiveData("entries") {
         query(criteria, factory)
     }
 

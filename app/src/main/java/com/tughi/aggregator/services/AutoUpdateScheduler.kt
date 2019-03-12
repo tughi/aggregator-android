@@ -23,7 +23,7 @@ import com.tughi.aggregator.data.Every8HoursUpdateMode
 import com.tughi.aggregator.data.EveryHourUpdateMode
 import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.OnAppLaunchUpdateMode
-import com.tughi.aggregator.data.Storage
+import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.preferences.UpdateSettings
 import com.tughi.aggregator.utilities.JOB_SERVICE_FEEDS_UPDATER
@@ -62,7 +62,7 @@ object AutoUpdateScheduler {
     }
 
     private fun scheduleFeeds(vararg feeds: Feed) {
-        Storage.beginTransaction()
+        Database.beginTransaction()
         try {
             feeds.forEach { feed ->
                 Feeds.update(
@@ -70,9 +70,9 @@ object AutoUpdateScheduler {
                         Feeds.NEXT_UPDATE_TIME to calculateNextUpdateTime(feed.id, feed.updateMode, feed.lastUpdateTime)
                 )
             }
-            Storage.setTransactionSuccessful()
+            Database.setTransactionSuccessful()
         } finally {
-            Storage.endTransaction()
+            Database.endTransaction()
         }
 
         schedule()
