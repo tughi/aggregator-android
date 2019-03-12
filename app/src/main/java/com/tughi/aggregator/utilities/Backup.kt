@@ -17,7 +17,7 @@ import java.io.File
 private const val BACKUP_FILENAME = "feeds.opml"
 
 fun backupFeeds() {
-    val feedsFactory = object : Feeds.Factory<OpmlFeed>() {
+    val feedsFactory = object : Feeds.QueryHelper<OpmlFeed>() {
         override val columns = arrayOf<Feeds.Column>(
                 Feeds.URL,
                 Feeds.TITLE,
@@ -26,7 +26,7 @@ fun backupFeeds() {
                 Feeds.UPDATE_MODE
         )
 
-        override fun create(cursor: Cursor) = OpmlFeed(
+        override fun createRow(cursor: Cursor) = OpmlFeed(
                 url = cursor.getString(0),
                 title = cursor.getString(1),
                 customTitle = cursor.getString(2),
@@ -63,7 +63,7 @@ fun restoreFeeds() {
 
                             if (feedId > 0) {
                                 Feeds.update(
-                                        feedId,
+                                        Feeds.UpdateRowCriteria(feedId),
                                         Feeds.NEXT_UPDATE_TIME to AutoUpdateScheduler.calculateNextUpdateTime(feedId, feed.updateMode, 0)
                                 )
 

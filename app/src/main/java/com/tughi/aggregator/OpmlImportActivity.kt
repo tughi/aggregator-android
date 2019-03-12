@@ -118,7 +118,7 @@ class OpmlImportActivity : AppActivity() {
 
                             if (feedId > 0) {
                                 Feeds.update(
-                                        feedId,
+                                        Feeds.UpdateRowCriteria(feedId),
                                         Feeds.NEXT_UPDATE_TIME to AutoUpdateScheduler.calculateNextUpdateTime(feedId, it.updateMode, 0)
                                 )
 

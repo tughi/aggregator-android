@@ -8,17 +8,17 @@ import com.tughi.aggregator.data.Feeds
 
 class FeedEntriesFragmentViewModel(feedId: Long) : ViewModel() {
 
-    private val feedsFactory = object : Feeds.Factory<Feed>() {
+    private val feedsFactory = object : Feeds.QueryHelper<Feed>() {
         override val columns = arrayOf<Feeds.Column>(
                 Feeds.TITLE
         )
 
-        override fun create(cursor: Cursor) = Feed(
+        override fun createRow(cursor: Cursor) = Feed(
                 cursor.getString(0)
         )
     }
 
-    val feed: LiveData<Feed?> = Feeds.liveQuery(feedId, feedsFactory)
+    val feed: LiveData<Feed?> = Feeds.liveQueryOne(Feeds.QueryRowCriteria(feedId), feedsFactory)
 
     class Feed(val title: String)
 

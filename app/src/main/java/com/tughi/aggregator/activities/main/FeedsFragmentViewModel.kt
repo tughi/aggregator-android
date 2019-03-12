@@ -13,7 +13,7 @@ import java.io.Serializable
 
 class FeedsFragmentViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val feedsFactory = object : Feeds.Factory<Feed>() {
+    private val feedsFactory = object : Feeds.QueryHelper<Feed>() {
         override val columns = arrayOf(
                 Feeds.ID,
                 Feeds.TITLE,
@@ -26,7 +26,7 @@ class FeedsFragmentViewModel(application: Application) : AndroidViewModel(applic
                 Feeds.UNREAD_ENTRY_COUNT
         )
 
-        override fun create(cursor: Cursor) = Feed(
+        override fun createRow(cursor: Cursor) = Feed(
                 id = cursor.getLong(0),
                 title = cursor.getString(1),
                 faviconUrl = cursor.getString(2),

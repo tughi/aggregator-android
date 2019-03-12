@@ -27,7 +27,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.QueryCriteria) : Vi
         }
     }
 
-    private val entryFactory = object : Entries.Factory<Entry>() {
+    private val entryFactory = object : Entries.QueryHelper<Entry>() {
         private val context = App.instance
 
         override val columns = arrayOf(
@@ -44,7 +44,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.QueryCriteria) : Vi
                 Entries.TYPE
         )
 
-        override fun create(cursor: Cursor) = Entry(
+        override fun createRow(cursor: Cursor) = Entry(
                 id = cursor.getLong(0),
                 feedId = cursor.getLong(1),
                 author = cursor.getString(2),

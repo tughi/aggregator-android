@@ -15,6 +15,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
+// TODO: Hide for all except Repository
 object Database {
 
     private val sqlite: SupportSQLiteOpenHelper = FrameworkSQLiteOpenHelperFactory().create(

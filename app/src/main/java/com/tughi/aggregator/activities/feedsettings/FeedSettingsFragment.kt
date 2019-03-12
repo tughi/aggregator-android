@@ -121,7 +121,7 @@ class FeedSettingsFragment : Fragment() {
         viewModel.feed.value?.let { feed ->
             GlobalScope.launch {
                 Feeds.update(
-                        feed.id,
+                        Feeds.UpdateRowCriteria(feed.id),
                         Feeds.URL to url,
                         Feeds.CUSTOM_TITLE to if (title.isEmpty()) null else title,
                         Feeds.UPDATE_MODE to (updateMode ?: feed.updateMode).serialize()

@@ -16,10 +16,10 @@ object Favicons {
 
     private val cache: LruCache<String, Bitmap>
 
-    private val feedsFactory = object : Feeds.Factory<Feed>() {
+    private val feedsFactory = object : Feeds.QueryHelper<Feed>() {
         override val columns = arrayOf<Feeds.Column>(Feeds.FAVICON_CONTENT)
 
-        override fun create(cursor: Cursor) = Feed(cursor.getBlob(0))
+        override fun createRow(cursor: Cursor) = Feed(cursor.getBlob(0))
     }
 
     init {
@@ -48,7 +48,7 @@ object Favicons {
                     val targetReference = WeakReference(target)
 
                     GlobalScope.launch {
-                        val feed = Feeds.query(feedId, feedsFactory) ?: return@launch
+                        val feed = Feeds.queryOne(Feeds.QueryRowCriteria(feedId), feedsFactory) ?: return@launch
                         val decodedBitmap = when {
                             feed.faviconContent != null -> BitmapFactory.decodeByteArray(feed.faviconContent, 0, feed.faviconContent.size)
                             else -> null

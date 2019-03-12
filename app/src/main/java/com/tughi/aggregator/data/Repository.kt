@@ -1,47 +1,25 @@
 package com.tughi.aggregator.data
 
 import android.database.Cursor
-import androidx.sqlite.db.SupportSQLiteQueryBuilder
+import androidx.sqlite.db.SupportSQLiteQuery
 
-abstract class Repository<TC : Repository.TableColumn, QC : Repository.Column> {
+abstract class Repository<Column : Repository.Column, TableColumn : Repository.TableColumn, UpdateCriteria : Repository.UpdateCriteria, DeleteCriteria : Repository.DeleteCriteria, QueryCriteria : Repository.QueryCriteria>(val tableName: String) {
 
-    protected abstract val tableName: String
+    fun insert(vararg data: Pair<TableColumn, Any?>): Long = Database.insert(tableName, data.toContentValues())
 
-    fun insert(vararg data: Pair<TC, Any?>): Long = Database.insert(tableName, data.toContentValues())
+    fun update(criteria: UpdateCriteria, vararg data: Pair<TableColumn, Any?>) = Database.update(tableName, data.toContentValues(), criteria.selection, criteria.selectionArgs)
 
-    fun update(id: Long, vararg data: Pair<TC, Any?>) = Database.update(tableName, data.toContentValues(), "id = ?", arrayOf(id), id)
+    fun delete(criteria: DeleteCriteria) = Database.delete(tableName, criteria.selection, criteria.selectionArgs)
 
-    fun update(selection: String?, selectionArgs: Array<Any>?, vararg data: Pair<TC, Any?>) = Database.update(tableName, data.toContentValues(), selection, selectionArgs)
-
-    fun <R> query(id: Long, factory: Factory<QC, R>): R? {
-        val query = createQueryBuilder(factory.columns)
-                .selection(createQueryOneSelection(), arrayOf(id))
-                .create()
+    fun <Row> query(criteria: QueryCriteria, helper: QueryHelper<Column, QueryCriteria, Row>): List<Row> {
+        val query = helper.createQuery(criteria)
 
         Database.query(query).use { cursor ->
             if (cursor.moveToFirst()) {
-                return factory.create(cursor)
-            }
-        }
-
-        return null
-    }
-
-    abstract fun createQueryOneSelection(): String
-
-    fun <T> liveQuery(id: Long, factory: Factory<QC, T>) = Database.createLiveData(tableName) { query(id, factory) }
-
-    fun <R> query(criteria: Criteria, factory: Factory<QC, R>): List<R> {
-        val query = createQueryBuilder(factory.columns)
-                .also { criteria.init(it) }
-                .create()
-
-        Database.query(query).use { cursor ->
-            if (cursor.moveToFirst()) {
-                val entries = mutableListOf<R>()
+                val entries = mutableListOf<Row>()
 
                 do {
-                    entries.add(factory.create(cursor))
+                    entries.add(helper.createRow(cursor))
                 } while (cursor.moveToNext())
 
                 return entries
@@ -51,15 +29,21 @@ abstract class Repository<TC : Repository.TableColumn, QC : Repository.Column> {
         return emptyList()
     }
 
-    abstract fun createQueryBuilder(columns: Array<QC>): SupportSQLiteQueryBuilder
+    fun <Row> liveQuery(criteria: QueryCriteria, factory: QueryHelper<Column, QueryCriteria, Row>) = Database.createLiveData(tableName) { query(criteria, factory) }
 
-    fun <T> liveQuery(criteria: Criteria, factory: Factory<QC, T>) = Database.createLiveData(tableName) { query(criteria, factory) }
+    fun <Row> queryOne(criteria: QueryCriteria, helper: QueryHelper<Column, QueryCriteria, Row>): Row? {
+        val query = helper.createQuery(criteria)
 
-    interface Criteria {
+        Database.query(query).use { cursor ->
+            if (cursor.moveToFirst()) {
+                return helper.createRow(cursor)
+            }
+        }
 
-        fun init(builder: SupportSQLiteQueryBuilder)
-
+        return null
     }
+
+    fun <Row> liveQueryOne(criteria: QueryCriteria, factory: QueryHelper<Column, QueryCriteria, Row>) = Database.createLiveData(tableName) { queryOne(criteria, factory) }
 
     interface Column {
         val name: String
@@ -67,11 +51,25 @@ abstract class Repository<TC : Repository.TableColumn, QC : Repository.Column> {
 
     interface TableColumn : Column
 
-    abstract class Factory<C, R> {
+    interface UpdateCriteria {
+        val selection: String?
+        val selectionArgs: Array<Any>?
+    }
 
-        abstract val columns: Array<C>
+    interface DeleteCriteria {
+        val selection: String?
+        val selectionArgs: Array<Any>?
+    }
 
-        open fun create(cursor: Cursor): R {
+    interface QueryCriteria
+
+    abstract class QueryHelper<Column, QueryCriteria, Row> {
+
+        abstract val columns: Array<Column>
+
+        abstract fun createQuery(criteria: QueryCriteria): SupportSQLiteQuery
+
+        open fun createRow(cursor: Cursor): Row {
             throw UnsupportedOperationException()
         }
 

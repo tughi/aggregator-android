@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 
 class FeedSettingsViewModel(feedId: Long) : ViewModel() {
 
-    private val feedsFactory = object : Feeds.Factory<Feed>() {
+    private val feedsQueryHelper = object : Feeds.QueryHelper<Feed>() {
         override val columns = arrayOf<Feeds.Column>(
                 Feeds.ID,
                 Feeds.URL,
@@ -21,7 +21,7 @@ class FeedSettingsViewModel(feedId: Long) : ViewModel() {
                 Feeds.UPDATE_MODE
         )
 
-        override fun create(cursor: Cursor) = Feed(
+        override fun createRow(cursor: Cursor) = Feed(
                 id = cursor.getLong(0),
                 url = cursor.getString(1),
                 title = cursor.getString(2),
@@ -38,7 +38,7 @@ class FeedSettingsViewModel(feedId: Long) : ViewModel() {
         val liveFeed = MutableLiveData<Feed>()
 
         GlobalScope.launch {
-            liveFeed.postValue(Feeds.query(feedId, feedsFactory))
+            liveFeed.postValue(Feeds.queryOne(Feeds.QueryRowCriteria(feedId), feedsQueryHelper))
         }
 
         feed = liveFeed

@@ -9,6 +9,7 @@ import android.text.format.DateUtils
 import android.util.Log
 import com.tughi.aggregator.App
 import com.tughi.aggregator.data.AdaptiveUpdateMode
+import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.DefaultUpdateMode
 import com.tughi.aggregator.data.DisabledUpdateMode
 import com.tughi.aggregator.data.Entries
@@ -23,7 +24,6 @@ import com.tughi.aggregator.data.Every8HoursUpdateMode
 import com.tughi.aggregator.data.EveryHourUpdateMode
 import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.OnAppLaunchUpdateMode
-import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.preferences.UpdateSettings
 import com.tughi.aggregator.utilities.JOB_SERVICE_FEEDS_UPDATER
@@ -36,14 +36,14 @@ object AutoUpdateScheduler {
     const val NEXT_UPDATE_TIME__DISABLED = 0L
     const val NEXT_UPDATE_TIME__ON_APP_LAUNCH = -1L
 
-    private val feedsFactory = object : Feeds.Factory<Feed>() {
+    private val feedsFactory = object : Feeds.QueryHelper<Feed>() {
         override val columns = arrayOf<Feeds.Column>(
                 Feeds.ID,
                 Feeds.LAST_UPDATE_TIME,
                 Feeds.UPDATE_MODE
         )
 
-        override fun create(cursor: Cursor) = Feed(
+        override fun createRow(cursor: Cursor) = Feed(
                 id = cursor.getLong(0),
                 lastUpdateTime = cursor.getLong(1),
                 updateMode = UpdateMode.deserialize(cursor.getString(2))
@@ -51,7 +51,7 @@ object AutoUpdateScheduler {
     }
 
     fun scheduleFeed(feedId: Long) {
-        Feeds.query(feedId, feedsFactory)?.also {
+        Feeds.queryOne(Feeds.QueryRowCriteria(feedId), feedsFactory)?.also {
             scheduleFeeds(it)
         }
     }
@@ -66,7 +66,7 @@ object AutoUpdateScheduler {
         try {
             feeds.forEach { feed ->
                 Feeds.update(
-                        feed.id,
+                        Feeds.UpdateRowCriteria(feed.id),
                         Feeds.NEXT_UPDATE_TIME to calculateNextUpdateTime(feed.id, feed.updateMode, feed.lastUpdateTime)
                 )
             }

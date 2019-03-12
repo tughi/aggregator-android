@@ -7,7 +7,7 @@ import com.tughi.aggregator.data.Entries
 
 internal class ReaderFragmentViewModel(entryId: Long, entryReadTime: Long) : ViewModel() {
 
-    private val entriesFactory = object : Entries.Factory<Entry>() {
+    private val entriesFactory = object : Entries.QueryHelper<Entry>() {
         override val columns = arrayOf(
                 Entries.ID,
                 Entries.TITLE,
@@ -21,7 +21,7 @@ internal class ReaderFragmentViewModel(entryId: Long, entryReadTime: Long) : Vie
                 Entries.READ_TIME
         )
 
-        override fun create(cursor: Cursor) = Entry(
+        override fun createRow(cursor: Cursor) = Entry(
                 id = cursor.getLong(0),
                 title = cursor.getString(1),
                 link = cursor.getString(2),
@@ -35,7 +35,7 @@ internal class ReaderFragmentViewModel(entryId: Long, entryReadTime: Long) : Vie
         )
     }
 
-    val entry = Entries.liveQuery(entryId, entriesFactory)
+    val entry = Entries.liveQueryOne(Entries.QueryRowCriteria(entryId), entriesFactory)
 
     data class Entry(
             val id: Long,

@@ -36,7 +36,7 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
     init {
         val document = Document()
 
-        // create RSS elements
+        // createItem RSS elements
 
         val rssUris = arrayOf("", "http://channel.netscape.com/rdf/simple/0.9/", "http://purl.org/rss/1.0/")
         var channelElement = document.addChild(TagElement("rss")).addChild(object : TagElement("channel") {
@@ -124,7 +124,7 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
             }
         })
 
-        // create RDF elements
+        // createItem RDF elements
 
         val rdfElement = document.addChild(object : TagElement("RDF", "http://www.w3.org/1999/02/22-rdf-syntax-ns#") {
             override fun end(namespace: String?, name: String?) {
@@ -143,7 +143,7 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
         })
         rdfElement.addChild(itemElement)
 
-        // create Atom elements
+        // createItem Atom elements
         val atomUris = arrayOf("http://www.w3.org/2005/Atom", "http://purl.org/atom/ns#")
         val feedElement = document.addChild(object : TagElement("feed", *atomUris) {
             override fun start(namespace: String?, name: String?, attributes: Attributes?) {

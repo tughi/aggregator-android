@@ -23,19 +23,19 @@ class FaviconUpdaterService : IntentService("FaviconUpdater") {
         }
     }
 
-    private val feedsFactory = object : Feeds.Factory<Feed>() {
+    private val feedsFactory = object : Feeds.QueryHelper<Feed>() {
         override val columns = arrayOf<Feeds.Column>(
                 Feeds.LINK
         )
 
-        override fun create(cursor: Cursor) = Feed(
+        override fun createRow(cursor: Cursor) = Feed(
                 cursor.getString(0)
         )
     }
 
     override fun onHandleIntent(intent: Intent?) {
         val feedId = intent?.getLongExtra(EXTRA_FEED_ID, 0) ?: return
-        val feed = Feeds.query(feedId, feedsFactory)
+        val feed = Feeds.queryOne(Feeds.QueryRowCriteria(feedId), feedsFactory)
         val feedLink = feed?.link ?: return
 
         var icon = detectWebsiteFavicon(feedLink)
@@ -44,7 +44,7 @@ class FaviconUpdaterService : IntentService("FaviconUpdater") {
         }
 
         if (icon?.content != null) {
-            Feeds.update(feedId, Feeds.FAVICON_URL to icon.url, Feeds.FAVICON_CONTENT to icon.content!!)
+            Feeds.update(Feeds.UpdateRowCriteria(feedId), Feeds.FAVICON_URL to icon.url, Feeds.FAVICON_CONTENT to icon.content!!)
         }
     }
 

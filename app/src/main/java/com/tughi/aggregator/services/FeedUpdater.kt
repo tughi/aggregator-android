@@ -5,9 +5,9 @@ import android.util.Log
 import android.util.Xml
 import androidx.lifecycle.MutableLiveData
 import com.tughi.aggregator.BuildConfig
+import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.data.Feeds
-import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.feeds.FeedParser
 import com.tughi.aggregator.utilities.Failure
@@ -33,7 +33,7 @@ import kotlin.coroutines.suspendCoroutine
 
 object FeedUpdater {
 
-    private val feedsFactory = object : Feeds.Factory<Feed>() {
+    private val feedsFactory = object : Feeds.QueryHelper<Feed>() {
         override val columns = arrayOf<Feeds.Column>(
                 Feeds.ID,
                 Feeds.URL,
@@ -46,7 +46,7 @@ object FeedUpdater {
                 Feeds.HTTP_LAST_MODIFIED
         )
 
-        override fun create(cursor: Cursor) = Feed(
+        override fun createRow(cursor: Cursor) = Feed(
                 cursor.getLong(0),
                 cursor.getString(1),
                 cursor.getString(2),
@@ -62,7 +62,7 @@ object FeedUpdater {
     val updatingFeedIds = MutableLiveData<MutableSet<Long>>()
 
     suspend fun updateFeed(feedId: Long) {
-        val feed = Feeds.query(feedId, feedsFactory) ?: return
+        val feed = Feeds.queryOne(Feeds.QueryRowCriteria(feedId), feedsFactory) ?: return
         updateFeed(feed)
     }
 
@@ -243,7 +243,7 @@ object FeedUpdater {
             val nextUpdateTime = AutoUpdateScheduler.calculateNextUpdateTime(feedId, feed.updateMode, lastUpdateTime)
 
             Feeds.update(
-                    feedId,
+                    Feeds.UpdateRowCriteria(feedId),
                     Feeds.LAST_UPDATE_TIME to lastUpdateTime,
                     Feeds.LAST_UPDATE_ERROR to null,
                     Feeds.NEXT_UPDATE_TIME to nextUpdateTime,
@@ -274,7 +274,7 @@ object FeedUpdater {
             val nextUpdateTime = AutoUpdateScheduler.calculateNextUpdateRetryTime(feed.updateMode, nextUpdateRetry)
 
             Feeds.update(
-                    feed.id,
+                    Feeds.UpdateRowCriteria(feed.id),
                     Feeds.LAST_UPDATE_ERROR to updateError,
                     Feeds.NEXT_UPDATE_RETRY to nextUpdateRetry,
                     Feeds.NEXT_UPDATE_TIME to nextUpdateTime

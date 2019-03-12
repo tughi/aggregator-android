@@ -8,14 +8,14 @@ import com.tughi.aggregator.data.Entries
 
 class ReaderActivityViewModel(queryCriteria: Entries.QueryCriteria) : ViewModel() {
 
-    private val entryFactory = object : Entries.Factory<Entry>() {
+    private val entryFactory = object : Entries.QueryHelper<Entry>() {
         override val columns = arrayOf<Entries.Column>(
                 Entries.ID,
                 Entries.PINNED_TIME,
                 Entries.READ_TIME
         )
 
-        override fun create(cursor: Cursor) = Entry(
+        override fun createRow(cursor: Cursor) = Entry(
                 id = cursor.getLong(0),
                 pinnedTime = cursor.getLong(1),
                 readTime = cursor.getLong(2)
