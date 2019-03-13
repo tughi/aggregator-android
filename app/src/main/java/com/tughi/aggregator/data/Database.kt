@@ -13,6 +13,7 @@ import com.tughi.aggregator.App
 import com.tughi.aggregator.utilities.DATABASE_NAME
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.io.Serializable
 import java.lang.ref.WeakReference
 
 // TODO: Hide for all except Repository
@@ -57,10 +58,10 @@ object Database {
         return id
     }
 
-    fun update(table: String, values: ContentValues, selection: String?, selectionArgs: Array<Any>?, recordId: Long? = null): Int {
+    fun update(table: String, values: ContentValues, selection: String?, selectionArgs: Array<Any>?, rowId: Any? = null): Int {
         val result = sqlite.writableDatabase.update(table, SQLiteDatabase.CONFLICT_FAIL, values, selection, selectionArgs)
         if (result > 0) {
-            invalidateTable(table, recordId)
+            invalidateTable(table, rowId)
         }
         return result
     }
@@ -73,16 +74,16 @@ object Database {
         return result
     }
 
-    private val invalidatedTables = mutableMapOf<String, MutableList<Long>>()
+    private val invalidatedTables = mutableMapOf<String, MutableList<Any>>()
 
-    private fun invalidateTable(table: String, recordId: Long? = null) {
+    private fun invalidateTable(table: String, rowId: Any? = null) {
         if (sqlite.writableDatabase.inTransaction()) {
             synchronized(invalidatedTables) {
                 if (!invalidatedTables.containsKey(table)) {
                     invalidatedTables[table] = mutableListOf()
                 }
-                if (recordId != null) {
-                    invalidatedTables[table]?.add(recordId)
+                if (rowId != null) {
+                    invalidatedTables[table]?.add(rowId)
                 }
             }
             return
@@ -93,7 +94,7 @@ object Database {
                 val vanishedObservers = mutableListOf<TableObserver>()
 
                 for (tableObserver in tableObservers) {
-                    if (tableObserver.table == table && (tableObserver.recordId == null || tableObserver.recordId == recordId)) {
+                    if (tableObserver.table == table && (tableObserver.rowId == null || tableObserver.rowId == rowId)) {
                         val listener = tableObserver.listener
                         if (listener != null) {
                             listener.onInvalidated()
@@ -141,7 +142,7 @@ object Database {
         }
     }
 
-    fun <T> createLiveData(table: String, recordId: Any? = null, loadData: () -> T): LiveData<T> {
+    fun <T> createLiveData(observedTables: Array<ObservedTable>, loadData: () -> T): LiveData<T> {
         val liveData = object : LiveData<T>(), TableObserver.Listener {
             override fun onActive() {
                 if (value == null) {
@@ -162,13 +163,17 @@ object Database {
         }
 
         synchronized(tableObservers) {
-            tableObservers.add(TableObserver(table, recordId, liveData))
+            for (observedTable in observedTables) {
+                tableObservers.add(TableObserver(observedTable.name, observedTable.rowId, liveData))
+            }
         }
 
         return liveData
     }
 
-    private class TableObserver(val table: String, val recordId: Any?, listener: Listener) {
+    class ObservedTable(val name: String, val rowId: Any? = null) : Serializable
+
+    private class TableObserver(val table: String, val rowId: Any?, listener: Listener) {
 
         private val reference = WeakReference(listener)
 

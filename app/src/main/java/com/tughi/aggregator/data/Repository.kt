@@ -7,7 +7,7 @@ abstract class Repository<Column : Repository.Column, TableColumn : Repository.T
 
     fun insert(vararg data: Pair<TableColumn, Any?>): Long = Database.insert(tableName, data.toContentValues())
 
-    fun update(criteria: UpdateCriteria, vararg data: Pair<TableColumn, Any?>) = Database.update(tableName, data.toContentValues(), criteria.selection, criteria.selectionArgs)
+    fun update(criteria: UpdateCriteria, vararg data: Pair<TableColumn, Any?>) = Database.update(tableName, data.toContentValues(), criteria.selection, criteria.selectionArgs, criteria.affectedRowId)
 
     fun delete(criteria: DeleteCriteria) = Database.delete(tableName, criteria.selection, criteria.selectionArgs)
 
@@ -29,7 +29,7 @@ abstract class Repository<Column : Repository.Column, TableColumn : Repository.T
         return emptyList()
     }
 
-    fun <Row> liveQuery(criteria: QueryCriteria, factory: QueryHelper<Column, QueryCriteria, Row>) = Database.createLiveData(tableName) { query(criteria, factory) }
+    fun <Row> liveQuery(criteria: QueryCriteria, factory: QueryHelper<Column, QueryCriteria, Row>) = Database.createLiveData(criteria.observedTables) { query(criteria, factory) }
 
     fun <Row> queryOne(criteria: QueryCriteria, helper: QueryHelper<Column, QueryCriteria, Row>): Row? {
         val query = helper.createQuery(criteria)
@@ -43,7 +43,7 @@ abstract class Repository<Column : Repository.Column, TableColumn : Repository.T
         return null
     }
 
-    fun <Row> liveQueryOne(criteria: QueryCriteria, factory: QueryHelper<Column, QueryCriteria, Row>) = Database.createLiveData(tableName) { queryOne(criteria, factory) }
+    fun <Row> liveQueryOne(criteria: QueryCriteria, factory: QueryHelper<Column, QueryCriteria, Row>) = Database.createLiveData(criteria.observedTables) { queryOne(criteria, factory) }
 
     interface Column {
         val name: String
@@ -52,6 +52,8 @@ abstract class Repository<Column : Repository.Column, TableColumn : Repository.T
     interface TableColumn : Column
 
     interface UpdateCriteria {
+        val affectedRowId: Any?
+
         val selection: String?
         val selectionArgs: Array<Any>?
     }
@@ -61,7 +63,9 @@ abstract class Repository<Column : Repository.Column, TableColumn : Repository.T
         val selectionArgs: Array<Any>?
     }
 
-    interface QueryCriteria
+    interface QueryCriteria {
+        val observedTables: Array<Database.ObservedTable>
+    }
 
     abstract class QueryHelper<Column, QueryCriteria, Row> {
 

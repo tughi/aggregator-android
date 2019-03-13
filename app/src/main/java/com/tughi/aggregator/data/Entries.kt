@@ -60,9 +60,12 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
 
     interface UpdateCriteria : Repository.UpdateCriteria
 
-    private class SimpleUpdateCriteria(override val selection: String?, override val selectionArgs: Array<Any>?) : UpdateCriteria
+    private class SimpleUpdateCriteria(override val selection: String?, override val selectionArgs: Array<Any>?) : UpdateCriteria {
+        override val affectedRowId: Any? = null
+    }
 
     class UpdateRowCriteria(id: Long) : UpdateCriteria {
+        override val affectedRowId: Any? = id
         override val selection = "id = ?"
         override val selectionArgs = arrayOf<Any>(id)
     }
@@ -76,6 +79,8 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     }
 
     class QueryRowCriteria(val id: Long) : QueryCriteria {
+
+        override val observedTables = arrayOf(Database.ObservedTable("entries", id), Database.ObservedTable("feeds")) // FIXME: include feeds only when necessary
 
         override fun config(builder: SupportSQLiteQueryBuilder) {
             builder.selection("e.id = ?", arrayOf(id))
@@ -93,6 +98,8 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     }
 
     class FeedEntriesQueryCriteria(val feedId: Long, override val sessionTime: Long = 0, override val sortOrder: SortOrder) : EntriesQueryCriteria() {
+
+        override val observedTables = arrayOf(Database.ObservedTable("entries"), Database.ObservedTable("feeds")) // FIXME: include feeds only when necessary
 
         override fun config(builder: SupportSQLiteQueryBuilder) {
             val selection: String?
@@ -117,6 +124,8 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     }
 
     class MyFeedEntriesQueryCriteria(override val sessionTime: Long = 0, override val sortOrder: SortOrder) : EntriesQueryCriteria() {
+
+        override val observedTables = arrayOf(Database.ObservedTable("entries"), Database.ObservedTable("feeds")) // FIXME: include feeds only when necessary
 
         override fun config(builder: SupportSQLiteQueryBuilder) {
             val selection: String?

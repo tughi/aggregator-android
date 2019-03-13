@@ -60,6 +60,7 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
     interface UpdateCriteria : Repository.UpdateCriteria
 
     class UpdateRowCriteria(id: Long) : UpdateCriteria {
+        override val affectedRowId: Any? = id
         override val selection = "id = ?"
         override val selectionArgs = arrayOf<Any>(id)
     }
@@ -73,12 +74,19 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
     }
 
     class QueryRowCriteria(val id: Long) : QueryCriteria {
+
+        override val observedTables = arrayOf(Database.ObservedTable("entries", id), Database.ObservedTable("feeds")) // FIXME: include feeds only when necessary
+
         override fun config(builder: SupportSQLiteQueryBuilder) {
             builder.selection("f.id = ?", arrayOf(id))
         }
+
     }
 
     class AllCriteria : QueryCriteria {
+
+        override val observedTables = arrayOf(Database.ObservedTable("entries"), Database.ObservedTable("feeds")) // FIXME: include feeds only when necessary
+
         override fun config(builder: SupportSQLiteQueryBuilder) {
             /* TODO: Create custom query builder that can list its columns
             if (factory.columns.contains(TITLE)) {
@@ -89,12 +97,19 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
     }
 
     class OutdatedCriteria(private val now: Long) : QueryCriteria {
+
+        override val observedTables = arrayOf(Database.ObservedTable("entries"), Database.ObservedTable("feeds")) // FIXME: include feeds only when necessary
+
         override fun config(builder: SupportSQLiteQueryBuilder) {
             builder.selection("(next_update_time > 0 AND next_update_time < ?) OR next_update_time = -1", arrayOf(now))
         }
+
     }
 
     class UpdateModeCriteria(private val updateMode: UpdateMode) : QueryCriteria {
+
+        override val observedTables = arrayOf(Database.ObservedTable("entries"), Database.ObservedTable("feeds")) // FIXME: include feeds only when necessary
+
         override fun config(builder: SupportSQLiteQueryBuilder) {
             builder.selection("update_mode = ?", arrayOf(updateMode.serialize()))
         }
