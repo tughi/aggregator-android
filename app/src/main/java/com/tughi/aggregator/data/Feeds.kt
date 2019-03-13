@@ -60,7 +60,7 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
     interface UpdateCriteria : Repository.UpdateCriteria
 
     class UpdateRowCriteria(id: Long) : UpdateCriteria {
-        override val selection = "${ID.name} = ?"
+        override val selection = "id = ?"
         override val selectionArgs = arrayOf<Any>(id)
     }
 
@@ -74,7 +74,7 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
 
     class QueryRowCriteria(val id: Long) : QueryCriteria {
         override fun config(builder: SupportSQLiteQueryBuilder) {
-            builder.selection("${ID.name} = ?", arrayOf(id))
+            builder.selection("f.id = ?", arrayOf(id))
         }
     }
 

@@ -18,8 +18,8 @@ class MyFeedFragment : EntriesFragment() {
         return fragmentView
     }
 
-    override val initialQueryCriteria: Entries.QueryCriteria
-        get() = Entries.QueryCriteria.MyFeedEntries(sortOrder = EntryListSettings.entriesSortOrder)
+    override val initialQueryCriteria: Entries.EntriesQueryCriteria
+        get() = Entries.MyFeedEntriesQueryCriteria(sortOrder = EntryListSettings.entriesSortOrder)
 
     override fun onNavigationClick() {
         val activity = activity as MainActivity

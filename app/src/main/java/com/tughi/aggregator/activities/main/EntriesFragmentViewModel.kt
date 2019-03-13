@@ -16,15 +16,12 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-class EntriesFragmentViewModel(initialQueryCriteria: Entries.QueryCriteria) : ViewModel() {
+class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteria) : ViewModel() {
 
     private val sessionTime = System.currentTimeMillis()
 
-    val queryCriteria = MutableLiveData<Entries.QueryCriteria>().apply {
-        value = when (initialQueryCriteria) {
-            is Entries.QueryCriteria.FeedEntries -> initialQueryCriteria.copy(sessionTime = sessionTime)
-            is Entries.QueryCriteria.MyFeedEntries -> initialQueryCriteria.copy(sessionTime = sessionTime)
-        }
+    val queryCriteria = MutableLiveData<Entries.EntriesQueryCriteria>().apply {
+        value = initialQueryCriteria.copy(sessionTime = sessionTime)
     }
 
     private val entryFactory = object : Entries.QueryHelper<Entry>() {
@@ -133,20 +130,14 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.QueryCriteria) : Vi
 
         transformedEntries.value = null
         queryCriteria.value?.let { value ->
-            queryCriteria.value = when (value) {
-                is Entries.QueryCriteria.FeedEntries -> value.copy(sortOrder = sortOrder)
-                is Entries.QueryCriteria.MyFeedEntries -> value.copy(sortOrder = sortOrder)
-            }
+            queryCriteria.value = value.copy(sortOrder = sortOrder)
         }
     }
 
     fun changeShowRead(showRead: Boolean) {
         transformedEntries.value = null
         queryCriteria.value?.let { value ->
-            queryCriteria.value = when (value) {
-                is Entries.QueryCriteria.FeedEntries -> value.copy(sessionTime = if (showRead) 0 else sessionTime)
-                is Entries.QueryCriteria.MyFeedEntries -> value.copy(sessionTime = if (showRead) 0 else sessionTime)
-            }
+            queryCriteria.value = value.copy(sessionTime = if (showRead) 0 else sessionTime)
         }
     }
 
@@ -165,7 +156,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.QueryCriteria) : Vi
             val type: EntriesFragmentEntryType
     )
 
-    class Factory(private val initialQueryCriteria: Entries.QueryCriteria) : ViewModelProvider.Factory {
+    class Factory(private val initialQueryCriteria: Entries.EntriesQueryCriteria) : ViewModelProvider.Factory {
 
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(EntriesFragmentViewModel::class.java)) {

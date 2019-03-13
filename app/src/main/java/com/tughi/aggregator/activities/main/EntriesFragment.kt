@@ -97,7 +97,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
         return fragmentView
     }
 
-    internal abstract val initialQueryCriteria: Entries.QueryCriteria
+    internal abstract val initialQueryCriteria: Entries.EntriesQueryCriteria
 
     abstract fun onNavigationClick()
 

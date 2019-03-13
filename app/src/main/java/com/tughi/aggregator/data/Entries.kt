@@ -1,13 +1,12 @@
 package com.tughi.aggregator.data
 
-import androidx.lifecycle.LiveData
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQueryBuilder
 import java.io.Serializable
 
 @Suppress("ClassName")
-object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateCriteria, Entries.DeleteCriteria, Entries.QC>("entries") {
+object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateCriteria, Entries.DeleteCriteria, Entries.QueryCriteria>("entries") {
 
     open class Column(override val name: String, val projection: String) : Repository.Column
     interface TableColumn : Repository.TableColumn
@@ -33,14 +32,16 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
 
     fun markPinned(entryId: Long): Int = update(UpdateRowCriteria(entryId), READ_TIME to 0, PINNED_TIME to System.currentTimeMillis())
 
-    fun markRead(criteria: QueryCriteria): Int {
+    fun markRead(criteria: EntriesQueryCriteria): Int {
         val selection = when (criteria) {
-            is QueryCriteria.FeedEntries -> "feed_id = ? AND pinned_time = 0 AND read_time = 0"
-            is QueryCriteria.MyFeedEntries -> "pinned_time = 0 AND read_time = 0"
+            is FeedEntriesQueryCriteria -> "feed_id = ? AND pinned_time = 0 AND read_time = 0"
+            is MyFeedEntriesQueryCriteria -> "pinned_time = 0 AND read_time = 0"
+            else -> throw IllegalArgumentException("Unsupported criteria: $criteria")
         }
         val selectionArgs: Array<Any>? = when (criteria) {
-            is QueryCriteria.FeedEntries -> arrayOf(criteria.feedId)
-            is QueryCriteria.MyFeedEntries -> null
+            is FeedEntriesQueryCriteria -> arrayOf(criteria.feedId)
+            is MyFeedEntriesQueryCriteria -> null
+            else -> throw IllegalArgumentException("Unsupported criteria: $criteria")
         }
         return update(SimpleUpdateCriteria(selection, selectionArgs), READ_TIME to System.currentTimeMillis())
     }
@@ -57,99 +58,90 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     // TODO: Use update with criteria instead
     fun update(feedId: Long, uid: String, vararg data: Pair<TableColumn, Any?>) = Database.update("entries", data.toContentValues(), "feed_id = ? AND uid = ?", arrayOf(feedId, uid))
 
-    fun <T> query(criteria: QueryCriteria, factory: QueryHelper<T>): List<T> {
-        val selection = when {
-            criteria.sessionTime != 0L -> when (criteria) {
-                is QueryCriteria.FeedEntries -> "e.feed_id = ? AND (e.read_time = 0 OR e.read_time > ?)"
-                is QueryCriteria.MyFeedEntries -> "e.read_time = 0 OR e.read_time > ?"
-            }
-            else -> when (criteria) {
-                is QueryCriteria.FeedEntries -> "e.feed_id = ?"
-                is QueryCriteria.MyFeedEntries -> null
-            }
-        }
-
-        val selectionArgs = when {
-            criteria.sessionTime != 0L -> when (criteria) {
-                is QueryCriteria.FeedEntries -> arrayOf(criteria.feedId, criteria.sessionTime)
-                is QueryCriteria.MyFeedEntries -> arrayOf(criteria.sessionTime)
-            }
-            else -> when (criteria) {
-                is QueryCriteria.FeedEntries -> arrayOf(criteria.feedId)
-                is QueryCriteria.MyFeedEntries -> null
-            }
-        }
-
-        val orderBy = when (criteria.sortOrder) {
-            is SortOrder.ByDateAscending -> "COALESCE(e.publish_time, e.insert_time) ASC"
-            is SortOrder.ByDateDescending -> "COALESCE(e.publish_time, e.insert_time) DESC"
-            is SortOrder.ByTitle -> "e.$TITLE ASC, COALESCE(e.publish_time, e.insert_time) ASC"
-        }
-
-        val query = SupportSQLiteQueryBuilder.builder("entries e LEFT JOIN feeds f ON e.feed_id = f.id")
-                .columns(Array(factory.columns.size) { index -> "${factory.columns[index].projection} AS ${factory.columns[index].name}" })
-                .selection(selection, selectionArgs)
-                .orderBy(orderBy)
-                .create()
-
-        Database.query(query).use { cursor ->
-            if (cursor.moveToFirst()) {
-                val entries = mutableListOf<T>()
-
-                do {
-                    entries.add(factory.createRow(cursor))
-                } while (cursor.moveToNext())
-
-                return entries
-            }
-        }
-
-        return emptyList()
-    }
-
-    fun <T> liveQuery(criteria: QueryCriteria, factory: QueryHelper<T>): LiveData<List<T>> = Database.createLiveData("entries") {
-        query(criteria, factory)
-    }
-
     interface UpdateCriteria : Repository.UpdateCriteria
 
     private class SimpleUpdateCriteria(override val selection: String?, override val selectionArgs: Array<Any>?) : UpdateCriteria
 
     class UpdateRowCriteria(id: Long) : UpdateCriteria {
-        override val selection = "${ID.name} = ?"
+        override val selection = "id = ?"
         override val selectionArgs = arrayOf<Any>(id)
     }
 
     interface DeleteCriteria : Repository.DeleteCriteria
 
-    // TODO: Rename to QueryCriteria
-    interface QC : Repository.QueryCriteria {
+    interface QueryCriteria : Repository.QueryCriteria {
 
         fun config(builder: SupportSQLiteQueryBuilder)
 
     }
 
-    class QueryRowCriteria(val id: Long) : QC {
+    class QueryRowCriteria(val id: Long) : QueryCriteria {
+
         override fun config(builder: SupportSQLiteQueryBuilder) {
-            builder.selection("${ID.name} = ?", arrayOf(id))
+            builder.selection("e.id = ?", arrayOf(id))
         }
+
     }
 
-    // TODO: Extend from QC
-    sealed class QueryCriteria : Serializable {
+    abstract class EntriesQueryCriteria : QueryCriteria, Serializable {
 
         abstract val sessionTime: Long
         abstract val sortOrder: SortOrder
 
-        data class FeedEntries(val feedId: Long, override val sessionTime: Long = 0, override val sortOrder: SortOrder) : QueryCriteria()
-
-        data class MyFeedEntries(override val sessionTime: Long = 0, override val sortOrder: SortOrder) : QueryCriteria()
+        abstract fun copy(sessionTime: Long? = null, sortOrder: SortOrder? = null): EntriesQueryCriteria
 
     }
 
-    sealed class SortOrder : Serializable {
+    class FeedEntriesQueryCriteria(val feedId: Long, override val sessionTime: Long = 0, override val sortOrder: SortOrder) : EntriesQueryCriteria() {
 
-        abstract fun serialize(): String
+        override fun config(builder: SupportSQLiteQueryBuilder) {
+            val selection: String?
+            val selectionArgs: Array<Long>?
+            if (sessionTime != 0L) {
+                selection = "e.feed_id = ? AND (e.read_time = 0 OR e.read_time > ?)"
+                selectionArgs = arrayOf(feedId, sessionTime)
+            } else {
+                selection = "e.feed_id = ?"
+                selectionArgs = arrayOf(feedId)
+            }
+            builder.selection(selection, selectionArgs)
+            builder.orderBy(sortOrder.orderBy)
+        }
+
+        override fun copy(sessionTime: Long?, sortOrder: SortOrder?) = FeedEntriesQueryCriteria(
+                feedId = feedId,
+                sessionTime = sessionTime ?: this.sessionTime,
+                sortOrder = sortOrder ?: this.sortOrder
+        )
+
+    }
+
+    class MyFeedEntriesQueryCriteria(override val sessionTime: Long = 0, override val sortOrder: SortOrder) : EntriesQueryCriteria() {
+
+        override fun config(builder: SupportSQLiteQueryBuilder) {
+            val selection: String?
+            val selectionArgs: Array<Long>?
+            if (sessionTime != 0L) {
+                selection = "e.read_time = 0 OR e.read_time > ?"
+                selectionArgs = arrayOf(sessionTime)
+            } else {
+                selection = null
+                selectionArgs = null
+            }
+            builder.selection(selection, selectionArgs)
+            builder.orderBy(sortOrder.orderBy)
+        }
+
+        override fun copy(sessionTime: Long?, sortOrder: SortOrder?) = Entries.MyFeedEntriesQueryCriteria(
+                sessionTime = sessionTime ?: this.sessionTime,
+                sortOrder = sortOrder ?: this.sortOrder
+        )
+
+    }
+
+    sealed class SortOrder(private val value: String, internal val orderBy: String) : Serializable {
+
+        fun serialize() = value
 
         companion object {
             fun deserialize(value: String) = when (value) {
@@ -160,23 +152,17 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
             }
         }
 
-        object ByDateAscending : SortOrder() {
-            override fun serialize(): String = "date-asc"
-        }
+        object ByDateAscending : SortOrder("date-asc", "COALESCE(e.publish_time, e.insert_time) ASC")
 
-        object ByDateDescending : SortOrder() {
-            override fun serialize(): String = "date-desc"
-        }
+        object ByDateDescending : SortOrder("date-desc", "COALESCE(e.publish_time, e.insert_time) DESC")
 
-        object ByTitle : SortOrder() {
-            override fun serialize(): String = "title-asc"
-        }
+        object ByTitle : SortOrder("title-asc", "e.title ASC, COALESCE(e.publish_time, e.insert_time) ASC")
 
     }
 
-    abstract class QueryHelper<R>(vararg columns: Column) : Repository.QueryHelper<Column, QC, R>() {
+    abstract class QueryHelper<R>(vararg columns: Column) : Repository.QueryHelper<Column, QueryCriteria, R>() {
 
-        override fun createQuery(criteria: QC): SupportSQLiteQuery = SupportSQLiteQueryBuilder
+        override fun createQuery(criteria: QueryCriteria): SupportSQLiteQuery = SupportSQLiteQueryBuilder
                 .builder("entries e LEFT JOIN feeds f ON f.id = e.feed_id")
                 .columns(Array(columns.size) { "${columns[it].projection} AS ${columns[it].name}" })
                 .also { criteria.config(it) }
