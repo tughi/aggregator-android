@@ -12,24 +12,6 @@ import kotlinx.coroutines.launch
 
 class FeedSettingsViewModel(feedId: Long) : ViewModel() {
 
-    private val feedsQueryHelper = object : Feeds.QueryHelper<Feed>() {
-        override val columns = arrayOf<Feeds.Column>(
-                Feeds.ID,
-                Feeds.URL,
-                Feeds.TITLE,
-                Feeds.CUSTOM_TITLE,
-                Feeds.UPDATE_MODE
-        )
-
-        override fun createRow(cursor: Cursor) = Feed(
-                id = cursor.getLong(0),
-                url = cursor.getString(1),
-                title = cursor.getString(2),
-                customTitle = cursor.getString(3),
-                updateMode = UpdateMode.deserialize(cursor.getString(4))
-        )
-    }
-
     val feed: LiveData<Feed>
 
     var newUpdateMode: UpdateMode? = null
@@ -38,7 +20,7 @@ class FeedSettingsViewModel(feedId: Long) : ViewModel() {
         val liveFeed = MutableLiveData<Feed>()
 
         GlobalScope.launch {
-            liveFeed.postValue(Feeds.queryOne(Feeds.QueryRowCriteria(feedId), feedsQueryHelper))
+            liveFeed.postValue(Feeds.queryOne(Feeds.QueryRowCriteria(feedId), Feed.QueryHelper))
         }
 
         feed = liveFeed
@@ -50,7 +32,23 @@ class FeedSettingsViewModel(feedId: Long) : ViewModel() {
             val title: String,
             val customTitle: String?,
             val updateMode: UpdateMode
-    )
+    ) {
+        object QueryHelper : Feeds.QueryHelper<Feed>(
+                Feeds.ID,
+                Feeds.URL,
+                Feeds.TITLE,
+                Feeds.CUSTOM_TITLE,
+                Feeds.UPDATE_MODE
+        ) {
+            override fun createRow(cursor: Cursor) = Feed(
+                    id = cursor.getLong(0),
+                    url = cursor.getString(1),
+                    title = cursor.getString(2),
+                    customTitle = cursor.getString(3),
+                    updateMode = UpdateMode.deserialize(cursor.getString(4))
+            )
+        }
+    }
 
     class Factory(private val feedId: Long) : ViewModelProvider.Factory {
 

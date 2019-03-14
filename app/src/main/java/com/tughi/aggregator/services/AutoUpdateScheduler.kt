@@ -36,28 +36,14 @@ object AutoUpdateScheduler {
     const val NEXT_UPDATE_TIME__DISABLED = 0L
     const val NEXT_UPDATE_TIME__ON_APP_LAUNCH = -1L
 
-    private val feedsFactory = object : Feeds.QueryHelper<Feed>() {
-        override val columns = arrayOf<Feeds.Column>(
-                Feeds.ID,
-                Feeds.LAST_UPDATE_TIME,
-                Feeds.UPDATE_MODE
-        )
-
-        override fun createRow(cursor: Cursor) = Feed(
-                id = cursor.getLong(0),
-                lastUpdateTime = cursor.getLong(1),
-                updateMode = UpdateMode.deserialize(cursor.getString(2))
-        )
-    }
-
     fun scheduleFeed(feedId: Long) {
-        Feeds.queryOne(Feeds.QueryRowCriteria(feedId), feedsFactory)?.also {
+        Feeds.queryOne(Feeds.QueryRowCriteria(feedId), Feed.QueryHelper)?.also {
             scheduleFeeds(it)
         }
     }
 
     fun scheduleFeedsWithDefaultUpdateMode() {
-        val feeds = Feeds.query(Feeds.UpdateModeCriteria(DefaultUpdateMode), feedsFactory)
+        val feeds = Feeds.query(Feeds.UpdateModeCriteria(DefaultUpdateMode), Feed.QueryHelper)
         scheduleFeeds(*feeds.toTypedArray())
     }
 
@@ -169,6 +155,18 @@ object AutoUpdateScheduler {
             val id: Long,
             val lastUpdateTime: Long,
             val updateMode: UpdateMode
-    )
+    ) {
+        object QueryHelper : Feeds.QueryHelper<Feed>(
+                Feeds.ID,
+                Feeds.LAST_UPDATE_TIME,
+                Feeds.UPDATE_MODE
+        ) {
+            override fun createRow(cursor: Cursor) = Feed(
+                    id = cursor.getLong(0),
+                    lastUpdateTime = cursor.getLong(1),
+                    updateMode = UpdateMode.deserialize(cursor.getString(2))
+            )
+        }
+    }
 
 }

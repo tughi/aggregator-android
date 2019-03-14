@@ -8,27 +8,25 @@ import com.tughi.aggregator.data.Entries
 
 class ReaderActivityViewModel(queryCriteria: Entries.QueryCriteria) : ViewModel() {
 
-    private val entryFactory = object : Entries.QueryHelper<Entry>() {
-        override val columns = arrayOf<Entries.Column>(
-                Entries.ID,
-                Entries.PINNED_TIME,
-                Entries.READ_TIME
-        )
-
-        override fun createRow(cursor: Cursor) = Entry(
-                id = cursor.getLong(0),
-                pinnedTime = cursor.getLong(1),
-                readTime = cursor.getLong(2)
-        )
-    }
-
-    val entries: LiveData<List<Entry>> = Entries.liveQuery(queryCriteria, entryFactory)
+    val entries: LiveData<List<Entry>> = Entries.liveQuery(queryCriteria, Entry.QueryHelper)
 
     data class Entry(
             val id: Long,
             val readTime: Long,
             val pinnedTime: Long
-    )
+    ) {
+        object QueryHelper : Entries.QueryHelper<Entry>(
+                Entries.ID,
+                Entries.PINNED_TIME,
+                Entries.READ_TIME
+        ) {
+            override fun createRow(cursor: Cursor) = Entry(
+                    id = cursor.getLong(0),
+                    pinnedTime = cursor.getLong(1),
+                    readTime = cursor.getLong(2)
+            )
+        }
+    }
 
     class Factory(private val queryCriteria: Entries.QueryCriteria) : ViewModelProvider.Factory {
 

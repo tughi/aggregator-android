@@ -13,33 +13,7 @@ import java.io.Serializable
 
 class FeedsFragmentViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val feedsFactory = object : Feeds.QueryHelper<Feed>() {
-        override val columns = arrayOf(
-                Feeds.ID,
-                Feeds.TITLE,
-                Feeds.FAVICON_URL,
-                Feeds.LAST_UPDATE_TIME,
-                Feeds.LAST_UPDATE_ERROR,
-                Feeds.NEXT_UPDATE_TIME,
-                Feeds.NEXT_UPDATE_RETRY,
-                Feeds.UPDATE_MODE,
-                Feeds.UNREAD_ENTRY_COUNT
-        )
-
-        override fun createRow(cursor: Cursor) = Feed(
-                id = cursor.getLong(0),
-                title = cursor.getString(1),
-                faviconUrl = cursor.getString(2),
-                lastUpdateTime = cursor.getLong(3),
-                lastUpdateError = cursor.getString(4),
-                nextUpdateTime = cursor.getLong(5),
-                nextUpdateRetry = cursor.getInt(6),
-                updateMode = UpdateMode.deserialize(cursor.getString(7)),
-                unreadEntryCount = cursor.getInt(8)
-        )
-    }
-
-    private val databaseFeeds = Feeds.liveQuery(Feeds.AllCriteria(), feedsFactory)
+    private val databaseFeeds = Feeds.liveQuery(Feeds.AllCriteria(), Feed.QueryHelper)
 
     private val expandedFeedId = MutableLiveData<Long>()
 
@@ -81,6 +55,30 @@ class FeedsFragmentViewModel(application: Application) : AndroidViewModel(applic
             val unreadEntryCount: Int,
             val expanded: Boolean = false,
             val updating: Boolean = false
-    ) : Serializable
+    ) : Serializable {
+        object QueryHelper : Feeds.QueryHelper<Feed>(
+                Feeds.ID,
+                Feeds.TITLE,
+                Feeds.FAVICON_URL,
+                Feeds.LAST_UPDATE_TIME,
+                Feeds.LAST_UPDATE_ERROR,
+                Feeds.NEXT_UPDATE_TIME,
+                Feeds.NEXT_UPDATE_RETRY,
+                Feeds.UPDATE_MODE,
+                Feeds.UNREAD_ENTRY_COUNT
+        ) {
+            override fun createRow(cursor: Cursor) = Feed(
+                    id = cursor.getLong(0),
+                    title = cursor.getString(1),
+                    faviconUrl = cursor.getString(2),
+                    lastUpdateTime = cursor.getLong(3),
+                    lastUpdateError = cursor.getString(4),
+                    nextUpdateTime = cursor.getLong(5),
+                    nextUpdateRetry = cursor.getInt(6),
+                    updateMode = UpdateMode.deserialize(cursor.getString(7)),
+                    unreadEntryCount = cursor.getInt(8)
+            )
+        }
+    }
 
 }

@@ -8,15 +8,15 @@ import java.io.Serializable
 @Suppress("ClassName")
 object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateCriteria, Entries.DeleteCriteria, Entries.QueryCriteria>("entries") {
 
-    open class Column(override val name: String, val projection: String) : Repository.Column
+    open class Column(name: String, projection: String, projectionTables: Array<String> = arrayOf("entries")) : Repository.Column(name, projection, projectionTables)
     interface TableColumn : Repository.TableColumn
 
     object ID : Column("id", "e.id"), TableColumn
     object UID : Column("uid", "e.uid"), TableColumn
     object FEED_ID : Column("feed_id", "e.feed_id"), TableColumn
-    object FEED_TITLE : Column("feed_title", "COALESCE(f.custom_title, f.title)")
-    object FEED_LANGUAGE : Column("feed_language", "f.language")
-    object FEED_FAVICON_URL : Column("feed_favicon_url", "f.favicon_url")
+    object FEED_TITLE : Column("feed_title", "COALESCE(f.custom_title, f.title)", arrayOf("feeds"))
+    object FEED_LANGUAGE : Column("feed_language", "f.language", arrayOf("feeds"))
+    object FEED_FAVICON_URL : Column("feed_favicon_url", "f.favicon_url", arrayOf("feeds"))
     object TITLE : Column("title", "e.title"), TableColumn
     object LINK : Column("link", "e.link"), TableColumn
     object CONTENT : Column("content", "e.content"), TableColumn
@@ -72,15 +72,13 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
 
     interface DeleteCriteria : Repository.DeleteCriteria
 
-    interface QueryCriteria : Repository.QueryCriteria {
+    interface QueryCriteria : Repository.QueryCriteria<Column> {
 
         fun config(builder: SupportSQLiteQueryBuilder)
 
     }
 
     class QueryRowCriteria(val id: Long) : QueryCriteria {
-
-        override val observedTables = arrayOf(Database.ObservedTable("entries", id), Database.ObservedTable("feeds")) // FIXME: include feeds only when necessary
 
         override fun config(builder: SupportSQLiteQueryBuilder) {
             builder.selection("e.id = ?", arrayOf(id))
@@ -98,8 +96,6 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     }
 
     class FeedEntriesQueryCriteria(val feedId: Long, override val sessionTime: Long = 0, override val sortOrder: SortOrder) : EntriesQueryCriteria() {
-
-        override val observedTables = arrayOf(Database.ObservedTable("entries"), Database.ObservedTable("feeds")) // FIXME: include feeds only when necessary
 
         override fun config(builder: SupportSQLiteQueryBuilder) {
             val selection: String?
@@ -124,8 +120,6 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     }
 
     class MyFeedEntriesQueryCriteria(override val sessionTime: Long = 0, override val sortOrder: SortOrder) : EntriesQueryCriteria() {
-
-        override val observedTables = arrayOf(Database.ObservedTable("entries"), Database.ObservedTable("feeds")) // FIXME: include feeds only when necessary
 
         override fun config(builder: SupportSQLiteQueryBuilder) {
             val selection: String?
@@ -169,7 +163,7 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
 
     }
 
-    abstract class QueryHelper<R>(vararg columns: Column) : Repository.QueryHelper<Column, QueryCriteria, R>() {
+    abstract class QueryHelper<R>(vararg columns: Column) : Repository.QueryHelper<Column, QueryCriteria, R>(columns) {
 
         override fun createQuery(criteria: QueryCriteria): SupportSQLiteQuery = SupportSQLiteQueryBuilder
                 .builder("entries e LEFT JOIN feeds f ON f.id = e.feed_id")

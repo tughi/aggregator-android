@@ -33,36 +33,10 @@ import kotlin.coroutines.suspendCoroutine
 
 object FeedUpdater {
 
-    private val feedsFactory = object : Feeds.QueryHelper<Feed>() {
-        override val columns = arrayOf<Feeds.Column>(
-                Feeds.ID,
-                Feeds.URL,
-                Feeds.TITLE,
-                Feeds.LINK,
-                Feeds.LANGUAGE,
-                Feeds.UPDATE_MODE,
-                Feeds.NEXT_UPDATE_RETRY,
-                Feeds.HTTP_ETAG,
-                Feeds.HTTP_LAST_MODIFIED
-        )
-
-        override fun createRow(cursor: Cursor) = Feed(
-                cursor.getLong(0),
-                cursor.getString(1),
-                cursor.getString(2),
-                cursor.getString(3),
-                cursor.getString(4),
-                UpdateMode.deserialize(cursor.getString(5)),
-                cursor.getInt(6),
-                cursor.getString(7),
-                cursor.getString(8)
-        )
-    }
-
     val updatingFeedIds = MutableLiveData<MutableSet<Long>>()
 
     suspend fun updateFeed(feedId: Long) {
-        val feed = Feeds.queryOne(Feeds.QueryRowCriteria(feedId), feedsFactory) ?: return
+        val feed = Feeds.queryOne(Feeds.QueryRowCriteria(feedId), Feed.QueryHelper) ?: return
         updateFeed(feed)
     }
 
@@ -83,7 +57,7 @@ object FeedUpdater {
 
     suspend fun updateOutdatedFeeds() {
         GlobalScope.launch {
-            val feeds = Feeds.query(Feeds.OutdatedCriteria(System.currentTimeMillis()), feedsFactory)
+            val feeds = Feeds.query(Feeds.OutdatedCriteria(System.currentTimeMillis()), Feed.QueryHelper)
 
             val jobs = feeds.map { feed ->
                 async { FeedUpdater.updateFeed(feed) }
@@ -305,7 +279,31 @@ object FeedUpdater {
             val nextUpdateRetry: Int,
             val httpEtag: String?,
             val httpLastModified: String?
-    )
+    ) {
+        object QueryHelper : Feeds.QueryHelper<Feed>(
+                Feeds.ID,
+                Feeds.URL,
+                Feeds.TITLE,
+                Feeds.LINK,
+                Feeds.LANGUAGE,
+                Feeds.UPDATE_MODE,
+                Feeds.NEXT_UPDATE_RETRY,
+                Feeds.HTTP_ETAG,
+                Feeds.HTTP_LAST_MODIFIED
+        ) {
+            override fun createRow(cursor: Cursor) = Feed(
+                    id = cursor.getLong(0),
+                    url = cursor.getString(1),
+                    title = cursor.getString(2),
+                    link = cursor.getString(3),
+                    language = cursor.getString(4),
+                    updateMode = UpdateMode.deserialize(cursor.getString(5)),
+                    nextUpdateRetry = cursor.getInt(6),
+                    httpEtag = cursor.getString(7),
+                    httpLastModified = cursor.getString(8)
+            )
+        }
+    }
 
     class UnexpectedHttpResponseException(response: Response) : Exception("Unexpected HTTP response: $response")
 

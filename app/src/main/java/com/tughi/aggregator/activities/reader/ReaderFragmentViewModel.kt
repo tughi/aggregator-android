@@ -7,35 +7,7 @@ import com.tughi.aggregator.data.Entries
 
 internal class ReaderFragmentViewModel(entryId: Long, entryReadTime: Long) : ViewModel() {
 
-    private val entriesQueryHelper = object : Entries.QueryHelper<Entry>() {
-        override val columns = arrayOf(
-                Entries.ID,
-                Entries.TITLE,
-                Entries.LINK,
-                Entries.CONTENT,
-                Entries.AUTHOR,
-                Entries.PUBLISH_TIME,
-                Entries.FEED_TITLE,
-                Entries.FEED_LANGUAGE,
-                Entries.READ_TIME,
-                Entries.PINNED_TIME
-        )
-
-        override fun createRow(cursor: Cursor) = Entry(
-                id = cursor.getLong(0),
-                title = cursor.getString(1),
-                link = cursor.getString(2),
-                content = cursor.getString(3),
-                author = cursor.getString(4),
-                publishTime = cursor.getLong(5),
-                feedTitle = cursor.getString(6),
-                feedLanguage = cursor.getString(7),
-                readTime = cursor.getLong(8),
-                pinnedTime = cursor.getLong(9)
-        )
-    }
-
-    val entry = Entries.liveQueryOne(Entries.QueryRowCriteria(entryId), entriesQueryHelper)
+    val entry = Entries.liveQueryOne(Entries.QueryRowCriteria(entryId), Entry.QueryHelper)
 
     data class Entry(
             val id: Long,
@@ -48,7 +20,33 @@ internal class ReaderFragmentViewModel(entryId: Long, entryReadTime: Long) : Vie
             val feedLanguage: String?,
             val readTime: Long,
             val pinnedTime: Long
-    )
+    ) {
+        object QueryHelper : Entries.QueryHelper<Entry>(
+                Entries.ID,
+                Entries.TITLE,
+                Entries.LINK,
+                Entries.CONTENT,
+                Entries.AUTHOR,
+                Entries.PUBLISH_TIME,
+                Entries.FEED_TITLE,
+                Entries.FEED_LANGUAGE,
+                Entries.READ_TIME,
+                Entries.PINNED_TIME
+        ) {
+            override fun createRow(cursor: Cursor) = Entry(
+                    id = cursor.getLong(0),
+                    title = cursor.getString(1),
+                    link = cursor.getString(2),
+                    content = cursor.getString(3),
+                    author = cursor.getString(4),
+                    publishTime = cursor.getLong(5),
+                    feedTitle = cursor.getString(6),
+                    feedLanguage = cursor.getString(7),
+                    readTime = cursor.getLong(8),
+                    pinnedTime = cursor.getLong(9)
+            )
+        }
+    }
 
     class Factory(private val entryId: Long, private val entryReadTime: Long) : ViewModelProvider.Factory {
 
