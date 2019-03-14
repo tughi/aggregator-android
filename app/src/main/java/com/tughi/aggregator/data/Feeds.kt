@@ -1,5 +1,6 @@
 package com.tughi.aggregator.data
 
+import androidx.core.database.getLongOrNull
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQueryBuilder
@@ -29,6 +30,7 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
 
     fun delete(id: Long) = Database.delete("feeds", "id = ?", arrayOf(id))
 
+    // TODO: Use queryOne instead
     fun count(): Int {
         Database.query(SimpleSQLiteQuery("SELECT COUNT(1) FROM feeds")).use { cursor ->
             cursor.moveToFirst()
@@ -36,13 +38,17 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
         }
     }
 
+    // TODO: Use queryOne instead
     fun queryNextUpdateTime(): Long? {
         Database.query(SimpleSQLiteQuery("SELECT MIN(next_update_time) FROM feeds WHERE next_update_time > 0")).use { cursor ->
-            cursor.moveToFirst()
-            return cursor.getLong(0)
+            if (cursor.moveToFirst()) {
+                return cursor.getLongOrNull(0)
+            }
+            return null
         }
     }
 
+    // TODO: Use query instead
     fun queryOutdatedFeedIds(now: Long): List<Long> {
         val query = SimpleSQLiteQuery("SELECT id FROM feeds WHERE next_update_time > 0 AND next_update_time < ?", arrayOf(now))
         Database.query(query).use { cursor ->
