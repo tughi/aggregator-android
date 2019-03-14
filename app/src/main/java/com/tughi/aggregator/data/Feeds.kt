@@ -74,14 +74,12 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
     interface DeleteCriteria : Repository.DeleteCriteria
 
     interface QueryCriteria : Repository.QueryCriteria<Column> {
-
-        fun config(builder: SupportSQLiteQueryBuilder)
-
+        fun config(builder: SupportSQLiteQueryBuilder, columns: Array<out Column>)
     }
 
     class QueryRowCriteria(val id: Long) : QueryCriteria {
 
-        override fun config(builder: SupportSQLiteQueryBuilder) {
+        override fun config(builder: SupportSQLiteQueryBuilder, columns: Array<out Column>) {
             builder.selection("f.id = ?", arrayOf(id))
         }
 
@@ -89,18 +87,16 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
 
     class AllCriteria : QueryCriteria {
 
-        override fun config(builder: SupportSQLiteQueryBuilder) {
-            /* TODO: Create custom query builder that can list its columns
-            if (factory.columns.contains(TITLE)) {
-                builder.orderBy(TITLE)
+        override fun config(builder: SupportSQLiteQueryBuilder, columns: Array<out Column>) {
+            if (columns.contains(TITLE)) {
+                builder.orderBy("title")
             }
-            */
         }
     }
 
     class OutdatedCriteria(private val now: Long) : QueryCriteria {
 
-        override fun config(builder: SupportSQLiteQueryBuilder) {
+        override fun config(builder: SupportSQLiteQueryBuilder, columns: Array<out Column>) {
             builder.selection("(next_update_time > 0 AND next_update_time < ?) OR next_update_time = -1", arrayOf(now))
         }
 
@@ -108,7 +104,7 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
 
     class UpdateModeCriteria(private val updateMode: UpdateMode) : QueryCriteria {
 
-        override fun config(builder: SupportSQLiteQueryBuilder) {
+        override fun config(builder: SupportSQLiteQueryBuilder, columns: Array<out Column>) {
             builder.selection("update_mode = ?", arrayOf(updateMode.serialize()))
         }
     }
@@ -118,7 +114,7 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
         override fun createQuery(criteria: QueryCriteria): SupportSQLiteQuery = SupportSQLiteQueryBuilder
                 .builder("feeds f")
                 .columns(Array(columns.size) { "${columns[it].projection} AS ${columns[it].name}" })
-                .also { criteria.config(it) }
+                .also { criteria.config(it, columns) }
                 .create()
 
     }
