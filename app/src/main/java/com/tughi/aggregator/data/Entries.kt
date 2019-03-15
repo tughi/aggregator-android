@@ -46,8 +46,7 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
         return update(SimpleUpdateCriteria(selection, selectionArgs), READ_TIME to System.currentTimeMillis())
     }
 
-    // TODO: Use queryOne instead
-    fun count(feedId: Long, since: Long): Int {
+    fun countPublishedEntries(feedId: Long, since: Long): Int {
         val query = SimpleSQLiteQuery("SELECT COUNT(1) FROM entries WHERE feed_id = ? AND COALESCE(publish_time, insert_time) > ?", arrayOf(feedId, since))
         Database.query(query).use { cursor ->
             cursor.moveToNext()

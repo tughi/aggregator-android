@@ -120,11 +120,11 @@ object AutoUpdateScheduler {
     }
 
     private fun calculateNextAdaptiveUpdateTime(feedId: Long, lastUpdateTime: Long): Long {
-        val aggregatedEntriesSinceYesterday = Entries.count(feedId, lastUpdateTime - DateUtils.DAY_IN_MILLIS)
+        val aggregatedEntriesSinceYesterday = Entries.countPublishedEntries(feedId, lastUpdateTime - DateUtils.DAY_IN_MILLIS)
         val updateRate = if (aggregatedEntriesSinceYesterday > 0) {
             max(DateUtils.DAY_IN_MILLIS / aggregatedEntriesSinceYesterday, DateUtils.HOUR_IN_MILLIS / 2) / 2
         } else {
-            val aggregatedEntriesSinceLastWeek = Entries.count(feedId, lastUpdateTime - DateUtils.WEEK_IN_MILLIS)
+            val aggregatedEntriesSinceLastWeek = Entries.countPublishedEntries(feedId, lastUpdateTime - DateUtils.WEEK_IN_MILLIS)
             if (aggregatedEntriesSinceLastWeek > 0) {
                 min(DateUtils.WEEK_IN_MILLIS / aggregatedEntriesSinceLastWeek, DateUtils.DAY_IN_MILLIS / 2) / 2
             } else {
@@ -147,7 +147,7 @@ object AutoUpdateScheduler {
         return midnight + ((lastUpdateTime - midnight) / minutesInMillis + 1) * minutesInMillis
     }
 
-    data class Feed(
+    private class Feed(
             val id: Long,
             val lastUpdateTime: Long,
             val updateMode: UpdateMode
