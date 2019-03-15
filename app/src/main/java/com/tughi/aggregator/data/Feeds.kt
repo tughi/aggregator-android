@@ -31,16 +31,14 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
 
     fun delete(id: Long) = Database.delete("feeds", "id = ?", arrayOf(id))
 
-    // TODO: Use queryOne instead
-    fun count(): Int {
+    fun queryAllCount(): Int {
         Database.query(SimpleSQLiteQuery("SELECT COUNT(1) FROM feeds")).use { cursor ->
             cursor.moveToFirst()
             return cursor.getInt(0)
         }
     }
 
-    // TODO: Use queryOne instead
-    fun queryNextUpdateTime(): Long? {
+    fun queryFirstNextUpdateTime(): Long? {
         Database.query(SimpleSQLiteQuery("SELECT MIN(next_update_time) FROM feeds WHERE next_update_time > 0")).use { cursor ->
             if (cursor.moveToFirst()) {
                 return cursor.getLongOrNull(0)

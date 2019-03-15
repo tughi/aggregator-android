@@ -61,7 +61,7 @@ object AutoUpdateScheduler {
     }
 
     fun schedule() {
-        val nextUpdateTime = Feeds.queryNextUpdateTime() ?: return
+        val nextUpdateTime = Feeds.queryFirstNextUpdateTime() ?: return
         val nextUpdateDelay = nextUpdateTime - System.currentTimeMillis()
 
         val context: Context = App.instance
@@ -120,11 +120,11 @@ object AutoUpdateScheduler {
     }
 
     private fun calculateNextAdaptiveUpdateTime(feedId: Long, lastUpdateTime: Long): Long {
-        val aggregatedEntriesSinceYesterday = Entries.countPublishedEntries(feedId, lastUpdateTime - DateUtils.DAY_IN_MILLIS)
+        val aggregatedEntriesSinceYesterday = Entries.queryPublishedCount(feedId, lastUpdateTime - DateUtils.DAY_IN_MILLIS)
         val updateRate = if (aggregatedEntriesSinceYesterday > 0) {
             max(DateUtils.DAY_IN_MILLIS / aggregatedEntriesSinceYesterday, DateUtils.HOUR_IN_MILLIS / 2) / 2
         } else {
-            val aggregatedEntriesSinceLastWeek = Entries.countPublishedEntries(feedId, lastUpdateTime - DateUtils.WEEK_IN_MILLIS)
+            val aggregatedEntriesSinceLastWeek = Entries.queryPublishedCount(feedId, lastUpdateTime - DateUtils.WEEK_IN_MILLIS)
             if (aggregatedEntriesSinceLastWeek > 0) {
                 min(DateUtils.WEEK_IN_MILLIS / aggregatedEntriesSinceLastWeek, DateUtils.DAY_IN_MILLIS / 2) / 2
             } else {

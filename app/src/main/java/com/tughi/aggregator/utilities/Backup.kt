@@ -27,7 +27,7 @@ fun backupFeeds() {
 }
 
 fun restoreFeeds() {
-    if (Feeds.count() == 0) {
+    if (Feeds.queryAllCount() == 0) {
         App.instance.getExternalFilesDir(null)?.also { externalFilesDir ->
             val backupFile = File(externalFilesDir, BACKUP_FILENAME)
             if (backupFile.exists()) {
