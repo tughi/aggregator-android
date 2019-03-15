@@ -16,24 +16,27 @@ class AutoUpdateService : JobService() {
 
     override fun onStartJob(params: JobParameters?): Boolean {
         if (UpdateSettings.backgroundUpdates) {
-            currentJob = GlobalScope.launch {
-                val feedIds = Feeds.queryOutdatedFeedIds(System.currentTimeMillis())
+            val job = GlobalScope.launch {
+                val feeds = Feeds.query(Feeds.OutdatedCriteria(System.currentTimeMillis()), FeedUpdater.Feed.QueryHelper)
 
-                val jobs = feedIds.map { feedId ->
-                    async { FeedUpdater.updateFeed(feedId) }
+                val jobs = feeds.map { feed ->
+                    async { FeedUpdater.updateFeed(feed) }
                 }
+
                 jobs.forEach {
                     it.await()
                 }
-            }.also {
-                it.invokeOnCompletion { error ->
-                    jobFinished(params, error != null && error !is CancellationException)
+            }
 
-                    GlobalScope.launch {
-                        AutoUpdateScheduler.schedule()
-                    }
+            job.invokeOnCompletion { error ->
+                jobFinished(params, error != null && error !is CancellationException)
+
+                GlobalScope.launch {
+                    AutoUpdateScheduler.schedule()
                 }
             }
+
+            currentJob = job
 
             return true
         }

@@ -40,7 +40,7 @@ object FeedUpdater {
         updateFeed(feed)
     }
 
-    private suspend fun updateFeed(feed: Feed) {
+    suspend fun updateFeed(feed: Feed) {
         addUpdatingFeed(feed.id)
         try {
             val result = requestFeed(feed)
@@ -55,21 +55,22 @@ object FeedUpdater {
         }
     }
 
-    suspend fun updateOutdatedFeeds() {
-        GlobalScope.launch {
-            val feeds = Feeds.query(Feeds.OutdatedCriteria(System.currentTimeMillis()), Feed.QueryHelper)
+    fun updateOutdatedFeeds(appLaunch: Boolean) {
+        val job = GlobalScope.launch {
+            val feeds = Feeds.query(Feeds.OutdatedCriteria(System.currentTimeMillis(), appLaunch), Feed.QueryHelper)
 
             val jobs = feeds.map { feed ->
                 async { FeedUpdater.updateFeed(feed) }
             }
+
             jobs.forEach {
                 it.await()
             }
-        }.also {
-            it.invokeOnCompletion {
-                GlobalScope.launch {
-                    AutoUpdateScheduler.schedule()
-                }
+        }
+
+        job.invokeOnCompletion {
+            GlobalScope.launch {
+                AutoUpdateScheduler.schedule()
             }
         }
     }
@@ -241,15 +242,6 @@ object FeedUpdater {
             )
         }
     }
-
-    class Entry(
-            val id: Long,
-            val title: String?,
-            val link: String?,
-            val content: String?,
-            val author: String?,
-            val publishTime: Long?
-    )
 
     class Feed(
             val id: Long,

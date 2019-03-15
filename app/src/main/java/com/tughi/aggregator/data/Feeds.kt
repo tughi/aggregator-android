@@ -4,6 +4,7 @@ import androidx.core.database.getLongOrNull
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQueryBuilder
+import com.tughi.aggregator.services.AutoUpdateScheduler
 
 @Suppress("ClassName")
 object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria, Feeds.DeleteCriteria, Feeds.QueryCriteria>("feeds") {
@@ -48,21 +49,6 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
         }
     }
 
-    // TODO: Use query instead
-    fun queryOutdatedFeedIds(now: Long): List<Long> {
-        val query = SimpleSQLiteQuery("SELECT id FROM feeds WHERE next_update_time > 0 AND next_update_time < ?", arrayOf(now))
-        Database.query(query).use { cursor ->
-            if (cursor.moveToFirst()) {
-                val result = mutableListOf<Long>()
-                do {
-                    result.add(cursor.getLong(0))
-                } while (cursor.moveToNext())
-                return result
-            }
-        }
-        return emptyList()
-    }
-
     interface UpdateCriteria : Repository.UpdateCriteria
 
     class UpdateRowCriteria(id: Long) : UpdateCriteria {
@@ -94,10 +80,15 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
         }
     }
 
-    class OutdatedCriteria(private val now: Long) : QueryCriteria {
+    class OutdatedCriteria(private val now: Long, private val appLaunch: Boolean = false) : QueryCriteria {
 
         override fun config(builder: SupportSQLiteQueryBuilder, columns: Array<out Column>) {
-            builder.selection("(next_update_time > 0 AND next_update_time < ?) OR next_update_time = -1", arrayOf(now))
+            val selection = if (appLaunch) {
+                "(next_update_time > 0 AND next_update_time < ?) OR next_update_time = ${AutoUpdateScheduler.NEXT_UPDATE_TIME__ON_APP_LAUNCH}"
+            } else {
+                "next_update_time > 0 AND next_update_time < ?"
+            }
+            builder.selection(selection, arrayOf(now))
         }
 
     }

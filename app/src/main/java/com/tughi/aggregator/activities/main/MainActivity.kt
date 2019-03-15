@@ -88,7 +88,7 @@ class MainActivity : AppActivity() {
 
             if (UpdateSettings.backgroundUpdates) {
                 GlobalScope.launch {
-                    FeedUpdater.updateOutdatedFeeds()
+                    FeedUpdater.updateOutdatedFeeds(true)
                 }
             }
         }
