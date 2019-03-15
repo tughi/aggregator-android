@@ -198,9 +198,16 @@ object FeedUpdater {
             })
 
             try {
-                response.use {
-                    val responseBody = response.body()
-                    Xml.parse(responseBody?.charStream(), feedParser.feedContentHandler)
+                Database.beginTransaction()
+                try {
+                    response.use {
+                        val responseBody = response.body()
+                        Xml.parse(responseBody?.charStream(), feedParser.feedContentHandler)
+                    }
+
+                    Database.setTransactionSuccessful()
+                } finally {
+                    Database.endTransaction()
                 }
             } catch (exception: Exception) {
                 updateFeedContent(feed, exception)
