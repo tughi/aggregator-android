@@ -148,9 +148,7 @@ object FeedUpdater {
 
             val feedParser = FeedParser(feed.url, object : FeedParser.Listener() {
                 override fun onParsedEntry(uid: String, title: String?, link: String?, content: String?, author: String?, publishDate: Date?, publishDateText: String?) {
-                    try {
-                        Database.beginTransaction()
-
+                    Database.transaction {
                         val now = System.currentTimeMillis()
                         val result = Entries.update(
                                 feed.id,
@@ -172,16 +170,10 @@ object FeedUpdater {
                                     Entries.CONTENT to content,
                                     Entries.AUTHOR to author,
                                     Entries.PUBLISH_TIME to publishDate?.time,
-                                    Entries.READ_TIME to 0, // TODO: add default value to the table schema
-                                    Entries.PINNED_TIME to 0, // TODO: add default value to the table schema
                                     Entries.INSERT_TIME to now,
                                     Entries.UPDATE_TIME to now
                             )
                         }
-
-                        Database.setTransactionSuccessful()
-                    } finally {
-                        Database.endTransaction()
                     }
                 }
 
@@ -198,16 +190,11 @@ object FeedUpdater {
             })
 
             try {
-                Database.beginTransaction()
-                try {
+                Database.transaction {
                     response.use {
                         val responseBody = response.body()
                         Xml.parse(responseBody?.charStream(), feedParser.feedContentHandler)
                     }
-
-                    Database.setTransactionSuccessful()
-                } finally {
-                    Database.endTransaction()
                 }
             } catch (exception: Exception) {
                 updateFeedContent(feed, exception)
@@ -216,9 +203,7 @@ object FeedUpdater {
     }
 
     private fun updateFeedContent(feed: Feed, vararg data: Pair<Feeds.TableColumn, Any?>) {
-        try {
-            Database.beginTransaction()
-
+        Database.transaction {
             val feedId = feed.id
             val lastUpdateTime = System.currentTimeMillis()
             val nextUpdateTime = AutoUpdateScheduler.calculateNextUpdateTime(feedId, feed.updateMode, lastUpdateTime)
@@ -231,10 +216,6 @@ object FeedUpdater {
                     Feeds.NEXT_UPDATE_RETRY to 0,
                     *data
             )
-
-            Database.setTransactionSuccessful()
-        } finally {
-            Database.endTransaction()
         }
     }
 
@@ -243,9 +224,7 @@ object FeedUpdater {
             Log.d(javaClass.name, "Update error: $error", error)
         }
 
-        try {
-            Database.beginTransaction()
-
+        Database.transaction {
             val updateError = when (error) {
                 null -> "Unknown error"
                 else -> error.message ?: error::class.java.simpleName
@@ -260,10 +239,6 @@ object FeedUpdater {
                     Feeds.NEXT_UPDATE_RETRY to nextUpdateRetry,
                     Feeds.NEXT_UPDATE_TIME to nextUpdateTime
             )
-
-            Database.setTransactionSuccessful()
-        } finally {
-            Database.endTransaction()
         }
     }
 

@@ -9,8 +9,10 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
 import androidx.sqlite.db.SupportSQLiteQuery
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
+import androidx.sqlite.db.transaction
 import com.tughi.aggregator.App
 import com.tughi.aggregator.utilities.DATABASE_NAME
+import com.tughi.aggregator.utilities.restoreFeeds
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.Serializable
@@ -22,31 +24,91 @@ object Database {
     private val sqlite: SupportSQLiteOpenHelper = FrameworkSQLiteOpenHelperFactory().create(
             SupportSQLiteOpenHelper.Configuration.builder(App.instance)
                     .name(DATABASE_NAME)
-                    .callback(object : SupportSQLiteOpenHelper.Callback(16) {
+                    .callback(object : SupportSQLiteOpenHelper.Callback(17) {
                         override fun onConfigure(db: SupportSQLiteDatabase?) {
                             db?.setForeignKeyConstraintsEnabled(true)
                         }
 
-                        override fun onCreate(db: SupportSQLiteDatabase?) {
-                            createDatabase(db ?: throw IllegalStateException("Null database"))
+                        override fun onCreate(database: SupportSQLiteDatabase?) {
+                            database?.transaction {
+                                database.execSQL("""
+                                    CREATE TABLE feeds (
+                                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                        url TEXT NOT NULL,
+                                        title TEXT NOT NULL,
+                                        link TEXT,
+                                        language TEXT,
+                                        custom_title TEXT,
+                                        favicon_url TEXT,
+                                        favicon_content BLOB,
+                                        update_mode TEXT NOT NULL,
+                                        last_update_time INTEGER NOT NULL DEFAULT 0,
+                                        last_update_error TEXT,
+                                        next_update_retry INTEGER NOT NULL DEFAULT 0,
+                                        next_update_time INTEGER NOT NULL DEFAULT 0,
+                                        http_etag TEXT,
+                                        http_last_modified TEXT
+                                    )
+                                """)
+
+                                database.execSQL("""
+                                    CREATE TABLE entries (
+                                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                        feed_id INTEGER NOT NULL,
+                                        uid TEXT NOT NULL,
+                                        title TEXT,
+                                        link TEXT,
+                                        content TEXT,
+                                        author TEXT,
+                                        publish_time INTEGER,
+                                        insert_time INTEGER NOT NULL,
+                                        update_time INTEGER NOT NULL,
+                                        read_time INTEGER NOT NULL DEFAULT 0,
+                                        pinned_time INTEGER NOT NULL DEFAULT 0,
+                                        FOREIGN KEY (feed_id) REFERENCES feeds (id) ON DELETE CASCADE
+                                    )
+                                """)
+
+                                database.execSQL("CREATE UNIQUE INDEX entries_index__feed_id__uid ON entries (feed_id, uid)")
+                            }
                         }
 
-                        override fun onUpgrade(db: SupportSQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-                            upgradeDatabase(db ?: throw IllegalStateException("Null database"))
+                        override fun onUpgrade(database: SupportSQLiteDatabase?, oldVersion: Int, newVersion: Int) {
+                            database?.transaction {
+                                val tables = mutableListOf<String>()
+                                database.query("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'").use { cursor ->
+                                    if (cursor.moveToFirst()) {
+                                        do {
+                                            tables.add(cursor.getString(0))
+                                        } while (cursor.moveToNext())
+                                    }
+                                }
+
+                                if (!tables.isEmpty()) {
+                                    database.execSQL("PRAGMA foreign_keys = OFF")
+
+                                    tables.forEach {
+                                        database.execSQL("DROP TABLE $it")
+                                    }
+
+                                    database.execSQL("PRAGMA foreign_keys = OFF")
+                                }
+
+                                onCreate(database)
+                            }
+
+                        }
+
+                        override fun onOpen(db: SupportSQLiteDatabase?) {
+                            GlobalScope.launch {
+                                restoreFeeds()
+                            }
                         }
                     })
                     .build()
     )
 
     private val tableObservers = mutableSetOf<TableObserver>()
-
-    private fun createDatabase(database: SupportSQLiteDatabase) {
-        throw UnsupportedOperationException()
-    }
-
-    private fun upgradeDatabase(database: SupportSQLiteDatabase) {
-        throw UnsupportedOperationException()
-    }
 
     fun query(sqliteQuery: SupportSQLiteQuery?): Cursor = sqlite.readableDatabase.query(sqliteQuery)
 
@@ -111,7 +173,17 @@ object Database {
         }
     }
 
-    fun beginTransaction() {
+    fun transaction(body: () -> Unit) {
+        beginTransaction()
+        try {
+            body()
+            setTransactionSuccessful()
+        } finally {
+            endTransaction()
+        }
+    }
+
+    private fun beginTransaction() {
         val database = sqlite.writableDatabase
         if (!database.inTransaction()) {
             synchronized(invalidatedTables) {
@@ -122,9 +194,9 @@ object Database {
         database.beginTransaction()
     }
 
-    fun setTransactionSuccessful() = sqlite.writableDatabase.setTransactionSuccessful()
+    private fun setTransactionSuccessful() = sqlite.writableDatabase.setTransactionSuccessful()
 
-    fun endTransaction() {
+    private fun endTransaction() {
         val database = sqlite.writableDatabase
         database.endTransaction()
         if (!database.inTransaction()) {

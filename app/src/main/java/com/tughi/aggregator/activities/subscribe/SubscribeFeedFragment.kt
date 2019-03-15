@@ -111,10 +111,7 @@ class SubscribeFeedFragment : Fragment() {
                             Feeds.TITLE to title,
                             Feeds.CUSTOM_TITLE to if (customTitle != title) customTitle else null,
                             Feeds.LINK to link,
-                            Feeds.UPDATE_MODE to (viewModel.updateMode.value ?: DefaultUpdateMode).serialize(),
-                            Feeds.LAST_UPDATE_TIME to 0, // TODO: fix feeds table schema
-                            Feeds.NEXT_UPDATE_TIME to 0, // TODO: fix feeds table schema
-                            Feeds.NEXT_UPDATE_RETRY to 0 // TODO: fix feeds table schema
+                            Feeds.UPDATE_MODE to (viewModel.updateMode.value ?: DefaultUpdateMode).serialize()
                     )
 
                     launch {

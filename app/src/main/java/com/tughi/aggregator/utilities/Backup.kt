@@ -1,6 +1,7 @@
 package com.tughi.aggregator.utilities
 
 import com.tughi.aggregator.App
+import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.feeds.OpmlFeed
 import com.tughi.aggregator.feeds.OpmlGenerator
@@ -31,28 +32,30 @@ fun restoreFeeds() {
             val backupFile = File(externalFilesDir, BACKUP_FILENAME)
             if (backupFile.exists()) {
                 backupFile.inputStream().use { inputStream ->
-                    OpmlParser.parse(inputStream, object : OpmlParser.Listener {
-                        override fun onFeedParsed(feed: OpmlFeed) {
-                            val feedId = Feeds.insert(
-                                    Feeds.URL to feed.url,
-                                    Feeds.TITLE to feed.title,
-                                    Feeds.CUSTOM_TITLE to feed.customTitle,
-                                    Feeds.LINK to feed.link,
-                                    Feeds.UPDATE_MODE to feed.updateMode
-                            )
-
-                            if (feedId > 0) {
-                                Feeds.update(
-                                        Feeds.UpdateRowCriteria(feedId),
-                                        Feeds.NEXT_UPDATE_TIME to AutoUpdateScheduler.calculateNextUpdateTime(feedId, feed.updateMode, 0)
+                    Database.transaction {
+                        OpmlParser.parse(inputStream, object : OpmlParser.Listener {
+                            override fun onFeedParsed(feed: OpmlFeed) {
+                                val feedId = Feeds.insert(
+                                        Feeds.URL to feed.url,
+                                        Feeds.TITLE to feed.title,
+                                        Feeds.CUSTOM_TITLE to feed.customTitle,
+                                        Feeds.LINK to feed.link,
+                                        Feeds.UPDATE_MODE to feed.updateMode
                                 )
 
-                                GlobalScope.launch(Dispatchers.Main) {
-                                    FaviconUpdaterService.start(feedId)
+                                if (feedId > 0) {
+                                    Feeds.update(
+                                            Feeds.UpdateRowCriteria(feedId),
+                                            Feeds.NEXT_UPDATE_TIME to AutoUpdateScheduler.calculateNextUpdateTime(feedId, feed.updateMode, 0)
+                                    )
+
+                                    GlobalScope.launch(Dispatchers.Main) {
+                                        FaviconUpdaterService.start(feedId)
+                                    }
                                 }
                             }
-                        }
-                    })
+                        })
+                    }
 
                     AutoUpdateScheduler.schedule()
                 }

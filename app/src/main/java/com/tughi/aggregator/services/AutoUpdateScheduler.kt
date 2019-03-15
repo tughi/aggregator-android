@@ -48,17 +48,13 @@ object AutoUpdateScheduler {
     }
 
     private fun scheduleFeeds(vararg feeds: Feed) {
-        Database.beginTransaction()
-        try {
+        Database.transaction {
             feeds.forEach { feed ->
                 Feeds.update(
                         Feeds.UpdateRowCriteria(feed.id),
                         Feeds.NEXT_UPDATE_TIME to calculateNextUpdateTime(feed.id, feed.updateMode, feed.lastUpdateTime)
                 )
             }
-            Database.setTransactionSuccessful()
-        } finally {
-            Database.endTransaction()
         }
 
         schedule()
