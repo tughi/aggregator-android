@@ -152,8 +152,7 @@ object FeedUpdater {
                     Database.transaction {
                         val now = System.currentTimeMillis()
                         val result = Entries.update(
-                                feed.id,
-                                uid,
+                                Entries.UpdateFeedEntryCriteria(feed.id, uid),
                                 Entries.TITLE to title,
                                 Entries.LINK to link,
                                 Entries.CONTENT to content,

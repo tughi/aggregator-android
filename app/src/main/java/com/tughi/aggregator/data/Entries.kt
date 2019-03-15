@@ -28,9 +28,9 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     object PINNED_TIME : Column("pinned_time", "e.pinned_time"), TableColumn
     object TYPE : Column("type", "CASE WHEN e.read_time > 0 AND e.pinned_time = 0 THEN 'READ' ELSE 'UNREAD' END")
 
-    fun markRead(entryId: Long): Int = update(UpdateRowCriteria(entryId), READ_TIME to System.currentTimeMillis(), PINNED_TIME to 0)
+    fun markRead(entryId: Long): Int = update(UpdateEntryCriteria(entryId), READ_TIME to System.currentTimeMillis(), PINNED_TIME to 0)
 
-    fun markPinned(entryId: Long): Int = update(UpdateRowCriteria(entryId), READ_TIME to 0, PINNED_TIME to System.currentTimeMillis())
+    fun markPinned(entryId: Long): Int = update(UpdateEntryCriteria(entryId), READ_TIME to 0, PINNED_TIME to System.currentTimeMillis())
 
     fun markRead(criteria: EntriesQueryCriteria): Int {
         val selection = when (criteria) {
@@ -55,16 +55,19 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
         }
     }
 
-    // TODO: Use update with criteria instead
-    fun update(feedId: Long, uid: String, vararg data: Pair<TableColumn, Any?>) = Database.update("entries", data.toContentValues(), "feed_id = ? AND uid = ?", arrayOf(feedId, uid))
-
     interface UpdateCriteria : Repository.UpdateCriteria
 
     private class SimpleUpdateCriteria(override val selection: String?, override val selectionArgs: Array<Any>?) : UpdateCriteria {
         override val affectedRowId: Any? = null
     }
 
-    class UpdateRowCriteria(id: Long) : UpdateCriteria {
+    class UpdateFeedEntryCriteria(feedId: Long, uid: String) : UpdateCriteria {
+        override val affectedRowId: Any? = null
+        override val selection = "feed_id = ? AND uid = ?"
+        override val selectionArgs = arrayOf(feedId, uid)
+    }
+
+    class UpdateEntryCriteria(id: Long) : UpdateCriteria {
         override val affectedRowId: Any? = id
         override val selection = "id = ?"
         override val selectionArgs = arrayOf<Any>(id)
