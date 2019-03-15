@@ -18,7 +18,6 @@ import kotlinx.coroutines.launch
 import java.io.Serializable
 import java.lang.ref.WeakReference
 
-// TODO: Hide for all except Repository
 object Database {
 
     private val sqlite: SupportSQLiteOpenHelper = FrameworkSQLiteOpenHelperFactory().create(
@@ -26,7 +25,10 @@ object Database {
                     .name(DATABASE_NAME)
                     .callback(object : SupportSQLiteOpenHelper.Callback(17) {
                         override fun onConfigure(db: SupportSQLiteDatabase?) {
-                            db?.setForeignKeyConstraintsEnabled(true)
+                            db?.apply {
+                                setForeignKeyConstraintsEnabled(true)
+                                enableWriteAheadLogging()
+                            }
                         }
 
                         override fun onCreate(database: SupportSQLiteDatabase?) {
@@ -191,7 +193,11 @@ object Database {
                 invalidatedTables.clear()
             }
         }
-        database.beginTransaction()
+        if (database.isWriteAheadLoggingEnabled) {
+            database.beginTransactionNonExclusive()
+        } else {
+            database.beginTransaction()
+        }
     }
 
     private fun setTransactionSuccessful() = sqlite.writableDatabase.setTransactionSuccessful()
