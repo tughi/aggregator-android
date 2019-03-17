@@ -6,17 +6,17 @@ import androidx.sqlite.db.SupportSQLiteQueryBuilder
 import java.io.Serializable
 
 @Suppress("ClassName")
-object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateCriteria, Entries.DeleteCriteria, Entries.QueryCriteria>("entries") {
+object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateCriteria, Entries.DeleteCriteria, Entries.QueryCriteria>("entry") {
 
-    open class Column(name: String, projection: String, projectionTables: Array<String> = arrayOf("entries")) : Repository.Column(name, projection, projectionTables)
+    open class Column(name: String, projection: String, projectionTables: Array<String> = arrayOf("entry")) : Repository.Column(name, projection, projectionTables)
     interface TableColumn : Repository.TableColumn
 
     object ID : Column("id", "e.id"), TableColumn
     object UID : Column("uid", "e.uid"), TableColumn
     object FEED_ID : Column("feed_id", "e.feed_id"), TableColumn
-    object FEED_TITLE : Column("feed_title", "COALESCE(f.custom_title, f.title)", arrayOf("feeds"))
-    object FEED_LANGUAGE : Column("feed_language", "f.language", arrayOf("feeds"))
-    object FEED_FAVICON_URL : Column("feed_favicon_url", "f.favicon_url", arrayOf("feeds"))
+    object FEED_TITLE : Column("feed_title", "COALESCE(f.custom_title, f.title)", arrayOf("feed"))
+    object FEED_LANGUAGE : Column("feed_language", "f.language", arrayOf("feed"))
+    object FEED_FAVICON_URL : Column("feed_favicon_url", "f.favicon_url", arrayOf("feed"))
     object TITLE : Column("title", "e.title"), TableColumn
     object LINK : Column("link", "e.link"), TableColumn
     object CONTENT : Column("content", "e.content"), TableColumn
@@ -47,7 +47,7 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     }
 
     fun queryPublishedCount(feedId: Long, since: Long): Int {
-        val query = SimpleSQLiteQuery("SELECT COUNT(1) FROM entries WHERE feed_id = ? AND COALESCE(publish_time, insert_time) > ?", arrayOf(feedId, since))
+        val query = SimpleSQLiteQuery("SELECT COUNT(1) FROM entry WHERE feed_id = ? AND COALESCE(publish_time, insert_time) > ?", arrayOf(feedId, since))
         Database.query(query).use { cursor ->
             cursor.moveToNext()
             return cursor.getInt(0)
@@ -80,7 +80,7 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
 
     }
 
-    class QueryRowCriteria(val id: Long) : QueryCriteria {
+    class QueryRowCriteria(private val id: Long) : QueryCriteria {
 
         override fun config(builder: SupportSQLiteQueryBuilder) {
             builder.selection("e.id = ?", arrayOf(id))
@@ -168,7 +168,7 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     abstract class QueryHelper<R>(vararg columns: Column) : Repository.QueryHelper<Column, QueryCriteria, R>(columns) {
 
         override fun createQuery(criteria: QueryCriteria): SupportSQLiteQuery = SupportSQLiteQueryBuilder
-                .builder("entries e LEFT JOIN feeds f ON f.id = e.feed_id")
+                .builder("entry e LEFT JOIN feed f ON f.id = e.feed_id")
                 .columns(Array(columns.size) { "${columns[it].projection} AS ${columns[it].name}" })
                 .also { criteria.config(it) }
                 .create()

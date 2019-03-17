@@ -7,9 +7,9 @@ import androidx.sqlite.db.SupportSQLiteQueryBuilder
 import com.tughi.aggregator.services.AutoUpdateScheduler
 
 @Suppress("ClassName")
-object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria, Feeds.DeleteCriteria, Feeds.QueryCriteria>("feeds") {
+object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria, Feeds.DeleteCriteria, Feeds.QueryCriteria>("feed") {
 
-    open class Column(name: String, projection: String, projectionTables: Array<String> = arrayOf("feeds")) : Repository.Column(name, projection, projectionTables)
+    open class Column(name: String, projection: String, projectionTables: Array<String> = arrayOf("feed")) : Repository.Column(name, projection, projectionTables)
     interface TableColumn : Repository.TableColumn
 
     object ID : Column("id", "f.id"), TableColumn
@@ -27,19 +27,20 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
     object NEXT_UPDATE_RETRY : Column("next_update_retry", "f.next_update_retry"), TableColumn
     object HTTP_ETAG : Column("http_etag", "f.http_etag"), TableColumn
     object HTTP_LAST_MODIFIED : Column("http_last_modified", "f.http_last_modified"), TableColumn
-    object UNREAD_ENTRY_COUNT : Column("unread_entry_count", "(SELECT COUNT(1) FROM entries e WHERE f.id = e.feed_id AND e.read_time = 0)", arrayOf("feeds", "entries"))
+    object UNREAD_ENTRY_COUNT : Column("unread_entry_count", "(SELECT COUNT(1) FROM entry e WHERE f.id = e.feed_id AND e.read_time = 0)", arrayOf("feed", "entry"))
 
-    fun delete(id: Long) = Database.delete("feeds", "id = ?", arrayOf(id))
+    // TODO: use DeleteCriteria
+    fun delete(id: Long) = Database.delete("feed", "id = ?", arrayOf(id))
 
     fun queryAllCount(): Int {
-        Database.query(SimpleSQLiteQuery("SELECT COUNT(1) FROM feeds")).use { cursor ->
+        Database.query(SimpleSQLiteQuery("SELECT COUNT(1) FROM feed")).use { cursor ->
             cursor.moveToFirst()
             return cursor.getInt(0)
         }
     }
 
     fun queryFirstNextUpdateTime(): Long? {
-        Database.query(SimpleSQLiteQuery("SELECT MIN(next_update_time) FROM feeds WHERE next_update_time > 0")).use { cursor ->
+        Database.query(SimpleSQLiteQuery("SELECT MIN(next_update_time) FROM feed WHERE next_update_time > 0")).use { cursor ->
             if (cursor.moveToFirst()) {
                 return cursor.getLongOrNull(0)
             }
@@ -56,6 +57,11 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
     }
 
     interface DeleteCriteria : Repository.DeleteCriteria
+
+    class DeleteFeedCriteria(id: Long) : DeleteCriteria {
+        override val selection = "id = ?"
+        override val selectionArgs = arrayOf<Any>(id)
+    }
 
     interface QueryCriteria : Repository.QueryCriteria<Column> {
         fun config(builder: SupportSQLiteQueryBuilder, columns: Array<out Column>)
@@ -101,7 +107,7 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
     abstract class QueryHelper<Row>(vararg columns: Column) : Repository.QueryHelper<Column, QueryCriteria, Row>(columns) {
 
         override fun createQuery(criteria: QueryCriteria): SupportSQLiteQuery = SupportSQLiteQueryBuilder
-                .builder("feeds f")
+                .builder("feed f")
                 .columns(Array(columns.size) { "${columns[it].projection} AS ${columns[it].name}" })
                 .also { criteria.config(it, columns) }
                 .create()

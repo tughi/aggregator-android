@@ -34,7 +34,7 @@ object Database {
                         override fun onCreate(database: SupportSQLiteDatabase?) {
                             database?.transaction {
                                 database.execSQL("""
-                                    CREATE TABLE feeds (
+                                    CREATE TABLE feed (
                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                                         url TEXT NOT NULL,
                                         title TEXT NOT NULL,
@@ -54,7 +54,7 @@ object Database {
                                 """)
 
                                 database.execSQL("""
-                                    CREATE TABLE entries (
+                                    CREATE TABLE entry (
                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                                         feed_id INTEGER NOT NULL,
                                         uid TEXT NOT NULL,
@@ -67,11 +67,11 @@ object Database {
                                         update_time INTEGER NOT NULL,
                                         read_time INTEGER NOT NULL DEFAULT 0,
                                         pinned_time INTEGER NOT NULL DEFAULT 0,
-                                        FOREIGN KEY (feed_id) REFERENCES feeds (id) ON DELETE CASCADE
+                                        FOREIGN KEY (feed_id) REFERENCES feed (id) ON DELETE CASCADE
                                     )
                                 """)
 
-                                database.execSQL("CREATE UNIQUE INDEX entries_index__feed_id__uid ON entries (feed_id, uid)")
+                                database.execSQL("CREATE UNIQUE INDEX entry_index__feed_id__uid ON entry (feed_id, uid)")
                             }
                         }
 
