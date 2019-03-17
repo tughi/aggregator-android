@@ -18,7 +18,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputLayout
 import com.tughi.aggregator.OpmlImportActivity
 import com.tughi.aggregator.R
-import com.tughi.aggregator.data.Feed
 
 class SubscribeSearchFragment : Fragment(), SubscribeSearchFragmentAdapterListener {
 
@@ -138,7 +137,7 @@ class SubscribeSearchFragment : Fragment(), SubscribeSearchFragmentAdapterListen
         }
     }
 
-    override fun onFeedClicked(feed: Feed) {
+    override fun onFeedClicked(feed: SubscribeSearchFragmentViewModel.Feed) {
         val activity = activity as SubscribeActivity
         val arguments = Bundle().apply {
             putString(SubscribeFeedFragment.ARG_URL, feed.url)

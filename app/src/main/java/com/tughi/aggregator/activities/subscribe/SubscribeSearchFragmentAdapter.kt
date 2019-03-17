@@ -5,13 +5,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import com.tughi.aggregator.R
-import com.tughi.aggregator.data.Feed
 
 internal class SubscribeSearchFragmentAdapter(private val listener: SubscribeSearchFragmentAdapterListener) : ListAdapter<Any, SubscribeSearchFragmentViewHolder>(DiffCallback()) {
 
     override fun getItemViewType(position: Int): Int {
         return when (getItem(position)) {
-            is Feed -> R.layout.subscribe_feed_item
+            is SubscribeSearchFragmentViewModel.Feed -> R.layout.subscribe_feed_item
             is Boolean -> R.layout.subscribe_loading_item
             is String -> R.layout.subscribe_message_item
             else -> throw IllegalStateException("Unsupported item")
@@ -35,7 +34,7 @@ internal class SubscribeSearchFragmentAdapter(private val listener: SubscribeSea
     private class DiffCallback : DiffUtil.ItemCallback<Any>() {
         override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean {
             return when (oldItem) {
-                is Feed -> newItem is Feed && oldItem.url == newItem.url
+                is SubscribeSearchFragmentViewModel.Feed -> newItem is SubscribeSearchFragmentViewModel.Feed && oldItem.url == newItem.url
                 is Boolean -> newItem is Boolean
                 is String -> newItem is String
                 else -> throw IllegalStateException("Unsupported old item")

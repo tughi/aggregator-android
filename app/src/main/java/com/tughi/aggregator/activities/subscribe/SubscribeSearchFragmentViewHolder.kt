@@ -4,7 +4,6 @@ import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.R
-import com.tughi.aggregator.data.Feed
 
 internal open class SubscribeSearchFragmentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
@@ -17,7 +16,7 @@ internal class SubscribeSearchFragmentFeedViewHolder(itemView: View, listener: S
     private val titleTextView = itemView.findViewById<TextView>(R.id.title)
     private val urlTextView = itemView.findViewById<TextView>(R.id.url)
 
-    private lateinit var feed: Feed
+    private lateinit var feed: SubscribeSearchFragmentViewModel.Feed
 
     init {
         itemView.setOnClickListener {
@@ -26,7 +25,7 @@ internal class SubscribeSearchFragmentFeedViewHolder(itemView: View, listener: S
     }
 
     override fun onBind(item: Any) {
-        feed = item as Feed
+        feed = item as SubscribeSearchFragmentViewModel.Feed
         titleTextView.text = feed.title
         urlTextView.text = feed.url
     }

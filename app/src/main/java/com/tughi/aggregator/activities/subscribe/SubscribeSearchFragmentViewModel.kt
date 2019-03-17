@@ -3,7 +3,6 @@ package com.tughi.aggregator.activities.subscribe
 import android.os.AsyncTask
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.tughi.aggregator.data.Feed
 import com.tughi.aggregator.feeds.FeedsFinder
 import com.tughi.aggregator.utilities.Http
 import okhttp3.Call
@@ -126,5 +125,11 @@ class SubscribeSearchFragmentViewModel : ViewModel() {
             publishProgress(state.cloneWith())
         }
     }
+
+    class Feed(
+            val url: String,
+            val title: String,
+            val link: String?
+    )
 
 }
