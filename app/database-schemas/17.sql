@@ -33,3 +33,23 @@ CREATE TABLE entry (
 );
 
 CREATE UNIQUE INDEX entry_index__feed_id__uid ON entry (feed_id, uid);
+
+CREATE TABLE tag (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL
+);
+
+CREATE TABLE feed_tag (
+    feed_id INTEGER NOT NULL,
+    tag_id INTEGER NOT NULL,
+    FOREIGN KEY (feed_id) REFERENCES feed (id) ON DELETE CASCADE,
+    FOREIGN KEY (tag_id) REFERENCES tag (id) ON DELETE CASCADE
+);
+
+CREATE TABLE entry_tag (
+    entry_id INTEGER NOT NULL,
+    tag_id INTEGER NOT NULL,
+    FOREIGN KEY (entry_id) REFERENCES entry (id) ON DELETE CASCADE,
+    FOREIGN KEY (tag_id) REFERENCES tag (id) ON DELETE CASCADE
+);
+
