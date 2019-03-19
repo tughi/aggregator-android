@@ -167,8 +167,33 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
 
     abstract class QueryHelper<R>(vararg columns: Column) : Repository.QueryHelper<Column, QueryCriteria, R>(columns) {
 
+        private val tables: String
+
+        init {
+            val tables = StringBuilder("entry e")
+
+            var feed = false
+            for (column in columns) {
+                if (column !is TableColumn) {
+                    when (column) {
+                        is FEED_TITLE -> feed = true
+                        is FEED_LANGUAGE -> feed = true
+                        is FEED_FAVICON_URL -> feed = true
+                    }
+                }
+                if (feed) {
+                    break
+                }
+            }
+            if (feed) {
+                tables.append(" LEFT JOIN feed f ON f.id = e.feed_id")
+            }
+
+            this.tables = tables.toString()
+        }
+
         override fun createQuery(criteria: QueryCriteria): SupportSQLiteQuery = SupportSQLiteQueryBuilder
-                .builder("entry e LEFT JOIN feed f ON f.id = e.feed_id")
+                .builder(tables)
                 .columns(Array(columns.size) { "${columns[it].projection} AS ${columns[it].name}" })
                 .also { criteria.config(it) }
                 .create()
