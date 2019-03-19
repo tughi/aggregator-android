@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModelProviders
 import com.tughi.aggregator.App
 import com.tughi.aggregator.R
 import com.tughi.aggregator.data.Entries
+import com.tughi.aggregator.data.Tags
 import com.tughi.aggregator.utilities.Language
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -38,6 +39,8 @@ class ReaderFragment : Fragment() {
 
     private lateinit var markDoneMenuItem: MenuItem
     private lateinit var markPinnedMenuItem: MenuItem
+    private lateinit var addStarMenuItem: MenuItem
+    private lateinit var removeStarMenuItem: MenuItem
 
     private var loadedEntry: ReaderFragmentViewModel.Entry? = null
     private var loadedEntryHtml: String? = null
@@ -114,6 +117,8 @@ class ReaderFragment : Fragment() {
 
             markDoneMenuItem = it.findItem(R.id.mark_done)
             markPinnedMenuItem = it.findItem(R.id.mark_pinned)
+            addStarMenuItem = it.findItem(R.id.add_star)
+            removeStarMenuItem = it.findItem(R.id.remove_star)
         }
     }
 
@@ -124,6 +129,11 @@ class ReaderFragment : Fragment() {
 
         markDoneMenuItem.isVisible = !read
         markPinnedMenuItem.isVisible = read
+
+        val star = loadedEntry?.run { starTime != 0L } ?: false
+
+        addStarMenuItem.isVisible = !star
+        removeStarMenuItem.isVisible = star
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
@@ -139,6 +149,20 @@ class ReaderFragment : Fragment() {
                 loadedEntry?.let {
                     GlobalScope.launch {
                         Entries.markPinned(it.id)
+                    }
+                }
+            }
+            R.id.add_star -> {
+                loadedEntry?.let {
+                    GlobalScope.launch {
+                        Tags.addTag(it.id, Tags.STAR)
+                    }
+                }
+            }
+            R.id.remove_star -> {
+                loadedEntry?.let {
+                    GlobalScope.launch {
+                        Tags.removeTag(it.id, Tags.STAR)
                     }
                 }
             }

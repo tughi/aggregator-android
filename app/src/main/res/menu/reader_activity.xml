@@ -1,16 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="AlwaysShowAction">
     <item
         android:id="@+id/mark_pinned"
         android:icon="@drawable/action_mark_pinned"
         android:title="@string/action__mark_pinned"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
     <item
         android:id="@+id/mark_done"
         android:icon="@drawable/action_mark_done"
         android:title="@string/action__mark_done"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/add_star"
+        android:icon="@drawable/action_star"
+        android:title="@string/action__add_star"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/remove_star"
+        android:icon="@drawable/action_star_empty"
+        android:title="@string/action__remove_star"
+        app:showAsAction="always" />
     <item
         android:id="@+id/share"
         android:title="@string/action__share" />

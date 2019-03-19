@@ -76,27 +76,40 @@ object Database {
                                 database.execSQL("""
                                     CREATE TABLE tag (
                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                        name TEXT NOT NULL
+                                        name TEXT NOT NULL,
+                                        editable INTEGER NOT NULL DEFAULT 1
                                     )
                                 """)
+
+                                database.execSQL("INSERT INTO tag VALUES (0, 'star', 0)")
+
+                                database.execSQL("INSERT INTO tag VALUES (-1, 'hide', 0)")
 
                                 database.execSQL("""
                                     CREATE TABLE feed_tag (
                                         feed_id INTEGER NOT NULL,
                                         tag_id INTEGER NOT NULL,
+                                        tag_time INTEGER NOT NULL DEFAULT 0,
                                         FOREIGN KEY (feed_id) REFERENCES feed (id) ON DELETE CASCADE,
-                                        FOREIGN KEY (tag_id) REFERENCES tag (id) ON DELETE CASCADE
+                                        FOREIGN KEY (tag_id) REFERENCES tag (id) ON DELETE CASCADE,
+                                        UNIQUE (feed_id, tag_id)
                                     )
                                 """)
+
+                                database.execSQL("CREATE UNIQUE INDEX feed_tag_index__feed_id__tag_id ON feed_tag (feed_id, tag_id)")
 
                                 database.execSQL("""
                                     CREATE TABLE entry_tag (
                                         entry_id INTEGER NOT NULL,
                                         tag_id INTEGER NOT NULL,
+                                        tag_time INTEGER NOT NULL DEFAULT 0,
                                         FOREIGN KEY (entry_id) REFERENCES entry (id) ON DELETE CASCADE,
-                                        FOREIGN KEY (tag_id) REFERENCES tag (id) ON DELETE CASCADE
+                                        FOREIGN KEY (tag_id) REFERENCES tag (id) ON DELETE CASCADE,
+                                        UNIQUE (entry_id, tag_id)
                                     )
                                 """)
+
+                                database.execSQL("CREATE UNIQUE INDEX entry_tag_index__entry_id__tag_id ON entry_tag (entry_id, tag_id)")
                             }
                         }
 
@@ -139,12 +152,18 @@ object Database {
 
     fun query(sqliteQuery: SupportSQLiteQuery?): Cursor = sqlite.readableDatabase.query(sqliteQuery)
 
-    fun insert(table: String, values: ContentValues): Long {
-        val id = sqlite.writableDatabase.insert(table, SQLiteDatabase.CONFLICT_FAIL, values)
+    private fun insert(table: String, values: ContentValues, conflictAlgorithm: Int): Long {
+        val id = sqlite.writableDatabase.insert(table, conflictAlgorithm, values)
         if (id != -1L) {
             invalidateTable(table)
         }
         return id
+    }
+
+    fun insert(table: String, values: ContentValues): Long = Database.insert(table, values, SQLiteDatabase.CONFLICT_FAIL)
+
+    fun replace(table: String, values: ContentValues): Int {
+        return if (Database.insert(table, values, SQLiteDatabase.CONFLICT_REPLACE) != -1L) 1 else 0
     }
 
     fun update(table: String, values: ContentValues, selection: String?, selectionArgs: Array<Any>?, rowId: Any? = null): Int {

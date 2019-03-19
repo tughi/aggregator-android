@@ -19,7 +19,8 @@ internal class ReaderFragmentViewModel(entryId: Long, entryReadTime: Long) : Vie
             val feedTitle: String,
             val feedLanguage: String?,
             val readTime: Long,
-            val pinnedTime: Long
+            val pinnedTime: Long,
+            val starTime: Long
     ) {
         object QueryHelper : Entries.QueryHelper<Entry>(
                 Entries.ID,
@@ -31,7 +32,8 @@ internal class ReaderFragmentViewModel(entryId: Long, entryReadTime: Long) : Vie
                 Entries.FEED_TITLE,
                 Entries.FEED_LANGUAGE,
                 Entries.READ_TIME,
-                Entries.PINNED_TIME
+                Entries.PINNED_TIME,
+                Entries.STAR_TIME
         ) {
             override fun createRow(cursor: Cursor) = Entry(
                     id = cursor.getLong(0),
@@ -43,7 +45,8 @@ internal class ReaderFragmentViewModel(entryId: Long, entryReadTime: Long) : Vie
                     feedTitle = cursor.getString(6),
                     feedLanguage = cursor.getString(7),
                     readTime = cursor.getLong(8),
-                    pinnedTime = cursor.getLong(9)
+                    pinnedTime = cursor.getLong(9),
+                    starTime = cursor.getLong(10)
             )
         }
     }
