@@ -13,12 +13,6 @@ android {
 
         versionName = 'Preview:013'
         versionCode = 299000 + Integer.parseInt(versionName.split(':')[1])
-
-        kapt {
-            arguments {
-                arg('room.schemaLocation', "$projectDir/room-schemas".toString())
-            }
-        }
     }
 
     buildTypes {
@@ -40,8 +34,8 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
     implementation 'androidx.lifecycle:lifecycle-livedata:2.0.0'
     implementation 'androidx.preference:preference:1.0.0'
-    implementation 'androidx.sqlite:sqlite-ktx:2.0.0'
-    implementation 'androidx.sqlite:sqlite-framework:2.0.0'
+    implementation 'androidx.sqlite:sqlite-ktx:2.0.1'
+    implementation 'androidx.sqlite:sqlite-framework:2.0.1'
     implementation 'androidx.viewpager:viewpager:1.0.0'
     implementation 'androidx.webkit:webkit:1.0.0'
     implementation 'com.google.android.material:material:1.0.0'
@@ -50,6 +44,4 @@ dependencies {
     implementation 'commons-codec:commons-codec:1.10'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1'
-
-    kapt 'androidx.room:room-compiler:2.0.0'
 }
