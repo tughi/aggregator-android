@@ -81,9 +81,9 @@ object Database {
                                     )
                                 """)
 
-                                database.execSQL("INSERT INTO tag VALUES (0, 'star', 0)")
+                                database.execSQL("INSERT INTO tag VALUES (0, 'Starred', 0)")
 
-                                database.execSQL("INSERT INTO tag VALUES (-1, 'hide', 0)")
+                                database.execSQL("INSERT INTO tag VALUES (-1, 'Hidden', 0)")
 
                                 database.execSQL("""
                                     CREATE TABLE feed_tag (

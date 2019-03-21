@@ -40,9 +40,9 @@ CREATE TABLE tag (
     editable INTEGER NOT NULL DEFAULT 1
 );
 
-INSERT INTO tag VALUES (0, 'star', 0);
+INSERT INTO tag VALUES (0, 'Starred', 0);
 
-INSERT INTO tag VALUES (-1, 'hide', 0);
+INSERT INTO tag VALUES (-1, 'Hidden', 0);
 
 CREATE TABLE feed_tag (
     feed_id INTEGER NOT NULL,
