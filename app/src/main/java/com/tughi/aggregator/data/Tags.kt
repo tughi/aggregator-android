@@ -7,8 +7,8 @@ import androidx.sqlite.db.SupportSQLiteQueryBuilder
 @Suppress("ClassName")
 object Tags : Repository<Tags.Column, Tags.TableColumn, Tags.UpdateCriteria, Tags.DeleteCriteria, Tags.QueryCriteria>("tag") {
 
-    const val STAR = 0L
-    const val HIDE = -1L
+    const val STARRED = 0L
+    const val HIDDEN = -1L
 
     open class Column(name: String, projection: String, projectionTables: Array<String> = arrayOf("tag")) : Repository.Column(name, projection, projectionTables)
     interface TableColumn : Repository.TableColumn
@@ -33,7 +33,7 @@ object Tags : Repository<Tags.Column, Tags.TableColumn, Tags.UpdateCriteria, Tag
 
     object VisibleTagsQueryCriteria : QueryCriteria {
         override fun config(builder: SupportSQLiteQueryBuilder, columns: Array<out Column>) {
-            builder.selection("t.id != ?", arrayOf(HIDE))
+            builder.selection("t.id != ?", arrayOf(HIDDEN))
         }
     }
 

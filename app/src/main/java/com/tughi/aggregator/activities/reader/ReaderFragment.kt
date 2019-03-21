@@ -155,14 +155,14 @@ class ReaderFragment : Fragment() {
             R.id.add_star -> {
                 loadedEntry?.let {
                     GlobalScope.launch {
-                        Tags.addTag(it.id, Tags.STAR)
+                        Tags.addTag(it.id, Tags.STARRED)
                     }
                 }
             }
             R.id.remove_star -> {
                 loadedEntry?.let {
                     GlobalScope.launch {
-                        Tags.removeTag(it.id, Tags.STAR)
+                        Tags.removeTag(it.id, Tags.STARRED)
                     }
                 }
             }
