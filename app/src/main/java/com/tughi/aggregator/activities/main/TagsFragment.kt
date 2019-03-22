@@ -98,7 +98,7 @@ class TagsFragment : Fragment() {
 
             holder.favicon.setImageResource(when (tag.id) { // TODO: use favicon drawables
                 Tags.STARRED -> R.drawable.action_star
-                else -> R.drawable.action_tags
+                else -> R.drawable.favicon_tag
             })
             holder.name.text = tag.name
             holder.count.text = if (tag.count > 0) tag.count.toString() else ""
