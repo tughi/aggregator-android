@@ -96,8 +96,8 @@ class TagsFragment : Fragment() {
         override fun onBindViewHolder(holder: TagViewHolder, position: Int) {
             val tag = getItem(position)
 
-            holder.favicon.setImageResource(when (tag.id) { // TODO: use favicon drawables
-                Tags.STARRED -> R.drawable.action_star
+            holder.favicon.setImageResource(when (tag.id) {
+                Tags.STARRED -> R.drawable.favicon_star
                 else -> R.drawable.favicon_tag
             })
             holder.name.text = tag.name
