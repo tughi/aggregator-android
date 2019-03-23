@@ -245,9 +245,6 @@ object FeedUpdater {
     class Feed(
             val id: Long,
             val url: String,
-            val title: String,
-            val link: String?,
-            val language: String?,
             val updateMode: UpdateMode,
             val nextUpdateRetry: Int,
             val httpEtag: String?,
@@ -256,9 +253,6 @@ object FeedUpdater {
         object QueryHelper : Feeds.QueryHelper<Feed>(
                 Feeds.ID,
                 Feeds.URL,
-                Feeds.TITLE,
-                Feeds.LINK,
-                Feeds.LANGUAGE,
                 Feeds.UPDATE_MODE,
                 Feeds.NEXT_UPDATE_RETRY,
                 Feeds.HTTP_ETAG,
@@ -267,13 +261,10 @@ object FeedUpdater {
             override fun createRow(cursor: Cursor) = Feed(
                     id = cursor.getLong(0),
                     url = cursor.getString(1),
-                    title = cursor.getString(2),
-                    link = cursor.getString(3),
-                    language = cursor.getString(4),
-                    updateMode = UpdateMode.deserialize(cursor.getString(5)),
-                    nextUpdateRetry = cursor.getInt(6),
-                    httpEtag = cursor.getString(7),
-                    httpLastModified = cursor.getString(8)
+                    updateMode = UpdateMode.deserialize(cursor.getString(2)),
+                    nextUpdateRetry = cursor.getInt(3),
+                    httpEtag = cursor.getString(4),
+                    httpLastModified = cursor.getString(5)
             )
         }
     }

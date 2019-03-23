@@ -14,7 +14,7 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
 
     object ID : Column("id", "f.id"), TableColumn
     object URL : Column("url", "f.url"), TableColumn
-    object TITLE : Column("title", "COALESCE(f.custom_title, f.title)"), TableColumn
+    object TITLE : Column("title", "f.title"), TableColumn
     object CUSTOM_TITLE : Column("custom_title", "f.custom_title"), TableColumn
     object LINK : Column("link", "f.link"), TableColumn
     object LANGUAGE : Column("language", "f.language"), TableColumn

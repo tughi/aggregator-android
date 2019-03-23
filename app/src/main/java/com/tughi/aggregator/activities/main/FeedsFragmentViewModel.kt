@@ -59,6 +59,7 @@ class FeedsFragmentViewModel(application: Application) : AndroidViewModel(applic
         object QueryHelper : Feeds.QueryHelper<Feed>(
                 Feeds.ID,
                 Feeds.TITLE,
+                Feeds.CUSTOM_TITLE,
                 Feeds.FAVICON_URL,
                 Feeds.LAST_UPDATE_TIME,
                 Feeds.LAST_UPDATE_ERROR,
@@ -69,14 +70,14 @@ class FeedsFragmentViewModel(application: Application) : AndroidViewModel(applic
         ) {
             override fun createRow(cursor: Cursor) = Feed(
                     id = cursor.getLong(0),
-                    title = cursor.getString(1),
-                    faviconUrl = cursor.getString(2),
-                    lastUpdateTime = cursor.getLong(3),
-                    lastUpdateError = cursor.getString(4),
-                    nextUpdateTime = cursor.getLong(5),
-                    nextUpdateRetry = cursor.getInt(6),
-                    updateMode = UpdateMode.deserialize(cursor.getString(7)),
-                    unreadEntryCount = cursor.getInt(8)
+                    title = cursor.getString(2) ?: cursor.getString(1),
+                    faviconUrl = cursor.getString(3),
+                    lastUpdateTime = cursor.getLong(4),
+                    lastUpdateError = cursor.getString(5),
+                    nextUpdateTime = cursor.getLong(6),
+                    nextUpdateRetry = cursor.getInt(7),
+                    updateMode = UpdateMode.deserialize(cursor.getString(8)),
+                    unreadEntryCount = cursor.getInt(9)
             )
         }
     }

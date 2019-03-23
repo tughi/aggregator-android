@@ -78,7 +78,7 @@ class FeedSettingsFragment : Fragment() {
         viewModel.feed.observe(this, Observer { feed ->
             if (feed != null) {
                 urlEditText.setText(feed.url)
-                titleEditText.setText(feed.title)
+                titleEditText.setText(feed.customTitle ?: feed.title)
 
                 updateModeTextView.apply { text = feed.updateMode.toString(context) }
             }
@@ -86,7 +86,7 @@ class FeedSettingsFragment : Fragment() {
 
         fragmentView.findViewById<View>(R.id.unsubscribe).setOnClickListener {
             viewModel.feed.value?.let {
-                UnsubscribeDialogFragment.show(fragmentManager!!, it.id, it.title, true)
+                UnsubscribeDialogFragment.show(fragmentManager!!, it.id, it.customTitle ?: it.title, true)
             }
         }
 
@@ -123,7 +123,7 @@ class FeedSettingsFragment : Fragment() {
                 Feeds.update(
                         Feeds.UpdateRowCriteria(feed.id),
                         Feeds.URL to url,
-                        Feeds.CUSTOM_TITLE to if (title.isEmpty()) null else title,
+                        Feeds.CUSTOM_TITLE to if (title.isEmpty() || title == feed.title) null else title,
                         Feeds.UPDATE_MODE to (updateMode ?: feed.updateMode).serialize()
                 )
 

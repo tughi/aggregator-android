@@ -12,10 +12,11 @@ class FeedEntriesFragmentViewModel(feedId: Long) : ViewModel() {
 
     class Feed(val title: String) {
         object QueryHelper : Feeds.QueryHelper<Feed>(
-                Feeds.TITLE
+                Feeds.TITLE,
+                Feeds.CUSTOM_TITLE
         ) {
             override fun createRow(cursor: Cursor) = Feed(
-                    title = cursor.getString(0)
+                    title = cursor.getString(1) ?: cursor.getString(0)
             )
         }
     }
