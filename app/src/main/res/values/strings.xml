@@ -10,6 +10,7 @@
     <string name="action__refresh">Refresh</string>
     <string name="action__remove">Remove</string>
     <string name="action__remove_star">Remove star</string>
+    <string name="action__rename">Rename</string>
     <string name="action__save">Save</string>
     <string name="action__settings">Settings</string>
     <string name="action__share">Share</string>

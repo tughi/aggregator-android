@@ -10,6 +10,9 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProviders
@@ -35,7 +38,13 @@ class TagsFragment : Fragment() {
         val tagsRecyclerView = fragmentView.findViewById<RecyclerView>(R.id.tags)
         val progressBar = fragmentView.findViewById<ProgressBar>(R.id.progress)
 
-        val tagsAdapter = TagsAdapter().also { tagsRecyclerView.adapter = it }
+        val tagsAdapterListener = object : TagsAdapter.Listener {
+            override fun onToggleTag(tag: Tag) {
+                viewModel.toggleTag(tag)
+            }
+        }
+
+        val tagsAdapter = TagsAdapter(tagsAdapterListener).also { tagsRecyclerView.adapter = it }
         viewModel.tags.observe(this, Observer { tags ->
             progressBar.visibility = if (tags != null) View.GONE else View.VISIBLE
             tagsAdapter.submitList(tags)
@@ -54,7 +63,8 @@ class TagsFragment : Fragment() {
             val id: Long,
             val name: String,
             val editable: Boolean,
-            val count: Int
+            val count: Int,
+            val expanded: Boolean = false
     ) {
         object QueryHelper : Tags.QueryHelper<Tag>(
                 Tags.ID,
@@ -73,13 +83,34 @@ class TagsFragment : Fragment() {
     }
 
     class TagsViewModel : ViewModel() {
-        val tags = Tags.liveQuery(Tags.VisibleTagsQueryCriteria, Tag.QueryHelper)
-    }
+        private val databaseTags = Tags.liveQuery(Tags.VisibleTagsQueryCriteria, Tag.QueryHelper)
+        private val expandedTagId = MutableLiveData<Long>()
 
-    class TagViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val favicon: ImageView = itemView.findViewById(R.id.favicon)
-        val name: TextView = itemView.findViewById(R.id.name)
-        val count: TextView = itemView.findViewById(R.id.count)
+        val tags: LiveData<List<Tag>>
+
+        init {
+            val tags = MediatorLiveData<List<Tag>>()
+            tags.addSource(databaseTags) { tags.value = computeTags(it ?: emptyList(), expandedTagId.value) }
+            tags.addSource(expandedTagId) { tags.value = computeTags(databaseTags.value ?: emptyList(), it) }
+            this.tags = tags
+        }
+
+        private fun computeTags(tags: List<Tag>, expandedTagId: Long?): List<Tag> {
+            if (tags.isEmpty() || expandedTagId == null) {
+                return tags
+            }
+            return tags.map {
+                if (it.id == expandedTagId) {
+                    it.copy(expanded = true)
+                } else {
+                    it
+                }
+            }
+        }
+
+        fun toggleTag(tag: Tag) {
+            expandedTagId.value = if (expandedTagId.value == tag.id) null else tag.id
+        }
     }
 
     object TagDiffUtil : DiffUtil.ItemCallback<Tag>() {
@@ -88,13 +119,25 @@ class TagsFragment : Fragment() {
         override fun areContentsTheSame(oldItem: Tag, newItem: Tag) = oldItem == newItem
     }
 
-    class TagsAdapter : ListAdapter<Tag, TagViewHolder>(TagDiffUtil) {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = TagViewHolder(
-                LayoutInflater.from(parent.context).inflate(R.layout.tags_item_collapsed, parent, false)
+    class TagsAdapter(val listener: Listener) : ListAdapter<Tag, TagsAdapter.ViewHolder>(TagDiffUtil) {
+        override fun getItemViewType(position: Int): Int {
+            val tag = getItem(position)
+            return if (tag.expanded) R.layout.tags_item_expanded else R.layout.tags_item_collapsed
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ViewHolder(
+                LayoutInflater.from(parent.context).inflate(
+                        viewType,
+                        parent,
+                        false
+                ),
+                listener
         )
 
-        override fun onBindViewHolder(holder: TagViewHolder, position: Int) {
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val tag = getItem(position)
+
+            holder.tag = tag
 
             holder.favicon.setImageResource(when (tag.id) {
                 Tags.STARRED -> R.drawable.favicon_star
@@ -102,6 +145,26 @@ class TagsFragment : Fragment() {
             })
             holder.name.text = tag.name
             holder.count.text = if (tag.count > 0) tag.count.toString() else ""
+        }
+
+        interface Listener {
+            fun onToggleTag(tag: Tag)
+        }
+
+        class ViewHolder(itemView: View, listener: Listener) : RecyclerView.ViewHolder(itemView) {
+            var tag: Tag? = null
+
+            val favicon: ImageView = itemView.findViewById(R.id.favicon)
+            val name: TextView = itemView.findViewById(R.id.name)
+            val count: TextView = itemView.findViewById(R.id.count)
+
+            init {
+                itemView.findViewById<View>(R.id.toggle).setOnClickListener {
+                    tag?.let {
+                        listener.onToggleTag(it)
+                    }
+                }
+            }
         }
     }
 
