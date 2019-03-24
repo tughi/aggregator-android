@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.Button
 import android.widget.TextView
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -37,7 +38,7 @@ class TagSettingsActivity : AppActivity() {
 
     private lateinit var viewModel: TagSettingsViewModel
 
-    private lateinit var nameTextView: TextView
+    private val nameTextView by lazy { findViewById<TextView>(R.id.name) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,10 +48,22 @@ class TagSettingsActivity : AppActivity() {
 
         setContentView(R.layout.tag_settings_activity)
 
-        nameTextView = findViewById<TextView>(R.id.name)
         val buttonBar = findViewById<View>(R.id.button_bar)
 
         buttonBar.visibility = View.GONE
+        buttonBar.findViewById<Button>(R.id.delete).apply {
+            setOnClickListener {
+                viewModel.tag.value?.let { tag ->
+                    // TODO: confirm deletion
+
+                    GlobalScope.launch {
+                        Tags.delete(Tags.DeleteTagCriteria(tag.id))
+                    }
+
+                    finish()
+                }
+            }
+        }
 
         viewModel.tag.observe(this, Observer { tag ->
             if (tag != null) {
@@ -101,7 +114,7 @@ class TagSettingsActivity : AppActivity() {
 
     class Tag(val id: Long, val name: String, val deletable: Boolean)
 
-    class TagSettingsViewModel(val tagId: Long?) : ViewModel() {
+    class TagSettingsViewModel(tagId: Long?) : ViewModel() {
         val tag = MutableLiveData<Tag>()
 
         init {

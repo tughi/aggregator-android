@@ -33,6 +33,11 @@ object Tags : Repository<Tags.Column, Tags.TableColumn, Tags.UpdateCriteria, Tag
 
     interface DeleteCriteria : Repository.DeleteCriteria
 
+    class DeleteTagCriteria(tagId: Long) : DeleteCriteria {
+        override val selection = "id = ? AND editable = 1"
+        override val selectionArgs = arrayOf<Any>(tagId)
+    }
+
     interface QueryCriteria : Repository.QueryCriteria<Column> {
         fun config(builder: SupportSQLiteQueryBuilder, columns: Array<out Column>)
     }
