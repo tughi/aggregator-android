@@ -55,6 +55,9 @@
     <string name="tag_settings__update_mode">Update mode</string>
     <string name="tag_settings__url">URL</string>
 
+    <string name="tags_item__total_entries">Total entries: %1$d</string>
+    <string name="tags_item__unread_entries">Unread entries: %1$d</string>
+
     <string name="theme_title">Theme</string>
     <string name="theme__dark">Dark</string>
     <string name="theme__light">Light</string>

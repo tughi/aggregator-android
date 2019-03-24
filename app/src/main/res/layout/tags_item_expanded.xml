@@ -25,7 +25,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="ContentDescription"
-            tools:src="@drawable/favicon_placeholder" />
+            tools:src="@drawable/favicon_tag" />
 
         <TextView
             android:id="@+id/count"
@@ -54,7 +54,39 @@
             app:layout_constraintBaseline_toBaselineOf="@id/favicon"
             app:layout_constraintEnd_toStartOf="@id/count"
             app:layout_constraintStart_toStartOf="parent"
-            tools:text="Aggregator News" />
+            tools:text="News" />
+
+        <LinearLayout
+            android:id="@+id/details"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="@id/count"
+            app:layout_constraintStart_toStartOf="@+id/name"
+            app:layout_constraintTop_toBottomOf="@+id/name">
+
+            <TextView
+                android:id="@+id/total_entries"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textAppearance="?textAppearanceBody2"
+                android:textColor="?android:textColorSecondary"
+                android:textSize="14sp"
+                tools:text="@string/tags_item__total_entries" />
+
+            <TextView
+                android:id="@+id/unread_entries"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?textAppearanceBody2"
+                android:textColor="?android:textColorSecondary"
+                android:textSize="14sp"
+                tools:text="@string/tags_item__unread_entries" />
+
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -63,7 +95,7 @@
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/toggle"
-            app:layout_constraintTop_toBottomOf="@id/name">
+            app:layout_constraintTop_toBottomOf="@id/details">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/settings"

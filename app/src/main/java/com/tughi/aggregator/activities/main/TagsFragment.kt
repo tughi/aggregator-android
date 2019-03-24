@@ -83,7 +83,8 @@ class TagsFragment : Fragment() {
             val id: Long,
             val name: String,
             val editable: Boolean,
-            val count: Int,
+            val totalEntryCount: Int,
+            val unreadEntryCount: Int,
             val expanded: Boolean = false
     ) {
         object QueryHelper : Tags.QueryHelper<Tag>(
@@ -97,7 +98,8 @@ class TagsFragment : Fragment() {
                     id = cursor.getLong(0),
                     name = cursor.getString(1),
                     editable = cursor.getInt(2) != 0,
-                    count = if (cursor.getLong(0) == Tags.STARRED) cursor.getInt(3) else cursor.getInt(4)
+                    totalEntryCount = cursor.getInt(3),
+                    unreadEntryCount = cursor.getInt(4)
             )
         }
     }
@@ -139,32 +141,19 @@ class TagsFragment : Fragment() {
         override fun areContentsTheSame(oldItem: Tag, newItem: Tag) = oldItem == newItem
     }
 
-    class TagsAdapter(val listener: Listener) : ListAdapter<Tag, TagsAdapter.ViewHolder>(TagDiffUtil) {
-        override fun getItemViewType(position: Int): Int {
-            val tag = getItem(position)
-            return if (tag.expanded) R.layout.tags_item_expanded else R.layout.tags_item_collapsed
+    class TagsAdapter(val listener: Listener) : ListAdapter<Tag, TagsAdapter.TagViewHolder>(TagDiffUtil) {
+        override fun getItemViewType(position: Int) = when {
+            getItem(position).expanded -> R.layout.tags_item_expanded
+            else -> R.layout.tags_item_collapsed
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ViewHolder(
-                LayoutInflater.from(parent.context).inflate(
-                        viewType,
-                        parent,
-                        false
-                ),
-                listener
-        )
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
+            R.layout.tags_item_expanded -> ExpandedTagViewHolder(LayoutInflater.from(parent.context).inflate(viewType, parent, false), listener)
+            else -> TagViewHolder(LayoutInflater.from(parent.context).inflate(viewType, parent, false), listener)
+        }
 
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val tag = getItem(position)
-
-            holder.tag = tag
-
-            holder.favicon.setImageResource(when (tag.id) {
-                Tags.STARRED -> R.drawable.favicon_star
-                else -> R.drawable.favicon_tag
-            })
-            holder.name.text = tag.name
-            holder.count.text = if (tag.count > 0) tag.count.toString() else ""
+        override fun onBindViewHolder(holder: TagViewHolder, position: Int) {
+            holder.onBind(getItem(position))
         }
 
         interface Listener {
@@ -172,25 +161,52 @@ class TagsFragment : Fragment() {
             fun onToggleTag(tag: Tag)
         }
 
-        class ViewHolder(itemView: View, listener: Listener) : RecyclerView.ViewHolder(itemView) {
-            var tag: Tag? = null
+        open class TagViewHolder(itemView: View, listener: Listener) : RecyclerView.ViewHolder(itemView) {
+            protected var tag: Tag? = null
 
-            val favicon: ImageView = itemView.findViewById(R.id.favicon)
-            val name: TextView = itemView.findViewById(R.id.name)
-            val count: TextView = itemView.findViewById(R.id.count)
+            private val favicon: ImageView = itemView.findViewById(R.id.favicon)
+            private val name: TextView = itemView.findViewById(R.id.name)
+            private val count: TextView = itemView.findViewById(R.id.count)
 
             init {
-                itemView.findViewById<View>(R.id.settings)?.setOnClickListener {
-                    tag?.let {
-                        listener.onSettingsClick(it)
-                    }
-                }
-
                 itemView.findViewById<View>(R.id.toggle).setOnClickListener {
                     tag?.let {
                         listener.onToggleTag(it)
                     }
                 }
+            }
+
+            open fun onBind(tag: Tag) {
+                this.tag = tag
+
+                name.text = tag.name
+                if (tag.id == Tags.STARRED) {
+                    favicon.setImageResource(R.drawable.favicon_star)
+                    count.text = if (tag.totalEntryCount > 0) tag.totalEntryCount.toString() else ""
+                } else {
+                    favicon.setImageResource(R.drawable.favicon_tag)
+                    count.text = if (tag.unreadEntryCount > 0) tag.unreadEntryCount.toString() else ""
+                }
+            }
+        }
+
+        class ExpandedTagViewHolder(itemView: View, listener: Listener) : TagViewHolder(itemView, listener) {
+            private val totalEntries: TextView = itemView.findViewById(R.id.total_entries)
+            private val unreadEntries: TextView = itemView.findViewById(R.id.unread_entries)
+
+            init {
+                itemView.findViewById<View>(R.id.settings).setOnClickListener {
+                    tag?.let {
+                        listener.onSettingsClick(it)
+                    }
+                }
+            }
+
+            override fun onBind(tag: Tag) {
+                super.onBind(tag)
+
+                totalEntries.text = itemView.context.getString(R.string.tags_item__total_entries, tag.totalEntryCount)
+                unreadEntries.text = itemView.context.getString(R.string.tags_item__unread_entries, tag.unreadEntryCount)
             }
         }
     }
