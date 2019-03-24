@@ -25,13 +25,25 @@ object Tags : Repository<Tags.Column, Tags.TableColumn, Tags.UpdateCriteria, Tag
 
     interface UpdateCriteria : Repository.UpdateCriteria
 
+    class UpdateTagCriteria(tagId: Long) : UpdateCriteria {
+        override val affectedRowId: Any? = tagId
+        override val selection = "id = ?"
+        override val selectionArgs = arrayOf<Any>(tagId)
+    }
+
     interface DeleteCriteria : Repository.DeleteCriteria
 
     interface QueryCriteria : Repository.QueryCriteria<Column> {
         fun config(builder: SupportSQLiteQueryBuilder, columns: Array<out Column>)
     }
 
-    object VisibleTagsQueryCriteria : QueryCriteria {
+    class QueryTagCriteria(val tagId: Long) : QueryCriteria {
+        override fun config(builder: SupportSQLiteQueryBuilder, columns: Array<out Column>) {
+            builder.selection("t.id = ?", arrayOf(tagId))
+        }
+    }
+
+    object QueryVisibleTagsCriteria : QueryCriteria {
         override fun config(builder: SupportSQLiteQueryBuilder, columns: Array<out Column>) {
             builder.selection("t.id != ?", arrayOf(HIDDEN))
         }

@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.R
+import com.tughi.aggregator.activities.tagsettings.TagSettingsActivity
 import com.tughi.aggregator.data.Tags
 
 class TagsFragment : Fragment() {
@@ -39,6 +40,12 @@ class TagsFragment : Fragment() {
         val progressBar = fragmentView.findViewById<ProgressBar>(R.id.progress)
 
         val tagsAdapterListener = object : TagsAdapter.Listener {
+            override fun onSettingsClick(tag: Tag) {
+                context?.let { context ->
+                    TagSettingsActivity.start(context, tag.id)
+                }
+            }
+
             override fun onToggleTag(tag: Tag) {
                 viewModel.toggleTag(tag)
             }
@@ -54,6 +61,19 @@ class TagsFragment : Fragment() {
         toolbar.setNavigationOnClickListener {
             val activity = activity as MainActivity
             activity.openDrawer()
+        }
+        toolbar.inflateMenu(R.menu.tags_fragment)
+        toolbar.setOnMenuItemClickListener {
+            when (it.itemId) {
+                R.id.add -> {
+                    context?.let { context ->
+                        TagSettingsActivity.start(context, null)
+                    }
+
+                    return@setOnMenuItemClickListener true
+                }
+            }
+            return@setOnMenuItemClickListener false
         }
 
         return fragmentView
@@ -83,19 +103,19 @@ class TagsFragment : Fragment() {
     }
 
     class TagsViewModel : ViewModel() {
-        private val databaseTags = Tags.liveQuery(Tags.VisibleTagsQueryCriteria, Tag.QueryHelper)
+        private val databaseTags = Tags.liveQuery(Tags.QueryVisibleTagsCriteria, Tag.QueryHelper)
         private val expandedTagId = MutableLiveData<Long>()
 
         val tags: LiveData<List<Tag>>
 
         init {
             val tags = MediatorLiveData<List<Tag>>()
-            tags.addSource(databaseTags) { tags.value = computeTags(it ?: emptyList(), expandedTagId.value) }
-            tags.addSource(expandedTagId) { tags.value = computeTags(databaseTags.value ?: emptyList(), it) }
+            tags.addSource(databaseTags) { tags.value = transform(it ?: emptyList(), expandedTagId.value) }
+            tags.addSource(expandedTagId) { tags.value = transform(databaseTags.value ?: emptyList(), it) }
             this.tags = tags
         }
 
-        private fun computeTags(tags: List<Tag>, expandedTagId: Long?): List<Tag> {
+        private fun transform(tags: List<Tag>, expandedTagId: Long?): List<Tag> {
             if (tags.isEmpty() || expandedTagId == null) {
                 return tags
             }
@@ -148,6 +168,7 @@ class TagsFragment : Fragment() {
         }
 
         interface Listener {
+            fun onSettingsClick(tag: Tag)
             fun onToggleTag(tag: Tag)
         }
 
@@ -159,6 +180,12 @@ class TagsFragment : Fragment() {
             val count: TextView = itemView.findViewById(R.id.count)
 
             init {
+                itemView.findViewById<View>(R.id.settings)?.setOnClickListener {
+                    tag?.let {
+                        listener.onSettingsClick(it)
+                    }
+                }
+
                 itemView.findViewById<View>(R.id.toggle).setOnClickListener {
                     tag?.let {
                         listener.onToggleTag(it)

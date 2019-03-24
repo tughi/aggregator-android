@@ -2,10 +2,12 @@
     <string name="app_name" translatable="false">Aggregator</string>
 
     <string name="action__add_star">Add star</string>
+    <string name="action__delete">Delete</string>
     <string name="action__invert_selection">Invert selection</string>
     <string name="action__mark_all_read">Mark all as read</string>
     <string name="action__mark_done">Mark as done</string>
     <string name="action__mark_pinned">Keep as unread</string>
+    <string name="action__new_tag">New tag</string>
     <string name="action__no">No</string>
     <string name="action__refresh">Refresh</string>
     <string name="action__remove">Remove</string>
@@ -47,6 +49,11 @@
         \n\n<b>Aggregator</b> is able to detect if a website is providing such feeds.
         \n\n\nAdditionally, <b>Aggregator</b> also supports adding feeds from OPML files.
     </string>
+
+    <string name="tag_settings">Tag settings</string>
+    <string name="tag_settings__name">Name</string>
+    <string name="tag_settings__update_mode">Update mode</string>
+    <string name="tag_settings__url">URL</string>
 
     <string name="theme_title">Theme</string>
     <string name="theme__dark">Dark</string>

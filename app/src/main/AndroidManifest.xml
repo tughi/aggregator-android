@@ -66,6 +66,11 @@
             android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
+        <activity
+            android:name=".activities.tagsettings.TagSettingsActivity"
+            android:label="@string/tag_settings"
+            android:parentActivityName=".activities.main.MainActivity" />
+
     </application>
 
 </manifest>

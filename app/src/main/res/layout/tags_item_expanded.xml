@@ -66,7 +66,7 @@
             app:layout_constraintTop_toBottomOf="@id/name">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/rename"
+                android:id="@+id/settings"
                 style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -74,7 +74,7 @@
                 android:minWidth="48dp"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
-                android:text="@string/action__rename" />
+                android:text="@string/action__settings" />
 
         </LinearLayout>
 
