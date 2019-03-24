@@ -51,6 +51,7 @@ object Tags : Repository<Tags.Column, Tags.TableColumn, Tags.UpdateCriteria, Tag
     object QueryVisibleTagsCriteria : QueryCriteria {
         override fun config(builder: SupportSQLiteQueryBuilder, columns: Array<out Column>) {
             builder.selection("t.id != ?", arrayOf(HIDDEN))
+            builder.orderBy("(CASE t.id WHEN 0 THEN 0 ELSE 1 END), t.name")
         }
     }
 
