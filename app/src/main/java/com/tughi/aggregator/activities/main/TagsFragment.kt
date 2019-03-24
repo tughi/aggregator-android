@@ -40,10 +40,18 @@ class TagsFragment : Fragment() {
         val progressBar = fragmentView.findViewById<ProgressBar>(R.id.progress)
 
         val tagsAdapterListener = object : TagsAdapter.Listener {
-            override fun onSettingsClick(tag: Tag) {
+            override fun onSettingsClicked(tag: Tag) {
                 context?.let { context ->
                     TagSettingsActivity.start(context, tag.id)
                 }
+            }
+
+            override fun onTagClicked(tag: Tag) {
+                fragmentManager!!.beginTransaction()
+                        .setCustomAnimations(R.anim.slide_in, 0, 0, R.anim.fade_out)
+                        .add(id, TagEntriesFragment.newInstance(tagId = tag.id), "tag")
+                        .addToBackStack(null)
+                        .commit()
             }
 
             override fun onToggleTag(tag: Tag) {
@@ -157,7 +165,10 @@ class TagsFragment : Fragment() {
         }
 
         interface Listener {
-            fun onSettingsClick(tag: Tag)
+            fun onSettingsClicked(tag: Tag)
+
+            fun onTagClicked(tag: Tag)
+
             fun onToggleTag(tag: Tag)
         }
 
@@ -169,6 +180,12 @@ class TagsFragment : Fragment() {
             private val count: TextView = itemView.findViewById(R.id.count)
 
             init {
+                itemView.setOnClickListener {
+                    tag?.let {
+                        listener.onTagClicked(it)
+                    }
+                }
+
                 itemView.findViewById<View>(R.id.toggle).setOnClickListener {
                     tag?.let {
                         listener.onToggleTag(it)
@@ -197,7 +214,7 @@ class TagsFragment : Fragment() {
             init {
                 itemView.findViewById<View>(R.id.settings).setOnClickListener {
                     tag?.let {
-                        listener.onSettingsClick(it)
+                        listener.onSettingsClicked(it)
                     }
                 }
             }

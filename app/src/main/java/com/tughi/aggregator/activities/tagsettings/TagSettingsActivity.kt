@@ -112,7 +112,19 @@ class TagSettingsActivity : AppActivity() {
         return false
     }
 
-    class Tag(val id: Long, val name: String, val deletable: Boolean)
+    class Tag(val id: Long, val name: String, val deletable: Boolean) {
+        object QueryHelper : Tags.QueryHelper<Tag>(
+                Tags.ID,
+                Tags.NAME,
+                Tags.EDITABLE
+        ) {
+            override fun createRow(cursor: Cursor) = Tag(
+                    id = cursor.getLong(0),
+                    name = cursor.getString(1),
+                    deletable = cursor.getInt(2) != 0
+            )
+        }
+    }
 
     class TagSettingsViewModel(tagId: Long?) : ViewModel() {
         val tag = MutableLiveData<Tag>()
@@ -120,7 +132,7 @@ class TagSettingsActivity : AppActivity() {
         init {
             if (tagId != null) {
                 GlobalScope.launch {
-                    Tags.queryOne(Tags.QueryTagCriteria(tagId), QueryHelper)?.let {
+                    Tags.queryOne(Tags.QueryTagCriteria(tagId), Tag.QueryHelper)?.let {
                         tag.postValue(it)
                     }
                 }
@@ -135,19 +147,6 @@ class TagSettingsActivity : AppActivity() {
                 }
                 throw IllegalArgumentException("Unsupported model class: $modelClass")
             }
-
-        }
-
-        object QueryHelper : Tags.QueryHelper<Tag>(
-                Tags.ID,
-                Tags.NAME,
-                Tags.EDITABLE
-        ) {
-            override fun createRow(cursor: Cursor) = Tag(
-                    id = cursor.getLong(0),
-                    name = cursor.getString(1),
-                    deletable = cursor.getInt(2) != 0
-            )
         }
     }
 

@@ -76,30 +76,23 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     interface DeleteCriteria : Repository.DeleteCriteria
 
     interface QueryCriteria : Repository.QueryCriteria<Column> {
-
         fun config(builder: SupportSQLiteQueryBuilder)
-
     }
 
     class QueryRowCriteria(private val id: Long) : QueryCriteria {
-
         override fun config(builder: SupportSQLiteQueryBuilder) {
             builder.selection("e.id = ?", arrayOf(id))
         }
-
     }
 
     abstract class EntriesQueryCriteria : QueryCriteria, Serializable {
-
         abstract val sessionTime: Long
         abstract val sortOrder: SortOrder
 
         abstract fun copy(sessionTime: Long? = null, sortOrder: SortOrder? = null): EntriesQueryCriteria
-
     }
 
     class FeedEntriesQueryCriteria(val feedId: Long, override val sessionTime: Long = 0, override val sortOrder: SortOrder) : EntriesQueryCriteria() {
-
         override fun config(builder: SupportSQLiteQueryBuilder) {
             val selection: String?
             val selectionArgs: Array<Long>?
@@ -119,11 +112,9 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
                 sessionTime = sessionTime ?: this.sessionTime,
                 sortOrder = sortOrder ?: this.sortOrder
         )
-
     }
 
     class MyFeedEntriesQueryCriteria(override val sessionTime: Long = 0, override val sortOrder: SortOrder) : EntriesQueryCriteria() {
-
         override fun config(builder: SupportSQLiteQueryBuilder) {
             val selection: String?
             val selectionArgs: Array<Long>?
@@ -142,11 +133,31 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
                 sessionTime = sessionTime ?: this.sessionTime,
                 sortOrder = sortOrder ?: this.sortOrder
         )
+    }
 
+    class TagEntriesQueryCriteria(val tagId: Long, override val sessionTime: Long = 0, override val sortOrder: SortOrder) : EntriesQueryCriteria() {
+        override fun config(builder: SupportSQLiteQueryBuilder) {
+            val selection: String?
+            val selectionArgs: Array<Long>?
+            if (sessionTime != 0L) {
+                selection = "et.tag_id = ? AND (e.read_time = 0 OR e.read_time > ?)"
+                selectionArgs = arrayOf(tagId, sessionTime)
+            } else {
+                selection = "et.tag_id = ?"
+                selectionArgs = arrayOf(tagId)
+            }
+            builder.selection(selection, selectionArgs)
+            builder.orderBy(sortOrder.orderBy)
+        }
+
+        override fun copy(sessionTime: Long?, sortOrder: SortOrder?) = Entries.TagEntriesQueryCriteria(
+                tagId = tagId,
+                sessionTime = sessionTime ?: this.sessionTime,
+                sortOrder = sortOrder ?: this.sortOrder
+        )
     }
 
     sealed class SortOrder(private val value: String, internal val orderBy: String) : Serializable {
-
         fun serialize() = value
 
         companion object {
@@ -159,18 +170,12 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
         }
 
         object ByDateAscending : SortOrder("date-asc", "COALESCE(e.publish_time, e.insert_time) ASC")
-
         object ByDateDescending : SortOrder("date-desc", "COALESCE(e.publish_time, e.insert_time) DESC")
-
         object ByTitle : SortOrder("title-asc", "e.title ASC, COALESCE(e.publish_time, e.insert_time) ASC")
-
     }
 
     abstract class QueryHelper<R>(vararg columns: Column) : Repository.QueryHelper<Column, QueryCriteria, R>(columns) {
-
-        private val tables: String
-
-        init {
+        private fun queryFrom(entryTag: Boolean): String {
             val tables = StringBuilder("entry e")
 
             var feed = false
@@ -190,15 +195,18 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
                 tables.append(" LEFT JOIN feed f ON f.id = e.feed_id")
             }
 
-            this.tables = tables.toString()
+            if (entryTag) {
+                tables.append(" LEFT JOIN entry_tag et ON et.entry_id = e.id")
+            }
+
+            return tables.toString()
         }
 
         override fun createQuery(criteria: QueryCriteria): SupportSQLiteQuery = SupportSQLiteQueryBuilder
-                .builder(tables)
+                .builder(queryFrom(entryTag = criteria is TagEntriesQueryCriteria))
                 .columns(Array(columns.size) { "${columns[it].projection} AS ${columns[it].name}" })
                 .also { criteria.config(it) }
                 .create()
-
     }
 
 }
