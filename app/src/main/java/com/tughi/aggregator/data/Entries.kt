@@ -1,8 +1,6 @@
 package com.tughi.aggregator.data
 
 import androidx.sqlite.db.SimpleSQLiteQuery
-import androidx.sqlite.db.SupportSQLiteQuery
-import androidx.sqlite.db.SupportSQLiteQueryBuilder
 import java.io.Serializable
 
 @Suppress("ClassName")
@@ -76,12 +74,12 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     interface DeleteCriteria : Repository.DeleteCriteria
 
     interface QueryCriteria : Repository.QueryCriteria<Column> {
-        fun config(builder: SupportSQLiteQueryBuilder)
+        fun config(query: Query.Builder)
     }
 
     class QueryRowCriteria(private val id: Long) : QueryCriteria {
-        override fun config(builder: SupportSQLiteQueryBuilder) {
-            builder.selection("e.id = ?", arrayOf(id))
+        override fun config(query: Query.Builder) {
+            query.where("e.id = ?", arrayOf(id))
         }
     }
 
@@ -93,9 +91,9 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     }
 
     class FeedEntriesQueryCriteria(val feedId: Long, override val sessionTime: Long = 0, override val sortOrder: SortOrder) : EntriesQueryCriteria() {
-        override fun config(builder: SupportSQLiteQueryBuilder) {
+        override fun config(query: Query.Builder) {
             val selection: String?
-            val selectionArgs: Array<Long>?
+            val selectionArgs: Array<Any?>
             if (sessionTime != 0L) {
                 selection = "e.feed_id = ? AND (e.read_time = 0 OR e.read_time > ?)"
                 selectionArgs = arrayOf(feedId, sessionTime)
@@ -103,8 +101,8 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
                 selection = "e.feed_id = ?"
                 selectionArgs = arrayOf(feedId)
             }
-            builder.selection(selection, selectionArgs)
-            builder.orderBy(sortOrder.orderBy)
+            query.where(selection, selectionArgs)
+            query.orderBy(sortOrder.orderBy)
         }
 
         override fun copy(sessionTime: Long?, sortOrder: SortOrder?) = FeedEntriesQueryCriteria(
@@ -115,18 +113,13 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     }
 
     class MyFeedEntriesQueryCriteria(override val sessionTime: Long = 0, override val sortOrder: SortOrder) : EntriesQueryCriteria() {
-        override fun config(builder: SupportSQLiteQueryBuilder) {
-            val selection: String?
-            val selectionArgs: Array<Long>?
+        override fun config(query: Query.Builder) {
             if (sessionTime != 0L) {
-                selection = "e.read_time = 0 OR e.read_time > ?"
-                selectionArgs = arrayOf(sessionTime)
-            } else {
-                selection = null
-                selectionArgs = null
+                val selection = "e.read_time = 0 OR e.read_time > ?"
+                val selectionArgs: Array<Any?> = arrayOf(sessionTime)
+                query.where(selection, selectionArgs)
             }
-            builder.selection(selection, selectionArgs)
-            builder.orderBy(sortOrder.orderBy)
+            query.orderBy(sortOrder.orderBy)
         }
 
         override fun copy(sessionTime: Long?, sortOrder: SortOrder?) = Entries.MyFeedEntriesQueryCriteria(
@@ -136,9 +129,9 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     }
 
     class TagEntriesQueryCriteria(val tagId: Long, override val sessionTime: Long = 0, override val sortOrder: SortOrder) : EntriesQueryCriteria() {
-        override fun config(builder: SupportSQLiteQueryBuilder) {
-            val selection: String?
-            val selectionArgs: Array<Long>?
+        override fun config(query: Query.Builder) {
+            val selection: String
+            val selectionArgs: Array<Any?>
             if (sessionTime != 0L) {
                 selection = "et.tag_id = ? AND (e.read_time = 0 OR e.read_time > ?)"
                 selectionArgs = arrayOf(tagId, sessionTime)
@@ -146,8 +139,8 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
                 selection = "et.tag_id = ?"
                 selectionArgs = arrayOf(tagId)
             }
-            builder.selection(selection, selectionArgs)
-            builder.orderBy(sortOrder.orderBy)
+            query.where(selection, selectionArgs)
+            query.orderBy(sortOrder.orderBy)
         }
 
         override fun copy(sessionTime: Long?, sortOrder: SortOrder?) = Entries.TagEntriesQueryCriteria(
@@ -202,9 +195,7 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
             return tables.toString()
         }
 
-        override fun createQuery(criteria: QueryCriteria): SupportSQLiteQuery = SupportSQLiteQueryBuilder
-                .builder(queryFrom(entryTag = criteria is TagEntriesQueryCriteria))
-                .columns(Array(columns.size) { "${columns[it].projection} AS ${columns[it].name}" })
+        override fun createQuery(criteria: QueryCriteria) = Query.Builder(columns, queryFrom(entryTag = criteria is TagEntriesQueryCriteria))
                 .also { criteria.config(it) }
                 .create()
     }
