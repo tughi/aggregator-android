@@ -68,15 +68,12 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
     }
 
     class QueryRowCriteria(val id: Long) : QueryCriteria {
-
         override fun config(builder: SupportSQLiteQueryBuilder, columns: Array<out Column>) {
             builder.selection("f.id = ?", arrayOf(id))
         }
-
     }
 
     class AllCriteria : QueryCriteria {
-
         override fun config(builder: SupportSQLiteQueryBuilder, columns: Array<out Column>) {
             if (columns.contains(TITLE)) {
                 builder.orderBy("title")
@@ -85,7 +82,6 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
     }
 
     class OutdatedCriteria(private val now: Long, private val appLaunch: Boolean = false) : QueryCriteria {
-
         override fun config(builder: SupportSQLiteQueryBuilder, columns: Array<out Column>) {
             val selection = if (appLaunch) {
                 "(next_update_time > 0 AND next_update_time < ?) OR next_update_time = ${AutoUpdateScheduler.NEXT_UPDATE_TIME__ON_APP_LAUNCH}"
@@ -94,24 +90,20 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
             }
             builder.selection(selection, arrayOf(now))
         }
-
     }
 
     class UpdateModeCriteria(private val updateMode: UpdateMode) : QueryCriteria {
-
         override fun config(builder: SupportSQLiteQueryBuilder, columns: Array<out Column>) {
             builder.selection("update_mode = ?", arrayOf(updateMode.serialize()))
         }
     }
 
     abstract class QueryHelper<Row>(vararg columns: Column) : Repository.QueryHelper<Column, QueryCriteria, Row>(columns) {
-
         override fun createQuery(criteria: QueryCriteria): SupportSQLiteQuery = SupportSQLiteQueryBuilder
                 .builder("feed f")
                 .columns(Array(columns.size) { "${columns[it].projection} AS ${columns[it].name}" })
                 .also { criteria.config(it, columns) }
                 .create()
-
     }
 
 }
