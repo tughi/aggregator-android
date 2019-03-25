@@ -1,8 +1,6 @@
 package com.tughi.aggregator.data
 
 import androidx.core.content.contentValuesOf
-import androidx.sqlite.db.SupportSQLiteQuery
-import androidx.sqlite.db.SupportSQLiteQueryBuilder
 
 @Suppress("ClassName")
 object Tags : Repository<Tags.Column, Tags.TableColumn, Tags.UpdateCriteria, Tags.DeleteCriteria, Tags.QueryCriteria>("tag") {
@@ -39,59 +37,56 @@ object Tags : Repository<Tags.Column, Tags.TableColumn, Tags.UpdateCriteria, Tag
     }
 
     interface QueryCriteria : Repository.QueryCriteria<Column> {
-        fun config(builder: SupportSQLiteQueryBuilder, columns: Array<out Column>)
+        fun config(query: Query.Builder, columns: Array<out Column>)
     }
 
     class QueryTagCriteria(private val tagId: Long) : QueryCriteria {
-        override fun config(builder: SupportSQLiteQueryBuilder, columns: Array<out Column>) {
-            builder.selection("t.id = ?", arrayOf(tagId))
+        override fun config(query: Query.Builder, columns: Array<out Column>) {
+            query.where("t.id = ?", arrayOf(tagId))
         }
     }
 
     object QueryVisibleTagsCriteria : QueryCriteria {
-        override fun config(builder: SupportSQLiteQueryBuilder, columns: Array<out Column>) {
-            builder.selection("t.id != ?", arrayOf(HIDDEN))
-            builder.orderBy("(CASE t.id WHEN 0 THEN 0 ELSE 1 END), t.name")
+        override fun config(query: Query.Builder, columns: Array<out Column>) {
+            query.where("t.id != ?", arrayOf(HIDDEN))
+            query.orderBy("(CASE t.id WHEN 0 THEN 0 ELSE 1 END), t.name")
         }
     }
 
     abstract class QueryHelper<Row>(vararg columns: Column) : Repository.QueryHelper<Column, QueryCriteria, Row>(columns) {
         private val tables: String
+            get() {
+                val tables = StringBuilder("tag t")
 
-        init {
-            val tables = StringBuilder("tag t")
-
-            var entry = false
-            var entryTag = false
-            for (column in columns) {
-                if (column !is TableColumn) {
-                    when (column) {
-                        is ENTRY_COUNT -> {
-                            entryTag = true
-                        }
-                        is UNREAD_ENTRY_COUNT -> {
-                            entry = true
-                            entryTag = true
+                var entry = false
+                var entryTag = false
+                for (column in columns) {
+                    if (column !is TableColumn) {
+                        when (column) {
+                            is ENTRY_COUNT -> {
+                                entryTag = true
+                            }
+                            is UNREAD_ENTRY_COUNT -> {
+                                entry = true
+                                entryTag = true
+                            }
                         }
                     }
+                    if (entry && entryTag) {
+                        break
+                    }
                 }
-                if (entry && entryTag) {
-                    break
+                if (entryTag) {
+                    tables.append(" LEFT JOIN entry_tag et ON et.tag_id = t.id")
                 }
-            }
-            if (entryTag) {
-                tables.append(" LEFT JOIN entry_tag et ON et.tag_id = t.id")
-            }
-            if (entry) {
-                tables.append(" LEFT JOIN entry e ON e.id = et.entry_id")
+                if (entry) {
+                    tables.append(" LEFT JOIN entry e ON e.id = et.entry_id")
+                }
+
+                return tables.toString()
             }
 
-            this.tables = tables.toString()
-        }
-
-        override fun createQuery(criteria: QueryCriteria): SupportSQLiteQuery = SupportSQLiteQueryBuilder
-                .builder(tables)
-                .columns(Array(columns.size) { "${columns[it].projection} AS ${columns[it].name}" })
+        override fun createQuery(criteria: QueryCriteria) = Query.Builder(columns, tables)
                 .groupBy("t.id")
                 .orderBy("t.name")
                 .also { criteria.config(it, columns) }
