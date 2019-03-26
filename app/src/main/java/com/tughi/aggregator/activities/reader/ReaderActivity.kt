@@ -1,12 +1,17 @@
 package com.tughi.aggregator.activities.reader
 
 import android.content.Intent
+import android.database.Cursor
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.ActionBar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentStatePagerAdapter
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.viewpager.widget.ViewPager
 import com.tughi.aggregator.AppActivity
@@ -22,11 +27,11 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
         const val EXTRA_ENTRIES_POSITION = "entries_position"
     }
 
-    private var entries: List<ReaderActivityViewModel.Entry> = emptyList()
+    private var entries: List<Entry> = emptyList()
 
     private lateinit var adapter: ReaderAdapter
 
-    private lateinit var viewModel: ReaderActivityViewModel
+    private lateinit var viewModel: ReaderViewModel
 
     private lateinit var actionBar: ActionBar
 
@@ -46,8 +51,8 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
 
         val queryCriteria = intent.getSerializableExtra(EXTRA_ENTRIES_QUERY_CRITERIA) as Entries.QueryCriteria
 
-        val viewModelFactory = ReaderActivityViewModel.Factory(queryCriteria)
-        viewModel = ViewModelProviders.of(this, viewModelFactory).get(ReaderActivityViewModel::class.java)
+        val viewModelFactory = ReaderViewModel.Factory(queryCriteria)
+        viewModel = ViewModelProviders.of(this, viewModelFactory).get(ReaderViewModel::class.java)
 
         viewModel.entries.observe(this, Observer { entries ->
             this.entries = entries
@@ -112,10 +117,8 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
             actionBar.title = (position + 1).toString() + " / " + entries.size
             actionBar.setDisplayShowTitleEnabled(true)
 
-            if (entry.readTime == 0L && entry.pinnedTime == 0L) {
-                GlobalScope.launch {
-                    Entries.markRead(entry.id)
-                }
+            GlobalScope.launch {
+                Entries.update(Entries.UpdateUnreadEntryCriteria(entry.id), Entries.READ_TIME to System.currentTimeMillis())
             }
         }
 
@@ -127,18 +130,47 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
     }
 
     private inner class ReaderAdapter : FragmentStatePagerAdapter(supportFragmentManager) {
-
         override fun getCount(): Int = entries.size
 
         override fun getItem(position: Int): Fragment {
             val entry = entries[position]
             val arguments = Bundle().apply {
                 putLong(ReaderFragment.ARG_ENTRY_ID, entry.id)
-                putLong(ReaderFragment.ARG_ENTRY_READ_TIME, entry.readTime)
             }
             return Fragment.instantiate(this@ReaderActivity, ReaderFragment::class.java.name, arguments)
         }
+    }
 
+    data class Entry(
+            val id: Long
+    ) {
+        object QueryHelper : Entries.QueryHelper<Entry>(
+                Entries.ID
+        ) {
+            override fun createRow(cursor: Cursor) = Entry(
+                    id = cursor.getLong(0)
+            )
+        }
+    }
+
+    class ReaderViewModel(queryCriteria: Entries.QueryCriteria) : ViewModel() {
+        val entries: LiveData<List<Entry>> = MediatorLiveData<List<Entry>>().apply {
+            val source = Entries.liveQuery(queryCriteria, Entry.QueryHelper)
+            addSource(source) {
+                value = it
+                removeSource(source)
+            }
+        }
+
+        class Factory(private val queryCriteria: Entries.QueryCriteria) : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                if (modelClass.isAssignableFrom(ReaderViewModel::class.java)) {
+                    @Suppress("UNCHECKED_CAST")
+                    return ReaderViewModel(queryCriteria) as T
+                }
+                throw UnsupportedOperationException()
+            }
+        }
     }
 
 }

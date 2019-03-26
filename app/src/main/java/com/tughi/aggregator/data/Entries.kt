@@ -67,6 +67,11 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
         override val selectionArgs = arrayOf<Any>(id)
     }
 
+    class UpdateUnreadEntryCriteria(id: Long) : UpdateCriteria {
+        override val selection = "id = ? AND read_time = 0 AND pinned_time = 0"
+        override val selectionArgs = arrayOf<Any>(id)
+    }
+
     interface DeleteCriteria : Repository.DeleteCriteria
 
     interface QueryCriteria : Repository.QueryCriteria<Column> {

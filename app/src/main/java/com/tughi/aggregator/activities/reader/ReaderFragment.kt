@@ -1,5 +1,6 @@
 package com.tughi.aggregator.activities.reader
 
+import android.database.Cursor
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.LayoutInflater
@@ -12,6 +13,8 @@ import android.webkit.WebView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.tughi.aggregator.App
 import com.tughi.aggregator.R
@@ -27,7 +30,6 @@ class ReaderFragment : Fragment() {
 
     companion object {
         internal const val ARG_ENTRY_ID = "entry_id"
-        internal const val ARG_ENTRY_READ_TIME = "entry_read_time"
 
         private val entryTemplate by lazy {
             App.instance.resources
@@ -42,7 +44,7 @@ class ReaderFragment : Fragment() {
     private lateinit var addStarMenuItem: MenuItem
     private lateinit var removeStarMenuItem: MenuItem
 
-    private var loadedEntry: ReaderFragmentViewModel.Entry? = null
+    private var loadedEntry: Entry? = null
     private var loadedEntryHtml: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,10 +58,9 @@ class ReaderFragment : Fragment() {
 
         arguments?.also { arguments ->
             val entryId = arguments.getLong(ARG_ENTRY_ID)
-            val entryReadTime = arguments.getLong(ARG_ENTRY_READ_TIME)
 
-            val viewModelFactory = ReaderFragmentViewModel.Factory(entryId, entryReadTime)
-            val viewModel = ViewModelProviders.of(this, viewModelFactory).get(ReaderFragmentViewModel::class.java)
+            val viewModelFactory = ReaderViewModel.Factory(entryId)
+            val viewModel = ViewModelProviders.of(this, viewModelFactory).get(ReaderViewModel::class.java)
 
             val webView: WebView = fragmentView.findViewById(R.id.content)
 
@@ -180,6 +181,62 @@ class ReaderFragment : Fragment() {
         }
 
         return true
+    }
+
+    data class Entry(
+            val id: Long,
+            val title: String?,
+            val link: String?,
+            val content: String?,
+            val author: String?,
+            val publishTime: Long,
+            val feedTitle: String,
+            val feedLanguage: String?,
+            val readTime: Long,
+            val pinnedTime: Long,
+            val starTime: Long
+    ) {
+        object QueryHelper : Entries.QueryHelper<Entry>(
+                Entries.ID,
+                Entries.TITLE,
+                Entries.LINK,
+                Entries.CONTENT,
+                Entries.AUTHOR,
+                Entries.PUBLISH_TIME,
+                Entries.FEED_TITLE,
+                Entries.FEED_LANGUAGE,
+                Entries.READ_TIME,
+                Entries.PINNED_TIME,
+                Entries.STAR_TIME
+        ) {
+            override fun createRow(cursor: Cursor) = Entry(
+                    id = cursor.getLong(0),
+                    title = cursor.getString(1),
+                    link = cursor.getString(2),
+                    content = cursor.getString(3),
+                    author = cursor.getString(4),
+                    publishTime = cursor.getLong(5),
+                    feedTitle = cursor.getString(6),
+                    feedLanguage = cursor.getString(7),
+                    readTime = cursor.getLong(8),
+                    pinnedTime = cursor.getLong(9),
+                    starTime = cursor.getLong(10)
+            )
+        }
+    }
+
+    internal class ReaderViewModel(entryId: Long) : ViewModel() {
+        val entry = Entries.liveQueryOne(Entries.QueryRowCriteria(entryId), Entry.QueryHelper)
+
+        class Factory(private val entryId: Long) : ViewModelProvider.Factory {
+            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+                if (modelClass.isAssignableFrom(ReaderViewModel::class.java)) {
+                    @Suppress("UNCHECKED_CAST")
+                    return ReaderViewModel(entryId) as T
+                }
+                throw UnsupportedOperationException()
+            }
+        }
     }
 
 }
