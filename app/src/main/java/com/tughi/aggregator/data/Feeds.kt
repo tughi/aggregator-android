@@ -30,26 +30,21 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
     // TODO: use DeleteCriteria
     fun delete(id: Long) = Database.delete("feed", "id = ?", arrayOf(id))
 
-    fun queryAllCount(): Int {
-        Database.query(SimpleSQLiteQuery("SELECT COUNT(1) FROM feed")).use { cursor ->
-            cursor.moveToFirst()
-            return cursor.getInt(0)
-        }
+    fun queryAllCount() = Database.query(SimpleSQLiteQuery("SELECT COUNT(1) FROM feed")) { cursor ->
+        cursor.moveToFirst()
+        return@query cursor.getInt(0)
     }
 
-    fun queryFirstNextUpdateTime(): Long? {
-        Database.query(SimpleSQLiteQuery("SELECT MIN(next_update_time) FROM feed WHERE next_update_time > 0")).use { cursor ->
-            if (cursor.moveToFirst()) {
-                return cursor.getLongOrNull(0)
-            }
-            return null
+    fun queryFirstNextUpdateTime() = Database.query(SimpleSQLiteQuery("SELECT MIN(next_update_time) FROM feed WHERE next_update_time > 0")) { cursor ->
+        if (cursor.moveToFirst()) {
+            return@query cursor.getLongOrNull(0)
         }
+        return@query null
     }
 
     interface UpdateCriteria : Repository.UpdateCriteria
 
     class UpdateRowCriteria(id: Long) : UpdateCriteria {
-        override val affectedRowId: Any? = id
         override val selection = "id = ?"
         override val selectionArgs = arrayOf<Any>(id)
     }

@@ -1,49 +1,22 @@
 package com.tughi.aggregator.data
 
 import android.database.Cursor
-import androidx.sqlite.db.SupportSQLiteQuery
 
 abstract class Repository<Column : Repository.Column, TableColumn : Repository.TableColumn, UpdateCriteria : Repository.UpdateCriteria, DeleteCriteria : Repository.DeleteCriteria, QueryCriteria : Repository.QueryCriteria<Column>>(val tableName: String) {
 
     fun insert(vararg data: Pair<TableColumn, Any?>): Long = Database.insert(tableName, data.toContentValues())
 
-    fun update(criteria: UpdateCriteria, vararg data: Pair<TableColumn, Any?>) = Database.update(tableName, data.toContentValues(), criteria.selection, criteria.selectionArgs, criteria.affectedRowId)
+    fun update(criteria: UpdateCriteria, vararg data: Pair<TableColumn, Any?>) = Database.update(tableName, data.toContentValues(), criteria.selection, criteria.selectionArgs)
 
     fun delete(criteria: DeleteCriteria) = Database.delete(tableName, criteria.selection, criteria.selectionArgs)
 
-    fun <Row> query(criteria: QueryCriteria, helper: QueryHelper<Column, QueryCriteria, Row>): List<Row> {
-        val query = helper.createQuery(criteria)
+    fun <Row> query(criteria: QueryCriteria, helper: QueryHelper<Column, QueryCriteria, Row>) = Database.query(helper.createQuery(criteria), helper::transform)
 
-        Database.query(query).use { cursor ->
-            if (cursor.moveToFirst()) {
-                val entries = mutableListOf<Row>()
+    fun <Row> liveQuery(criteria: QueryCriteria, helper: QueryHelper<Column, QueryCriteria, Row>) = Database.liveQuery(helper.createQuery(criteria), helper::transform)
 
-                do {
-                    entries.add(helper.createRow(cursor))
-                } while (cursor.moveToNext())
+    fun <Row> queryOne(criteria: QueryCriteria, helper: QueryHelper<Column, QueryCriteria, Row>) = Database.query(helper.createQuery(criteria), helper::transformOne)
 
-                return entries
-            }
-        }
-
-        return emptyList()
-    }
-
-    fun <Row> liveQuery(criteria: QueryCriteria, helper: QueryHelper<Column, QueryCriteria, Row>) = Database.createLiveData(helper.observedTables) { query(criteria, helper) }
-
-    fun <Row> queryOne(criteria: QueryCriteria, helper: QueryHelper<Column, QueryCriteria, Row>): Row? {
-        val query = helper.createQuery(criteria)
-
-        Database.query(query).use { cursor ->
-            if (cursor.moveToFirst()) {
-                return helper.createRow(cursor)
-            }
-        }
-
-        return null
-    }
-
-    fun <Row> liveQueryOne(criteria: QueryCriteria, helper: QueryHelper<Column, QueryCriteria, Row>) = Database.createLiveData(helper.observedTables) { queryOne(criteria, helper) }
+    fun <Row> liveQueryOne(criteria: QueryCriteria, helper: QueryHelper<Column, QueryCriteria, Row>) = Database.liveQuery(helper.createQuery(criteria), helper::transformOne)
 
     open class Column(val name: String, val projection: String, val projectionTables: Array<String>)
 
@@ -52,8 +25,6 @@ abstract class Repository<Column : Repository.Column, TableColumn : Repository.T
     }
 
     interface UpdateCriteria {
-        val affectedRowId: Any?
-
         val selection: String?
         val selectionArgs: Array<Any>?
     }
@@ -67,19 +38,31 @@ abstract class Repository<Column : Repository.Column, TableColumn : Repository.T
 
     abstract class QueryHelper<Column : Repository.Column, QueryCriteria : Repository.QueryCriteria<Column>, Row>(val columns: Array<out Column>) {
 
-        internal val observedTables: Array<Database.ObservedTable>
-
-        init {
-            val tables = mutableSetOf<String>()
-            for (column in columns) {
-                tables.addAll(column.projectionTables)
-            }
-            observedTables = tables.map { Database.ObservedTable(it) }.toTypedArray()
-        }
-
-        abstract fun createQuery(criteria: QueryCriteria): SupportSQLiteQuery
+        abstract fun createQuery(criteria: QueryCriteria): Query
 
         abstract fun createRow(cursor: Cursor): Row
+
+        internal fun transform(cursor: Cursor): List<Row> {
+            if (cursor.moveToFirst()) {
+                val entries = mutableListOf<Row>()
+
+                do {
+                    entries.add(createRow(cursor))
+                } while (cursor.moveToNext())
+
+                return entries
+            }
+
+            return emptyList()
+        }
+
+        internal fun transformOne(cursor: Cursor): Row? {
+            if (cursor.moveToFirst()) {
+                return createRow(cursor)
+            }
+
+            return null
+        }
 
     }
 

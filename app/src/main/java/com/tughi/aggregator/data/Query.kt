@@ -4,7 +4,7 @@ import androidx.sqlite.db.SupportSQLiteProgram
 import androidx.sqlite.db.SupportSQLiteQuery
 import java.util.*
 
-class Query(private val query: String, private val queryArgs: Array<Any?> = emptyArray()) : SupportSQLiteQuery {
+class Query(private val query: String, private val queryArgs: Array<Any?> = emptyArray(), val observedTables: Array<String>) : SupportSQLiteQuery {
 
     override fun getSql() = query
 
@@ -36,6 +36,10 @@ class Query(private val query: String, private val queryArgs: Array<Any?> = empt
                     it.add(token as String)
                 }
             }
+
+            for (column in columns) {
+                it.addAll(column.projectionTables)
+            }
         }
 
         private var distinct: Boolean = false
@@ -62,7 +66,7 @@ class Query(private val query: String, private val queryArgs: Array<Any?> = empt
             return this
         }
 
-        fun create(): SupportSQLiteQuery {
+        fun create(): Query {
             val query = StringBuilder()
 
             query.append("SELECT ")
@@ -82,7 +86,7 @@ class Query(private val query: String, private val queryArgs: Array<Any?> = empt
             if (orderBy != null) query.append(" ORDER BY ").append(orderBy)
 //            appendClause(query, " LIMIT ", mLimit);
 
-            return Query(query.toString(), whereArgs)
+            return Query(query.toString(), whereArgs, observedTables.toTypedArray())
         }
     }
 

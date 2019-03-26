@@ -24,7 +24,6 @@ object Tags : Repository<Tags.Column, Tags.TableColumn, Tags.UpdateCriteria, Tag
     interface UpdateCriteria : Repository.UpdateCriteria
 
     class UpdateTagCriteria(tagId: Long) : UpdateCriteria {
-        override val affectedRowId: Any? = tagId
         override val selection = "id = ?"
         override val selectionArgs = arrayOf<Any>(tagId)
     }

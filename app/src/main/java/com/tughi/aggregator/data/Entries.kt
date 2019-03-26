@@ -47,26 +47,22 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
 
     fun queryPublishedCount(feedId: Long, since: Long): Int {
         val query = SimpleSQLiteQuery("SELECT COUNT(1) FROM entry WHERE feed_id = ? AND COALESCE(publish_time, insert_time) > ?", arrayOf(feedId, since))
-        Database.query(query).use { cursor ->
+        return Database.query(query) { cursor ->
             cursor.moveToNext()
-            return cursor.getInt(0)
+            return@query cursor.getInt(0)
         }
     }
 
     interface UpdateCriteria : Repository.UpdateCriteria
 
-    private class SimpleUpdateCriteria(override val selection: String?, override val selectionArgs: Array<Any>?) : UpdateCriteria {
-        override val affectedRowId: Any? = null
-    }
+    private class SimpleUpdateCriteria(override val selection: String?, override val selectionArgs: Array<Any>?) : UpdateCriteria
 
     class UpdateFeedEntryCriteria(feedId: Long, uid: String) : UpdateCriteria {
-        override val affectedRowId: Any? = null
         override val selection = "feed_id = ? AND uid = ?"
         override val selectionArgs = arrayOf(feedId, uid)
     }
 
     class UpdateEntryCriteria(id: Long) : UpdateCriteria {
-        override val affectedRowId: Any? = id
         override val selection = "id = ?"
         override val selectionArgs = arrayOf<Any>(id)
     }

@@ -3,7 +3,6 @@ package com.tughi.aggregator.data
 import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
@@ -15,7 +14,6 @@ import com.tughi.aggregator.utilities.DATABASE_NAME
 import com.tughi.aggregator.utilities.restoreFeeds
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.io.Serializable
 import java.lang.ref.WeakReference
 
 object Database {
@@ -148,10 +146,6 @@ object Database {
                     .build()
     )
 
-    private val tableObservers = mutableSetOf<TableObserver>()
-
-    fun query(sqliteQuery: SupportSQLiteQuery?): Cursor = sqlite.readableDatabase.query(sqliteQuery)
-
     private fun insert(table: String, values: ContentValues, conflictAlgorithm: Int): Long {
         val id = sqlite.writableDatabase.insert(table, conflictAlgorithm, values)
         if (id != -1L) {
@@ -166,10 +160,10 @@ object Database {
         return if (Database.insert(table, values, SQLiteDatabase.CONFLICT_REPLACE) != -1L) 1 else 0
     }
 
-    fun update(table: String, values: ContentValues, selection: String?, selectionArgs: Array<Any>?, rowId: Any? = null): Int {
+    fun update(table: String, values: ContentValues, selection: String?, selectionArgs: Array<Any>?): Int {
         val result = sqlite.writableDatabase.update(table, SQLiteDatabase.CONFLICT_FAIL, values, selection, selectionArgs)
         if (result > 0) {
-            invalidateTable(table, rowId)
+            invalidateTable(table)
         }
         return result
     }
@@ -182,18 +176,16 @@ object Database {
         return result
     }
 
-    private val invalidatedTables = mutableMapOf<String, MutableList<Any>>()
+    private val tableObservers = mutableSetOf<TableObserver>()
 
-    private fun invalidateTable(table: String, rowId: Any? = null) {
+    private val invalidatedTables = mutableSetOf<String>()
+
+    private fun invalidateTable(table: String) {
         if (sqlite.writableDatabase.inTransaction()) {
             synchronized(invalidatedTables) {
-                if (!invalidatedTables.containsKey(table)) {
-                    invalidatedTables[table] = mutableListOf()
-                }
-                if (rowId != null) {
-                    invalidatedTables[table]?.add(rowId)
-                }
+                invalidatedTables.add(table)
             }
+
             return
         }
 
@@ -202,7 +194,7 @@ object Database {
                 val vanishedObservers = mutableListOf<TableObserver>()
 
                 for (tableObserver in tableObservers) {
-                    if (tableObserver.table == table && (tableObserver.rowId == null || tableObserver.rowId == rowId)) {
+                    if (tableObserver.table == table) {
                         val listener = tableObserver.listener
                         if (listener != null) {
                             listener.onInvalidated()
@@ -229,18 +221,11 @@ object Database {
         }
     }
 
-    private fun beginTransaction() {
-        val database = sqlite.writableDatabase
-        if (!database.inTransaction()) {
-            synchronized(invalidatedTables) {
-                Log.i(javaClass.name, "Clear invalidated tables")
-                invalidatedTables.clear()
-            }
-        }
-        if (database.isWriteAheadLoggingEnabled) {
-            database.beginTransactionNonExclusive()
+    private fun beginTransaction() = sqlite.writableDatabase.run {
+        if (isWriteAheadLoggingEnabled) {
+            beginTransactionNonExclusive()
         } else {
-            database.beginTransaction()
+            beginTransaction()
         }
     }
 
@@ -251,20 +236,21 @@ object Database {
         database.endTransaction()
         if (!database.inTransaction()) {
             synchronized(invalidatedTables) {
-                for ((table, ids) in invalidatedTables) {
-                    if (ids.isEmpty()) {
-                        invalidateTable(table)
-                    } else {
-                        for (id in ids) {
-                            invalidateTable(table, id)
-                        }
-                    }
+                for (table in invalidatedTables) {
+                    invalidateTable(table)
                 }
+                invalidatedTables.clear()
             }
         }
     }
 
-    fun <T> createLiveData(observedTables: Array<ObservedTable>, loadData: () -> T): LiveData<T> {
+    fun <T> query(sqliteQuery: SupportSQLiteQuery, transform: (Cursor) -> T): T {
+        sqlite.readableDatabase.query(sqliteQuery).use { cursor ->
+            return transform(cursor)
+        }
+    }
+
+    fun <T> liveQuery(query: Query, transform: (Cursor) -> T): LiveData<T> {
         val liveData = object : LiveData<T>(), TableObserver.Listener {
             override fun onActive() {
                 if (value == null) {
@@ -278,24 +264,24 @@ object Database {
 
             private fun update() {
                 GlobalScope.launch {
-                    val data = loadData()
-                    postValue(data)
+                    sqlite.readableDatabase.query(query).use { cursor ->
+                        val data = transform(cursor)
+                        postValue(data)
+                    }
                 }
             }
         }
 
         synchronized(tableObservers) {
-            for (observedTable in observedTables) {
-                tableObservers.add(TableObserver(observedTable.name, observedTable.rowId, liveData))
+            for (observedTable in query.observedTables) {
+                tableObservers.add(TableObserver(observedTable, liveData))
             }
         }
 
         return liveData
     }
 
-    class ObservedTable(val name: String, val rowId: Any? = null) : Serializable
-
-    private class TableObserver(val table: String, val rowId: Any?, listener: Listener) {
+    private class TableObserver(val table: String, listener: Listener) {
 
         private val reference = WeakReference(listener)
 
