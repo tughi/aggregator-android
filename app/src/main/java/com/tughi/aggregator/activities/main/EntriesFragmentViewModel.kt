@@ -18,10 +18,10 @@ import kotlinx.coroutines.launch
 
 class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteria) : ViewModel() {
 
-    private val sessionTime = System.currentTimeMillis()
+    private val sessionTime = initialQueryCriteria.sessionTime
 
     val queryCriteria = MutableLiveData<Entries.EntriesQueryCriteria>().apply {
-        value = initialQueryCriteria.copy(sessionTime = sessionTime)
+        value = initialQueryCriteria
     }
 
     private val storedEntries = Transformations.switchMap(queryCriteria) { queryCriteria ->

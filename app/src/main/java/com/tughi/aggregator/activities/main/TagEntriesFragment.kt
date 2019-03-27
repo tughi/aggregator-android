@@ -27,7 +27,10 @@ class TagEntriesFragment : EntriesFragment() {
     private val tagId by lazy { arguments!!.getLong(ARGUMENT_TAG_ID) }
 
     override val initialQueryCriteria: Entries.EntriesQueryCriteria
-        get() = Entries.TagEntriesQueryCriteria(tagId = tagId, sortOrder = EntryListSettings.entriesSortOrder)
+        get() = when (tagId) {
+            Tags.STARRED -> Entries.TagEntriesQueryCriteria(tagId = tagId, sessionTime = 0, sortOrder = EntryListSettings.entriesSortOrder)
+            else -> Entries.TagEntriesQueryCriteria(tagId = tagId, sessionTime = System.currentTimeMillis(), sortOrder = EntryListSettings.entriesSortOrder)
+        }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {

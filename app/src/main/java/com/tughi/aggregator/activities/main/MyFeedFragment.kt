@@ -19,7 +19,7 @@ class MyFeedFragment : EntriesFragment() {
     }
 
     override val initialQueryCriteria: Entries.EntriesQueryCriteria
-        get() = Entries.MyFeedEntriesQueryCriteria(sortOrder = EntryListSettings.entriesSortOrder)
+        get() = Entries.MyFeedEntriesQueryCriteria(sessionTime = System.currentTimeMillis(), sortOrder = EntryListSettings.entriesSortOrder)
 
     override fun onNavigationClick() {
         val activity = activity as MainActivity

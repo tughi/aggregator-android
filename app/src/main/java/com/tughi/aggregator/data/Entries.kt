@@ -87,7 +87,7 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
         abstract fun copy(sessionTime: Long? = null, sortOrder: SortOrder? = null): EntriesQueryCriteria
     }
 
-    class FeedEntriesQueryCriteria(val feedId: Long, override val sessionTime: Long = 0, override val sortOrder: SortOrder) : EntriesQueryCriteria() {
+    class FeedEntriesQueryCriteria(val feedId: Long, override val sessionTime: Long, override val sortOrder: SortOrder) : EntriesQueryCriteria() {
         override fun config(query: Query.Builder) {
             val selection: String?
             val selectionArgs: Array<Any?>
@@ -109,7 +109,7 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
         )
     }
 
-    class MyFeedEntriesQueryCriteria(override val sessionTime: Long = 0, override val sortOrder: SortOrder) : EntriesQueryCriteria() {
+    class MyFeedEntriesQueryCriteria(override val sessionTime: Long, override val sortOrder: SortOrder) : EntriesQueryCriteria() {
         override fun config(query: Query.Builder) {
             if (sessionTime != 0L) {
                 val selection = "e.read_time = 0 OR e.read_time > ?"
@@ -125,7 +125,7 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
         )
     }
 
-    class TagEntriesQueryCriteria(val tagId: Long, override val sessionTime: Long = 0, override val sortOrder: SortOrder) : EntriesQueryCriteria() {
+    class TagEntriesQueryCriteria(val tagId: Long, override val sessionTime: Long, override val sortOrder: SortOrder) : EntriesQueryCriteria() {
         override fun config(query: Query.Builder) {
             val selection: String
             val selectionArgs: Array<Any?>

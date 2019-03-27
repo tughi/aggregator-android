@@ -23,7 +23,7 @@ class FeedEntriesFragment : EntriesFragment() {
     }
 
     override val initialQueryCriteria: Entries.EntriesQueryCriteria
-        get() = Entries.FeedEntriesQueryCriteria(feedId = feedId, sortOrder = EntryListSettings.entriesSortOrder)
+        get() = Entries.FeedEntriesQueryCriteria(feedId = feedId, sessionTime = System.currentTimeMillis(), sortOrder = EntryListSettings.entriesSortOrder)
 
     override fun onNavigationClick() {
         fragmentManager?.popBackStack()
