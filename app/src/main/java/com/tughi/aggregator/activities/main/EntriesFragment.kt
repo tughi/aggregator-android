@@ -36,7 +36,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
 
         val adapter = EntriesFragmentEntryAdapter(this)
         viewModel.entries.observe(this, Observer { entries ->
-            adapter.submitList(entries)
+            adapter.entries = entries
 
             if (entries == null) {
                 progressBar.visibility = View.VISIBLE

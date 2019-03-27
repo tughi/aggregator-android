@@ -94,14 +94,12 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
     fun changeSortOrder(sortOrder: Entries.SortOrder) {
         EntryListSettings.entriesSortOrder = sortOrder
 
-        transformedEntries.value = null
         queryCriteria.value?.let { value ->
             queryCriteria.value = value.copy(sortOrder = sortOrder)
         }
     }
 
     fun changeShowRead(showRead: Boolean) {
-        transformedEntries.value = null
         queryCriteria.value?.let { value ->
             queryCriteria.value = value.copy(sessionTime = if (showRead) 0 else sessionTime)
         }
