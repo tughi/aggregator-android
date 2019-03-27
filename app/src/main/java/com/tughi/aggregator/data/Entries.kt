@@ -32,17 +32,13 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     fun markPinned(entryId: Long): Int = update(UpdateEntryCriteria(entryId), READ_TIME to 0, PINNED_TIME to System.currentTimeMillis())
 
     fun markRead(criteria: EntriesQueryCriteria): Int {
-        val selection = when (criteria) {
-            is FeedEntriesQueryCriteria -> "feed_id = ? AND pinned_time = 0 AND read_time = 0"
-            is MyFeedEntriesQueryCriteria -> "pinned_time = 0 AND read_time = 0"
+        val updateCriteria = when (criteria) {
+            is FeedEntriesQueryCriteria -> SimpleUpdateCriteria("feed_id = ? AND pinned_time = 0 AND read_time = 0", arrayOf(criteria.feedId))
+            is MyFeedEntriesQueryCriteria -> SimpleUpdateCriteria("pinned_time = 0 AND read_time = 0", null)
+            is TagEntriesQueryCriteria -> SimpleUpdateCriteria("id IN (SELECT entry_id FROM entry_tag WHERE tag_id = ?) AND pinned_time = 0 AND read_time = 0", arrayOf(criteria.tagId))
             else -> throw IllegalArgumentException("Unsupported criteria: $criteria")
         }
-        val selectionArgs: Array<Any>? = when (criteria) {
-            is FeedEntriesQueryCriteria -> arrayOf(criteria.feedId)
-            is MyFeedEntriesQueryCriteria -> null
-            else -> throw IllegalArgumentException("Unsupported criteria: $criteria")
-        }
-        return update(SimpleUpdateCriteria(selection, selectionArgs), READ_TIME to System.currentTimeMillis())
+        return update(updateCriteria, READ_TIME to System.currentTimeMillis())
     }
 
     fun queryPublishedCount(feedId: Long, since: Long): Int {
