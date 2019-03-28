@@ -1,6 +1,7 @@
 package com.tughi.aggregator.feeds
 
 import android.text.Html
+import android.util.Log
 import com.tughi.xml.Document
 import com.tughi.xml.TagElement
 import com.tughi.xml.TextElement
@@ -9,7 +10,6 @@ import org.apache.commons.codec.binary.Hex
 import org.apache.commons.codec.digest.DigestUtils
 import org.xml.sax.Attributes
 import org.xml.sax.ContentHandler
-import org.xml.sax.SAXException
 import java.util.*
 
 /**
@@ -376,28 +376,28 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
     }
 
     private fun handleEntryEnd() {
-        var digest: ByteArray? = null
-        val uid = entryUid
-        if (uid != null) {
-            digest = DigestUtils.md5(uid)
-        } else {
-            val title = entryTitle
-            if (title != null) {
-                digest = DigestUtils.md5(title)
-            } else {
-                val content = entryContent
-                if (content != null && !content.isEmpty()) {
-                    digest = DigestUtils.md5(content)
+        var entryUid = entryUid
+        val entryTitle = entryTitle
+        val entryLink = entryLink
+        val entryContent = entryContent
+
+        try {
+            val digest = DigestUtils.md5(when {
+                entryUid != null -> entryUid
+                entryTitle != null -> when {
+                    entryLink != null -> entryTitle + entryLink
+                    else -> entryTitle
                 }
-            }
-        }
+                entryLink != null -> entryLink
+                entryContent != null && entryContent.isNotEmpty() -> entryContent
+                else -> {
+                    Log.w(javaClass.name, "Could not generate UID")
+                    return
+                }
+            })
 
-        if (digest != null) {
             entryUid = String(Hex.encodeHex(digest))
-        }
 
-        val entryUid = entryUid
-        if (entryUid != null) {
             listener.onParsedEntry(
                     uid = entryUid,
                     title = entryTitle,
@@ -407,17 +407,15 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
                     publishDate = entryPublishDate,
                     publishDateText = entryPublishDateText
             )
-        } else {
-            throw SAXException("Could not generate UID for an entry")
+        } finally {
+            this.entryUid = null
+            this.entryTitle = null
+            this.entryLink = null
+            this.entryContent = null
+            this.entryAuthor = null
+            this.entryPublishDate = null
+            this.entryPublishDateText = null
         }
-
-        this.entryUid = null
-        this.entryTitle = null
-        this.entryLink = null
-        this.entryContent = null
-        this.entryAuthor = null
-        this.entryPublishDate = null
-        this.entryPublishDateText = null
     }
 
     private fun handleFeedEnd() {
