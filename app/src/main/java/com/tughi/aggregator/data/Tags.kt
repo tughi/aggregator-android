@@ -1,7 +1,5 @@
 package com.tughi.aggregator.data
 
-import androidx.core.content.contentValuesOf
-
 @Suppress("ClassName")
 object Tags : Repository<Tags.Column, Tags.TableColumn, Tags.UpdateCriteria, Tags.DeleteCriteria, Tags.QueryCriteria>("tag") {
 
@@ -16,10 +14,6 @@ object Tags : Repository<Tags.Column, Tags.TableColumn, Tags.UpdateCriteria, Tag
     object EDITABLE : Column("editable", "t.editable"), TableColumn
     object ENTRY_COUNT : Column("entry_count", "SUM(CASE WHEN tag_time THEN 1 ELSE 0 END)", arrayOf("entry_tag", "tag"))
     object UNREAD_ENTRY_COUNT : Column("unread_entry_count", "SUM(CASE WHEN e.read_time = 0 THEN 1 WHEN e.pinned_time THEN 1 ELSE 0 END)", arrayOf("entry", "entry_tag", "tag"))
-
-    fun addTag(entryId: Long, tagId: Long) = Database.insert("entry_tag", contentValuesOf("entry_id" to entryId, "tag_id" to tagId, "tag_time" to System.currentTimeMillis()))
-
-    fun removeTag(entryId: Long, tagId: Long) = Database.delete("entry_tag", "entry_id = ? AND tag_id = ?", arrayOf(entryId, tagId))
 
     interface UpdateCriteria : Repository.UpdateCriteria
 

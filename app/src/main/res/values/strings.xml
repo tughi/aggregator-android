@@ -27,6 +27,8 @@
     <string name="action__update">Update</string>
     <string name="action__yes">Yes</string>
 
+    <string name="entry_tags">Entry tags</string>
+
     <string name="feed_list_item__last_update_error">Update error %1$d: %2$s</string>
     <string name="feed_list_item__last_update_time">Updated: %1$s</string>
     <string name="feed_list_item__last_update_time__never">Updated: never</string>

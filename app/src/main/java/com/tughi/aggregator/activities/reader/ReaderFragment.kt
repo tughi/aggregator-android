@@ -18,7 +18,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.tughi.aggregator.App
 import com.tughi.aggregator.R
+import com.tughi.aggregator.activities.entrytags.EntryTagsActivity
 import com.tughi.aggregator.data.Entries
+import com.tughi.aggregator.data.EntryTags
 import com.tughi.aggregator.data.Tags
 import com.tughi.aggregator.utilities.Language
 import kotlinx.coroutines.GlobalScope
@@ -156,14 +158,18 @@ class ReaderFragment : Fragment() {
             R.id.add_star -> {
                 loadedEntry?.let {
                     GlobalScope.launch {
-                        Tags.addTag(it.id, Tags.STARRED)
+                        EntryTags.insert(
+                                EntryTags.ENTRY_ID to it.id,
+                                EntryTags.TAG_ID to Tags.STARRED,
+                                EntryTags.TAG_TIME to System.currentTimeMillis()
+                        )
                     }
                 }
             }
             R.id.remove_star -> {
                 loadedEntry?.let {
                     GlobalScope.launch {
-                        Tags.removeTag(it.id, Tags.STARRED)
+                        EntryTags.delete(EntryTags.DeleteEntryTagCriteria(it.id, Tags.STARRED))
                     }
                 }
             }
@@ -172,8 +178,11 @@ class ReaderFragment : Fragment() {
                 Toast.makeText(context!!, "Not implemented yet", Toast.LENGTH_SHORT).show()
             }
             R.id.tag -> {
-                // TODO: tag entry
-                Toast.makeText(context!!, "Not implemented yet", Toast.LENGTH_SHORT).show()
+                context?.let { context ->
+                    loadedEntry?.let { entry ->
+                        EntryTagsActivity.start(context, entry.id)
+                    }
+                }
             }
             else -> {
                 return super.onOptionsItemSelected(item)

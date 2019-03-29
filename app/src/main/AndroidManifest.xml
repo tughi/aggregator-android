@@ -71,6 +71,11 @@
             android:label="@string/tag_settings"
             android:parentActivityName=".activities.main.MainActivity" />
 
+        <activity
+            android:name=".activities.entrytags.EntryTagsActivity"
+            android:label="@string/entry_tags"
+            android:parentActivityName=".activities.main.MainActivity" />
+
     </application>
 
 </manifest>
