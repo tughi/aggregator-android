@@ -1,7 +1,6 @@
 package com.tughi.aggregator.activities.subscribe
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,7 +9,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -24,6 +23,7 @@ import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.AutoUpdateScheduler
 import com.tughi.aggregator.services.FaviconUpdaterService
+import com.tughi.aggregator.widgets.makeClickable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -42,7 +42,7 @@ class SubscribeFeedFragment : Fragment() {
 
     private lateinit var urlTextView: TextView
     private lateinit var titleTextView: TextView
-    private lateinit var updateModeTextView: TextView
+    private lateinit var updateModeTextView: EditText
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,22 +64,13 @@ class SubscribeFeedFragment : Fragment() {
         titleTextView.text = arguments.getString(ARG_TITLE)
 
         updateModeTextView = fragmentView.findViewById(R.id.update_mode)
-        updateModeTextView.keyListener = null
-        updateModeTextView.setOnFocusChangeListener { view, hasFocus ->
-            if (hasFocus) {
-                val inputMethodManager = view.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
-
-                view.callOnClick()
-            }
-        }
-        updateModeTextView.setOnClickListener {
-            val currentUpdateMode = viewModel.updateMode.value ?: return@setOnClickListener
+        updateModeTextView.makeClickable {
+            val currentUpdateMode = viewModel.updateMode.value ?: return@makeClickable
             startUpdateModeActivity(REQUEST_UPDATE_MODE, currentUpdateMode)
         }
 
         viewModel.updateMode.observe(this, Observer {
-            updateModeTextView.text = it.toString(updateModeTextView.context)
+            updateModeTextView.setText(it.toString(updateModeTextView.context))
         })
 
         return fragmentView
