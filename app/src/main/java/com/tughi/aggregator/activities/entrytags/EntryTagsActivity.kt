@@ -5,6 +5,8 @@ import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckedTextView
@@ -18,6 +20,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
+import com.tughi.aggregator.activities.tagsettings.TagSettingsActivity
 import com.tughi.aggregator.data.EntryTags
 import com.tughi.aggregator.data.Tags
 import kotlinx.coroutines.GlobalScope
@@ -76,6 +79,21 @@ class EntryTagsActivity : AppActivity() {
         })
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        super.onCreateOptionsMenu(menu)
+
+        menuInflater.inflate(R.menu.entry_tags_activity, menu)
+
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean = when (item?.itemId) {
+        R.id.add -> {
+            TagSettingsActivity.start(this, null)
+            true
+        }
+        else -> super.onOptionsItemSelected(item)
+    }
 
     data class Tag(val id: Long, val name: String, val entryTag: Boolean = false, val feedTag: Boolean = false) {
         object QueryHelper : Tags.QueryHelper<Tag>(
