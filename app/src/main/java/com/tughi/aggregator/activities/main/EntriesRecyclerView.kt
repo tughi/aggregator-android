@@ -14,7 +14,7 @@ class EntriesRecyclerView(context: Context, attrs: AttributeSet) : RecyclerView(
     private val headerView = LayoutInflater.from(context).inflate(R.layout.entry_list_header, FrameLayout(context), false)
     private val headerTextView: TextView = headerView.findViewById(R.id.header)
 
-    private var headerText: String? = null
+    private var headerNumericDate: Long = 0
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
@@ -37,10 +37,10 @@ class EntriesRecyclerView(context: Context, attrs: AttributeSet) : RecyclerView(
             val firstChildViewHolder = getChildViewHolder(firstChild)
             if (firstChildViewHolder is EntriesFragmentViewHolder) {
                 // update overlay text
-                val firstChildHeaderText = firstChildViewHolder.entry.formattedDate.toString()
-                if (headerText != firstChildHeaderText) {
-                    headerText = firstChildHeaderText
-                    headerTextView.text = headerText
+                val firstChildNumericDate = firstChildViewHolder.entry.numericDate
+                if (headerNumericDate != firstChildNumericDate) {
+                    headerNumericDate = firstChildNumericDate
+                    headerTextView.text = firstChildViewHolder.entry.formattedDate
 
                     headerView.measure(MeasureSpec.makeMeasureSpec(headerView.width, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(headerView.height, MeasureSpec.EXACTLY))
                     headerView.layout(0, 0, headerView.width, headerView.height)
@@ -51,9 +51,9 @@ class EntriesRecyclerView(context: Context, attrs: AttributeSet) : RecyclerView(
                 if (childCount > 1) {
                     val secondChild = getChildAt(1)
                     val secondChildViewHolder = getChildViewHolder(secondChild) as EntriesFragmentViewHolder
-                    val secondChildHeaderText = secondChildViewHolder.entry.formattedDate.toString()
+                    val secondChildNumericDate = secondChildViewHolder.entry.numericDate
 
-                    if (firstChildHeaderText != secondChildHeaderText && secondChild.top < headerView.height) {
+                    if (firstChildNumericDate != secondChildNumericDate && secondChild.top < headerView.height) {
                         // snap overlay under the next section
                         canvas.translate(0f, (secondChild.top - headerView.height).toFloat())
                     }

@@ -2,6 +2,7 @@ package com.tughi.aggregator.activities.main
 
 import android.database.Cursor
 import android.text.format.DateUtils
+import androidx.collection.LongSparseArray
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
@@ -15,6 +16,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteria) : ViewModel() {
 
@@ -25,7 +27,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
     }
 
     private val storedEntries = Transformations.switchMap(queryCriteria) { queryCriteria ->
-        Entries.liveQuery(queryCriteria, Entry.QueryHelper)
+        Entries.liveQuery(queryCriteria, Entry.QueryHelper())
     }
 
     private val transformedEntries = MediatorLiveData<List<Entry>>().also {
@@ -59,21 +61,32 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
                     return@launch
                 }
 
+                var counter = 0
                 val newEntries = Array(storedEntries.size * 2) { index ->
                     when {
                         index == 0 -> storedEntries[0].let { entry ->
                             entry.copy(
-                                    id = -entry.id,
+                                    id = -entry.numericDate,
                                     readTime = 0,
                                     type = EntriesFragmentEntryType.HEADER
                             )
                         }
                         index % 2 == 0 -> storedEntries[index / 2].let { entry ->
-                            entry.copy(
-                                    id = -entry.id,
-                                    readTime = 0,
-                                    type = if (entry.formattedDate != storedEntries[index / 2 - 1].formattedDate) EntriesFragmentEntryType.HEADER else EntriesFragmentEntryType.DIVIDER
-                            )
+                            if (entry.numericDate != storedEntries[index / 2 - 1].numericDate) {
+                                counter = 0
+                                entry.copy(
+                                        id = -entry.numericDate,
+                                        readTime = 0,
+                                        type = EntriesFragmentEntryType.HEADER
+                                )
+                            } else {
+                                counter++
+                                entry.copy(
+                                        id = -entry.numericDate - counter,
+                                        readTime = 0,
+                                        type = EntriesFragmentEntryType.DIVIDER
+                                )
+                            }
                         }
                         else -> storedEntries[index / 2]
                     }
@@ -117,9 +130,10 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
             val formattedTime: String,
             val readTime: Long,
             val pinnedTime: Long,
-            val type: EntriesFragmentEntryType
+            val type: EntriesFragmentEntryType,
+            val numericDate: Long
     ) {
-        object QueryHelper : Entries.QueryHelper<Entry>(
+        class QueryHelper : Entries.QueryHelper<Entry>(
                 Entries.ID,
                 Entries.FEED_ID,
                 Entries.AUTHOR,
@@ -133,21 +147,38 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
                 Entries.TYPE
         ) {
             private val context = App.instance
+            private val calendar = Calendar.getInstance()
+            private val formattedDates = LongSparseArray<String>()
 
-            override fun createRow(cursor: Cursor) = Entry(
-                    id = cursor.getLong(0),
-                    feedId = cursor.getLong(1),
-                    author = cursor.getString(2),
-                    faviconUrl = cursor.getString(3),
-                    feedTitle = cursor.getString(4),
-                    formattedDate = DateUtils.formatDateTime(context, cursor.getLong(5), DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_YEAR),
-                    formattedTime = DateUtils.formatDateTime(context, cursor.getLong(5), DateUtils.FORMAT_SHOW_TIME),
-                    link = cursor.getString(6),
-                    pinnedTime = cursor.getLong(7),
-                    readTime = cursor.getLong(8),
-                    title = cursor.getString(9),
-                    type = EntriesFragmentEntryType.valueOf(cursor.getString(10))
-            )
+            override fun createRow(cursor: Cursor): Entry {
+                val publishTime = cursor.getLong(5)
+
+                val calendar = calendar
+                calendar.timeInMillis = publishTime
+                val numericDate = (calendar.get(Calendar.YEAR) * 10_000 + calendar.get(Calendar.MONTH) * 100 + calendar.get(Calendar.DAY_OF_MONTH)) * 100_000L
+
+                var formattedDate = formattedDates.get(numericDate)
+                if (formattedDate == null) {
+                    formattedDate = DateUtils.formatDateTime(context, publishTime, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_YEAR)
+                    formattedDates.put(numericDate, formattedDate)
+                }
+
+                return Entry(
+                        id = cursor.getLong(0),
+                        feedId = cursor.getLong(1),
+                        author = cursor.getString(2),
+                        faviconUrl = cursor.getString(3),
+                        feedTitle = cursor.getString(4),
+                        formattedDate = formattedDate!!,
+                        formattedTime = DateUtils.formatDateTime(context, publishTime, DateUtils.FORMAT_SHOW_TIME),
+                        link = cursor.getString(6),
+                        pinnedTime = cursor.getLong(7),
+                        readTime = cursor.getLong(8),
+                        title = cursor.getString(9),
+                        type = EntriesFragmentEntryType.valueOf(cursor.getString(10)),
+                        numericDate = numericDate
+                )
+            }
         }
     }
 
