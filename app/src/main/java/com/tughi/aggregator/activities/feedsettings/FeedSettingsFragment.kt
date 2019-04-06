@@ -11,7 +11,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -20,9 +19,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.tughi.aggregator.R
+import com.tughi.aggregator.activities.feedtags.FeedTagsActivity
 import com.tughi.aggregator.activities.updatemode.UpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.startUpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.toString
+import com.tughi.aggregator.data.FeedTags
 import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.AutoUpdateScheduler
@@ -70,21 +71,28 @@ class FeedSettingsFragment : Fragment() {
 
         tagsView.makeClickable {
             val feed = viewModel.feed.value ?: return@makeClickable
-            // TODO: start FeedTagsActivity
-            Toast.makeText(context, "Not implemented yet", Toast.LENGTH_SHORT).show()
+            context?.let { context ->
+                FeedTagsActivity.start(context, feed.id)
+            }
         }
 
 
         val feedId = arguments!!.getLong(ARG_FEED_ID)
-        viewModel = ViewModelProviders.of(this, FeedSettingsViewModel.Factory(feedId))
-                .get(FeedSettingsViewModel::class.java)
+        viewModel = ViewModelProviders.of(this, FeedSettingsViewModel.Factory(feedId)).get(FeedSettingsViewModel::class.java)
 
         viewModel.feed.observe(this, Observer { feed ->
             if (feed != null) {
                 urlEditText.setText(feed.url)
                 titleEditText.setText(feed.customTitle ?: feed.title)
                 updateModeView.setText(feed.updateMode.toString(updateModeView.context))
-                tagsView.setText(feed.tags ?: getString(R.string.feed_settings__tags__none))
+            }
+        })
+
+        viewModel.feedTags.observe(this, Observer { feedTags ->
+            if (feedTags != null && feedTags.isNotEmpty()) {
+                tagsView.setText(feedTags.joinToString())
+            } else {
+                tagsView.setText(R.string.feed_settings__tags__none)
             }
         })
 
@@ -177,9 +185,24 @@ class FeedSettingsFragment : Fragment() {
         }
     }
 
+    class FeedTag(
+            val name: String
+    ) {
+        override fun toString(): String = name
+
+        object QueryHelper : FeedTags.QueryHelper<FeedTag>(
+                FeedTags.TAG_NAME
+        ) {
+            override fun createRow(cursor: Cursor) = FeedTag(
+                    name = cursor.getString(0)
+            )
+        }
+    }
+
     class FeedSettingsViewModel(feedId: Long) : ViewModel() {
 
         val feed: LiveData<Feed>
+        val feedTags = FeedTags.liveQuery(FeedTags.QueryFeedTagsCriteria(feedId), FeedTag.QueryHelper)
 
         var newUpdateMode: UpdateMode? = null
 

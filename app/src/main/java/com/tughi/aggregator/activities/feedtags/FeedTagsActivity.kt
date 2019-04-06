@@ -1,4 +1,4 @@
-package com.tughi.aggregator.activities.entrytags
+package com.tughi.aggregator.activities.feedtags
 
 import android.content.Context
 import android.content.Intent
@@ -21,21 +21,21 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.tagsettings.TagSettingsActivity
-import com.tughi.aggregator.data.EntryTags
+import com.tughi.aggregator.data.FeedTags
 import com.tughi.aggregator.data.Tags
 import com.tughi.aggregator.utilities.has
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-class EntryTagsActivity : AppActivity() {
+class FeedTagsActivity : AppActivity() {
 
     companion object {
-        private const val EXTRA_ENTRY_ID = "entry_id"
+        private const val EXTRA_FEED_ID = "feed_id"
 
-        fun start(context: Context, entryId: Long) {
+        fun start(context: Context, feedId: Long) {
             context.startActivity(
-                    Intent(context, EntryTagsActivity::class.java)
-                            .putExtra(EXTRA_ENTRY_ID, entryId)
+                    Intent(context, FeedTagsActivity::class.java)
+                            .putExtra(EXTRA_FEED_ID, feedId)
             )
         }
     }
@@ -43,7 +43,7 @@ class EntryTagsActivity : AppActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val entryId = intent.getLongExtra(EXTRA_ENTRY_ID, 0)
+        val feedId = intent.getLongExtra(EXTRA_FEED_ID, 0)
 
         setContentView(R.layout.simple_list)
         val recyclerView = findViewById<RecyclerView>(R.id.list)
@@ -52,13 +52,13 @@ class EntryTagsActivity : AppActivity() {
         val adapter = TagsAdapter(object : TagsAdapter.Listener {
             override fun onTagClick(tag: Tag) {
                 GlobalScope.launch {
-                    if (tag.entryTag) {
-                        EntryTags.delete(EntryTags.DeleteEntryTagCriteria(entryId, tag.id))
+                    if (tag.feedTag) {
+                        FeedTags.delete(FeedTags.DeleteFeedTagCriteria(feedId, tag.id))
                     } else {
-                        EntryTags.insert(
-                                EntryTags.ENTRY_ID to entryId,
-                                EntryTags.TAG_ID to tag.id,
-                                EntryTags.TAG_TIME to System.currentTimeMillis()
+                        FeedTags.insert(
+                                FeedTags.FEED_ID to feedId,
+                                FeedTags.TAG_ID to tag.id,
+                                FeedTags.TAG_TIME to System.currentTimeMillis()
                         )
                     }
                 }
@@ -67,8 +67,8 @@ class EntryTagsActivity : AppActivity() {
 
         recyclerView.adapter = adapter
 
-        val viewModelFactory = EntryTagsViewModel.Factory(entryId)
-        val viewModel = ViewModelProviders.of(this, viewModelFactory).get(EntryTagsViewModel::class.java)
+        val viewModelFactory = FeedTagsViewModel.Factory(feedId)
+        val viewModel = ViewModelProviders.of(this, viewModelFactory).get(FeedTagsViewModel::class.java)
         viewModel.tags.observe(this, Observer { tags ->
             if (tags == null) {
                 adapter.tags = emptyList()
@@ -96,7 +96,7 @@ class EntryTagsActivity : AppActivity() {
         else -> super.onOptionsItemSelected(item)
     }
 
-    data class Tag(val id: Long, val name: String, val entryTag: Boolean = false, val feedTag: Boolean = false) {
+    data class Tag(val id: Long, val name: String, val feedTag: Boolean = false) {
         object QueryHelper : Tags.QueryHelper<Tag>(
                 Tags.ID,
                 Tags.NAME
@@ -108,45 +108,45 @@ class EntryTagsActivity : AppActivity() {
         }
     }
 
-    class EntryTag(val tagId: Long) {
-        object QueryHelper : EntryTags.QueryHelper<EntryTag>(
-                EntryTags.TAG_ID
+    class FeedTag(val tagId: Long) {
+        object QueryHelper : FeedTags.QueryHelper<FeedTag>(
+                FeedTags.TAG_ID
         ) {
-            override fun createRow(cursor: Cursor) = EntryTag(
+            override fun createRow(cursor: Cursor) = FeedTag(
                     tagId = cursor.getLong(0)
             )
         }
     }
 
-    class EntryTagsViewModel(entryId: Long) : ViewModel() {
+    class FeedTagsViewModel(feedId: Long) : ViewModel() {
         val tags = MediatorLiveData<List<Tag>>()
 
         init {
             val tags = Tags.liveQuery(Tags.QueryVisibleTagsCriteria, Tag.QueryHelper)
-            val entryTags = EntryTags.liveQuery(EntryTags.QueryEntryTagsCriteria(entryId), EntryTag.QueryHelper)
+            val feedTags = FeedTags.liveQuery(FeedTags.QueryFeedTagsCriteria(feedId), FeedTag.QueryHelper)
 
-            this.tags.addSource(tags) { mergeTags(it, entryTags.value) }
+            this.tags.addSource(tags) { mergeTags(it, feedTags.value) }
 
-            this.tags.addSource(entryTags) { mergeTags(tags.value, it) }
+            this.tags.addSource(feedTags) { mergeTags(tags.value, it) }
         }
 
-        private fun mergeTags(tags: List<Tag>?, entryTags: List<EntryTag>?) {
+        private fun mergeTags(tags: List<Tag>?, feedTags: List<FeedTag>?) {
             this.tags.value = when {
-                tags == null || entryTags == null -> emptyList()
-                entryTags.isEmpty() -> tags
+                tags == null || feedTags == null -> emptyList()
+                feedTags.isEmpty() -> tags
                 else -> tags.map { tag ->
                     tag.copy(
-                            entryTag = entryTags.has { it.tagId == tag.id }
+                            feedTag = feedTags.has { it.tagId == tag.id }
                     )
                 }
             }
         }
 
-        class Factory(private val entryId: Long) : ViewModelProvider.Factory {
+        class Factory(private val feedId: Long) : ViewModelProvider.Factory {
             override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                if (modelClass.isAssignableFrom(EntryTagsViewModel::class.java)) {
+                if (modelClass.isAssignableFrom(FeedTagsViewModel::class.java)) {
                     @Suppress("UNCHECKED_CAST")
-                    return EntryTagsViewModel(entryId) as T
+                    return FeedTagsViewModel(feedId) as T
                 }
                 throw UnsupportedOperationException()
             }
@@ -174,7 +174,7 @@ class EntryTagsActivity : AppActivity() {
             })
 
             textView.text = tag.name
-            textView.isChecked = tag.entryTag || tag.feedTag
+            textView.isChecked = tag.feedTag
         }
     }
 
