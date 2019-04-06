@@ -1,8 +1,8 @@
 package com.tughi.aggregator.activities.feedsettings
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
+import android.database.Cursor
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -10,11 +10,14 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
-import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.updatemode.UpdateModeActivity
@@ -25,6 +28,7 @@ import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.AutoUpdateScheduler
 import com.tughi.aggregator.services.FaviconUpdaterService
 import com.tughi.aggregator.utilities.backupFeeds
+import com.tughi.aggregator.widgets.makeClickable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -39,7 +43,8 @@ class FeedSettingsFragment : Fragment() {
 
     private lateinit var urlEditText: EditText
     private lateinit var titleEditText: EditText
-    private lateinit var updateModeTextView: TextView
+    private lateinit var updateModeView: EditText
+    private lateinit var tagsView: EditText
 
     private lateinit var viewModel: FeedSettingsViewModel
 
@@ -54,20 +59,19 @@ class FeedSettingsFragment : Fragment() {
 
         urlEditText = fragmentView.findViewById(R.id.url)
         titleEditText = fragmentView.findViewById(R.id.title)
-        updateModeTextView = fragmentView.findViewById(R.id.update_mode)
+        updateModeView = fragmentView.findViewById(R.id.update_mode)
+        tagsView = fragmentView.findViewById(R.id.tags)
 
-        updateModeTextView.keyListener = null
-        updateModeTextView.setOnFocusChangeListener { view, hasFocus ->
-            if (hasFocus) {
-                val inputMethodManager = view.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
-
-                view.callOnClick()
-            }
-        }
-        updateModeTextView.setOnClickListener {
-            val feed = viewModel.feed.value ?: return@setOnClickListener
+        updateModeView.makeClickable {
+            val feed = viewModel.feed.value ?: return@makeClickable
             startUpdateModeActivity(REQUEST_UPDATE_MODE, viewModel.newUpdateMode ?: feed.updateMode)
+        }
+
+
+        tagsView.makeClickable {
+            val feed = viewModel.feed.value ?: return@makeClickable
+            // TODO: start FeedTagsActivity
+            Toast.makeText(context, "Not implemented yet", Toast.LENGTH_SHORT).show()
         }
 
 
@@ -79,8 +83,8 @@ class FeedSettingsFragment : Fragment() {
             if (feed != null) {
                 urlEditText.setText(feed.url)
                 titleEditText.setText(feed.customTitle ?: feed.title)
-
-                updateModeTextView.apply { text = feed.updateMode.toString(context) }
+                updateModeView.setText(feed.updateMode.toString(updateModeView.context))
+                tagsView.setText(feed.tags ?: getString(R.string.feed_settings__tags__none))
             }
         })
 
@@ -97,7 +101,7 @@ class FeedSettingsFragment : Fragment() {
         if (requestCode == REQUEST_UPDATE_MODE && resultCode == Activity.RESULT_OK) {
             val serializedUpdateMode = data?.getStringExtra(UpdateModeActivity.EXTRA_UPDATE_MODE) ?: return
             viewModel.newUpdateMode = UpdateMode.deserialize(serializedUpdateMode).also { updateMode ->
-                updateModeTextView.apply { text = updateMode.toString(context) }
+                updateModeView.setText(updateMode.toString(updateModeView.context))
             }
         }
     }
@@ -144,6 +148,61 @@ class FeedSettingsFragment : Fragment() {
         }
 
         return true
+    }
+
+    class Feed(
+            val id: Long,
+            val url: String,
+            val title: String,
+            val customTitle: String?,
+            val updateMode: UpdateMode,
+            val tags: String?
+    ) {
+        object QueryHelper : Feeds.QueryHelper<Feed>(
+                Feeds.ID,
+                Feeds.URL,
+                Feeds.TITLE,
+                Feeds.CUSTOM_TITLE,
+                Feeds.UPDATE_MODE,
+                Feeds.TAG_NAMES
+        ) {
+            override fun createRow(cursor: Cursor) = Feed(
+                    id = cursor.getLong(0),
+                    url = cursor.getString(1),
+                    title = cursor.getString(2),
+                    customTitle = cursor.getString(3),
+                    updateMode = UpdateMode.deserialize(cursor.getString(4)),
+                    tags = cursor.getString(5)
+            )
+        }
+    }
+
+    class FeedSettingsViewModel(feedId: Long) : ViewModel() {
+
+        val feed: LiveData<Feed>
+
+        var newUpdateMode: UpdateMode? = null
+
+        init {
+            val liveFeed = MutableLiveData<Feed>()
+
+            GlobalScope.launch {
+                liveFeed.postValue(Feeds.queryOne(Feeds.QueryRowCriteria(feedId), Feed.QueryHelper))
+            }
+
+            feed = liveFeed
+        }
+
+        class Factory(private val feedId: Long) : ViewModelProvider.Factory {
+            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+                if (modelClass.isAssignableFrom(FeedSettingsViewModel::class.java)) {
+                    @Suppress("UNCHECKED_CAST")
+                    return FeedSettingsViewModel(feedId) as T
+                }
+                throw UnsupportedOperationException()
+            }
+        }
+
     }
 
 }

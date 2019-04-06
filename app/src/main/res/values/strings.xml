@@ -37,6 +37,8 @@
     <string name="feed_list_item__next_update_time__on_app_launch">Auto update: on app launch</string>
 
     <string name="feed_settings">Feed settings</string>
+    <string name="feed_settings__tags">Tags</string>
+    <string name="feed_settings__tags__none">None</string>
     <string name="feed_settings__title">Title</string>
     <string name="feed_settings__update_mode">Update mode</string>
     <string name="feed_settings__url">URL</string>

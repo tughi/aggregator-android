@@ -26,6 +26,7 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
     object HTTP_ETAG : Column("http_etag", "f.http_etag"), TableColumn
     object HTTP_LAST_MODIFIED : Column("http_last_modified", "f.http_last_modified"), TableColumn
     object UNREAD_ENTRY_COUNT : Column("unread_entry_count", "(SELECT COUNT(1) FROM entry e WHERE f.id = e.feed_id AND e.read_time = 0)", arrayOf("feed", "entry"))
+    object TAG_NAMES : Column("tag_names", "(SELECT GROUP_CONCAT(t.name, ', ') FROM feed_tag ft LEFT JOIN tag t ON t.id = ft.tag_id WHERE ft.feed_id = f.id)", arrayOf("feed", "feed_tag", "tag"))
 
     // TODO: use DeleteCriteria
     fun delete(id: Long) = Database.delete("feed", "id = ?", arrayOf(id))
