@@ -28,7 +28,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:enabled="false"
-            android:text="@string/action__subscribe" />
+            android:text="@string/action__subscribe"
+            android:textColor="@android:color/white" />
 
     </FrameLayout>
 
