@@ -35,7 +35,7 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
         val updateCriteria = when (criteria) {
             is FeedEntriesQueryCriteria -> SimpleUpdateCriteria("feed_id = ? AND pinned_time = 0 AND read_time = 0", arrayOf(criteria.feedId))
             is MyFeedEntriesQueryCriteria -> SimpleUpdateCriteria("pinned_time = 0 AND read_time = 0", null)
-            is TagEntriesQueryCriteria -> SimpleUpdateCriteria("id IN (SELECT entry_id FROM entry_tag WHERE tag_id = ?) AND pinned_time = 0 AND read_time = 0", arrayOf(criteria.tagId))
+            is TagEntriesQueryCriteria -> SimpleUpdateCriteria("id IN (SELECT e.id FROM entry e LEFT JOIN entry_tag et ON e.id = et.entry_id LEFT JOIN feed_tag ft ON e.feed_id = ft.feed_id WHERE (et.tag_id = ? OR ft.tag_id = ?)) AND pinned_time = 0 AND read_time = 0", arrayOf(criteria.tagId, criteria.tagId))
             else -> throw IllegalArgumentException("Unsupported criteria: $criteria")
         }
         return update(updateCriteria, READ_TIME to System.currentTimeMillis())
@@ -130,11 +130,11 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
             val selection: String
             val selectionArgs: Array<Any?>
             if (sessionTime != 0L) {
-                selection = "et.tag_id = ? AND (e.read_time = 0 OR e.read_time > ?)"
-                selectionArgs = arrayOf(tagId, sessionTime)
+                selection = "e.id IN (SELECT e1.id FROM entry e1 LEFT JOIN entry_tag et1 ON e1.id = et1.entry_id LEFT JOIN feed_tag ft1 ON e1.feed_id = ft1.feed_id WHERE (e1.read_time = 0 OR e1.read_time > ?) AND (et1.tag_id = ? OR ft1.tag_id = ?))"
+                selectionArgs = arrayOf(sessionTime, tagId, tagId)
             } else {
-                selection = "et.tag_id = ?"
-                selectionArgs = arrayOf(tagId)
+                selection = "e.id IN (SELECT e1.id FROM entry e1 LEFT JOIN entry_tag et1 ON e1.id = et1.entry_id LEFT JOIN feed_tag ft1 ON e1.feed_id = ft1.feed_id WHERE (et1.tag_id = ? OR ft1.tag_id = ?))"
+                selectionArgs = arrayOf(tagId, tagId)
             }
             query.where(selection, selectionArgs)
             query.orderBy(sortOrder.orderBy)
@@ -165,34 +165,31 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     }
 
     abstract class QueryHelper<R>(vararg columns: Column) : Repository.QueryHelper<Column, QueryCriteria, R>(columns) {
-        private fun queryFrom(entryTag: Boolean): String {
-            val tables = StringBuilder("entry e")
+        private val tables: String
+            get() {
+                val tables = StringBuilder("entry e")
 
-            var feed = false
-            for (column in columns) {
-                if (column !is TableColumn) {
-                    when (column) {
-                        is FEED_TITLE -> feed = true
-                        is FEED_LANGUAGE -> feed = true
-                        is FEED_FAVICON_URL -> feed = true
+                var feed = false
+                for (column in columns) {
+                    if (column !is TableColumn) {
+                        when (column) {
+                            is FEED_TITLE -> feed = true
+                            is FEED_LANGUAGE -> feed = true
+                            is FEED_FAVICON_URL -> feed = true
+                        }
+                    }
+                    if (feed) {
+                        break
                     }
                 }
                 if (feed) {
-                    break
+                    tables.append(" LEFT JOIN feed f ON f.id = e.feed_id")
                 }
-            }
-            if (feed) {
-                tables.append(" LEFT JOIN feed f ON f.id = e.feed_id")
-            }
 
-            if (entryTag) {
-                tables.append(" LEFT JOIN entry_tag et ON et.entry_id = e.id")
+                return tables.toString()
             }
 
-            return tables.toString()
-        }
-
-        override fun createQuery(criteria: QueryCriteria) = Query.Builder(columns, queryFrom(entryTag = criteria is TagEntriesQueryCriteria))
+        override fun createQuery(criteria: QueryCriteria) = Query.Builder(columns, tables)
                 .also { criteria.config(it) }
                 .create()
     }
