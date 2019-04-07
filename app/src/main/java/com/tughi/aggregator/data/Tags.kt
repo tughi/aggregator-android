@@ -12,8 +12,8 @@ object Tags : Repository<Tags.Column, Tags.TableColumn, Tags.UpdateCriteria, Tag
     object ID : Column("id", "t.id"), TableColumn
     object NAME : Column("name", "t.name"), TableColumn
     object EDITABLE : Column("editable", "t.editable"), TableColumn
-    object ENTRY_COUNT : Column("entry_count", "SUM(CASE WHEN tag_time THEN 1 ELSE 0 END)", arrayOf("entry_tag", "tag"))
-    object UNREAD_ENTRY_COUNT : Column("unread_entry_count", "SUM(CASE WHEN e.read_time = 0 THEN 1 WHEN e.pinned_time THEN 1 ELSE 0 END)", arrayOf("entry", "entry_tag", "tag"))
+    object ENTRY_COUNT : Column("entry_count", "(SELECT COUNT(1) FROM (SELECT DISTINCT e.id FROM entry e LEFT JOIN entry_tag et ON et.entry_id = e.id LEFT JOIN feed_tag ft ON ft.feed_id = e.feed_id WHERE et.tag_id = t.id OR ft.tag_id = t.id))", arrayOf("entry", "entry_tag", "feed_tag", "tag"))
+    object UNREAD_ENTRY_COUNT : Column("entry_count", "(SELECT COUNT(1) FROM (SELECT DISTINCT e.id FROM entry e LEFT JOIN entry_tag et ON et.entry_id = e.id LEFT JOIN feed_tag ft ON ft.feed_id = e.feed_id WHERE (e.read_time = 0 OR e.pinned_time) AND (et.tag_id = t.id OR ft.tag_id = t.id)))", arrayOf("entry", "entry_tag", "feed_tag", "tag"))
 
     interface UpdateCriteria : Repository.UpdateCriteria
 
@@ -54,39 +54,7 @@ object Tags : Repository<Tags.Column, Tags.TableColumn, Tags.UpdateCriteria, Tag
     }
 
     abstract class QueryHelper<Row>(vararg columns: Column) : Repository.QueryHelper<Column, QueryCriteria, Row>(columns) {
-        private val tables: String
-            get() {
-                val tables = StringBuilder("tag t")
-
-                var entry = false
-                var entryTag = false
-                for (column in columns) {
-                    if (column !is TableColumn) {
-                        when (column) {
-                            is ENTRY_COUNT -> {
-                                entryTag = true
-                            }
-                            is UNREAD_ENTRY_COUNT -> {
-                                entry = true
-                                entryTag = true
-                            }
-                        }
-                    }
-                    if (entry && entryTag) {
-                        break
-                    }
-                }
-                if (entryTag) {
-                    tables.append(" LEFT JOIN entry_tag et ON et.tag_id = t.id")
-                }
-                if (entry) {
-                    tables.append(" LEFT JOIN entry e ON e.id = et.entry_id")
-                }
-
-                return tables.toString()
-            }
-
-        override fun createQuery(criteria: QueryCriteria) = Query.Builder(columns, tables)
+        override fun createQuery(criteria: QueryCriteria) = Query.Builder(columns, "tag t")
                 .groupBy("t.id")
                 .orderBy("t.name")
                 .also { criteria.config(it, columns) }
