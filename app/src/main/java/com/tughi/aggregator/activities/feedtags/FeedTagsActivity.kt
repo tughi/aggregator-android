@@ -122,7 +122,7 @@ class FeedTagsActivity : AppActivity() {
         val tags = MediatorLiveData<List<Tag>>()
 
         init {
-            val tags = Tags.liveQuery(Tags.QueryVisibleTagsCriteria, Tag.QueryHelper)
+            val tags = Tags.liveQuery(Tags.QueryUserTagsCriteria, Tag.QueryHelper)
             val feedTags = FeedTags.liveQuery(FeedTags.QueryFeedTagsCriteria(feedId), FeedTag.QueryHelper)
 
             this.tags.addSource(tags) { mergeTags(it, feedTags.value) }

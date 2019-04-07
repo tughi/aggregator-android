@@ -39,6 +39,13 @@ object Tags : Repository<Tags.Column, Tags.TableColumn, Tags.UpdateCriteria, Tag
         }
     }
 
+    object QueryUserTagsCriteria : QueryCriteria {
+        override fun config(query: Query.Builder, columns: Array<out Column>) {
+            query.where("t.id > 0", emptyArray())
+            query.orderBy("t.name")
+        }
+    }
+
     object QueryVisibleTagsCriteria : QueryCriteria {
         override fun config(query: Query.Builder, columns: Array<out Column>) {
             query.where("t.id != ?", arrayOf(HIDDEN))
