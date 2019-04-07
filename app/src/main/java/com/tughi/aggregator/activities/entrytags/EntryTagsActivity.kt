@@ -184,6 +184,8 @@ class EntryTagsActivity : AppActivity() {
         fun onBind(tag: Tag) {
             this.tag = tag
 
+            itemView.isEnabled = !tag.feedTag
+
             faviconView.setImageResource(when (tag.id) {
                 Tags.STARRED -> R.drawable.favicon_star
                 else -> R.drawable.favicon_tag
