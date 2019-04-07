@@ -180,7 +180,7 @@ class ReaderFragment : Fragment() {
             R.id.tag -> {
                 context?.let { context ->
                     loadedEntry?.let { entry ->
-                        EntryTagsActivity.start(context, entry.id)
+                        EntryTagsActivity.start(context, entry.id, entry.feedId)
                     }
                 }
             }
@@ -194,6 +194,7 @@ class ReaderFragment : Fragment() {
 
     data class Entry(
             val id: Long,
+            val feedId: Long,
             val title: String?,
             val link: String?,
             val content: String?,
@@ -207,6 +208,7 @@ class ReaderFragment : Fragment() {
     ) {
         object QueryHelper : Entries.QueryHelper<Entry>(
                 Entries.ID,
+                Entries.FEED_ID,
                 Entries.TITLE,
                 Entries.LINK,
                 Entries.CONTENT,
@@ -220,16 +222,17 @@ class ReaderFragment : Fragment() {
         ) {
             override fun createRow(cursor: Cursor) = Entry(
                     id = cursor.getLong(0),
-                    title = cursor.getString(1),
-                    link = cursor.getString(2),
-                    content = cursor.getString(3),
-                    author = cursor.getString(4),
-                    publishTime = cursor.getLong(5),
-                    feedTitle = cursor.getString(6),
-                    feedLanguage = cursor.getString(7),
-                    readTime = cursor.getLong(8),
-                    pinnedTime = cursor.getLong(9),
-                    starTime = cursor.getLong(10)
+                    feedId = cursor.getLong(1),
+                    title = cursor.getString(2),
+                    link = cursor.getString(3),
+                    content = cursor.getString(4),
+                    author = cursor.getString(5),
+                    publishTime = cursor.getLong(6),
+                    feedTitle = cursor.getString(7),
+                    feedLanguage = cursor.getString(8),
+                    readTime = cursor.getLong(9),
+                    pinnedTime = cursor.getLong(10),
+                    starTime = cursor.getLong(11)
             )
         }
     }
