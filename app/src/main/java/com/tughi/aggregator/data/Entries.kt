@@ -136,6 +136,7 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
                 selection = "e.id IN (SELECT e1.id FROM entry e1 LEFT JOIN entry_tag et1 ON e1.id = et1.entry_id LEFT JOIN feed_tag ft1 ON e1.feed_id = ft1.feed_id WHERE (et1.tag_id = ? OR ft1.tag_id = ?))"
                 selectionArgs = arrayOf(tagId, tagId)
             }
+            query.addObservedTables("entry", "entry_tag", "feed_tag")
             query.where(selection, selectionArgs)
             query.orderBy(sortOrder.orderBy)
         }

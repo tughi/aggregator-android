@@ -2,7 +2,8 @@ package com.tughi.aggregator.data
 
 import androidx.sqlite.db.SupportSQLiteProgram
 import androidx.sqlite.db.SupportSQLiteQuery
-import java.util.*
+import com.tughi.aggregator.BuildConfig
+import java.util.StringTokenizer
 
 class Query(private val query: String, private val queryArgs: Array<Any?> = emptyArray(), val observedTables: Array<String>) : SupportSQLiteQuery {
 
@@ -28,9 +29,11 @@ class Query(private val query: String, private val queryArgs: Array<Any?> = empt
     override fun getArgCount() = queryArgs.size
 
     class Builder(private val columns: Array<out Repository.Column>, private val from: String) {
-        private val observedTables = mutableSetOf<String>().also {
+        companion object {
             val databaseTables = setOf("entry", "entry_tag", "feed", "feed_tag", "tag")
+        }
 
+        private val observedTables = mutableSetOf<String>().also {
             for (token in StringTokenizer(from)) {
                 if (token in databaseTables) {
                     it.add(token as String)
@@ -49,6 +52,18 @@ class Query(private val query: String, private val queryArgs: Array<Any?> = empt
         private var orderBy: String? = null
 
         fun containsColumn(column: Repository.Column) = columns.contains(column)
+
+        fun addObservedTables(vararg tables: String) {
+            for (table in tables) {
+                if (BuildConfig.DEBUG) {
+                    if (!databaseTables.contains(table)) {
+                        throw IllegalArgumentException("Not a database table: $table")
+                    }
+                }
+
+                observedTables.add(table)
+            }
+        }
 
         fun where(where: String, whereArgs: Array<Any?>): Builder {
             this.where = where
@@ -82,11 +97,9 @@ class Query(private val query: String, private val queryArgs: Array<Any?> = empt
 
             if (where != null) query.append(" WHERE ").append(where)
             if (groupBy != null) query.append(" GROUP BY ").append(groupBy)
-//            appendClause(query, " HAVING ", mHaving);
             if (orderBy != null) query.append(" ORDER BY ").append(orderBy)
-//            appendClause(query, " LIMIT ", mLimit);
 
-            return Query(query.toString(), whereArgs, observedTables.toTypedArray())
+            return Query(query = query.toString(), queryArgs = whereArgs, observedTables = observedTables.toTypedArray())
         }
     }
 
