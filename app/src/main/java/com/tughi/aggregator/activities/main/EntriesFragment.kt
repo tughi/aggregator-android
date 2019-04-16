@@ -3,6 +3,7 @@ package com.tughi.aggregator.activities.main
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
@@ -19,7 +20,7 @@ import com.tughi.aggregator.data.Entries
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
+abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Toolbar.OnMenuItemClickListener {
 
     private lateinit var viewModel: EntriesFragmentViewModel
 
@@ -56,30 +57,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
         toolbar.setNavigationOnClickListener { onNavigationClick() }
 
         toolbar.inflateMenu(R.menu.entry_list_fragment)
-        toolbar.setOnMenuItemClickListener {
-            when (it?.itemId) {
-                R.id.show_read_entries -> {
-                    viewModel.changeShowRead(!it.isChecked)
-                }
-                R.id.sort_by_date_asc -> {
-                    viewModel.changeSortOrder(Entries.SortOrder.ByDateAscending)
-                }
-                R.id.sort_by_date_desc -> {
-                    viewModel.changeSortOrder(Entries.SortOrder.ByDateDescending)
-                }
-                R.id.sort_by_title -> {
-                    viewModel.changeSortOrder(Entries.SortOrder.ByTitle)
-                }
-                R.id.mark_all_read -> {
-                    viewModel.queryCriteria.value?.let { queryCriteria ->
-                        GlobalScope.launch {
-                            Entries.markRead(queryCriteria)
-                        }
-                    }
-                }
-            }
-            return@setOnMenuItemClickListener true
-        }
+        toolbar.setOnMenuItemClickListener(this)
 
         viewModel.queryCriteria.observe(this, Observer { entriesQuery ->
             toolbar.menu?.let {
@@ -95,6 +73,32 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener {
         })
 
         return fragmentView
+    }
+
+    override fun onMenuItemClick(item: MenuItem?): Boolean {
+        when (item?.itemId) {
+            R.id.show_read_entries -> {
+                viewModel.changeShowRead(!item.isChecked)
+            }
+            R.id.sort_by_date_asc -> {
+                viewModel.changeSortOrder(Entries.SortOrder.ByDateAscending)
+            }
+            R.id.sort_by_date_desc -> {
+                viewModel.changeSortOrder(Entries.SortOrder.ByDateDescending)
+            }
+            R.id.sort_by_title -> {
+                viewModel.changeSortOrder(Entries.SortOrder.ByTitle)
+            }
+            R.id.mark_all_read -> {
+                viewModel.queryCriteria.value?.let { queryCriteria ->
+                    GlobalScope.launch {
+                        Entries.markRead(queryCriteria)
+                    }
+                }
+            }
+        }
+
+        return true
     }
 
     internal abstract val initialQueryCriteria: Entries.EntriesQueryCriteria

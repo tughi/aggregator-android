@@ -81,6 +81,11 @@
             android:label="@string/feed_tags"
             android:parentActivityName=".activities.main.MainActivity" />
 
+        <activity
+            android:name=".activities.myfeedsettings.MyFeedSettingsActivity"
+            android:label="@string/my_feed_settings"
+            android:parentActivityName=".activities.main.MainActivity" />
+
     </application>
 
 </manifest>

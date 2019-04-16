@@ -21,7 +21,7 @@ object Database {
     private val sqlite: SupportSQLiteOpenHelper = FrameworkSQLiteOpenHelperFactory().create(
             SupportSQLiteOpenHelper.Configuration.builder(App.instance)
                     .name(DATABASE_NAME)
-                    .callback(object : SupportSQLiteOpenHelper.Callback(17) {
+                    .callback(object : SupportSQLiteOpenHelper.Callback(18) {
                         override fun onConfigure(db: SupportSQLiteDatabase?) {
                             db?.apply {
                                 setForeignKeyConstraintsEnabled(true)
@@ -108,33 +108,59 @@ object Database {
                                 """)
 
                                 database.execSQL("CREATE UNIQUE INDEX entry_tag_index__entry_id__tag_id ON entry_tag (entry_id, tag_id)")
+
+                                database.execSQL("""
+                                    CREATE TABLE my_feed_tag (
+                                        tag_id INTEGER NOT NULL,
+                                        type INTEGER NOT NULL,
+                                        FOREIGN KEY (tag_id) REFERENCES tag (id) ON DELETE CASCADE,
+                                        UNIQUE (tag_id, type)
+                                    )
+                                """)
+
+                                database.execSQL("CREATE UNIQUE INDEX my_feed_tag_index__tag_id__type ON my_feed_tag (tag_id, type)")
                             }
                         }
 
                         override fun onUpgrade(database: SupportSQLiteDatabase?, oldVersion: Int, newVersion: Int) {
                             database?.transaction {
-                                val tables = mutableListOf<String>()
-                                database.query("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'").use { cursor ->
-                                    if (cursor.moveToFirst()) {
-                                        do {
-                                            tables.add(cursor.getString(0))
-                                        } while (cursor.moveToNext())
+                                when (oldVersion) {
+                                    17 -> {
+                                        database.execSQL("""
+                                            CREATE TABLE my_feed_tag (
+                                                tag_id INTEGER NOT NULL,
+                                                type INTEGER NOT NULL,
+                                                FOREIGN KEY (tag_id) REFERENCES tag (id) ON DELETE CASCADE,
+                                                UNIQUE (tag_id, type)
+                                            )
+                                        """)
+
+                                        database.execSQL("CREATE UNIQUE INDEX my_feed_tag_index__tag_id__type ON my_feed_tag (tag_id, type)")
+                                    }
+                                    else -> {
+                                        val tables = mutableListOf<String>()
+                                        database.query("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'").use { cursor ->
+                                            if (cursor.moveToFirst()) {
+                                                do {
+                                                    tables.add(cursor.getString(0))
+                                                } while (cursor.moveToNext())
+                                            }
+                                        }
+
+                                        if (!tables.isEmpty()) {
+                                            database.execSQL("PRAGMA foreign_keys = OFF")
+
+                                            tables.forEach {
+                                                database.execSQL("DROP TABLE $it")
+                                            }
+
+                                            database.execSQL("PRAGMA foreign_keys = OFF")
+                                        }
+
+                                        onCreate(database)
                                     }
                                 }
-
-                                if (!tables.isEmpty()) {
-                                    database.execSQL("PRAGMA foreign_keys = OFF")
-
-                                    tables.forEach {
-                                        database.execSQL("DROP TABLE $it")
-                                    }
-
-                                    database.execSQL("PRAGMA foreign_keys = OFF")
-                                }
-
-                                onCreate(database)
                             }
-
                         }
 
                         override fun onOpen(db: SupportSQLiteDatabase?) {

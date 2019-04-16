@@ -19,6 +19,7 @@ class Query(private val query: String, private val queryArgs: Array<Any?> = empt
                 null -> statement.bindNull(index + 1)
                 is ByteArray -> statement.bindBlob(index + 1, any)
                 is Double -> statement.bindDouble(index + 1, any)
+                is Int -> statement.bindLong(index + 1, any.toLong())
                 is Long -> statement.bindLong(index + 1, any)
                 is String -> statement.bindString(index + 1, any)
                 else -> throw UnsupportedOperationException("Cannot bind ${any::class} argument")
