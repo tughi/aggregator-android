@@ -52,7 +52,7 @@
     <string name="my_feed_settings__excluded_tags">Excluded tags</string>
     <string name="my_feed_settings__excluded_tags__intro">If <b>excluded tags</b> are specified, <b>My Feed</b> will ignore any entry that has been tagged with at least one of these tags.</string>
     <string name="my_feed_settings__excluded_tags__none">None</string>
-    <string name="my_feed_settings__intro"><b>My Feed</b> can be configured to displays only a subset of entries.</string>
+    <string name="my_feed_settings__intro"><b>My Feed</b> can be configured to display only a subset of entries.</string>
     <string name="my_feed_settings__included_tags">Included tags</string>
     <string name="my_feed_settings__included_tags__intro">If <b>included tags</b> are specified, <b>My Feed</b> will contain all entries that have been tagged with at least one of these tags.</string>
     <string name="my_feed_settings__included_tags__none">None</string>
