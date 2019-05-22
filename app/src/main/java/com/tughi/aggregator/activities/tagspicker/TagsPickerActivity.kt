@@ -1,6 +1,6 @@
-package com.tughi.aggregator.activities.feedtags
+package com.tughi.aggregator.activities.tagspicker
 
-import android.content.Context
+import android.app.Activity
 import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
@@ -12,7 +12,10 @@ import android.view.ViewGroup
 import android.widget.CheckedTextView
 import android.widget.ImageView
 import android.widget.ProgressBar
+import androidx.collection.LongSparseArray
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -21,29 +24,36 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.tagsettings.TagSettingsActivity
-import com.tughi.aggregator.data.FeedTags
 import com.tughi.aggregator.data.Tags
-import com.tughi.aggregator.utilities.has
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
-class FeedTagsActivity : AppActivity() {
+class TagsPickerActivity : AppActivity() {
 
     companion object {
-        private const val EXTRA_FEED_ID = "feed_id"
+        const val EXTRA_SELECTED_TAGS = "selected_tags"
+        private const val EXTRA_TITLE = "title"
 
-        fun start(context: Context, feedId: Long) {
-            context.startActivity(
-                    Intent(context, FeedTagsActivity::class.java)
-                            .putExtra(EXTRA_FEED_ID, feedId)
-            )
+        fun startForResult(fragment: Fragment, resultCode: Int, selectedTags: LongArray, title: String?) {
+            fragment.context?.let { context ->
+                fragment.startActivityForResult(
+                        Intent(context, TagsPickerActivity::class.java)
+                                .putExtra(EXTRA_SELECTED_TAGS, selectedTags)
+                                .putExtra(EXTRA_TITLE, title),
+                        resultCode
+                )
+            }
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val feedId = intent.getLongExtra(EXTRA_FEED_ID, 0)
+        intent.getStringExtra(EXTRA_TITLE)?.let {
+            title = it
+        }
+
+        val selectedTagIds = intent.getLongArrayExtra(EXTRA_SELECTED_TAGS) ?: LongArray(0)
+        val viewModelFactory = FeedTagsViewModel.Factory(selectedTagIds)
+        val viewModel = ViewModelProviders.of(this, viewModelFactory).get(FeedTagsViewModel::class.java)
 
         setContentView(R.layout.simple_list)
         val recyclerView = findViewById<RecyclerView>(R.id.list)
@@ -51,24 +61,15 @@ class FeedTagsActivity : AppActivity() {
 
         val adapter = TagsAdapter(object : TagsAdapter.Listener {
             override fun onTagClick(tag: Tag) {
-                GlobalScope.launch {
-                    if (tag.feedTag) {
-                        FeedTags.delete(FeedTags.DeleteFeedTagCriteria(feedId, tag.id))
-                    } else {
-                        FeedTags.insert(
-                                FeedTags.FEED_ID to feedId,
-                                FeedTags.TAG_ID to tag.id,
-                                FeedTags.TAG_TIME to System.currentTimeMillis()
-                        )
-                    }
-                }
+                viewModel.toggleTag(tag.id)
+
+                val selectedTags = viewModel.tags.value?.filter { it.selected } ?: emptyList()
+                setResult(Activity.RESULT_OK, Intent().putExtra(EXTRA_SELECTED_TAGS, LongArray(selectedTags.size) { selectedTags[it].id }))
             }
         })
 
         recyclerView.adapter = adapter
 
-        val viewModelFactory = FeedTagsViewModel.Factory(feedId)
-        val viewModel = ViewModelProviders.of(this, viewModelFactory).get(FeedTagsViewModel::class.java)
         viewModel.tags.observe(this, Observer { tags ->
             if (tags == null) {
                 adapter.tags = emptyList()
@@ -78,6 +79,8 @@ class FeedTagsActivity : AppActivity() {
                 progressBar.visibility = View.GONE
             }
         })
+
+        setResult(Activity.RESULT_OK, Intent().putExtra(EXTRA_SELECTED_TAGS, selectedTagIds))
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -96,7 +99,7 @@ class FeedTagsActivity : AppActivity() {
         else -> super.onOptionsItemSelected(item)
     }
 
-    data class Tag(val id: Long, val name: String, val feedTag: Boolean = false) {
+    data class Tag(val id: Long, val name: String, val selected: Boolean = false) {
         object QueryHelper : Tags.QueryHelper<Tag>(
                 Tags.ID,
                 Tags.NAME
@@ -108,45 +111,49 @@ class FeedTagsActivity : AppActivity() {
         }
     }
 
-    class FeedTag(val tagId: Long) {
-        object QueryHelper : FeedTags.QueryHelper<FeedTag>(
-                FeedTags.TAG_ID
-        ) {
-            override fun createRow(cursor: Cursor) = FeedTag(
-                    tagId = cursor.getLong(0)
-            )
+    class FeedTagsViewModel(initialSelectedTagIds: LongArray) : ViewModel() {
+        private val selectedTagIds = MutableLiveData<LongSparseArray<Boolean>>().apply {
+            val selectedTags = LongSparseArray<Boolean>()
+            for (selectedTag in initialSelectedTagIds) {
+                selectedTags.put(selectedTag, true)
+            }
+            value = selectedTags
         }
-    }
 
-    class FeedTagsViewModel(feedId: Long) : ViewModel() {
         val tags = MediatorLiveData<List<Tag>>()
 
         init {
             val tags = Tags.liveQuery(Tags.QueryUserTagsCriteria, Tag.QueryHelper)
-            val feedTags = FeedTags.liveQuery(FeedTags.QueryFeedTagsCriteria(feedId), FeedTag.QueryHelper)
 
-            this.tags.addSource(tags) { mergeTags(it, feedTags.value) }
-
-            this.tags.addSource(feedTags) { mergeTags(tags.value, it) }
+            this.tags.addSource(this.selectedTagIds) { mergeTags(tags.value, it) }
+            this.tags.addSource(tags) { mergeTags(it, this.selectedTagIds.value) }
         }
 
-        private fun mergeTags(tags: List<Tag>?, feedTags: List<FeedTag>?) {
+        private fun mergeTags(tags: List<Tag>?, selectedTags: LongSparseArray<Boolean>?) {
             this.tags.value = when {
-                tags == null || feedTags == null -> emptyList()
-                feedTags.isEmpty() -> tags
+                tags == null || selectedTags == null -> emptyList()
+                selectedTags.isEmpty -> tags
                 else -> tags.map { tag ->
                     tag.copy(
-                            feedTag = feedTags.has { it.tagId == tag.id }
+                            selected = selectedTags.get(tag.id, false)
                     )
                 }
             }
         }
 
-        class Factory(private val feedId: Long) : ViewModelProvider.Factory {
+        fun toggleTag(tagId: Long) {
+            selectedTagIds.apply {
+                val selectedTags = value ?: LongSparseArray()
+                selectedTags.put(tagId, !selectedTags.get(tagId, false))
+                value = selectedTags
+            }
+        }
+
+        class Factory(private val selectedTagIds: LongArray) : ViewModelProvider.Factory {
             override fun <T : ViewModel?> create(modelClass: Class<T>): T {
                 if (modelClass.isAssignableFrom(FeedTagsViewModel::class.java)) {
                     @Suppress("UNCHECKED_CAST")
-                    return FeedTagsViewModel(feedId) as T
+                    return FeedTagsViewModel(selectedTagIds) as T
                 }
                 throw UnsupportedOperationException()
             }
@@ -174,7 +181,7 @@ class FeedTagsActivity : AppActivity() {
             })
 
             textView.text = tag.name
-            textView.isChecked = tag.feedTag
+            textView.isChecked = tag.selected
         }
     }
 

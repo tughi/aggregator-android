@@ -12,19 +12,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.tughi.aggregator.R
-import com.tughi.aggregator.activities.feedtags.FeedTagsActivity
+import com.tughi.aggregator.activities.tagspicker.TagsPickerActivity
 import com.tughi.aggregator.activities.updatemode.UpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.startUpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.toString
+import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.FeedTags
 import com.tughi.aggregator.data.Feeds
+import com.tughi.aggregator.data.Tags
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.AutoUpdateScheduler
 import com.tughi.aggregator.services.FaviconUpdaterService
@@ -39,7 +41,8 @@ class FeedSettingsFragment : Fragment() {
     companion object {
         const val ARG_FEED_ID = "feed_id"
 
-        const val REQUEST_UPDATE_MODE = 1
+        const val REQUEST_TAGS = 1
+        const val REQUEST_UPDATE_MODE = 2
     }
 
     private lateinit var urlEditText: EditText
@@ -68,14 +71,10 @@ class FeedSettingsFragment : Fragment() {
             startUpdateModeActivity(REQUEST_UPDATE_MODE, viewModel.newUpdateMode ?: feed.updateMode)
         }
 
-
         tagsView.makeClickable {
-            val feed = viewModel.feed.value ?: return@makeClickable
-            context?.let { context ->
-                FeedTagsActivity.start(context, feed.id)
-            }
+            val feedTags = viewModel.feedTags.value ?: return@makeClickable
+            TagsPickerActivity.startForResult(this, REQUEST_TAGS, selectedTags = LongArray(feedTags.size) { feedTags[it].id }, title = getString(R.string.feed_tags))
         }
-
 
         val feedId = arguments!!.getLong(ARG_FEED_ID)
         viewModel = ViewModelProviders.of(this, FeedSettingsViewModel.Factory(feedId)).get(FeedSettingsViewModel::class.java)
@@ -106,10 +105,18 @@ class FeedSettingsFragment : Fragment() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_UPDATE_MODE && resultCode == Activity.RESULT_OK) {
-            val serializedUpdateMode = data?.getStringExtra(UpdateModeActivity.EXTRA_UPDATE_MODE) ?: return
-            viewModel.newUpdateMode = UpdateMode.deserialize(serializedUpdateMode).also { updateMode ->
-                updateModeView.setText(updateMode.toString(updateModeView.context))
+        if (resultCode == Activity.RESULT_OK) {
+            when (requestCode) {
+                REQUEST_TAGS -> {
+                    val selectedTags = data?.getLongArrayExtra(TagsPickerActivity.EXTRA_SELECTED_TAGS) ?: return
+                    viewModel.newSelectedTagIds.value = selectedTags
+                }
+                REQUEST_UPDATE_MODE -> {
+                    val serializedUpdateMode = data?.getStringExtra(UpdateModeActivity.EXTRA_UPDATE_MODE) ?: return
+                    viewModel.newUpdateMode = UpdateMode.deserialize(serializedUpdateMode).also { updateMode ->
+                        updateModeView.setText(updateMode.toString(updateModeView.context))
+                    }
+                }
             }
         }
     }
@@ -130,14 +137,35 @@ class FeedSettingsFragment : Fragment() {
         val title = titleEditText.text.toString().trim()
         val updateMode = viewModel.newUpdateMode
 
+        val oldSelectedTagIds = viewModel.oldSelectedTagIds
+        val newSelectedTagIds = viewModel.newSelectedTagIds.value ?: LongArray(0)
+
         viewModel.feed.value?.let { feed ->
             GlobalScope.launch {
-                Feeds.update(
-                        Feeds.UpdateRowCriteria(feed.id),
-                        Feeds.URL to url,
-                        Feeds.CUSTOM_TITLE to if (title.isEmpty() || title == feed.title) null else title,
-                        Feeds.UPDATE_MODE to (updateMode ?: feed.updateMode).serialize()
-                )
+                Database.transaction {
+                    Feeds.update(
+                            Feeds.UpdateRowCriteria(feed.id),
+                            Feeds.URL to url,
+                            Feeds.CUSTOM_TITLE to if (title.isEmpty() || title == feed.title) null else title,
+                            Feeds.UPDATE_MODE to (updateMode ?: feed.updateMode).serialize()
+                    )
+
+                    for (tagId in newSelectedTagIds) {
+                        if (!oldSelectedTagIds.contains(tagId)) {
+                            FeedTags.insert(
+                                    FeedTags.FEED_ID to feed.id,
+                                    FeedTags.TAG_ID to tagId,
+                                    FeedTags.TAG_TIME to System.currentTimeMillis()
+                            )
+                        }
+                    }
+
+                    for (tagId in oldSelectedTagIds) {
+                        if (!newSelectedTagIds.contains(tagId)) {
+                            FeedTags.delete(FeedTags.DeleteFeedTagCriteria(feed.id, tagId))
+                        }
+                    }
+                }
 
                 if (updateMode != null && updateMode != feed.updateMode) {
                     AutoUpdateScheduler.scheduleFeed(feed.id)
@@ -186,34 +214,83 @@ class FeedSettingsFragment : Fragment() {
     }
 
     class FeedTag(
+            val id: Long,
             val name: String
     ) {
         override fun toString(): String = name
 
         object QueryHelper : FeedTags.QueryHelper<FeedTag>(
+                FeedTags.TAG_ID,
                 FeedTags.TAG_NAME
         ) {
             override fun createRow(cursor: Cursor) = FeedTag(
-                    name = cursor.getString(0)
+                    id = cursor.getLong(0),
+                    name = cursor.getString(1)
+            )
+        }
+    }
+
+    class Tag(
+            val id: Long,
+            val name: String
+    ) {
+        override fun toString(): String = name
+
+        object QueryHelper : Tags.QueryHelper<Tag>(
+                Tags.ID,
+                Tags.NAME
+        ) {
+            override fun createRow(cursor: Cursor) = Tag(
+                    id = cursor.getLong(0),
+                    name = cursor.getString(1)
             )
         }
     }
 
     class FeedSettingsViewModel(feedId: Long) : ViewModel() {
 
-        val feed: LiveData<Feed>
-        val feedTags = FeedTags.liveQuery(FeedTags.QueryFeedTagsCriteria(feedId), FeedTag.QueryHelper)
+        val feed = MediatorLiveData<Feed>()
+        val feedTags = MediatorLiveData<List<FeedTag>>()
 
         var newUpdateMode: UpdateMode? = null
 
-        init {
-            val liveFeed = MutableLiveData<Feed>()
+        var oldSelectedTagIds = LongArray(0)
+        val newSelectedTagIds = MutableLiveData<LongArray>()
 
-            GlobalScope.launch {
-                liveFeed.postValue(Feeds.queryOne(Feeds.QueryRowCriteria(feedId), Feed.QueryHelper))
+        init {
+            val liveFeed = Feeds.liveQueryOne(Feeds.QueryRowCriteria(feedId), Feed.QueryHelper)
+            feed.addSource(liveFeed) {
+                feed.value = it
+                feed.removeSource(liveFeed)
             }
 
-            feed = liveFeed
+            val liveFeedTags = FeedTags.liveQuery(FeedTags.QueryFeedTagsCriteria(feedId), FeedTag.QueryHelper)
+            val liveTags = Tags.liveQuery(Tags.QueryAllTagsCriteria, Tag.QueryHelper)
+            feedTags.addSource(liveFeedTags) {
+                val selectedTagIds = LongArray(it.size) { index -> it[index].id }
+                oldSelectedTagIds = selectedTagIds
+                newSelectedTagIds.value = selectedTagIds
+
+                feedTags.removeSource(liveFeedTags)
+            }
+            feedTags.addSource(liveTags) { updateFeedTags(it, newSelectedTagIds.value) }
+            feedTags.addSource(newSelectedTagIds) { updateFeedTags(liveTags.value, it) }
+        }
+
+        private fun updateFeedTags(tags: List<Tag>?, selectedTagIds: LongArray?) {
+            when {
+                tags == null || selectedTagIds == null -> return
+                selectedTagIds.isEmpty() -> feedTags.value = emptyList()
+                else -> {
+                    val newFeedTags = ArrayList<FeedTag>()
+                    for (tag in tags) {
+                        if (selectedTagIds.contains(tag.id)) {
+                            newFeedTags.add(FeedTag(tag.id, tag.name))
+                        }
+                    }
+                    this.feedTags.value = newFeedTags
+                }
+            }
         }
 
         class Factory(private val feedId: Long) : ViewModelProvider.Factory {
