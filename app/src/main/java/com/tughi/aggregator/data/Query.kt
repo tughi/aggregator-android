@@ -31,7 +31,7 @@ class Query(private val query: String, private val queryArgs: Array<Any?> = empt
 
     class Builder(private val columns: Array<out Repository.Column>, private val from: String) {
         companion object {
-            val databaseTables = setOf("entry", "entry_tag", "feed", "feed_tag", "tag")
+            val databaseTables = setOf("entry", "entry_tag", "feed", "feed_tag", "my_feed_tag", "tag")
         }
 
         private val observedTables = mutableSetOf<String>().also {
