@@ -3,6 +3,24 @@ package com.tughi.aggregator.data
 import androidx.sqlite.db.SimpleSQLiteQuery
 import java.io.Serializable
 
+private const val SELECT__MY_FEED_ENTRY_IDS = """
+    SELECT ef.docid FROM entry_fts ef WHERE
+        ef.tags MATCH (
+            SELECT
+                CASE
+                    WHEN s.i AND s.e THEN s.i||' '||s.e
+                    WHEN s.i THEN s.i
+                    WHEN s.e THEN '0 '||s.e
+                    ELSE '0'
+                END
+            FROM (
+                SELECT
+                    (SELECT group_concat(mft.tag_id, ' OR ') FROM my_feed_tag mft WHERE mft.type = $MY_FEED_TAG_TYPE__INCLUDED) AS i,
+                    (SELECT group_concat('-'||mft.tag_id, ' ') FROM my_feed_tag mft WHERE mft.type = $MY_FEED_TAG_TYPE__EXCLUDED) AS e
+            ) AS s
+        )
+"""
+
 @Suppress("ClassName")
 object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateCriteria, Entries.DeleteCriteria, Entries.QueryCriteria>("entry") {
 
@@ -34,7 +52,7 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     fun markRead(criteria: EntriesQueryCriteria): Int {
         val updateCriteria = when (criteria) {
             is FeedEntriesQueryCriteria -> SimpleUpdateCriteria("feed_id = ? AND pinned_time = 0 AND read_time = 0", arrayOf(criteria.feedId))
-            is MyFeedEntriesQueryCriteria -> throw UnsupportedOperationException() // TODO: take user's tags into account
+            is MyFeedEntriesQueryCriteria -> SimpleUpdateCriteria("id IN ($SELECT__MY_FEED_ENTRY_IDS) AND pinned_time = 0 AND read_time = 0", emptyArray())
             is TagEntriesQueryCriteria -> SimpleUpdateCriteria("id IN (SELECT ef.docid FROM entry_fts ef WHERE tags MATCH ?) AND pinned_time = 0 AND read_time = 0", arrayOf(criteria.tagId))
             else -> throw IllegalArgumentException("Unsupported criteria: $criteria")
         }
@@ -112,7 +130,7 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     class MyFeedEntriesQueryCriteria(override val sessionTime: Long, override val sortOrder: SortOrder) : EntriesQueryCriteria() {
         override fun config(query: Query.Builder) {
             if (sessionTime != 0L) {
-                val selection = "e.id IN (SELECT ef.docid FROM entry_fts ef WHERE ef.tags MATCH (SELECT CASE WHEN s.i AND s.e THEN s.i||' '||s.e WHEN s.i THEN s.i WHEN s.e THEN '0 '||s.e ELSE '0' END FROM (SELECT (SELECT group_concat(mft.tag_id, ' OR ') FROM my_feed_tag mft WHERE mft.type = ${MyFeedTags.Type.INCLUDED.value}) AS i, (SELECT group_concat('-'||mft.tag_id, ' ') FROM my_feed_tag mft WHERE mft.type = ${MyFeedTags.Type.EXCLUDED.value}) AS e) AS s)) AND (e.read_time = 0 OR e.read_time > ?)"
+                val selection = "e.id IN ($SELECT__MY_FEED_ENTRY_IDS) AND (e.read_time = 0 OR e.read_time > ?)"
                 val selectionArgs: Array<Any?> = arrayOf(sessionTime)
                 query.where(selection, selectionArgs)
             }

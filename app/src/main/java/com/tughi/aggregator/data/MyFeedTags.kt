@@ -1,5 +1,8 @@
 package com.tughi.aggregator.data
 
+const val MY_FEED_TAG_TYPE__INCLUDED = 0
+const val MY_FEED_TAG_TYPE__EXCLUDED = 1
+
 @Suppress("ClassName")
 object MyFeedTags : Repository<MyFeedTags.Column, MyFeedTags.TableColumn, MyFeedTags.UpdateCriteria, MyFeedTags.DeleteCriteria, MyFeedTags.QueryCriteria>("my_feed_tag") {
 
@@ -11,8 +14,8 @@ object MyFeedTags : Repository<MyFeedTags.Column, MyFeedTags.TableColumn, MyFeed
     object TYPE : Column("type", "mft.type"), TableColumn
 
     enum class Type(val value: Int) {
-        INCLUDED(0),
-        EXCLUDED(1)
+        INCLUDED(MY_FEED_TAG_TYPE__INCLUDED),
+        EXCLUDED(MY_FEED_TAG_TYPE__EXCLUDED)
     }
 
     interface UpdateCriteria : Repository.UpdateCriteria
