@@ -15,12 +15,12 @@
         app:showAsAction="always" />
     <item
         android:id="@+id/add_star"
-        android:icon="@drawable/action_star"
+        android:icon="@drawable/action_star_empty"
         android:title="@string/action__add_star"
         app:showAsAction="always" />
     <item
         android:id="@+id/remove_star"
-        android:icon="@drawable/action_star_empty"
+        android:icon="@drawable/action_star"
         android:title="@string/action__remove_star"
         app:showAsAction="always" />
     <item
