@@ -10,7 +10,6 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
@@ -22,7 +21,7 @@ import com.tughi.aggregator.activities.tagspicker.TagsPickerActivity
 import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.MyFeedTags
 import com.tughi.aggregator.data.Tags
-import com.tughi.aggregator.widgets.makeClickable
+import com.tughi.aggregator.widgets.DropDownButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -31,8 +30,8 @@ class MyFeedSettingsFragment : Fragment() {
 
     private val viewModel by lazy { ViewModelProviders.of(this).get(MyFeedSettingsViewModel::class.java) }
 
-    private lateinit var includedTags: EditText
-    private lateinit var excludedTags: EditText
+    private lateinit var includedTags: DropDownButton
+    private lateinit var excludedTags: DropDownButton
 
     companion object {
         private const val REQUEST_INCLUDED_TAGS = 1
@@ -49,7 +48,7 @@ class MyFeedSettingsFragment : Fragment() {
         val fragmentView = inflater.inflate(R.layout.my_feed_settings_fragment, container, false)
 
         includedTags = fragmentView.findViewById(R.id.included_tags)
-        includedTags.makeClickable {
+        includedTags.setOnClickListener {
             val includedTagIds = viewModel.newIncludedTagIds.value ?: LongArray(0)
             TagsPickerActivity.startForResult(this, REQUEST_INCLUDED_TAGS, includedTagIds, getString(R.string.my_feed_settings__included_tags))
         }
@@ -62,7 +61,7 @@ class MyFeedSettingsFragment : Fragment() {
         })
 
         excludedTags = fragmentView.findViewById(R.id.excluded_tags)
-        excludedTags.makeClickable {
+        excludedTags.setOnClickListener {
             val excludedTagIds = viewModel.newExcludedTagIds.value ?: LongArray(0)
             TagsPickerActivity.startForResult(this, REQUEST_EXCLUDED_TAGS, excludedTagIds, getString(R.string.my_feed_settings__excluded_tags))
         }

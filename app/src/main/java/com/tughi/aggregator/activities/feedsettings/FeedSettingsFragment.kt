@@ -31,7 +31,7 @@ import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.AutoUpdateScheduler
 import com.tughi.aggregator.services.FaviconUpdaterService
 import com.tughi.aggregator.utilities.backupFeeds
-import com.tughi.aggregator.widgets.makeClickable
+import com.tughi.aggregator.widgets.DropDownButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -47,8 +47,8 @@ class FeedSettingsFragment : Fragment() {
 
     private lateinit var urlEditText: EditText
     private lateinit var titleEditText: EditText
-    private lateinit var updateModeView: EditText
-    private lateinit var tagsView: EditText
+    private lateinit var updateModeView: DropDownButton
+    private lateinit var tagsView: DropDownButton
 
     private lateinit var viewModel: FeedSettingsViewModel
 
@@ -66,13 +66,13 @@ class FeedSettingsFragment : Fragment() {
         updateModeView = fragmentView.findViewById(R.id.update_mode)
         tagsView = fragmentView.findViewById(R.id.tags)
 
-        updateModeView.makeClickable {
-            val feed = viewModel.feed.value ?: return@makeClickable
+        updateModeView.setOnClickListener {
+            val feed = viewModel.feed.value ?: return@setOnClickListener
             startUpdateModeActivity(REQUEST_UPDATE_MODE, viewModel.newUpdateMode ?: feed.updateMode)
         }
 
-        tagsView.makeClickable {
-            val feedTags = viewModel.feedTags.value ?: return@makeClickable
+        tagsView.setOnClickListener {
+            val feedTags = viewModel.feedTags.value ?: return@setOnClickListener
             TagsPickerActivity.startForResult(this, REQUEST_TAGS, selectedTags = LongArray(feedTags.size) { feedTags[it].id }, title = getString(R.string.feed_tags))
         }
 

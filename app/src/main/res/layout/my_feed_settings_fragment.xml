@@ -24,21 +24,12 @@
             android:layout_marginTop="8dp"
             android:text="@string/my_feed_settings__included_tags__intro" />
 
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
+        <com.tughi.aggregator.widgets.DropDownButton
+            android:id="@+id/included_tags"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:hint="@string/my_feed_settings__included_tags">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/included_tags"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:drawableEnd="@drawable/arrow_drop_down"
-                android:drawableTint="@color/dropdown_drawable" />
-
-        </com.google.android.material.textfield.TextInputLayout>
+            android:hint="@string/my_feed_settings__included_tags" />
 
         <TextView
             android:layout_width="match_parent"
@@ -46,21 +37,12 @@
             android:layout_marginTop="8dp"
             android:text="@string/my_feed_settings__excluded_tags__intro" />
 
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
+        <com.tughi.aggregator.widgets.DropDownButton
+            android:id="@+id/excluded_tags"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:hint="@string/my_feed_settings__excluded_tags">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/excluded_tags"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:drawableEnd="@drawable/arrow_drop_down"
-                android:drawableTint="@color/dropdown_drawable" />
-
-        </com.google.android.material.textfield.TextInputLayout>
+            android:hint="@string/my_feed_settings__excluded_tags" />
 
     </LinearLayout>
 

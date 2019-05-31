@@ -23,7 +23,7 @@ import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.AutoUpdateScheduler
 import com.tughi.aggregator.services.FaviconUpdaterService
-import com.tughi.aggregator.widgets.makeClickable
+import com.tughi.aggregator.widgets.DropDownButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -42,7 +42,7 @@ class SubscribeFeedFragment : Fragment() {
 
     private lateinit var urlTextView: TextView
     private lateinit var titleTextView: TextView
-    private lateinit var updateModeTextView: EditText
+    private lateinit var updateModeTextView: DropDownButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,8 +64,8 @@ class SubscribeFeedFragment : Fragment() {
         titleTextView.text = arguments.getString(ARG_TITLE)
 
         updateModeTextView = fragmentView.findViewById(R.id.update_mode)
-        updateModeTextView.makeClickable {
-            val currentUpdateMode = viewModel.updateMode.value ?: return@makeClickable
+        updateModeTextView.setOnClickListener {
+            val currentUpdateMode = viewModel.updateMode.value ?: return@setOnClickListener
             startUpdateModeActivity(REQUEST_UPDATE_MODE, currentUpdateMode)
         }
 

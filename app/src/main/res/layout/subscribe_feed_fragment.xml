@@ -42,22 +42,12 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
+        <com.tughi.aggregator.widgets.DropDownButton
+            android:id="@+id/update_mode"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:hint="@string/subscribe_feed__update_mode">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/update_mode"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:drawableEnd="@drawable/arrow_drop_down"
-                android:drawableTint="@color/dropdown_drawable"
-                tools:text="@string/subscribe_feed__update_mode__default" />
-
-        </com.google.android.material.textfield.TextInputLayout>
+            android:hint="@string/subscribe_feed__update_mode" />
 
     </LinearLayout>
 
