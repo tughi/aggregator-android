@@ -9,14 +9,15 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
 import androidx.sqlite.db.SupportSQLiteQuery
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
+import androidx.sqlite.db.transaction
 import com.tughi.aggregator.App
-import com.tughi.aggregator.data.migrations.F000T020
-import com.tughi.aggregator.data.migrations.F017T020
-import com.tughi.aggregator.data.migrations.F019T020
 import com.tughi.aggregator.utilities.DATABASE_NAME
 import com.tughi.aggregator.utilities.restoreFeeds
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStreamReader
 import java.lang.ref.WeakReference
 
 object Database {
@@ -24,7 +25,7 @@ object Database {
     private val sqlite: SupportSQLiteOpenHelper = FrameworkSQLiteOpenHelperFactory().create(
             SupportSQLiteOpenHelper.Configuration.builder(App.instance)
                     .name(DATABASE_NAME)
-                    .callback(object : SupportSQLiteOpenHelper.Callback(20) {
+                    .callback(object : SupportSQLiteOpenHelper.Callback(21) {
                         override fun onConfigure(db: SupportSQLiteDatabase?) {
                             db?.apply {
                                 setForeignKeyConstraintsEnabled(true)
@@ -33,7 +34,11 @@ object Database {
                         }
 
                         override fun onCreate(database: SupportSQLiteDatabase?) {
-                            onUpgrade(database, 0, version)
+                            if (database == null) {
+                                throw IllegalStateException()
+                            }
+
+                            executeScript(database, 0)
                         }
 
                         override fun onUpgrade(database: SupportSQLiteDatabase?, oldVersion: Int, newVersion: Int) {
@@ -41,16 +46,61 @@ object Database {
                                 throw IllegalStateException()
                             }
 
-                            when (oldVersion) {
-                                0 -> F000T020.migrate(database)
-                                17 -> F017T020.migrate(database)
-                                19 -> F019T020.migrate(database)
-                                else -> dropDatabase(database, "Cannot migrate from $oldVersion to $newVersion")
+                            var databaseVersion = database.version
+                            while (databaseVersion != newVersion) {
+                                executeScript(database, databaseVersion)
+
+                                databaseVersion = database.version
+                            }
+                        }
+
+                        private fun executeScript(database: SupportSQLiteDatabase, version: Int) {
+                            val scriptVersion = when {
+                                version > 99 -> version.toString()
+                                version > 9 -> "0$version"
+                                else -> "00$version"
+                            }
+                            val scriptFile = "database/$scriptVersion.sql"
+                            val scriptStatements = mutableListOf<String>()
+
+                            try {
+                                BufferedReader(InputStreamReader(App.instance.assets.open(scriptFile))).use { scriptReader ->
+                                    val statement = StringBuilder()
+
+                                    var line = scriptReader.readLine()
+                                    while (line != null) {
+                                        val trimmedLine = line.trim()
+                                        if (trimmedLine.isNotEmpty()) {
+                                            if (trimmedLine.startsWith("--")) {
+                                                if (statement.isNotEmpty()) {
+                                                    scriptStatements.add(statement.toString())
+                                                }
+                                                statement.clear()
+                                            } else {
+                                                statement.append(line).append('\n')
+                                            }
+                                        }
+
+                                        line = scriptReader.readLine()
+                                    }
+
+                                    if (statement.isNotEmpty()) {
+                                        scriptStatements.add(statement.toString())
+                                    }
+                                }
+                            } catch (exception: IOException) {
+                                dropDatabase(database, "Cannot upgrade database from version $version")
+                            }
+
+                            database.transaction {
+                                for (statement in scriptStatements) {
+                                    database.execSQL(statement)
+                                }
                             }
                         }
 
                         override fun onDowngrade(database: SupportSQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-                            dropDatabase(database, "Cannot migrate from $oldVersion to $newVersion")
+                            dropDatabase(database, "Cannot downgrade from version $oldVersion to $newVersion")
                         }
 
                         private fun dropDatabase(database: SupportSQLiteDatabase?, message: String) {
@@ -216,10 +266,6 @@ object Database {
 
         }
 
-    }
-
-    interface Migration {
-        fun migrate(database: SupportSQLiteDatabase)
     }
 
 }
