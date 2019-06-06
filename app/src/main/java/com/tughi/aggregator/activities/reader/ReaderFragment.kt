@@ -22,6 +22,7 @@ import com.tughi.aggregator.activities.entrytags.EntryTagsActivity
 import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.data.EntryTags
 import com.tughi.aggregator.data.Tags
+import com.tughi.aggregator.utilities.Html
 import com.tughi.aggregator.utilities.Language
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -96,7 +97,7 @@ class ReaderFragment : Fragment() {
                         .replace("{{ entry.feed_name }}", entryFeedTitle)
                         .replace("{{ entry.link }}", entryLink ?: "#")
                         .replace("{{ entry.date }}", DateUtils.formatDateTime(activity, entryPublished, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_YEAR))
-                        .replace("{{ entry.title }}", entryTitle ?: "")
+                        .replace("{{ entry.title }}", Html.encode(entryTitle ?: ""))
                         .replace("{{ entry.author }}", entryAuthor ?: "")
                         .replace("{{ entry.content }}", entryContent ?: "")
 

@@ -1,7 +1,7 @@
 package com.tughi.aggregator.feeds
 
-import android.text.Html
 import android.util.Log
+import androidx.core.text.HtmlCompat
 import com.tughi.xml.Document
 import com.tughi.xml.TagElement
 import com.tughi.xml.TextElement
@@ -10,7 +10,7 @@ import org.apache.commons.codec.binary.Hex
 import org.apache.commons.codec.digest.DigestUtils
 import org.xml.sax.Attributes
 import org.xml.sax.ContentHandler
-import java.util.*
+import java.util.Date
 
 /**
  * An unified RSS and Atom parser.
@@ -69,7 +69,7 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
         })
         itemElement.addChild(object : TextElement("title", *rssUris) {
             override fun handleText(text: String) {
-                handleEntryTitle(text)
+                handleEntryTitle(text, "html")
             }
         })
         itemElement.addChild(object : TextElement("link", *rssUris) {
@@ -177,7 +177,7 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
         })
         entryElement.addChild(object : TypedTextElement("title", *atomUris) {
             override fun handleText(text: String, type: String) {
-                handleEntryTitle(text)
+                handleEntryTitle(text, type)
             }
         })
         entryElement.addChild(object : TagElement("link", *atomUris) {
@@ -317,9 +317,11 @@ class FeedParser(private val feedUrl: String, private val listener: Listener) {
         entryLink = text // TODO: convert to absolute URL
     }
 
-    private fun handleEntryTitle(text: String) {
+    private fun handleEntryTitle(text: String, type: String) {
         var title = text
-        title = Html.fromHtml(title).toString()
+        if (type == "html") {
+            title = HtmlCompat.fromHtml(title, HtmlCompat.FROM_HTML_MODE_LEGACY).toString()
+        }
         title = title.trim()
         entryTitle = title
     }
