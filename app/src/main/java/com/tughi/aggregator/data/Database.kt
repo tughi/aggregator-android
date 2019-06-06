@@ -3,12 +3,12 @@ package com.tughi.aggregator.data
 import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
 import androidx.sqlite.db.SupportSQLiteQuery
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
-import androidx.sqlite.db.transaction
 import com.tughi.aggregator.App
 import com.tughi.aggregator.data.migrations.F000T020
 import com.tughi.aggregator.data.migrations.F017T020
@@ -45,36 +45,18 @@ object Database {
                                 0 -> F000T020.migrate(database)
                                 17 -> F017T020.migrate(database)
                                 19 -> F019T020.migrate(database)
-                                else -> {
-                                    reset(database)
-                                    F000T020.migrate(database)
-                                }
+                                else -> dropDatabase(database, "Cannot migrate from $oldVersion to $newVersion")
                             }
                         }
 
-                        private fun reset(database: SupportSQLiteDatabase) {
-                            database.transaction {
-                                val tables = mutableListOf<String>()
-                                database.query("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'").use { cursor ->
-                                    if (cursor.moveToFirst()) {
-                                        do {
-                                            tables.add(cursor.getString(0))
-                                        } while (cursor.moveToNext())
-                                    }
-                                }
+                        override fun onDowngrade(database: SupportSQLiteDatabase?, oldVersion: Int, newVersion: Int) {
+                            dropDatabase(database, "Cannot migrate from $oldVersion to $newVersion")
+                        }
 
-                                if (!tables.isEmpty()) {
-                                    database.execSQL("PRAGMA foreign_keys = OFF")
-
-                                    tables.forEach {
-                                        database.execSQL("DROP TABLE $it")
-                                    }
-
-                                    database.execSQL("PRAGMA foreign_keys = OFF")
-                                }
-
-                                database.version = 0
-                            }
+                        private fun dropDatabase(database: SupportSQLiteDatabase?, message: String) {
+                            Log.e(javaClass.name, message)
+                            onCorruption(database)
+                            System.exit(1)
                         }
 
                         override fun onOpen(db: SupportSQLiteDatabase?) {
