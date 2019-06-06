@@ -4,11 +4,13 @@ import android.app.IntentService
 import android.content.Intent
 import android.database.Cursor
 import android.graphics.BitmapFactory
+import android.util.Log
 import com.tughi.aggregator.App
 import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.utilities.Http
 import com.tughi.aggregator.utilities.toAbsoluteUrl
 import okhttp3.Request
+import java.io.IOException
 import java.util.regex.Pattern
 
 // TODO: re-factor to a JobService-based solution
@@ -28,9 +30,14 @@ class FaviconUpdaterService : IntentService("FaviconUpdater") {
         val feed = Feeds.queryOne(Feeds.QueryRowCriteria(feedId), Feed.QueryHelper)
         val feedLink = feed?.link ?: return
 
-        var icon = detectWebsiteFavicon(feedLink)
-        if (icon == null) {
-            icon = detectRootFavicon(feedLink)
+        var icon: Icon? = null
+        try {
+            icon = detectWebsiteFavicon(feedLink)
+            if (icon == null) {
+                icon = detectRootFavicon(feedLink)
+            }
+        } catch (exception: IOException) {
+            Log.w(javaClass.name, "Failed to detect favicon", exception)
         }
 
         if (icon?.content != null) {
