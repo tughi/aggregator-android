@@ -9,6 +9,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import java.io.IOException
+import java.net.MalformedURLException
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 
@@ -20,10 +21,16 @@ object Http {
             .addInterceptor(UserAgentInterceptor())
             .build()
 
-    suspend fun request(link: String, config: (Request.Builder) -> Unit = {}) = suspendCancellableCoroutine<Result<Response>> {
+    suspend fun request(url: String, config: (Request.Builder) -> Unit = {}) = suspendCancellableCoroutine<Result<Response>> {
         val request = Request.Builder()
-                .url(link)
-                .apply { config(this) }
+                .apply {
+                    try {
+                        url(url)
+                    } catch (exception: IllegalArgumentException) {
+                        it.resume(Failure(MalformedURLException(url)))
+                    }
+                    config(this)
+                }
                 .build()
 
         val call = client.newCall(request)
