@@ -12,7 +12,7 @@ import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.R
 import com.tughi.aggregator.preferences.UpdateSettings
-import com.tughi.aggregator.services.FeedUpdater
+import com.tughi.aggregator.services.FeedUpdateHelper
 import com.tughi.aggregator.utilities.APP_THEME_DARK
 import com.tughi.aggregator.utilities.APP_THEME_LIGHT
 import kotlinx.coroutines.GlobalScope
@@ -88,7 +88,7 @@ class MainActivity : AppActivity() {
 
             if (UpdateSettings.backgroundUpdates) {
                 GlobalScope.launch {
-                    FeedUpdater.updateOutdatedFeeds(true)
+                    FeedUpdateHelper.updateOutdatedFeeds(true)
                 }
             }
         }

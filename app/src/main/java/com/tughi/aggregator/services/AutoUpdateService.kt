@@ -17,10 +17,10 @@ class AutoUpdateService : JobService() {
     override fun onStartJob(params: JobParameters?): Boolean {
         if (UpdateSettings.backgroundUpdates) {
             val job = GlobalScope.launch {
-                val feeds = Feeds.query(Feeds.OutdatedCriteria(System.currentTimeMillis()), FeedUpdater.Feed.QueryHelper)
+                val feeds = Feeds.query(Feeds.OutdatedCriteria(System.currentTimeMillis()), FeedUpdateHelper.Feed.QueryHelper)
 
                 val jobs = feeds.map { feed ->
-                    async { FeedUpdater.updateFeed(feed) }
+                    async { FeedUpdateHelper.updateFeed(feed) }
                 }
 
                 jobs.forEach {

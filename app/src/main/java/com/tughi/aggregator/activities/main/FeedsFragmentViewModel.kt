@@ -8,7 +8,7 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.UpdateMode
-import com.tughi.aggregator.services.FeedUpdater
+import com.tughi.aggregator.services.FeedUpdateHelper
 import java.io.Serializable
 
 class FeedsFragmentViewModel(application: Application) : AndroidViewModel(application) {
@@ -19,12 +19,12 @@ class FeedsFragmentViewModel(application: Application) : AndroidViewModel(applic
 
     val feeds: LiveData<List<Feed>> = MediatorLiveData<List<Feed>>().also {
         it.addSource(databaseFeeds) { feeds ->
-            it.value = transformFeeds(feeds, expandedFeedId.value, FeedUpdater.updatingFeedIds.value.orEmpty())
+            it.value = transformFeeds(feeds, expandedFeedId.value, FeedUpdateHelper.updatingFeedIds.value.orEmpty())
         }
         it.addSource(expandedFeedId) { expandedFeedId ->
-            it.value = transformFeeds(databaseFeeds.value, expandedFeedId, FeedUpdater.updatingFeedIds.value.orEmpty())
+            it.value = transformFeeds(databaseFeeds.value, expandedFeedId, FeedUpdateHelper.updatingFeedIds.value.orEmpty())
         }
-        it.addSource(FeedUpdater.updatingFeedIds) { updatingFeedIds ->
+        it.addSource(FeedUpdateHelper.updatingFeedIds) { updatingFeedIds ->
             it.value = transformFeeds(databaseFeeds.value, expandedFeedId.value, updatingFeedIds.orEmpty())
         }
     }

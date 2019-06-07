@@ -12,26 +12,21 @@ import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.feeds.FeedParser
 import com.tughi.aggregator.utilities.Failure
 import com.tughi.aggregator.utilities.Http
-import com.tughi.aggregator.utilities.Result
 import com.tughi.aggregator.utilities.Success
+import com.tughi.aggregator.utilities.then
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.Request
 import okhttp3.Response
-import java.io.IOException
-import java.util.*
+import java.util.Date
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 
-object FeedUpdater {
+object FeedUpdateHelper {
 
     val updatingFeedIds = MutableLiveData<MutableSet<Long>>()
 
@@ -43,10 +38,9 @@ object FeedUpdater {
     suspend fun updateFeed(feed: Feed) {
         addUpdatingFeed(feed.id)
         try {
-            val result = requestFeed(feed)
-            when (result) {
-                is Failure -> updateFeedContent(feed, result.error)
+            when (val result = requestFeed(feed)) {
                 is Success -> parseFeed(feed, result.data)
+                is Failure -> updateFeedContent(feed, result.cause)
             }
         } finally {
             withContext(NonCancellable) {
@@ -60,7 +54,9 @@ object FeedUpdater {
             val feeds = Feeds.query(Feeds.OutdatedCriteria(System.currentTimeMillis(), appLaunch), Feed.QueryHelper)
 
             val jobs = feeds.map { feed ->
-                async { FeedUpdater.updateFeed(feed) }
+                async {
+                    updateFeed(feed)
+                }
             }
 
             jobs.forEach {
@@ -95,49 +91,29 @@ object FeedUpdater {
         }
     }
 
-    private suspend fun requestFeed(feed: Feed): Result<Response> = suspendCancellableCoroutine {
-        val request = Request.Builder()
-                .url(feed.url)
-                .apply {
-                    var enableDeltaUpdates = false
+    private suspend fun requestFeed(feed: Feed) = Http.request(feed.url) { requestBuilder ->
+        var enableDeltaUpdates = false
 
-                    val httpEtag = feed.httpEtag
-                    if (httpEtag != null) {
-                        enableDeltaUpdates = true
-                        addHeader("If-None-Match", httpEtag)
-                    }
+        val httpEtag = feed.httpEtag
+        if (httpEtag != null) {
+            enableDeltaUpdates = true
+            requestBuilder.addHeader("If-None-Match", httpEtag)
+        }
 
-                    val httpLastModified = feed.httpLastModified
-                    if (httpLastModified != null) {
-                        enableDeltaUpdates = true
-                        addHeader("If-Modified-Since", httpLastModified)
-                    }
+        val httpLastModified = feed.httpLastModified
+        if (httpLastModified != null) {
+            enableDeltaUpdates = true
+            requestBuilder.addHeader("If-Modified-Since", httpLastModified)
+        }
 
-                    if (enableDeltaUpdates) {
-                        addHeader("A-IM", "feed")
-                    }
-                }
-                .build()
-
-        Http.client.newCall(request)
-                .also { call ->
-                    it.invokeOnCancellation {
-                        call.cancel()
-                    }
-                }
-                .enqueue(object : Callback {
-                    override fun onResponse(call: Call, response: Response) {
-                        if (response.isSuccessful || response.code() == 304) {
-                            it.resume(Success(response))
-                        } else {
-                            it.resume(Failure(UnexpectedHttpResponseException(response)))
-                        }
-                    }
-
-                    override fun onFailure(call: Call, exception: IOException) {
-                        it.resume(Failure(exception))
-                    }
-                })
+        if (enableDeltaUpdates) {
+            requestBuilder.addHeader("A-IM", "feed")
+        }
+    }.then { response ->
+        when {
+            response.isSuccessful || response.code() == 304 -> Success(response)
+            else -> Failure(UnexpectedHttpResponseException(response))
+        }
     }
 
     private fun parseFeed(feed: Feed, response: Response) {

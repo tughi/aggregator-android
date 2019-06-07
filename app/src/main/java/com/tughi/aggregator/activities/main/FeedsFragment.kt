@@ -15,7 +15,7 @@ import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.subscribe.SubscribeActivity
 import com.tughi.aggregator.activities.updatesettings.UpdateSettingsActivity
 import com.tughi.aggregator.services.AutoUpdateScheduler
-import com.tughi.aggregator.services.FeedUpdater
+import com.tughi.aggregator.services.FeedUpdateHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -91,7 +91,7 @@ class FeedListFragment : Fragment(), FeedsFragmentFeedAdapterListener {
 
     override fun onUpdateFeed(feed: FeedsFragmentViewModel.Feed) {
         GlobalScope.launch(Dispatchers.IO) {
-            FeedUpdater.updateFeed(feed.id)
+            FeedUpdateHelper.updateFeed(feed.id)
 
             AutoUpdateScheduler.schedule()
         }

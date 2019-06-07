@@ -20,9 +20,10 @@ object Http {
             .addInterceptor(UserAgentInterceptor())
             .build()
 
-    suspend fun request(link: String) = suspendCancellableCoroutine<Result<Response>> {
+    suspend fun request(link: String, config: (Request.Builder) -> Unit = {}) = suspendCancellableCoroutine<Result<Response>> {
         val request = Request.Builder()
                 .url(link)
+                .apply { config(this) }
                 .build()
 
         val call = client.newCall(request)
