@@ -29,7 +29,7 @@ import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.Tags
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.AutoUpdateScheduler
-import com.tughi.aggregator.services.FaviconUpdaterService
+import com.tughi.aggregator.services.FaviconUpdateScheduler
 import com.tughi.aggregator.utilities.backupFeeds
 import com.tughi.aggregator.widgets.DropDownButton
 import kotlinx.coroutines.Dispatchers
@@ -176,7 +176,7 @@ class FeedSettingsFragment : Fragment() {
                 }
 
                 launch(Dispatchers.Main) {
-                    FaviconUpdaterService.start(feed.id)
+                    FaviconUpdateScheduler.schedule(feed.id)
 
                     activity?.finish()
                 }

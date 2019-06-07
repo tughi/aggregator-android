@@ -13,3 +13,8 @@ fun <T> Result<T>.otherwise(catch: (Throwable) -> Unit) = when (this) {
     is Success -> Unit
     is Failure -> catch(error)
 }
+
+fun <T> Result<T>.getOrNull() = when (this) {
+    is Success -> data
+    is Failure -> null
+}

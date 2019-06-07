@@ -58,8 +58,9 @@
             android:label="@string/opml_import__title" />
 
         <service
-            android:name=".services.FaviconUpdaterService"
-            android:exported="false" />
+            android:name=".services.FaviconUpdateService"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <service
             android:name=".services.AutoUpdateService"

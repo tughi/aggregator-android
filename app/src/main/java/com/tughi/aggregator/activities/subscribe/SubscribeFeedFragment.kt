@@ -9,7 +9,6 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -22,7 +21,7 @@ import com.tughi.aggregator.data.DefaultUpdateMode
 import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.AutoUpdateScheduler
-import com.tughi.aggregator.services.FaviconUpdaterService
+import com.tughi.aggregator.services.FaviconUpdateScheduler
 import com.tughi.aggregator.widgets.DropDownButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -110,7 +109,7 @@ class SubscribeFeedFragment : Fragment() {
                     }
 
                     launch(Dispatchers.Main) {
-                        FaviconUpdaterService.start(feedId)
+                        FaviconUpdateScheduler.schedule(feedId)
 
                         activity?.finish()
                     }

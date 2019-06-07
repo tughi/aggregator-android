@@ -23,7 +23,7 @@ import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.feeds.OpmlFeed
 import com.tughi.aggregator.feeds.OpmlParser
 import com.tughi.aggregator.services.AutoUpdateScheduler
-import com.tughi.aggregator.services.FaviconUpdaterService
+import com.tughi.aggregator.services.FaviconUpdateScheduler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -123,7 +123,7 @@ class OpmlImportActivity : AppActivity() {
                                 )
 
                                 GlobalScope.launch(Dispatchers.Main) {
-                                    FaviconUpdaterService.start(feedId)
+                                    FaviconUpdateScheduler.schedule(feedId)
                                 }
                             }
                         }

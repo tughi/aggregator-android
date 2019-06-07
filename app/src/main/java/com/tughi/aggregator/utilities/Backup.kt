@@ -7,7 +7,7 @@ import com.tughi.aggregator.feeds.OpmlFeed
 import com.tughi.aggregator.feeds.OpmlGenerator
 import com.tughi.aggregator.feeds.OpmlParser
 import com.tughi.aggregator.services.AutoUpdateScheduler
-import com.tughi.aggregator.services.FaviconUpdaterService
+import com.tughi.aggregator.services.FaviconUpdateScheduler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -50,7 +50,7 @@ fun restoreFeeds() {
                                     )
 
                                     GlobalScope.launch(Dispatchers.Main) {
-                                        FaviconUpdaterService.start(feedId)
+                                        FaviconUpdateScheduler.schedule(feedId)
                                     }
                                 }
                             }
