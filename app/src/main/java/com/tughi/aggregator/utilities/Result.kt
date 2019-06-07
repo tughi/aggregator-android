@@ -9,7 +9,7 @@ fun <I, O> Result<I>.then(transform: (I) -> Result<O>) = when (this) {
     is Failure -> this
 }
 
-fun <T> Result<T>.otherwise(catch: (Throwable) -> Unit) = when (this) {
+fun <T> Result<T>.onFailure(catch: (Throwable) -> Unit) = when (this) {
     is Success -> Unit
     is Failure -> catch(cause)
 }
