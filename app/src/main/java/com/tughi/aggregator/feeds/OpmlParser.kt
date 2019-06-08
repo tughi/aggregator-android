@@ -10,7 +10,7 @@ import org.xml.sax.Attributes
 import org.xml.sax.SAXException
 import java.io.IOException
 import java.io.InputStream
-import java.util.*
+import java.util.LinkedList
 
 object OpmlParser {
 
@@ -47,23 +47,22 @@ object OpmlParser {
                         feedCustomTitle = null
                     }
                     val feedUrl = attributes.getValue("xmlUrl")
-                    val feedUpdateMode = attributes.getValue("updateMode").let {
-                        if (it == null) {
-                            return@let DefaultUpdateMode
+                    if (feedUrl != null) {
+                        val feedUpdateMode = when (val value = attributes.getValue("updateMode")) {
+                            null -> DefaultUpdateMode
+                            else -> UpdateMode.deserialize(value)
                         }
+                        val feedCategory = if (path.isEmpty()) null else path[0]
 
-                        return@let UpdateMode.deserialize(it)
+                        listener.onFeedParsed(OpmlFeed(
+                                url = feedUrl,
+                                title = feedTitle,
+                                link = feedLink,
+                                category = feedCategory,
+                                customTitle = feedCustomTitle,
+                                updateMode = feedUpdateMode
+                        ))
                     }
-                    val feedCategory = if (path.isEmpty()) null else path[0]
-
-                    listener.onFeedParsed(OpmlFeed(
-                            url = feedUrl,
-                            title = feedTitle,
-                            link = feedLink,
-                            category = feedCategory,
-                            customTitle = feedCustomTitle,
-                            updateMode = feedUpdateMode
-                    ))
                 }
 
                 path.add(text)
