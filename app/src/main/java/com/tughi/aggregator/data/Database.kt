@@ -162,7 +162,7 @@ object Database {
             return
         }
 
-        synchronized(this) {
+        synchronized(tableObservers) {
             if (tableObservers.size > 0) {
                 val vanishedObservers = mutableListOf<TableObserver>()
 
