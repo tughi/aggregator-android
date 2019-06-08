@@ -147,13 +147,12 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
                 Entries.TYPE
         ) {
             private val context = App.instance
-            private val calendar = Calendar.getInstance()
             private val formattedDates = LongSparseArray<String>()
 
             override fun createRow(cursor: Cursor): Entry {
                 val publishTime = cursor.getLong(5)
 
-                val calendar = calendar
+                val calendar = Calendar.getInstance()
                 calendar.timeInMillis = publishTime
                 val numericDate = (calendar.get(Calendar.YEAR) * 10_000 + calendar.get(Calendar.MONTH) * 100 + calendar.get(Calendar.DAY_OF_MONTH)) * 100_000L
 
