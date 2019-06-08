@@ -13,6 +13,7 @@ import androidx.sqlite.db.transaction
 import com.tughi.aggregator.App
 import com.tughi.aggregator.utilities.DATABASE_NAME
 import com.tughi.aggregator.utilities.restoreFeeds
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.BufferedReader
@@ -110,7 +111,7 @@ object Database {
                         }
 
                         override fun onOpen(db: SupportSQLiteDatabase?) {
-                            GlobalScope.launch {
+                            GlobalScope.launch(Dispatchers.IO) {
                                 restoreFeeds()
                             }
                         }
@@ -235,7 +236,7 @@ object Database {
             }
 
             private fun update() {
-                GlobalScope.launch {
+                GlobalScope.launch(Dispatchers.IO) {
                     sqlite.readableDatabase.query(query).use { cursor ->
                         val data = transform(cursor)
                         postValue(data)
