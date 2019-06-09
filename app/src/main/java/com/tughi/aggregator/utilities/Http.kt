@@ -28,6 +28,7 @@ object Http {
                         url(url)
                     } catch (exception: IllegalArgumentException) {
                         it.resume(Failure(MalformedURLException(url)))
+                        return@suspendCancellableCoroutine
                     }
                     config(this)
                 }
