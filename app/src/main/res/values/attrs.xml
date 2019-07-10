@@ -3,5 +3,6 @@
     <declare-styleable name="Aggregator">
         <attr name="colorBottomNavigation" format="color" />
         <attr name="colorEntryListHeader" format="color" />
+        <attr name="colorPopupBackground" format="color" />
     </declare-styleable>
 </resources>

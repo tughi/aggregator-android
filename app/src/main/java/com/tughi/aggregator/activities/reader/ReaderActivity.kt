@@ -1,7 +1,9 @@
 package com.tughi.aggregator.activities.reader
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.database.Cursor
+import android.graphics.Color
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.ActionBar
@@ -25,6 +27,19 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
     companion object {
         const val EXTRA_ENTRIES_QUERY_CRITERIA = "entries_query_criteria"
         const val EXTRA_ENTRIES_POSITION = "entries_position"
+    }
+
+    val style by lazy {
+        val styledAttributes = obtainStyledAttributes(intArrayOf(R.attr.colorAccent, android.R.attr.colorBackground))
+
+        val accentColor = styledAttributes.getColor(0, Color.rgb(0xFF, 0x66, 0x00))
+
+        @SuppressLint("ResourceType")
+        val backgroundColor = styledAttributes.getColor(1, 0)
+
+        styledAttributes.recycle()
+
+        return@lazy Style(accentColor, backgroundColor)
     }
 
     private var entries: List<Entry> = emptyList()
@@ -171,6 +186,12 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
                 throw UnsupportedOperationException()
             }
         }
+    }
+
+    data class Style(val accentColor: Int, val backgroundColor: Int) {
+        val accentHexColor = asHexColor(accentColor)
+
+        private fun asHexColor(color: Int) = "#%06x".format(color and 0xffffff)
     }
 
 }

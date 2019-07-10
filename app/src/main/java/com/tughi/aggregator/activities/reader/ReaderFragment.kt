@@ -75,9 +75,9 @@ class ReaderFragment : Fragment() {
             }
             webView.scrollBarStyle = WebView.SCROLLBARS_INSIDE_OVERLAY
 
-            val attributes = context!!.obtainStyledAttributes(intArrayOf(android.R.attr.colorBackground))
-            webView.setBackgroundColor(attributes.getColor(0, 0))
-            attributes.recycle()
+            val style = (activity as ReaderActivity).style
+
+            webView.setBackgroundColor(style.backgroundColor)
 
             viewModel.entry.observe(this, Observer { entry ->
                 loadedEntry = entry ?: return@Observer
@@ -92,6 +92,7 @@ class ReaderFragment : Fragment() {
 
                 // TODO: run this in a coroutine
                 val entryHtml = entryTemplate
+                        .replace("#ff6600", style.accentHexColor)
                         .replace("{{ reader.theme }}", App.theme.value?.toLowerCase() ?: "")
                         .replace("{{ layout_direction }}", if (Language.isRightToLeft(entryFeedLanguage)) "rtl" else "ltr")
                         .replace("{{ entry.feed_name }}", entryFeedTitle)

@@ -4,17 +4,14 @@
     <color name="dark_theme__background">#212121</color>
     <color name="dark_theme__primary">#212121</color>
     <color name="dark_theme__primary_dark">#000000</color>
-    <color name="dark_theme__accent">#ff6600</color>
-    <color name="dark_theme__bottom_navigation">#ff6600</color>
     <color name="dark_theme__entry_list_header">#424242</color>
 
     <color name="light_theme__background">#fafafa</color>
     <color name="light_theme__primary">#fafafa</color>
     <color name="light_theme__primary_dark">#000000</color>
-    <color name="light_theme__accent">#ff6600</color>
-    <color name="light_theme__bottom_navigation">#ff6600</color>
     <color name="light_theme__entry_list_header">#eeeeee</color>
 
-    <color name="popup_background">#FFD180</color>
+    <color name="fallback__accent">#ff6d00</color>
+    <color name="fallback__popup_background">#ffd180</color>
 
 </resources>

@@ -21,6 +21,13 @@ abstract class AppActivity : AppCompatActivity() {
                 theme == APP_THEME_DARK && this is MainActivity -> R.style.DarkTheme_NoActionBar
                 else -> R.style.DarkTheme
             })
+            getTheme().apply {
+                applyStyle(R.style.AccentBlue, true)
+                when (theme) {
+                    APP_THEME_LIGHT -> applyStyle(R.style.BottomNavigationLight, true)
+                    else -> applyStyle(R.style.BottomNavigationDark, true)
+                }
+            }
         }
 
         super.onCreate(savedInstanceState)
