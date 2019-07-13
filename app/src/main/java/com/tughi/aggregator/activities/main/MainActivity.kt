@@ -13,8 +13,6 @@ import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.R
 import com.tughi.aggregator.preferences.UpdateSettings
 import com.tughi.aggregator.services.FeedUpdateHelper
-import com.tughi.aggregator.utilities.APP_THEME_DARK
-import com.tughi.aggregator.utilities.APP_THEME_LIGHT
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -67,8 +65,15 @@ class MainActivity : AppActivity() {
         drawer = drawerLayout.findViewById(R.id.drawer)
         drawer.setNavigationItemSelectedListener {
             when (it.itemId) {
-                R.id.dark_theme -> App.theme.value = APP_THEME_DARK
-                R.id.light_theme -> App.theme.value = APP_THEME_LIGHT
+                R.id.dark_theme -> App.style.value = App.style.value?.copy(theme = App.Style.Theme.DARK)
+                R.id.light_theme -> App.style.value = App.style.value?.copy(theme = App.Style.Theme.LIGHT)
+                R.id.accent_blue -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.BLUE)
+                R.id.accent_green -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.GREEN)
+                R.id.accent_orange -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.ORANGE)
+                R.id.accent_purple -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.PURPLE)
+                R.id.accent_red -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.RED)
+                R.id.navigation_bar_style_accent -> App.style.value = App.style.value?.copy(navigationBar = App.Style.NavigationBar.ACCENT)
+                R.id.navigation_bar_style_gray -> App.style.value = App.style.value?.copy(navigationBar = App.Style.NavigationBar.GRAY)
             }
             return@setNavigationItemSelectedListener true
         }

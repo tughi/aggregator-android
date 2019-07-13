@@ -4,36 +4,33 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import com.tughi.aggregator.activities.main.MainActivity
-import com.tughi.aggregator.utilities.APP_THEME_DARK
-import com.tughi.aggregator.utilities.APP_THEME_LIGHT
 
 abstract class AppActivity : AppCompatActivity() {
 
-    private var activityTheme: String? = null
+    private var currentStyle: App.Style? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        App.theme.value.let { theme ->
-            activityTheme = theme
+        App.style.value?.let { style ->
+            currentStyle = style
 
             setTheme(when {
-                theme == APP_THEME_LIGHT && this is MainActivity -> R.style.LightTheme_NoActionBar
-                theme == APP_THEME_LIGHT -> R.style.LightTheme
-                theme == APP_THEME_DARK && this is MainActivity -> R.style.DarkTheme_NoActionBar
-                else -> R.style.DarkTheme
+                this is MainActivity -> style.theme.withoutActionBar
+                else -> style.theme.default
             })
-            getTheme().apply {
-                applyStyle(R.style.AccentBlue, true)
-                when (theme) {
-                    APP_THEME_LIGHT -> applyStyle(R.style.BottomNavigationLight, true)
-                    else -> applyStyle(R.style.BottomNavigationDark, true)
+            theme.apply {
+                applyStyle(style.accent.default, true)
+
+                when (style.theme) {
+                    App.Style.Theme.LIGHT -> applyStyle(style.navigationBar.light, true)
+                    else -> applyStyle(style.navigationBar.dark, true)
                 }
             }
         }
 
         super.onCreate(savedInstanceState)
 
-        App.theme.observe(this, Observer { theme ->
-            if (theme != activityTheme) {
+        App.style.observe(this, Observer { style ->
+            if (style != currentStyle) {
                 recreate()
             }
         })

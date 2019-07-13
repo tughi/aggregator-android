@@ -93,7 +93,7 @@ class ReaderFragment : Fragment() {
                 // TODO: run this in a coroutine
                 val entryHtml = entryTemplate
                         .replace("#ff6600", style.accentHexColor)
-                        .replace("{{ reader.theme }}", App.theme.value?.toLowerCase() ?: "")
+                        .replace("{{ reader.theme }}", App.style.value?.theme?.name?.toLowerCase() ?: "")
                         .replace("{{ layout_direction }}", if (Language.isRightToLeft(entryFeedLanguage)) "rtl" else "ltr")
                         .replace("{{ entry.feed_name }}", entryFeedTitle)
                         .replace("{{ entry.link }}", entryLink ?: "#")

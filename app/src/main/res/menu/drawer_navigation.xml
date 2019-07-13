@@ -10,4 +10,33 @@
                 android:title="@string/theme__light" />
         </menu>
     </item>
+    <item android:title="Accent color">
+        <menu>
+            <item
+                android:id="@+id/accent_blue"
+                android:title="Blue" />
+            <item
+                android:id="@+id/accent_green"
+                android:title="Green" />
+            <item
+                android:id="@+id/accent_orange"
+                android:title="Orange" />
+            <item
+                android:id="@+id/accent_purple"
+                android:title="Purple" />
+            <item
+                android:id="@+id/accent_red"
+                android:title="Red" />
+        </menu>
+    </item>
+    <item android:title="Navigation bar style">
+        <menu>
+            <item
+                android:id="@+id/navigation_bar_style_accent"
+                android:title="Accent color" />
+            <item
+                android:id="@+id/navigation_bar_style_gray"
+                android:title="Gray" />
+        </menu>
+    </item>
 </menu>

@@ -2,10 +2,9 @@ package com.tughi.aggregator.utilities
 
 const val DATABASE_NAME = "data.sqlite"
 
-const val PREF_APP_THEME = "app_theme"
-
-const val APP_THEME_DARK = "dark"
-const val APP_THEME_LIGHT = "light"
+const val PREF_STYLE_THEME = "style__theme"
+const val PREF_STYLE_ACCENT = "style__accent"
+const val PREF_STYLE_NAVIGATION_BAR = "style__navigation_bar"
 
 const val JOB_SERVICE_FEEDS_UPDATER = 2
 
