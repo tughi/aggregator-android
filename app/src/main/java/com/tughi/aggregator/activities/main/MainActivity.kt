@@ -1,15 +1,10 @@
 package com.tughi.aggregator.activities.main
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.widget.TextView
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.navigation.NavigationView
 import com.tughi.aggregator.App
 import com.tughi.aggregator.AppActivity
-import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.R
 import com.tughi.aggregator.preferences.UpdateSettings
 import com.tughi.aggregator.services.FeedUpdateHelper
@@ -27,8 +22,6 @@ class MainActivity : AppActivity() {
     }
 
     private lateinit var bottomNavigationView: BottomNavigationView
-    private lateinit var drawerLayout: DrawerLayout
-    private lateinit var drawer: NavigationView
 
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         var tabName: String = TAB_FEEDS
@@ -57,31 +50,21 @@ class MainActivity : AppActivity() {
 
         setContentView(R.layout.main_activity)
 
-        drawerLayout = findViewById(R.id.drawer_layout)
-
-        bottomNavigationView = drawerLayout.findViewById(R.id.bottom_navigation)
+        bottomNavigationView = findViewById(R.id.bottom_navigation)
         bottomNavigationView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
 
-        drawer = drawerLayout.findViewById(R.id.drawer)
-        drawer.setNavigationItemSelectedListener {
-            when (it.itemId) {
-                R.id.dark_theme -> App.style.value = App.style.value?.copy(theme = App.Style.Theme.DARK)
-                R.id.light_theme -> App.style.value = App.style.value?.copy(theme = App.Style.Theme.LIGHT)
-                R.id.accent_blue -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.BLUE)
-                R.id.accent_green -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.GREEN)
-                R.id.accent_orange -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.ORANGE)
-                R.id.accent_purple -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.PURPLE)
-                R.id.accent_red -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.RED)
-                R.id.navigation_bar_style_accent -> App.style.value = App.style.value?.copy(navigationBar = App.Style.NavigationBar.ACCENT)
-                R.id.navigation_bar_style_gray -> App.style.value = App.style.value?.copy(navigationBar = App.Style.NavigationBar.GRAY)
-            }
-            return@setNavigationItemSelectedListener true
-        }
-
-        LayoutInflater.from(this).inflate(R.layout.drawer_header, drawer, false).let {
-            it.findViewById<TextView>(R.id.version).text = BuildConfig.VERSION_NAME
-            drawer.addHeaderView(it)
-        }
+        // TODO: apply app style
+        // when (it.itemId) {
+        //     R.id.dark_theme -> App.style.value = App.style.value?.copy(theme = App.Style.Theme.DARK)
+        //     R.id.light_theme -> App.style.value = App.style.value?.copy(theme = App.Style.Theme.LIGHT)
+        //     R.id.accent_blue -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.BLUE)
+        //     R.id.accent_green -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.GREEN)
+        //     R.id.accent_orange -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.ORANGE)
+        //     R.id.accent_purple -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.PURPLE)
+        //     R.id.accent_red -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.RED)
+        //     R.id.navigation_bar_style_accent -> App.style.value = App.style.value?.copy(navigationBar = App.Style.NavigationBar.ACCENT)
+        //     R.id.navigation_bar_style_gray -> App.style.value = App.style.value?.copy(navigationBar = App.Style.NavigationBar.GRAY)
+        // }
 
         if (savedInstanceState == null) {
             bottomNavigationView.selectedItemId = when (App.preferences.getString(PREF_ACTIVE_TAB, TAB_FEEDS)) {
@@ -109,15 +92,15 @@ class MainActivity : AppActivity() {
     }
 
     override fun onBackPressed() {
-        if (drawerLayout.isDrawerOpen(drawer)) {
-            drawerLayout.closeDrawer(drawer)
+        if (false /* TODO: check if bottom sheet is expanded */) {
+            // TODO: collapse the bottom sheet
         } else {
             super.onBackPressed()
         }
     }
 
     fun openDrawer() {
-        drawerLayout.openDrawer(drawer)
+        // TODO: expand the bottom sheet
     }
 
 }

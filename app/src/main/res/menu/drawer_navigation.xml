@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- TODO: migrate options to the bottom sheet  -->
     <item android:title="@string/theme_title">
         <menu>
             <item
