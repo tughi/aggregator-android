@@ -3,13 +3,13 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
 
     defaultConfig {
         applicationId "com.tughi.aggregator.next"
 
         minSdkVersion 21
-        targetSdkVersion 28
+        targetSdkVersion 29
 
         versionName = 'Preview:019'
         versionCode = 299000 + Integer.parseInt(versionName.split(':')[1])
