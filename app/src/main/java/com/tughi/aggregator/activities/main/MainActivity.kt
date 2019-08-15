@@ -1,8 +1,10 @@
 package com.tughi.aggregator.activities.main
 
 import android.os.Bundle
+import android.view.View
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.tughi.aggregator.App
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
@@ -21,7 +23,10 @@ class MainActivity : AppActivity() {
         private const val TAB_TAGS = "tags"
     }
 
-    private lateinit var bottomNavigationView: BottomNavigationView
+    private val bottomSheetBehavior by lazy { BottomSheetBehavior.from(bottomSheetView) }
+    private val bottomSheetView by lazy { findViewById<View>(R.id.bottom_sheet) }
+    private val bottomNavigationView by lazy { bottomSheetView.findViewById<BottomNavigationView>(R.id.bottom_navigation) }
+    private val scrimView by lazy { findViewById<View>(R.id.scrim) }
 
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         var tabName: String = TAB_FEEDS
@@ -31,6 +36,8 @@ class MainActivity : AppActivity() {
             R.id.navigation_tags -> TagsFragment.newInstance().also { tabName = TAB_TAGS }
             else -> null
         } ?: return@OnNavigationItemSelectedListener false
+
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
 
         supportFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
         supportFragmentManager.beginTransaction()
@@ -50,21 +57,49 @@ class MainActivity : AppActivity() {
 
         setContentView(R.layout.main_activity)
 
-        bottomNavigationView = findViewById(R.id.bottom_navigation)
         bottomNavigationView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
 
-        // TODO: apply app style
-        // when (it.itemId) {
-        //     R.id.dark_theme -> App.style.value = App.style.value?.copy(theme = App.Style.Theme.DARK)
-        //     R.id.light_theme -> App.style.value = App.style.value?.copy(theme = App.Style.Theme.LIGHT)
-        //     R.id.accent_blue -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.BLUE)
-        //     R.id.accent_green -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.GREEN)
-        //     R.id.accent_orange -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.ORANGE)
-        //     R.id.accent_purple -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.PURPLE)
-        //     R.id.accent_red -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.RED)
-        //     R.id.navigation_bar_style_accent -> App.style.value = App.style.value?.copy(navigationBar = App.Style.NavigationBar.ACCENT)
-        //     R.id.navigation_bar_style_gray -> App.style.value = App.style.value?.copy(navigationBar = App.Style.NavigationBar.GRAY)
-        // }
+        bottomSheetBehavior.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onSlide(bottomSheet: View, slideOffsey: Float) {
+                scrimView.alpha = slideOffsey
+            }
+
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
+                    scrimView.visibility = View.GONE
+                } else {
+                    scrimView.visibility = View.VISIBLE
+                }
+            }
+        })
+
+        scrimView.setOnClickListener {
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        }
+
+        val onThemeClickListener = View.OnClickListener {
+            when (it.id) {
+                R.id.theme_accent_blue -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.BLUE)
+                R.id.theme_accent_green -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.GREEN)
+                R.id.theme_accent_orange -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.ORANGE)
+                R.id.theme_accent_purple -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.PURPLE)
+                R.id.theme_accent_red -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.RED)
+                R.id.theme_dark -> App.style.value = App.style.value?.copy(theme = App.Style.Theme.DARK)
+                R.id.theme_light -> App.style.value = App.style.value?.copy(theme = App.Style.Theme.LIGHT)
+                R.id.theme_bottom_navigation_accent -> App.style.value = App.style.value?.copy(navigationBar = App.Style.NavigationBar.ACCENT)
+                R.id.theme_bottom_navigation_gray -> App.style.value = App.style.value?.copy(navigationBar = App.Style.NavigationBar.GRAY)
+            }
+        }
+
+        bottomSheetView.findViewById<View>(R.id.theme_accent_blue).setOnClickListener(onThemeClickListener)
+        bottomSheetView.findViewById<View>(R.id.theme_accent_green).setOnClickListener(onThemeClickListener)
+        bottomSheetView.findViewById<View>(R.id.theme_accent_orange).setOnClickListener(onThemeClickListener)
+        bottomSheetView.findViewById<View>(R.id.theme_accent_purple).setOnClickListener(onThemeClickListener)
+        bottomSheetView.findViewById<View>(R.id.theme_accent_red).setOnClickListener(onThemeClickListener)
+        bottomSheetView.findViewById<View>(R.id.theme_bottom_navigation_accent).setOnClickListener(onThemeClickListener)
+        bottomSheetView.findViewById<View>(R.id.theme_bottom_navigation_gray).setOnClickListener(onThemeClickListener)
+        bottomSheetView.findViewById<View>(R.id.theme_dark).setOnClickListener(onThemeClickListener)
+        bottomSheetView.findViewById<View>(R.id.theme_light).setOnClickListener(onThemeClickListener)
 
         if (savedInstanceState == null) {
             bottomNavigationView.selectedItemId = when (App.preferences.getString(PREF_ACTIVE_TAB, TAB_FEEDS)) {
@@ -92,15 +127,15 @@ class MainActivity : AppActivity() {
     }
 
     override fun onBackPressed() {
-        if (false /* TODO: check if bottom sheet is expanded */) {
-            // TODO: collapse the bottom sheet
+        if (bottomSheetBehavior.state != BottomSheetBehavior.STATE_COLLAPSED) {
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         } else {
             super.onBackPressed()
         }
     }
 
     fun openDrawer() {
-        // TODO: expand the bottom sheet
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
     }
 
 }

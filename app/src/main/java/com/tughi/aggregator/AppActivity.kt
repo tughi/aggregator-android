@@ -19,11 +19,7 @@ abstract class AppActivity : AppCompatActivity() {
             })
             theme.apply {
                 applyStyle(style.accent.default, true)
-
-                when (style.theme) {
-                    App.Style.Theme.LIGHT -> applyStyle(style.navigationBar.light, true)
-                    else -> applyStyle(style.navigationBar.dark, true)
-                }
+                applyStyle(style.navigationBar.default, true)
             }
         }
 

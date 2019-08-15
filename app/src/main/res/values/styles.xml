@@ -9,6 +9,7 @@
         <item name="colorBottomNavigation">?colorAccent</item>
         <item name="colorEntryListHeader">@color/dark_theme__entry_list_header</item>
         <item name="colorPopupBackground">@color/fallback__popup_background</item>
+        <item name="colorGray">@color/dark_theme__gray</item>
         <item name="android:keepScreenOn">@bool/debug</item>
         <item name="toolbarStyle">@style/DarkTheme.Widget.Toolbar</item>
     </style>
@@ -22,6 +23,7 @@
         <item name="colorBottomNavigation">?colorAccent</item>
         <item name="colorEntryListHeader">@color/dark_theme__entry_list_header</item>
         <item name="colorPopupBackground">@color/fallback__popup_background</item>
+        <item name="colorGray">@color/dark_theme__gray</item>
         <item name="android:keepScreenOn">@bool/debug</item>
         <item name="toolbarStyle">@style/DarkTheme.Widget.Toolbar</item>
     </style>
@@ -39,6 +41,7 @@
         <item name="colorBottomNavigation">?colorAccent</item>
         <item name="colorEntryListHeader">@color/light_theme__entry_list_header</item>
         <item name="colorPopupBackground">@color/fallback__popup_background</item>
+        <item name="colorGray">@color/light_theme__gray</item>
         <item name="android:keepScreenOn">@bool/debug</item>
         <item name="toolbarStyle">@style/LightTheme.Widget.Toolbar</item>
     </style>
@@ -52,6 +55,7 @@
         <item name="colorBottomNavigation">?colorAccent</item>
         <item name="colorEntryListHeader">@color/light_theme__entry_list_header</item>
         <item name="colorPopupBackground">@color/fallback__popup_background</item>
+        <item name="colorGray">@color/light_theme__gray</item>
         <item name="android:keepScreenOn">@bool/debug</item>
         <item name="toolbarStyle">@style/LightTheme.Widget.Toolbar</item>
     </style>
@@ -64,41 +68,37 @@
         <item name="android:colorBackground">?colorPopupBackground</item>
     </style>
 
-    <style name="AccentRed">
-        <item name="colorAccent">#ff1744</item>
-        <item name="colorPopupBackground">#ff8a80</item>
-    </style>
-
-    <style name="AccentPurple">
-        <item name="colorAccent">#d500f9</item>
-        <item name="colorPopupBackground">#ea80fc</item>
-    </style>
-
     <style name="AccentBlue">
-        <item name="colorAccent">#2979ff</item>
-        <item name="colorPopupBackground">#82b1ff</item>
+        <item name="colorAccent">@color/accent__blue</item>
+        <item name="colorPopupBackground">@color/accent__blue_popup</item>
     </style>
 
     <style name="AccentGreen">
-        <item name="colorAccent">#00c853</item>
-        <item name="colorPopupBackground">#b9f6ca</item>
+        <item name="colorAccent">@color/accent__green</item>
+        <item name="colorPopupBackground">@color/accent__green_popup</item>
     </style>
 
     <style name="AccentOrange">
-        <item name="colorAccent">#ff6d00</item>
-        <item name="colorPopupBackground">#ffd180</item>
+        <item name="colorAccent">@color/accent__orange</item>
+        <item name="colorPopupBackground">@color/accent__orange_popup</item>
+    </style>
+
+    <style name="AccentPurple">
+        <item name="colorAccent">@color/accent__purple</item>
+        <item name="colorPopupBackground">@color/accent__purple_popup</item>
+    </style>
+
+    <style name="AccentRed">
+        <item name="colorAccent">@color/accent__red</item>
+        <item name="colorPopupBackground">@color/accent__red_popup</item>
     </style>
 
     <style name="BottomNavigationAccent">
         <item name="colorBottomNavigation">?colorAccent</item>
     </style>
 
-    <style name="BottomNavigationDark">
-        <item name="colorBottomNavigation">#616161</item>
-    </style>
-
-    <style name="BottomNavigationLight">
-        <item name="colorBottomNavigation">#9e9e9e</item>
+    <style name="BottomNavigationGray">
+        <item name="colorBottomNavigation">?colorGray</item>
     </style>
 
 </resources>

@@ -78,9 +78,9 @@ class App : Application() {
             RED(R.style.AccentRed)
         }
 
-        enum class NavigationBar(val dark: Int, val light: Int) {
-            ACCENT(R.style.BottomNavigationAccent, R.style.BottomNavigationAccent),
-            GRAY(R.style.BottomNavigationDark, R.style.BottomNavigationLight)
+        enum class NavigationBar(val default: Int) {
+            ACCENT(R.style.BottomNavigationAccent),
+            GRAY(R.style.BottomNavigationGray)
         }
     }
 
