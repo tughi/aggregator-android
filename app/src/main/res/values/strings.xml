@@ -59,6 +59,9 @@
 
     <string name="opml_import__title">OPML feeds</string>
 
+    <string name="styling__title">Styling</string>
+    <string name="styling__bottom_navigation">Bottom navigation</string>
+
     <string name="subscribe_url">Website or feed URL</string>
     <string name="subscribe_intro">Content providers, like news sites and blogs, often use feeds as an alternative way to inform readers about new or updated articles.\n\n<b>Aggregator</b> is able to detect if a website is providing such feeds.\n\n\nAdditionally, <b>Aggregator</b> also supports adding feeds from OPML files.</string>
 
@@ -69,10 +72,6 @@
 
     <string name="tags_item__total_entries">Total entries: %1$d</string>
     <string name="tags_item__unread_entries">Unread entries: %1$d</string>
-
-    <string name="theme_title">Theme</string>
-    <string name="theme__dark">Dark</string>
-    <string name="theme__light">Light</string>
 
     <string name="title_add_feed">Add feed</string>
     <string name="title_my_feed">My feed</string>

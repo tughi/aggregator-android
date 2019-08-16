@@ -6,7 +6,7 @@
             <size
                 android:width="24dp"
                 android:height="24dp" />
-            <solid android:color="#7000" />
+            <solid android:color="?colorControlNormal" />
         </shape>
     </item>
     <item android:gravity="center">
