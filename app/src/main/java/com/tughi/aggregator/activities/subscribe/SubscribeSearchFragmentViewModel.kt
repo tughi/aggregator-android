@@ -52,10 +52,10 @@ class SubscribeSearchFragmentViewModel : ViewModel() {
         Http.request(url)
                 .then {
                     if (!it.isSuccessful) {
-                        return@then Failure(IllegalStateException("Server response: ${it.code()} ${it.message()}"))
+                        return@then Failure(IllegalStateException("Server response: ${it.code} ${it.message}"))
                     }
 
-                    val content = it.body()?.charStream()
+                    val content = it.body?.charStream()
                     if (content != null) {
 
                         val listener = object : FeedsFinder.Listener {
@@ -69,7 +69,7 @@ class SubscribeSearchFragmentViewModel : ViewModel() {
                                 state.postValue(stateValue)
                             }
                         }
-                        FeedsFinder(listener).find(content, it.request().url().toString())
+                        FeedsFinder(listener).find(content, it.request.url.toString())
 
                         if (feeds.isEmpty()) {
                             return@then Failure(IllegalStateException("No feeds found"))

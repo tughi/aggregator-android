@@ -111,13 +111,13 @@ object FeedUpdateHelper {
         }
     }.then { response ->
         when {
-            response.isSuccessful || response.code() == 304 -> Success(response)
+            response.isSuccessful || response.code == 304 -> Success(response)
             else -> Failure(UnexpectedHttpResponseException(response))
         }
     }
 
     private fun parseFeed(feed: Feed, response: Response) {
-        if (response.code() == 304) {
+        if (response.code == 304) {
             updateFeedContent(feed)
         } else {
             val httpEtag = response.header("Etag")
@@ -168,7 +168,7 @@ object FeedUpdateHelper {
             try {
                 Database.transaction {
                     response.use {
-                        val responseBody = response.body()
+                        val responseBody = response.body
                         Xml.parse(responseBody?.charStream(), feedParser.feedContentHandler)
                     }
                 }

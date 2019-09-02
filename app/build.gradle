@@ -41,7 +41,7 @@ dependencies {
     implementation 'androidx.viewpager:viewpager:1.0.0'
     implementation 'androidx.webkit:webkit:1.0.0'
     implementation 'com.google.android.material:material:1.0.0'
-    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.1.0'
     implementation 'com.tughi.sax:sax-framework:2.0.1'
     implementation 'commons-codec:commons-codec:1.10'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
