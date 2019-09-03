@@ -28,6 +28,28 @@
     <string name="action__update">Update</string>
     <string name="action__yes">Yes</string>
 
+    <string name="cleanup_mode">Cleanup mode</string>
+    <string name="cleanup_mode__age__3_days">3 days</string>
+    <string name="cleanup_mode__age__3_days__description">Deletes entries older than 3 days.</string>
+    <string name="cleanup_mode__age__1_week">1 week</string>
+    <string name="cleanup_mode__age__1_week__description">Deletes entries older than 1 week.</string>
+    <string name="cleanup_mode__age__1_month">1 month</string>
+    <string name="cleanup_mode__age__1_month__description">Deletes entries older than 1 month.</string>
+    <string name="cleanup_mode__age__3_months">3 months</string>
+    <string name="cleanup_mode__age__3_months__description">Deletes entries older than 3 months.</string>
+    <string name="cleanup_mode__age__6_months">6 months</string>
+    <string name="cleanup_mode__age__6_months__description">Deletes entries older than 6 months.</string>
+    <string name="cleanup_mode__age__1_year">1 year</string>
+    <string name="cleanup_mode__age__1_year__description">Deletes entries older than 1 year.</string>
+    <string name="cleanup_mode__age__3_years">3 years</string>
+    <string name="cleanup_mode__age__3_years__description">Deletes entries older than 3 years.</string>
+    <string name="cleanup_mode__age__6_years">6 years</string>
+    <string name="cleanup_mode__age__6_years__description">Deletes entries older than 6 years.</string>
+    <string name="cleanup_mode__default">Default (%1$s)</string>
+    <string name="cleanup_mode__default__description">Use the default cleanup mode.</string>
+    <string name="cleanup_mode__never">Never</string>
+    <string name="cleanup_mode__never__description">Aggregator does not delete entries automatically.</string>
+
     <string name="entry_tags">Entry tags</string>
 
     <string name="feed_list_item__last_update_error">Update error %1$d: %2$s</string>
@@ -110,6 +132,7 @@
 
     <string name="update_settings">Update settings</string>
     <string name="update_settings__background_update">Background updates</string>
+    <string name="update_settings__default_cleanup_mode">Default cleanup mode</string>
     <string name="update_settings__default_update_mode">Default update mode</string>
 
 </resources>

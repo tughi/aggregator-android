@@ -11,4 +11,8 @@
         android:key="default_update_mode"
         android:title="@string/update_settings__default_update_mode" />
 
+    <Preference
+        android:key="default_cleanup_mode"
+        android:title="@string/update_settings__default_cleanup_mode" />
+
 </androidx.preference.PreferenceScreen>

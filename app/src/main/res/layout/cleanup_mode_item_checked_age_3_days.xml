@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?colorEntryListHeader"
+    android:orientation="vertical">
+
+    <include layout="@layout/cleanup_mode_item_checked" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="?listPreferredItemPaddingLeft"
+        android:layout_marginEnd="?listPreferredItemPaddingRight"
+        android:paddingStart="56dp"
+        android:paddingEnd="0dp"
+        android:paddingBottom="16dp"
+        android:text="@string/cleanup_mode__age__3_days__description" />
+
+</LinearLayout>

@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.fragment.app.Fragment
 import com.tughi.aggregator.R
-import com.tughi.aggregator.preferences.UpdateSettings
 import com.tughi.aggregator.data.AdaptiveUpdateMode
 import com.tughi.aggregator.data.DefaultUpdateMode
 import com.tughi.aggregator.data.DisabledUpdateMode
@@ -19,6 +18,7 @@ import com.tughi.aggregator.data.Every8HoursUpdateMode
 import com.tughi.aggregator.data.EveryHourUpdateMode
 import com.tughi.aggregator.data.OnAppLaunchUpdateMode
 import com.tughi.aggregator.data.UpdateMode
+import com.tughi.aggregator.preferences.UpdateSettings
 
 fun UpdateMode.toString(context: Context): String = when (this) {
     AdaptiveUpdateMode -> context.getString(R.string.update_mode__adaptive)
@@ -43,4 +43,3 @@ fun Fragment.startUpdateModeActivity(requestCode: Int, currentUpdateMode: Update
             .putExtra(UpdateModeActivity.EXTRA_SHOW_DEFAULT, showDefault)
     startActivityForResult(intent, requestCode)
 }
-

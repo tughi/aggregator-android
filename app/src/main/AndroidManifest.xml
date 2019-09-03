@@ -50,6 +50,10 @@
             android:parentActivityName=".activities.main.MainActivity" />
 
         <activity
+            android:name=".activities.cleanupmode.CleanupModeActivity"
+            android:label="@string/cleanup_mode" />
+
+        <activity
             android:name=".activities.updatemode.UpdateModeActivity"
             android:label="@string/update_mode" />
 
