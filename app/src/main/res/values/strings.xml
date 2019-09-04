@@ -62,6 +62,7 @@
     <string name="feed_tags">Feed tags</string>
 
     <string name="feed_settings">Feed settings</string>
+    <string name="feed_settings__cleanup_mode">Cleanup mode</string>
     <string name="feed_settings__tags">Tags</string>
     <string name="feed_settings__tags__none">None</string>
     <string name="feed_settings__title">Title</string>

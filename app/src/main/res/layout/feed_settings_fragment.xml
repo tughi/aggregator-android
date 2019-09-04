@@ -49,6 +49,13 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.tughi.aggregator.widgets.DropDownButton
+                android:id="@+id/tags"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:hint="@string/feed_settings__tags" />
+
+            <com.tughi.aggregator.widgets.DropDownButton
                 android:id="@+id/update_mode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -56,11 +63,11 @@
                 android:hint="@string/feed_settings__update_mode" />
 
             <com.tughi.aggregator.widgets.DropDownButton
-                android:id="@+id/tags"
+                android:id="@+id/cleanup_mode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:hint="@string/feed_settings__tags" />
+                android:hint="@string/feed_settings__cleanup_mode" />
 
         </LinearLayout>
 

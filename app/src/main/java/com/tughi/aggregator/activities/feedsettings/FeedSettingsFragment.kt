@@ -19,10 +19,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.tughi.aggregator.R
+import com.tughi.aggregator.activities.cleanupmode.CleanupModeActivity
+import com.tughi.aggregator.activities.cleanupmode.startCleanupModeActivity
+import com.tughi.aggregator.activities.cleanupmode.toString
 import com.tughi.aggregator.activities.tagspicker.TagsPickerActivity
 import com.tughi.aggregator.activities.updatemode.UpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.startUpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.toString
+import com.tughi.aggregator.data.CleanupMode
 import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.FeedTags
 import com.tughi.aggregator.data.Feeds
@@ -43,11 +47,13 @@ class FeedSettingsFragment : Fragment() {
 
         const val REQUEST_TAGS = 1
         const val REQUEST_UPDATE_MODE = 2
+        const val REQUEST_CLEANUP_MODE = 3
     }
 
     private lateinit var urlEditText: EditText
     private lateinit var titleEditText: EditText
     private lateinit var updateModeView: DropDownButton
+    private lateinit var cleanupModeView: DropDownButton
     private lateinit var tagsView: DropDownButton
 
     private lateinit var viewModel: FeedSettingsViewModel
@@ -64,11 +70,17 @@ class FeedSettingsFragment : Fragment() {
         urlEditText = fragmentView.findViewById(R.id.url)
         titleEditText = fragmentView.findViewById(R.id.title)
         updateModeView = fragmentView.findViewById(R.id.update_mode)
+        cleanupModeView = fragmentView.findViewById(R.id.cleanup_mode)
         tagsView = fragmentView.findViewById(R.id.tags)
 
         updateModeView.setOnClickListener {
             val feed = viewModel.feed.value ?: return@setOnClickListener
             startUpdateModeActivity(REQUEST_UPDATE_MODE, viewModel.newUpdateMode ?: feed.updateMode)
+        }
+
+        cleanupModeView.setOnClickListener {
+            val feed = viewModel.feed.value ?: return@setOnClickListener
+            startCleanupModeActivity(REQUEST_CLEANUP_MODE, viewModel.newCleanupMode ?: feed.cleanupMode)
         }
 
         tagsView.setOnClickListener {
@@ -84,6 +96,7 @@ class FeedSettingsFragment : Fragment() {
                 urlEditText.setText(feed.url)
                 titleEditText.setText(feed.customTitle ?: feed.title)
                 updateModeView.setText(feed.updateMode.toString(updateModeView.context))
+                cleanupModeView.setText(feed.cleanupMode.toString(cleanupModeView.context))
             }
         })
 
@@ -117,6 +130,12 @@ class FeedSettingsFragment : Fragment() {
                         updateModeView.setText(updateMode.toString(updateModeView.context))
                     }
                 }
+                REQUEST_CLEANUP_MODE -> {
+                    val serializedCleanupMode = data?.getStringExtra(CleanupModeActivity.EXTRA_CLEANUP_MODE) ?: return
+                    viewModel.newCleanupMode = CleanupMode.deserialize(serializedCleanupMode).also { cleanupMode ->
+                        cleanupModeView.setText(cleanupMode.toString(cleanupModeView.context))
+                    }
+                }
             }
         }
     }
@@ -135,6 +154,7 @@ class FeedSettingsFragment : Fragment() {
     private fun onSave(): Boolean {
         val url = urlEditText.text.toString().trim()
         val title = titleEditText.text.toString().trim()
+        val cleanupMode = viewModel.newCleanupMode
         val updateMode = viewModel.newUpdateMode
 
         val oldSelectedTagIds = viewModel.oldSelectedTagIds
@@ -147,6 +167,7 @@ class FeedSettingsFragment : Fragment() {
                             Feeds.UpdateRowCriteria(feed.id),
                             Feeds.URL to url,
                             Feeds.CUSTOM_TITLE to if (title.isEmpty() || title == feed.title) null else title,
+                            Feeds.CLEANUP_MODE to (cleanupMode ?: feed.cleanupMode).serialize(),
                             Feeds.UPDATE_MODE to (updateMode ?: feed.updateMode).serialize()
                     )
 
@@ -191,6 +212,7 @@ class FeedSettingsFragment : Fragment() {
             val url: String,
             val title: String,
             val customTitle: String?,
+            val cleanupMode: CleanupMode,
             val updateMode: UpdateMode,
             val tags: String?
     ) {
@@ -199,6 +221,7 @@ class FeedSettingsFragment : Fragment() {
                 Feeds.URL,
                 Feeds.TITLE,
                 Feeds.CUSTOM_TITLE,
+                Feeds.CLEANUP_MODE,
                 Feeds.UPDATE_MODE,
                 Feeds.TAG_NAMES
         ) {
@@ -207,8 +230,9 @@ class FeedSettingsFragment : Fragment() {
                     url = cursor.getString(1),
                     title = cursor.getString(2),
                     customTitle = cursor.getString(3),
-                    updateMode = UpdateMode.deserialize(cursor.getString(4)),
-                    tags = cursor.getString(5)
+                    cleanupMode = CleanupMode.deserialize(cursor.getString(4)),
+                    updateMode = UpdateMode.deserialize(cursor.getString(5)),
+                    tags = cursor.getString(6)
             )
         }
     }
@@ -253,6 +277,7 @@ class FeedSettingsFragment : Fragment() {
         val feedTags = MediatorLiveData<List<FeedTag>>()
 
         var newUpdateMode: UpdateMode? = null
+        var newCleanupMode: CleanupMode? = null
 
         var oldSelectedTagIds = LongArray(0)
         val newSelectedTagIds = MutableLiveData<LongArray>()

@@ -18,6 +18,7 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
     object LANGUAGE : Column("language", "f.language"), TableColumn
     object FAVICON_URL : Column("favicon_url", "f.favicon_url"), TableColumn
     object FAVICON_CONTENT : Column("favicon_content", "f.favicon_content"), TableColumn
+    object CLEANUP_MODE : Column("cleanup_mode", "f.cleanup_mode"), TableColumn
     object UPDATE_MODE : Column("update_mode", "f.update_mode"), TableColumn
     object LAST_UPDATE_TIME : Column("last_update_time", "f.last_update_time"), TableColumn
     object LAST_UPDATE_ERROR : Column("last_update_error", "f.last_update_error"), TableColumn

@@ -9,6 +9,7 @@ CREATE TABLE feed (
     custom_title TEXT,
     favicon_url TEXT,
     favicon_content BLOB,
+    cleanup_mode TEXT NOT NULL DEFAULT 'DEFAULT',
     update_mode TEXT NOT NULL,
     last_update_time INTEGER NOT NULL DEFAULT 0,
     last_update_error TEXT,
