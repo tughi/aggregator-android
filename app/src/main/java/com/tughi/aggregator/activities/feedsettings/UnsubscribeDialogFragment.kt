@@ -40,9 +40,9 @@ class UnsubscribeDialogFragment : DialogFragment() {
                 .setTitle(feedTitle)
                 .setMessage(R.string.unsubscribe_feed__message)
                 .setNegativeButton(R.string.action__no, null)
-                .setPositiveButton(R.string.action__yes) { dialog, _ ->
+                .setPositiveButton(R.string.action__yes) { _, _ ->
                     GlobalScope.launch {
-                        Feeds.delete(feedId)
+                        Feeds.delete(Feeds.DeleteFeedCriteria(feedId))
 
                         AutoUpdateScheduler.schedule()
                     }

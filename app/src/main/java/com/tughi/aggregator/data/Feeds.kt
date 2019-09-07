@@ -29,9 +29,6 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
     object UNREAD_ENTRY_COUNT : Column("unread_entry_count", "(SELECT COUNT(1) FROM entry e WHERE f.id = e.feed_id AND e.read_time = 0)", arrayOf("feed", "entry"))
     object TAG_NAMES : Column("tag_names", "(SELECT GROUP_CONCAT(t.name, ', ') FROM feed_tag ft LEFT JOIN tag t ON t.id = ft.tag_id WHERE ft.feed_id = f.id)", arrayOf("feed", "feed_tag", "tag"))
 
-    // TODO: use DeleteCriteria
-    fun delete(id: Long) = Database.delete("feed", "id = ?", arrayOf(id))
-
     fun queryAllCount() = Database.query(SimpleSQLiteQuery("SELECT COUNT(1) FROM feed")) { cursor ->
         cursor.moveToFirst()
         return@query cursor.getInt(0)
