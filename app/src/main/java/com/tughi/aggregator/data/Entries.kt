@@ -88,6 +88,11 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
 
     interface DeleteCriteria : Repository.DeleteCriteria
 
+    class DeleteOldFeedEntriesCriteria(feedId: Long, oldMarkerTime: Long) : DeleteCriteria {
+        override val selection = "feed_id = ? AND COALESCE(publish_time, update_time) < ?"
+        override val selectionArgs: Array<Any>? = arrayOf(feedId, oldMarkerTime)
+    }
+
     interface QueryCriteria : Repository.QueryCriteria<Column> {
         fun config(query: Query.Builder)
     }

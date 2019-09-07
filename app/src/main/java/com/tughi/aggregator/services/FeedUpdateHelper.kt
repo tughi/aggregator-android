@@ -5,11 +5,23 @@ import android.util.Log
 import android.util.Xml
 import androidx.lifecycle.MutableLiveData
 import com.tughi.aggregator.BuildConfig
+import com.tughi.aggregator.data.Age1MonthCleanupMode
+import com.tughi.aggregator.data.Age1WeekCleanupMode
+import com.tughi.aggregator.data.Age1YearCleanupMode
+import com.tughi.aggregator.data.Age3DaysCleanupMode
+import com.tughi.aggregator.data.Age3MonthsCleanupMode
+import com.tughi.aggregator.data.Age3YearsCleanupMode
+import com.tughi.aggregator.data.Age6MonthsCleanupMode
+import com.tughi.aggregator.data.Age6YearsCleanupMode
+import com.tughi.aggregator.data.CleanupMode
 import com.tughi.aggregator.data.Database
+import com.tughi.aggregator.data.DefaultCleanupMode
 import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.data.Feeds
+import com.tughi.aggregator.data.NeverCleanupMode
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.feeds.FeedParser
+import com.tughi.aggregator.preferences.UpdateSettings
 import com.tughi.aggregator.utilities.Failure
 import com.tughi.aggregator.utilities.Http
 import com.tughi.aggregator.utilities.Success
@@ -21,6 +33,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.Response
+import java.util.Calendar
 import java.util.Date
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -40,7 +53,7 @@ object FeedUpdateHelper {
         try {
             when (val result = requestFeed(feed)) {
                 is Success -> parseFeed(feed, result.data)
-                is Failure -> updateFeedContent(feed, result.cause)
+                is Failure -> updateFeedMetadata(feed, result.cause)
             }
         } finally {
             withContext(NonCancellable) {
@@ -118,7 +131,7 @@ object FeedUpdateHelper {
 
     private fun parseFeed(feed: Feed, response: Response) {
         if (response.code == 304) {
-            updateFeedContent(feed)
+            updateFeedMetadata(feed, false)
         } else {
             val httpEtag = response.header("Etag")
             val httpLastModified = response.header("Last-Modified")
@@ -152,8 +165,9 @@ object FeedUpdateHelper {
                 }
 
                 override fun onParsedFeed(title: String, link: String?, language: String?) {
-                    updateFeedContent(
+                    updateFeedMetadata(
                             feed,
+                            true,
                             Feeds.TITLE to title,
                             Feeds.LINK to link,
                             Feeds.LANGUAGE to language,
@@ -171,12 +185,12 @@ object FeedUpdateHelper {
                     }
                 }
             } catch (exception: Exception) {
-                updateFeedContent(feed, exception)
+                updateFeedMetadata(feed, exception)
             }
         }
     }
 
-    private fun updateFeedContent(feed: Feed, vararg data: Pair<Feeds.TableColumn, Any?>) {
+    private fun updateFeedMetadata(feed: Feed, cleanup: Boolean, vararg data: Pair<Feeds.TableColumn, Any?>) {
         Database.transaction {
             val feedId = feed.id
             val lastUpdateTime = System.currentTimeMillis()
@@ -190,10 +204,33 @@ object FeedUpdateHelper {
                     Feeds.NEXT_UPDATE_RETRY to 0,
                     *data
             )
+
+            if (cleanup) {
+                val deleteEntriesCriteria = createDeleteEntriesCriteria(feedId, feed.cleanupMode)
+                if (deleteEntriesCriteria != null) {
+                    val deletedEntries = Entries.delete(deleteEntriesCriteria)
+                    if (BuildConfig.DEBUG) {
+                        Log.d(javaClass.name, "Deleted old entries: $deletedEntries")
+                    }
+                }
+            }
         }
     }
 
-    private fun updateFeedContent(feed: Feed, error: Throwable?) {
+    private fun createDeleteEntriesCriteria(feedId: Long, cleanupMode: CleanupMode): Entries.DeleteCriteria? = when (cleanupMode) {
+        DefaultCleanupMode -> createDeleteEntriesCriteria(feedId, UpdateSettings.defaultCleanupMode)
+        Age3DaysCleanupMode -> Entries.DeleteOldFeedEntriesCriteria(feedId, Calendar.getInstance().apply { add(Calendar.DATE, -3) }.timeInMillis)
+        Age1WeekCleanupMode -> Entries.DeleteOldFeedEntriesCriteria(feedId, Calendar.getInstance().apply { add(Calendar.DATE, -7) }.timeInMillis)
+        Age1MonthCleanupMode -> Entries.DeleteOldFeedEntriesCriteria(feedId, Calendar.getInstance().apply { add(Calendar.MONTH, -1) }.timeInMillis)
+        Age3MonthsCleanupMode -> Entries.DeleteOldFeedEntriesCriteria(feedId, Calendar.getInstance().apply { add(Calendar.MONTH, -3) }.timeInMillis)
+        Age6MonthsCleanupMode -> Entries.DeleteOldFeedEntriesCriteria(feedId, Calendar.getInstance().apply { add(Calendar.MONTH, -6) }.timeInMillis)
+        Age1YearCleanupMode -> Entries.DeleteOldFeedEntriesCriteria(feedId, Calendar.getInstance().apply { add(Calendar.YEAR, -1) }.timeInMillis)
+        Age3YearsCleanupMode -> Entries.DeleteOldFeedEntriesCriteria(feedId, Calendar.getInstance().apply { add(Calendar.YEAR, -3) }.timeInMillis)
+        Age6YearsCleanupMode -> Entries.DeleteOldFeedEntriesCriteria(feedId, Calendar.getInstance().apply { add(Calendar.YEAR, -6) }.timeInMillis)
+        NeverCleanupMode -> null
+    }
+
+    private fun updateFeedMetadata(feed: Feed, error: Throwable?) {
         if (BuildConfig.DEBUG) {
             Log.d(javaClass.name, "Update error: $error", error)
         }
@@ -220,6 +257,7 @@ object FeedUpdateHelper {
             val id: Long,
             val url: String,
             val updateMode: UpdateMode,
+            val cleanupMode: CleanupMode,
             val nextUpdateRetry: Int,
             val httpEtag: String?,
             val httpLastModified: String?
@@ -228,6 +266,7 @@ object FeedUpdateHelper {
                 Feeds.ID,
                 Feeds.URL,
                 Feeds.UPDATE_MODE,
+                Feeds.CLEANUP_MODE,
                 Feeds.NEXT_UPDATE_RETRY,
                 Feeds.HTTP_ETAG,
                 Feeds.HTTP_LAST_MODIFIED
@@ -236,9 +275,10 @@ object FeedUpdateHelper {
                     id = cursor.getLong(0),
                     url = cursor.getString(1),
                     updateMode = UpdateMode.deserialize(cursor.getString(2)),
-                    nextUpdateRetry = cursor.getInt(3),
-                    httpEtag = cursor.getString(4),
-                    httpLastModified = cursor.getString(5)
+                    cleanupMode = CleanupMode.deserialize(cursor.getString(3)),
+                    nextUpdateRetry = cursor.getInt(4),
+                    httpEtag = cursor.getString(5),
+                    httpLastModified = cursor.getString(6)
             )
         }
     }
