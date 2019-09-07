@@ -89,7 +89,7 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     interface DeleteCriteria : Repository.DeleteCriteria
 
     class DeleteOldFeedEntriesCriteria(feedId: Long, oldMarkerTime: Long) : DeleteCriteria {
-        override val selection = "feed_id = ? AND COALESCE(publish_time, update_time) < ?"
+        override val selection = "feed_id = ? AND pinned_time = 0 AND COALESCE(publish_time, update_time) < ? AND 0 IN (SELECT COUNT(1) FROM entry_tag WHERE entry_id = id AND tag_id = ${Tags.STARRED})"
         override val selectionArgs: Array<Any>? = arrayOf(feedId, oldMarkerTime)
     }
 
