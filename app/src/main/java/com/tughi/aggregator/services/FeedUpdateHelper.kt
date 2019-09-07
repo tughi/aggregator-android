@@ -125,31 +125,29 @@ object FeedUpdateHelper {
 
             val feedParser = FeedParser(feed.url, object : FeedParser.Listener() {
                 override fun onParsedEntry(uid: String, title: String?, link: String?, content: String?, author: String?, publishDate: Date?, publishDateText: String?) {
-                    Database.transaction {
-                        val now = System.currentTimeMillis()
-                        val result = Entries.update(
-                                Entries.UpdateFeedEntryCriteria(feed.id, uid),
+                    val now = System.currentTimeMillis()
+                    val result = Entries.update(
+                            Entries.UpdateFeedEntryCriteria(feed.id, uid),
+                            Entries.TITLE to title,
+                            Entries.LINK to link,
+                            Entries.CONTENT to content,
+                            Entries.AUTHOR to author,
+                            Entries.PUBLISH_TIME to publishDate?.time,
+                            Entries.UPDATE_TIME to now
+                    )
+
+                    if (result == 0) {
+                        Entries.insert(
+                                Entries.FEED_ID to feed.id,
+                                Entries.UID to uid,
                                 Entries.TITLE to title,
                                 Entries.LINK to link,
                                 Entries.CONTENT to content,
                                 Entries.AUTHOR to author,
                                 Entries.PUBLISH_TIME to publishDate?.time,
+                                Entries.INSERT_TIME to now,
                                 Entries.UPDATE_TIME to now
                         )
-
-                        if (result == 0) {
-                            Entries.insert(
-                                    Entries.FEED_ID to feed.id,
-                                    Entries.UID to uid,
-                                    Entries.TITLE to title,
-                                    Entries.LINK to link,
-                                    Entries.CONTENT to content,
-                                    Entries.AUTHOR to author,
-                                    Entries.PUBLISH_TIME to publishDate?.time,
-                                    Entries.INSERT_TIME to now,
-                                    Entries.UPDATE_TIME to now
-                            )
-                        }
                     }
                 }
 
