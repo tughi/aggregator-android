@@ -197,12 +197,19 @@ class TagsFragment : Fragment() {
                 this.tag = tag
 
                 name.text = tag.name
-                if (tag.id == Tags.STARRED) {
-                    favicon.setImageResource(R.drawable.favicon_star)
-                    count.text = if (tag.totalEntryCount > 0) tag.totalEntryCount.toString() else ""
-                } else {
-                    favicon.setImageResource(R.drawable.favicon_tag)
-                    count.text = if (tag.unreadEntryCount > 0) tag.unreadEntryCount.toString() else ""
+                when (tag.id) {
+                    Tags.ALL -> {
+                        favicon.setImageResource(R.drawable.favicon_aggregator)
+                        count.text = if (tag.unreadEntryCount > 0) tag.unreadEntryCount.toString() else ""
+                    }
+                    Tags.STARRED -> {
+                        favicon.setImageResource(R.drawable.favicon_star)
+                        count.text = if (tag.totalEntryCount > 0) tag.totalEntryCount.toString() else ""
+                    }
+                    else -> {
+                        favicon.setImageResource(R.drawable.favicon_tag)
+                        count.text = if (tag.unreadEntryCount > 0) tag.unreadEntryCount.toString() else ""
+                    }
                 }
             }
         }
