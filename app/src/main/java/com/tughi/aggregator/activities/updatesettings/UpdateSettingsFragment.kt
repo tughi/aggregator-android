@@ -33,8 +33,8 @@ class UpdateSettingsFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.update_settings, rootKey)
 
-        val backgroundUpdatesPreference = findPreference(UpdateSettings.PREFERENCE_BACKGROUND_UPDATES)
-        backgroundUpdatesPreference.setOnPreferenceChangeListener { preference, newValue ->
+        val backgroundUpdatesPreference = findPreference<Preference>(UpdateSettings.PREFERENCE_BACKGROUND_UPDATES)!!
+        backgroundUpdatesPreference.setOnPreferenceChangeListener { _, newValue ->
             if (newValue == true) {
                 GlobalScope.launch(Dispatchers.IO) {
                     AutoUpdateScheduler.schedule()
@@ -45,7 +45,7 @@ class UpdateSettingsFragment : PreferenceFragmentCompat() {
             return@setOnPreferenceChangeListener true
         }
 
-        defaultCleanupModePreference = findPreference(UpdateSettings.PREFERENCE_DEFAULT_CLEANUP_MODE).apply {
+        defaultCleanupModePreference = findPreference<Preference>(UpdateSettings.PREFERENCE_DEFAULT_CLEANUP_MODE)!!.apply {
             summary = UpdateSettings.defaultCleanupMode.toString(context)
             setOnPreferenceClickListener {
                 startCleanupModeActivity(REQUEST_CLEANUP_MODE, UpdateSettings.defaultCleanupMode, false)
@@ -53,7 +53,7 @@ class UpdateSettingsFragment : PreferenceFragmentCompat() {
             }
         }
 
-        defaultUpdateModePreference = findPreference(UpdateSettings.PREFERENCE_DEFAULT_UPDATE_MODE).apply {
+        defaultUpdateModePreference = findPreference<Preference>(UpdateSettings.PREFERENCE_DEFAULT_UPDATE_MODE)!!.apply {
             summary = UpdateSettings.defaultUpdateMode.toString(context)
             setOnPreferenceClickListener {
                 startUpdateModeActivity(REQUEST_UPDATE_MODE, UpdateSettings.defaultUpdateMode, false)

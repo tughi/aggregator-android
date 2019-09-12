@@ -114,20 +114,18 @@ class ReaderFragment : Fragment() {
         return fragmentView
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
 
-        menu?.let {
-            inflater?.inflate(R.menu.reader_activity, it)
+        inflater.inflate(R.menu.reader_activity, menu)
 
-            markDoneMenuItem = it.findItem(R.id.mark_done)
-            markPinnedMenuItem = it.findItem(R.id.mark_pinned)
-            addStarMenuItem = it.findItem(R.id.add_star)
-            removeStarMenuItem = it.findItem(R.id.remove_star)
-        }
+        markDoneMenuItem = menu.findItem(R.id.mark_done)
+        markPinnedMenuItem = menu.findItem(R.id.mark_pinned)
+        addStarMenuItem = menu.findItem(R.id.add_star)
+        removeStarMenuItem = menu.findItem(R.id.remove_star)
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu?) {
+    override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
 
         val read = loadedEntry?.run { readTime != 0L && pinnedTime == 0L } ?: false
@@ -141,8 +139,8 @@ class ReaderFragment : Fragment() {
         removeStarMenuItem.isVisible = star
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item?.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
             R.id.mark_done -> {
                 loadedEntry?.let {
                     GlobalScope.launch {

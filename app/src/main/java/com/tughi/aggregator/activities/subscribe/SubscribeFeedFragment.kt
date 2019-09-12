@@ -75,10 +75,10 @@ class SubscribeFeedFragment : Fragment() {
         return fragmentView
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
 
-        inflater?.inflate(R.menu.subscribe_feed_fragment, menu)
+        inflater.inflate(R.menu.subscribe_feed_fragment, menu)
     }
 
     override fun onResume() {
@@ -87,8 +87,8 @@ class SubscribeFeedFragment : Fragment() {
         activity?.setTitle(R.string.title_add_feed)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item?.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
             R.id.add -> {
                 val arguments = arguments!!
                 val title = arguments.getString(ARG_TITLE)!!
