@@ -1,7 +1,10 @@
 package com.tughi.aggregator.feeds
 
 import java.text.DateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.HashMap
+import java.util.TimeZone
 import java.util.regex.Pattern
 
 /**
@@ -9,7 +12,7 @@ import java.util.regex.Pattern
  */
 class FeedDateParser : DateParser {
 
-    private val parsers = arrayOf<DateParser>(RssDateParser(), AtomDateParser())
+    private val parsers = arrayOf(RssDateParser(), AtomDateParser())
 
     override fun parse(text: String): Date? {
         for (index in parsers.indices) {
@@ -45,10 +48,10 @@ private class AtomDateParser : DateParser {
 
     override fun parse(text: String): Date? {
         val matcher = PATTERN.matcher(text)
-        if (matcher.matches()) {
+        if (matcher.find()) {
             calendar.timeInMillis = 0
 
-            val timezone = matcher.group(9)
+            val timezone = matcher.group(10)
             if (timezone == null || timezone == "Z" || timezone == "z") {
                 calendar.timeZone = TimeZone.getTimeZone("GMT")
             } else {
@@ -56,23 +59,25 @@ private class AtomDateParser : DateParser {
             }
 
             if (matcher.group(4) != null) {
-                val second = matcher.group(7)
-                calendar.set(Calendar.SECOND, Integer.parseInt(second))
+                val second = matcher.group(8)
+                if (second != null) {
+                    calendar.set(Calendar.SECOND, Integer.parseInt(second))
+                }
 
-                val minute = matcher.group(6)
+                val minute = matcher.group(6)!!
                 calendar.set(Calendar.MINUTE, Integer.parseInt(minute))
 
-                val hour = matcher.group(5)
+                val hour = matcher.group(5)!!
                 calendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hour))
             }
 
-            val date = matcher.group(3)
+            val date = matcher.group(3)!!
             calendar.set(Calendar.DATE, Integer.parseInt(date))
 
-            val month = matcher.group(2)
+            val month = matcher.group(2)!!
             calendar.set(Calendar.MONTH, Integer.parseInt(month) - 1)
 
-            val year = matcher.group(1)
+            val year = matcher.group(1)!!
             calendar.set(Calendar.YEAR, Integer.parseInt(year))
 
             return calendar.time
@@ -86,7 +91,7 @@ private class AtomDateParser : DateParser {
         private val PATTERN: Pattern
 
         init {
-            val regex = "(\\d{4})-(\\d{2})-(\\d{2})([Tt](\\d{2}):(\\d{2}):(\\d{2})(\\.\\d+)?([Zz]|[+-]\\d{2}:\\d{2}))?"
+            val regex = "(\\d{4})-(\\d{2})-(\\d{2})([Tt](\\d{2}):(\\d{2})(:(\\d{2})(\\.\\d+)?)?([Zz]|[+-]\\d{2}:\\d{2}))?"
             PATTERN = Pattern.compile(regex)
         }
     }
@@ -102,7 +107,7 @@ private class RssDateParser : DateParser {
 
     override fun parse(text: String): Date? {
         val matcher = PATTERN.matcher(text)
-        if (matcher.matches()) {
+        if (matcher.find()) {
             calendar.timeInMillis = 0
 
             val timezone = matcher.group(10)
@@ -135,19 +140,19 @@ private class RssDateParser : DateParser {
                 calendar.set(Calendar.SECOND, Integer.parseInt(second))
             }
 
-            val minute = matcher.group(7)
+            val minute = matcher.group(7)!!
             calendar.set(Calendar.MINUTE, Integer.parseInt(minute))
 
-            val hour = matcher.group(6)
+            val hour = matcher.group(6)!!
             calendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hour))
 
-            val date = matcher.group(3)
+            val date = matcher.group(3)!!
             calendar.set(Calendar.DATE, Integer.parseInt(date))
 
-            val month = matcher.group(4)
+            val month = matcher.group(4)!!
             calendar.set(Calendar.MONTH, MONTH_MAP[month]!!)
 
-            val year = matcher.group(5)
+            val year = matcher.group(5)!!
             calendar.set(Calendar.YEAR, Integer.parseInt(year))
 
             return calendar.time
@@ -160,26 +165,26 @@ private class RssDateParser : DateParser {
 
         private val PATTERN: Pattern
 
-        private val MONDAY = "Mon"
-        private val TUESDAY = "Tue"
-        private val WEDNESDAY = "Wed"
-        private val THURSDAY = "Thu"
-        private val FRIDAY = "Fri"
-        private val SATURDAY = "Sat"
-        private val SUNDAY = "Sun"
+        private const val MONDAY = "Mon"
+        private const val TUESDAY = "Tue"
+        private const val WEDNESDAY = "Wed"
+        private const val THURSDAY = "Thu"
+        private const val FRIDAY = "Fri"
+        private const val SATURDAY = "Sat"
+        private const val SUNDAY = "Sun"
 
-        private val JANUARY = "Jan"
-        private val FEBRUARY = "Feb"
-        private val MARCH = "Mar"
-        private val APRIL = "Apr"
-        private val MAY = "May"
-        private val JUNE = "Jun"
-        private val JULY = "Jul"
-        private val AUGUST = "Aug"
-        private val SEPTEMBER = "Sep"
-        private val OCTOBER = "Oct"
-        private val NOVEMBER = "Nov"
-        private val DECEMBER = "Dec"
+        private const val JANUARY = "Jan"
+        private const val FEBRUARY = "Feb"
+        private const val MARCH = "Mar"
+        private const val APRIL = "Apr"
+        private const val MAY = "May"
+        private const val JUNE = "Jun"
+        private const val JULY = "Jul"
+        private const val AUGUST = "Aug"
+        private const val SEPTEMBER = "Sep"
+        private const val OCTOBER = "Oct"
+        private const val NOVEMBER = "Nov"
+        private const val DECEMBER = "Dec"
 
         private val MONTH_MAP: MutableMap<String, Int>
 
