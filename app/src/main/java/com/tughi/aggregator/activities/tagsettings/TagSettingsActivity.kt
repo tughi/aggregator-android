@@ -6,7 +6,6 @@ import android.database.Cursor
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.lifecycle.MutableLiveData
@@ -48,28 +47,29 @@ class TagSettingsActivity : AppActivity() {
 
         setContentView(R.layout.tag_settings_activity)
 
-        val buttonBar = findViewById<View>(R.id.button_bar)
+        findViewById<Button>(R.id.save).setOnClickListener {
+            val tag = viewModel.tag.value
+            val name = nameTextView.text.toString().trim()
 
-        buttonBar.visibility = View.GONE
-        buttonBar.findViewById<Button>(R.id.delete).apply {
-            setOnClickListener {
-                viewModel.tag.value?.let { tag ->
-                    // TODO: confirm deletion
-
-                    GlobalScope.launch {
-                        Tags.delete(Tags.DeleteTagCriteria(tag.id))
-                    }
-
-                    finish()
+            GlobalScope.launch {
+                if (tag != null) {
+                    Tags.update(
+                            Tags.UpdateTagCriteria(tag.id),
+                            Tags.NAME to name
+                    )
+                } else {
+                    Tags.insert(
+                            Tags.NAME to name
+                    )
                 }
             }
+
+            finish()
         }
 
         viewModel.tag.observe(this, Observer { tag ->
             if (tag != null) {
-                if (tag.deletable) {
-                    buttonBar.visibility = View.VISIBLE
-                }
+                invalidateOptionsMenu()
 
                 nameTextView.text = tag.name
             }
@@ -84,31 +84,31 @@ class TagSettingsActivity : AppActivity() {
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item?.itemId) {
-            R.id.save -> {
-                val tag = viewModel.tag.value
-                val name = nameTextView.text.toString().trim()
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        super.onPrepareOptionsMenu(menu)
 
-                GlobalScope.launch {
-                    if (tag != null) {
-                        Tags.update(
-                                Tags.UpdateTagCriteria(tag.id),
-                                Tags.NAME to name
-                        )
-                    } else {
-                        Tags.insert(
-                                Tags.NAME to name
-                        )
-                    }
-                }
-
-                finish()
-
-                return true
-            }
+        if (menu != null) {
+            val tag = viewModel.tag.value
+            menu.findItem(R.id.delete)?.isVisible = tag?.deletable ?: false
         }
 
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item?.itemId) {
+            R.id.delete -> {
+                viewModel.tag.value?.let { tag ->
+                    // TODO: confirm deletion
+
+                    GlobalScope.launch {
+                        Tags.delete(Tags.DeleteTagCriteria(tag.id))
+                    }
+
+                    finish()
+                }
+            }
+        }
         return false
     }
 

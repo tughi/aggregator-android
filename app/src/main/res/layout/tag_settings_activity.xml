@@ -37,22 +37,18 @@
 
     </ScrollView>
 
-    <FrameLayout
-        android:id="@+id/button_bar"
-        style="?buttonBarStyle"
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?colorAccent">
+        android:padding="16dp">
 
         <Button
-            android:id="@+id/delete"
-            style="?buttonBarButtonStyle"
-            android:layout_width="wrap_content"
+            android:id="@+id/save"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:text="@string/action__delete"
-            android:textColor="@android:color/white" />
+            android:text="@string/action__save" />
 
-    </FrameLayout>
+    </LinearLayout>
 
 </LinearLayout>
