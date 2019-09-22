@@ -7,6 +7,7 @@ import android.database.Cursor
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.lifecycle.MediatorLiveData
@@ -70,6 +71,10 @@ class TagSettingsActivity : AppActivity() {
                 invalidateOptionsMenu()
 
                 nameTextView.text = tag.name
+
+                if (!tag.deletable) {
+                    feedsDropDownButton.visibility = View.GONE
+                }
             }
         })
 
