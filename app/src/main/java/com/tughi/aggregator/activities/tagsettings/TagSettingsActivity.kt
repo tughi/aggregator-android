@@ -133,14 +133,9 @@ class TagSettingsActivity : AppActivity() {
         when (item?.itemId) {
             R.id.delete -> {
                 viewModel.tag.value?.let { tag ->
-                    // TODO: confirm deletion
-
-                    GlobalScope.launch {
-                        Tags.delete(Tags.DeleteTagCriteria(tag.id))
-                    }
-
-                    finish()
+                    DeleteTagDialogFragment.show(supportFragmentManager, tag.id, tag.name, true)
                 }
+                return true
             }
         }
         return false
