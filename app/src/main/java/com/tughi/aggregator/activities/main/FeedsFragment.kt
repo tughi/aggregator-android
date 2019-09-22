@@ -49,7 +49,7 @@ class FeedListFragment : Fragment(), FeedsFragmentFeedAdapterListener {
         }
 
         fragmentView.findViewById<Button>(R.id.add).setOnClickListener {
-            startActivity(Intent(activity, SubscribeActivity::class.java))
+            SubscribeActivity.start(it.context)
         }
 
         val toolbar = fragmentView.findViewById<Toolbar>(R.id.toolbar)
@@ -61,7 +61,9 @@ class FeedListFragment : Fragment(), FeedsFragmentFeedAdapterListener {
         toolbar.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.add -> {
-                    startActivity(Intent(activity, SubscribeActivity::class.java).putExtra(SubscribeActivity.EXTRA_VIA_ACTION, true))
+                    activity?.let { activity ->
+                        SubscribeActivity.start(activity, viaAction = true)
+                    }
                 }
                 R.id.update_settings -> {
                     startActivity(Intent(activity, UpdateSettingsActivity::class.java))

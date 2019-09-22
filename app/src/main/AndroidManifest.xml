@@ -74,7 +74,8 @@
         <activity
             android:name=".activities.tagsettings.TagSettingsActivity"
             android:label="@string/tag_settings"
-            android:parentActivityName=".activities.main.MainActivity" />
+            android:parentActivityName=".activities.main.MainActivity"
+            android:windowSoftInputMode="adjustPan" />
 
         <activity
             android:name=".activities.entrytags.EntryTagsActivity"
@@ -84,6 +85,10 @@
         <activity
             android:name=".activities.tagspicker.TagsPickerActivity"
             android:parentActivityName=".activities.main.MainActivity" />
+
+        <activity
+            android:name=".activities.feedspicker.FeedsPickerActivity"
+            android:label="@string/title_feeds" />
 
         <activity
             android:name=".activities.myfeedsettings.MyFeedSettingsActivity"

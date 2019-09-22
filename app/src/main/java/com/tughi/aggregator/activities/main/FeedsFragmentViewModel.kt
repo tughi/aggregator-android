@@ -13,7 +13,7 @@ import java.io.Serializable
 
 class FeedsFragmentViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val databaseFeeds = Feeds.liveQuery(Feeds.AllCriteria(), Feed.QueryHelper)
+    private val databaseFeeds = Feeds.liveQuery(Feeds.AllCriteria, Feed.QueryHelper)
 
     private val expandedFeedId = MutableLiveData<Long>()
 

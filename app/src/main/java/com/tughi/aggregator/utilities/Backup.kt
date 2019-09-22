@@ -18,10 +18,10 @@ private const val BACKUP_FILENAME = "feeds.opml"
 fun backupFeeds() {
     App.instance.getExternalFilesDir(null)?.also { externalFilesDir ->
         val backupFile = File(externalFilesDir, BACKUP_FILENAME)
-        backupFile.parentFile.mkdirs()
+        backupFile.parentFile?.mkdirs()
 
         backupFile.outputStream().use { outputStream ->
-            OpmlGenerator.generate(Feeds.query(Feeds.AllCriteria(), OpmlFeed.QueryHelper), outputStream)
+            OpmlGenerator.generate(Feeds.query(Feeds.AllCriteria, OpmlFeed.QueryHelper), outputStream)
         }
     }
 }

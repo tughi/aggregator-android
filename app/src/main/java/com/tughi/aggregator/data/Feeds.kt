@@ -65,7 +65,7 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
         }
     }
 
-    class AllCriteria : QueryCriteria {
+    object AllCriteria : QueryCriteria {
         override fun config(query: Query.Builder) {
             query.orderBy("COALESCE(f.custom_title, f.title)")
         }
