@@ -74,8 +74,7 @@
         <activity
             android:name=".activities.tagsettings.TagSettingsActivity"
             android:label="@string/tag_settings"
-            android:parentActivityName=".activities.main.MainActivity"
-            android:windowSoftInputMode="adjustPan" />
+            android:parentActivityName=".activities.main.MainActivity" />
 
         <activity
             android:name=".activities.entrytags.EntryTagsActivity"

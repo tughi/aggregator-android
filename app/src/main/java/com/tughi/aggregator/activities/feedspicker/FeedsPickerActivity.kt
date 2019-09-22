@@ -9,6 +9,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.CheckedTextView
 import android.widget.ImageView
 import android.widget.ProgressBar
@@ -60,9 +61,6 @@ class FeedsPickerActivity : AppActivity() {
         val adapter = FeedsAdapter(object : FeedsAdapter.Listener {
             override fun onFeedClick(feed: Feed) {
                 viewModel.toggleFeed(feed.id)
-
-                val selectedFeeds = viewModel.feeds.value?.filter { it.selected } ?: emptyList()
-                setResult(Activity.RESULT_OK, Intent().putExtra(EXTRA_SELECTED_FEEDS, LongArray(selectedFeeds.size) { selectedFeeds[it].id }))
             }
         })
 
@@ -78,7 +76,12 @@ class FeedsPickerActivity : AppActivity() {
             }
         })
 
-        setResult(Activity.RESULT_OK, Intent().putExtra(EXTRA_SELECTED_FEEDS, selectedFeedIds))
+        findViewById<Button>(R.id.select).setOnClickListener {
+            val selectedFeeds = viewModel.feeds.value?.filter { it.selected } ?: emptyList()
+            setResult(Activity.RESULT_OK, Intent().putExtra(EXTRA_SELECTED_FEEDS, LongArray(selectedFeeds.size) { selectedFeeds[it].id }))
+
+            finish()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

@@ -33,22 +33,34 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
+            <com.tughi.aggregator.widgets.DropDownButton
+                android:id="@+id/feeds"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:hint="@string/tag_settings__tagged_feeds" />
+
         </LinearLayout>
 
     </ScrollView>
 
-    <LinearLayout
+    <FrameLayout
+        style="?buttonBarStyle"
+        android:background="?colorAccent"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:elevation="8dp">
 
         <Button
             android:id="@+id/save"
-            android:layout_width="match_parent"
+            style="?buttonBarButtonStyle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/action__save" />
+            android:layout_gravity="center"
+            android:text="@string/action__save"
+            android:textColor="@android:color/white" />
 
-    </LinearLayout>
+    </FrameLayout>
 
 </LinearLayout>
