@@ -148,7 +148,7 @@ class TagSettingsActivity : AppActivity() {
                 }
 
                 for (feedId in newSelectedFeedIds) {
-                    if (!oldSelectedFeedIds.contains(tagId)) {
+                    if (!oldSelectedFeedIds.contains(feedId)) {
                         FeedTags.insert(
                                 FeedTags.FEED_ID to feedId,
                                 FeedTags.TAG_ID to tagId,
@@ -158,7 +158,7 @@ class TagSettingsActivity : AppActivity() {
                 }
 
                 for (feedId in oldSelectedFeedIds) {
-                    if (!newSelectedFeedIds.contains(tagId)) {
+                    if (!newSelectedFeedIds.contains(feedId)) {
                         FeedTags.delete(FeedTags.DeleteFeedTagCriteria(feedId, tagId))
                     }
                 }
