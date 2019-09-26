@@ -9,6 +9,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.CheckedTextView
 import android.widget.ImageView
 import android.widget.ProgressBar
@@ -43,36 +44,30 @@ class EntryTagsActivity : AppActivity() {
         }
     }
 
+    private val entryId by lazy { intent.getLongExtra(EXTRA_ENTRY_ID, 0) }
+    private val entryFeedId by lazy { intent.getLongExtra(EXTRA_ENTRY_FEED_ID, 0) }
+
+    private val viewModel: EntryTagsViewModel by lazy {
+        val viewModelFactory = EntryTagsViewModel.Factory(entryId, entryFeedId)
+        ViewModelProviders.of(this, viewModelFactory).get(EntryTagsViewModel::class.java)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val entryId = intent.getLongExtra(EXTRA_ENTRY_ID, 0)
-        val entryFeedId = intent.getLongExtra(EXTRA_ENTRY_FEED_ID, 0)
-
-        setContentView(R.layout.simple_list)
+        setContentView(R.layout.entry_tags_activity)
         val recyclerView = findViewById<RecyclerView>(R.id.list)
         val progressBar = findViewById<ProgressBar>(R.id.progress)
 
         val adapter = TagsAdapter(object : TagsAdapter.Listener {
             override fun onTagClick(tag: Tag) {
-                GlobalScope.launch {
-                    if (tag.entryTag) {
-                        EntryTags.delete(EntryTags.DeleteEntryTagCriteria(entryId, tag.id))
-                    } else {
-                        EntryTags.insert(
-                                EntryTags.ENTRY_ID to entryId,
-                                EntryTags.TAG_ID to tag.id,
-                                EntryTags.TAG_TIME to System.currentTimeMillis()
-                        )
-                    }
-                }
+                tag.newEntryTag = !tag.newEntryTag
+                recyclerView.adapter?.notifyDataSetChanged()
             }
         })
 
         recyclerView.adapter = adapter
 
-        val viewModelFactory = EntryTagsViewModel.Factory(entryId, entryFeedId)
-        val viewModel = ViewModelProviders.of(this, viewModelFactory).get(EntryTagsViewModel::class.java)
         viewModel.tags.observe(this, Observer { tags ->
             if (tags == null) {
                 adapter.tags = emptyList()
@@ -82,6 +77,10 @@ class EntryTagsActivity : AppActivity() {
                 progressBar.visibility = View.GONE
             }
         })
+
+        findViewById<Button>(R.id.save).setOnClickListener {
+            onSave()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -92,7 +91,7 @@ class EntryTagsActivity : AppActivity() {
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean = when (item?.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         R.id.add -> {
             TagSettingsActivity.start(this, null)
             true
@@ -100,7 +99,29 @@ class EntryTagsActivity : AppActivity() {
         else -> super.onOptionsItemSelected(item)
     }
 
-    data class Tag(val id: Long, val name: String, val entryTag: Boolean = false, val feedTag: Boolean = false) {
+    private fun onSave() {
+        val tags = viewModel.tags.value ?: return
+
+        GlobalScope.launch {
+            for (tag in tags) {
+                if (tag.newEntryTag != tag.oldEntryTag) {
+                    if (tag.newEntryTag) {
+                        EntryTags.insert(
+                                EntryTags.ENTRY_ID to entryId,
+                                EntryTags.TAG_ID to tag.id,
+                                EntryTags.TAG_TIME to System.currentTimeMillis()
+                        )
+                    } else {
+                        EntryTags.delete(EntryTags.DeleteEntryTagCriteria(entryId, tag.id))
+                    }
+                }
+            }
+        }
+
+        finish()
+    }
+
+    data class Tag(val id: Long, val name: String, val feedTag: Boolean = false, val oldEntryTag: Boolean = false, var newEntryTag: Boolean = false) {
         object QueryHelper : Tags.QueryHelper<Tag>(
                 Tags.ID,
                 Tags.NAME
@@ -136,7 +157,7 @@ class EntryTagsActivity : AppActivity() {
         val tags = MediatorLiveData<List<Tag>>()
 
         init {
-            val tags = Tags.liveQuery(Tags.QueryVisibleTagsCriteria, Tag.QueryHelper)
+            val tags = Tags.liveQuery(Tags.QueryUserTagsCriteria, Tag.QueryHelper)
             val entryTags = EntryTags.liveQuery(EntryTags.QueryEntryTagsCriteria(entryId), EntryTag.QueryHelper)
             val feedTags = FeedTags.liveQuery(FeedTags.QueryFeedTagsCriteria(entryFeedId), FeedTag.QueryHelper)
 
@@ -151,8 +172,9 @@ class EntryTagsActivity : AppActivity() {
                 entryTags.isEmpty() && feedTags.isEmpty() -> tags
                 else -> tags.map { tag ->
                     tag.copy(
-                            entryTag = entryTags.has { it.tagId == tag.id },
-                            feedTag = feedTags.has { it.tagId == tag.id }
+                            feedTag = feedTags.has { it.tagId == tag.id },
+                            oldEntryTag = entryTags.has { it.tagId == tag.id },
+                            newEntryTag = entryTags.has { it.tagId == tag.id }
                     )
                 }
             }
@@ -191,9 +213,10 @@ class EntryTagsActivity : AppActivity() {
                 Tags.STARRED -> R.drawable.favicon_star
                 else -> R.drawable.favicon_tag
             })
+            faviconView.isEnabled = !tag.feedTag
 
             textView.text = tag.name
-            textView.isChecked = tag.entryTag || tag.feedTag
+            textView.isChecked = tag.newEntryTag || tag.feedTag
             textView.isEnabled = !tag.feedTag
         }
     }
