@@ -9,6 +9,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.CheckedTextView
 import android.widget.ImageView
 import android.widget.ProgressBar
@@ -55,16 +56,13 @@ class TagsPickerActivity : AppActivity() {
         val viewModelFactory = FeedTagsViewModel.Factory(selectedTagIds)
         val viewModel = ViewModelProviders.of(this, viewModelFactory).get(FeedTagsViewModel::class.java)
 
-        setContentView(R.layout.simple_list)
+        setContentView(R.layout.tags_picker_activity)
         val recyclerView = findViewById<RecyclerView>(R.id.list)
         val progressBar = findViewById<ProgressBar>(R.id.progress)
 
         val adapter = TagsAdapter(object : TagsAdapter.Listener {
             override fun onTagClick(tag: Tag) {
                 viewModel.toggleTag(tag.id)
-
-                val selectedTags = viewModel.tags.value?.filter { it.selected } ?: emptyList()
-                setResult(Activity.RESULT_OK, Intent().putExtra(EXTRA_SELECTED_TAGS, LongArray(selectedTags.size) { selectedTags[it].id }))
             }
         })
 
@@ -80,18 +78,23 @@ class TagsPickerActivity : AppActivity() {
             }
         })
 
-        setResult(Activity.RESULT_OK, Intent().putExtra(EXTRA_SELECTED_TAGS, selectedTagIds))
+        findViewById<Button>(R.id.select).setOnClickListener {
+            val selectedTags = viewModel.tags.value?.filter { it.selected } ?: emptyList()
+            setResult(Activity.RESULT_OK, Intent().putExtra(EXTRA_SELECTED_TAGS, LongArray(selectedTags.size) { selectedTags[it].id }))
+
+            finish()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         super.onCreateOptionsMenu(menu)
 
-        menuInflater.inflate(R.menu.entry_tags_activity, menu)
+        menuInflater.inflate(R.menu.tags_picker_fragment, menu)
 
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean = when (item?.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         R.id.add -> {
             TagSettingsActivity.start(this, null)
             true
@@ -202,7 +205,7 @@ class TagsPickerActivity : AppActivity() {
         override fun getItemId(position: Int): Long = tags[position].id
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = TagViewHolder(
-                LayoutInflater.from(parent.context).inflate(R.layout.entry_tags_item, parent, false),
+                LayoutInflater.from(parent.context).inflate(R.layout.tags_picker_item, parent, false),
                 listener
         )
 
