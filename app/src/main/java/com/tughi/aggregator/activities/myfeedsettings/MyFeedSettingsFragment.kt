@@ -5,11 +5,9 @@ import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
@@ -36,12 +34,6 @@ class MyFeedSettingsFragment : Fragment() {
     companion object {
         private const val REQUEST_INCLUDED_TAGS = 1
         private const val REQUEST_EXCLUDED_TAGS = 2
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        setHasOptionsMenu(true)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -73,6 +65,10 @@ class MyFeedSettingsFragment : Fragment() {
             }
         })
 
+        fragmentView.findViewById<Button>(R.id.save).setOnClickListener {
+            onSave()
+        }
+
         return fragmentView
     }
 
@@ -91,18 +87,7 @@ class MyFeedSettingsFragment : Fragment() {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-
-        inflater.inflate(R.menu.my_feed_settings_fragment, menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
-        R.id.save -> onSave()
-        else -> super.onOptionsItemSelected(item)
-    }
-
-    private fun onSave(): Boolean {
+    private fun onSave() {
         val oldIncludedTagIds = viewModel.oldIncludedTagIds
         val newIncludedTagIds = viewModel.newIncludedTagIds.value ?: LongArray(0)
         val oldExcludedTagIds = viewModel.oldExcludedTagIds
@@ -145,8 +130,6 @@ class MyFeedSettingsFragment : Fragment() {
                 activity?.finish()
             }
         }
-
-        return true
     }
 
     class MyFeedTag(val id: Long, val name: String) {
