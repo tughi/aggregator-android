@@ -42,7 +42,7 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     object UPDATE_TIME : Column("update_time", "e.update_time"), TableColumn
     object READ_TIME : Column("read_time", "e.read_time"), TableColumn
     object PINNED_TIME : Column("pinned_time", "e.pinned_time"), TableColumn
-    object STAR_TIME : Column("star_time", "(SELECT et.tag_time FROM entry_tag et WHERE et.entry_id = e.id AND et.tag_id = ${Tags.STARRED})", arrayOf("entry", "entry_tag"))
+    object STAR_TIME : Column("star_time", "(SELECT ft.tag_time FROM feed_tag ft WHERE ft.feed_id = e.feed_id AND ft.tag_id = ${Tags.STARRED} UNION ALL SELECT et.tag_time FROM entry_tag et WHERE et.entry_id = e.id AND et.tag_id = ${Tags.STARRED})", arrayOf("entry", "entry_tag", "feed_tag"))
     object TYPE : Column("type", "CASE WHEN e.read_time > 0 AND e.pinned_time = 0 THEN 'READ' ELSE 'UNREAD' END")
 
     fun markRead(entryId: Long): Int = update(UpdateEntryCriteria(entryId), READ_TIME to System.currentTimeMillis(), PINNED_TIME to 0)
