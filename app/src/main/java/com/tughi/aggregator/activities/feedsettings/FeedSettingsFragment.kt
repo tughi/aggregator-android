@@ -108,10 +108,8 @@ class FeedSettingsFragment : Fragment() {
             }
         })
 
-        fragmentView.findViewById<View>(R.id.unsubscribe).setOnClickListener {
-            viewModel.feed.value?.let {
-                UnsubscribeDialogFragment.show(fragmentManager!!, it.id, it.customTitle ?: it.title, true)
-            }
+        fragmentView.findViewById<View>(R.id.save).setOnClickListener {
+            onSave()
         }
 
         return fragmentView
@@ -146,12 +144,15 @@ class FeedSettingsFragment : Fragment() {
         inflater.inflate(R.menu.feed_settings_fragment, menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
-        R.id.save -> onSave()
-        else -> super.onOptionsItemSelected(item)
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.unsubscribe -> onUnsubscribe()
+            else -> return super.onOptionsItemSelected(item)
+        }
+        return true
     }
 
-    private fun onSave(): Boolean {
+    private fun onSave() {
         val url = urlEditText.text.toString().trim()
         val title = titleEditText.text.toString().trim()
         val cleanupMode = viewModel.newCleanupMode
@@ -203,8 +204,12 @@ class FeedSettingsFragment : Fragment() {
                 }
             }
         }
+    }
 
-        return true
+    private fun onUnsubscribe() {
+        viewModel.feed.value?.let {
+            UnsubscribeDialogFragment.show(fragmentManager!!, it.id, it.customTitle ?: it.title, true)
+        }
     }
 
     class Feed(

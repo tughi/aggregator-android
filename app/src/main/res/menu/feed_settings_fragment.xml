@@ -2,8 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/save"
-        android:icon="@drawable/action_check"
-        android:title="@string/action__save"
+        android:id="@+id/unsubscribe"
+        android:icon="@drawable/action_delete"
+        android:title="@string/action__unsubscribe"
         app:showAsAction="always" />
 </menu>
