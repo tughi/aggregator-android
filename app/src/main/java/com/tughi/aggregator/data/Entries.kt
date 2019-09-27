@@ -86,6 +86,11 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
         override val selectionArgs = arrayOf<Any>(id)
     }
 
+    class UpdateLastFeedUpdateEntriesCriteria(feedId: Long, lastUpdateTime: Long) : UpdateCriteria {
+        override val selection = "feed_id = ? AND update_time = ?"
+        override val selectionArgs = arrayOf<Any>(feedId, lastUpdateTime)
+    }
+
     interface DeleteCriteria : Repository.DeleteCriteria
 
     class DeleteOldFeedEntriesCriteria(feedId: Long, oldMarkerTime: Long) : DeleteCriteria {

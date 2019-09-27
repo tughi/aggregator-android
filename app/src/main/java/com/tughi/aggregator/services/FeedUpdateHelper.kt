@@ -130,15 +130,18 @@ object FeedUpdateHelper {
     }
 
     private fun parseFeed(feed: Feed, response: Response) {
+        val updateTime = System.currentTimeMillis()
+
         if (response.code == 304) {
-            updateFeedMetadata(feed, false)
+            Entries.update(Entries.UpdateLastFeedUpdateEntriesCriteria(feed.id, feed.lastUpdateTime), Entries.UPDATE_TIME to updateTime)
+
+            updateFeedMetadata(feed, updateTime)
         } else {
             val httpEtag = response.header("Etag")
             val httpLastModified = response.header("Last-Modified")
 
             val feedParser = FeedParser(feed.url, object : FeedParser.Listener() {
                 override fun onParsedEntry(uid: String, title: String?, link: String?, content: String?, author: String?, publishDate: Date?, publishDateText: String?) {
-                    val now = System.currentTimeMillis()
                     val result = Entries.update(
                             Entries.UpdateFeedEntryCriteria(feed.id, uid),
                             Entries.TITLE to title,
@@ -146,7 +149,7 @@ object FeedUpdateHelper {
                             Entries.CONTENT to content,
                             Entries.AUTHOR to author,
                             Entries.PUBLISH_TIME to publishDate?.time,
-                            Entries.UPDATE_TIME to now
+                            Entries.UPDATE_TIME to updateTime
                     )
 
                     if (result == 0) {
@@ -158,8 +161,8 @@ object FeedUpdateHelper {
                                 Entries.CONTENT to content,
                                 Entries.AUTHOR to author,
                                 Entries.PUBLISH_TIME to publishDate?.time,
-                                Entries.INSERT_TIME to now,
-                                Entries.UPDATE_TIME to now
+                                Entries.INSERT_TIME to System.currentTimeMillis(),
+                                Entries.UPDATE_TIME to updateTime
                         )
                     }
                 }
@@ -167,7 +170,7 @@ object FeedUpdateHelper {
                 override fun onParsedFeed(title: String, link: String?, language: String?) {
                     updateFeedMetadata(
                             feed,
-                            true,
+                            updateTime,
                             Feeds.TITLE to title,
                             Feeds.LINK to link,
                             Feeds.LANGUAGE to language,
@@ -190,28 +193,25 @@ object FeedUpdateHelper {
         }
     }
 
-    private fun updateFeedMetadata(feed: Feed, cleanup: Boolean, vararg data: Pair<Feeds.TableColumn, Any?>) {
+    private fun updateFeedMetadata(feed: Feed, updateTime: Long, vararg data: Pair<Feeds.TableColumn, Any?>) {
         Database.transaction {
             val feedId = feed.id
-            val lastUpdateTime = System.currentTimeMillis()
-            val nextUpdateTime = AutoUpdateScheduler.calculateNextUpdateTime(feedId, feed.updateMode, lastUpdateTime)
+            val nextUpdateTime = AutoUpdateScheduler.calculateNextUpdateTime(feedId, feed.updateMode, updateTime)
 
             Feeds.update(
                     Feeds.UpdateRowCriteria(feedId),
-                    Feeds.LAST_UPDATE_TIME to lastUpdateTime,
+                    Feeds.LAST_UPDATE_TIME to updateTime,
                     Feeds.LAST_UPDATE_ERROR to null,
                     Feeds.NEXT_UPDATE_TIME to nextUpdateTime,
                     Feeds.NEXT_UPDATE_RETRY to 0,
                     *data
             )
 
-            if (cleanup) {
-                val deleteEntriesCriteria = createDeleteEntriesCriteria(feedId, feed.cleanupMode)
-                if (deleteEntriesCriteria != null) {
-                    val deletedEntries = Entries.delete(deleteEntriesCriteria)
-                    if (BuildConfig.DEBUG) {
-                        Log.d(javaClass.name, "Deleted old entries: $deletedEntries")
-                    }
+            val deleteEntriesCriteria = createDeleteEntriesCriteria(feedId, feed.cleanupMode)
+            if (deleteEntriesCriteria != null) {
+                val deletedEntries = Entries.delete(deleteEntriesCriteria)
+                if (BuildConfig.DEBUG) {
+                    Log.d(javaClass.name, "Deleted old entries: $deletedEntries")
                 }
             }
         }
@@ -260,7 +260,8 @@ object FeedUpdateHelper {
             val cleanupMode: CleanupMode,
             val nextUpdateRetry: Int,
             val httpEtag: String?,
-            val httpLastModified: String?
+            val httpLastModified: String?,
+            val lastUpdateTime: Long
     ) {
         object QueryHelper : Feeds.QueryHelper<Feed>(
                 Feeds.ID,
@@ -269,7 +270,8 @@ object FeedUpdateHelper {
                 Feeds.CLEANUP_MODE,
                 Feeds.NEXT_UPDATE_RETRY,
                 Feeds.HTTP_ETAG,
-                Feeds.HTTP_LAST_MODIFIED
+                Feeds.HTTP_LAST_MODIFIED,
+                Feeds.LAST_UPDATE_TIME
         ) {
             override fun createRow(cursor: Cursor) = Feed(
                     id = cursor.getLong(0),
@@ -278,7 +280,8 @@ object FeedUpdateHelper {
                     cleanupMode = CleanupMode.deserialize(cursor.getString(3)),
                     nextUpdateRetry = cursor.getInt(4),
                     httpEtag = cursor.getString(5),
-                    httpLastModified = cursor.getString(6)
+                    httpLastModified = cursor.getString(6),
+                    lastUpdateTime = cursor.getLong(7)
             )
         }
     }
