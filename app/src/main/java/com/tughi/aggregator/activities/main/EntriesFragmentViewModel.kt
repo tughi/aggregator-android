@@ -23,7 +23,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
     private val sessionTime = initialQueryCriteria.sessionTime
 
     val queryCriteria = MutableLiveData<Entries.EntriesQueryCriteria>().apply {
-        value = initialQueryCriteria
+        value = initialQueryCriteria.copy(sessionTime = if (EntryListSettings.showReadEntries) 0 else sessionTime)
     }
 
     private val storedEntries = Transformations.switchMap(queryCriteria) { queryCriteria ->
@@ -113,6 +113,8 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
     }
 
     fun changeShowRead(showRead: Boolean) {
+        EntryListSettings.showReadEntries = showRead
+
         queryCriteria.value?.let { value ->
             queryCriteria.value = value.copy(sessionTime = if (showRead) 0 else sessionTime)
         }
