@@ -138,6 +138,9 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
                 val selection = "e.id IN ($SELECT__MY_FEED_ENTRY_IDS) AND (e.read_time = 0 OR e.read_time > ?)"
                 val selectionArgs: Array<Any?> = arrayOf(sessionTime)
                 query.where(selection, selectionArgs)
+            } else {
+                val selection = "e.id IN ($SELECT__MY_FEED_ENTRY_IDS)"
+                query.where(selection, emptyArray())
             }
             query.addObservedTables("my_feed_tag")
             query.orderBy(sortOrder.orderBy)
