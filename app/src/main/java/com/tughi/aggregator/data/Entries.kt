@@ -73,7 +73,7 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
 
     class UpdateFeedEntryCriteria(feedId: Long, uid: String) : UpdateCriteria {
         override val selection = "feed_id = ? AND uid = ?"
-        override val selectionArgs = arrayOf<Any>(feedId, uid)
+        override val selectionArgs = arrayOf(feedId, uid)
     }
 
     class UpdateEntryCriteria(id: Long) : UpdateCriteria {
@@ -108,15 +108,20 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
         }
     }
 
-    abstract class EntriesQueryCriteria : QueryCriteria, Serializable {
-        abstract val sessionTime: Long
-        abstract val sortOrder: SortOrder
+    abstract class EntriesQueryCriteria(val sessionTime: Long, val sortOrder: SortOrder, val limit: Int, val offset: Int) : QueryCriteria, Serializable {
+        final override fun config(query: Query.Builder) {
+            simpleConfig(query)
+            if (limit > 0) query.limit(limit)
+            if (offset > 0) query.offset(offset)
+        }
 
-        abstract fun copy(sessionTime: Long? = null, sortOrder: SortOrder? = null): EntriesQueryCriteria
+        abstract fun simpleConfig(query: Query.Builder)
+
+        abstract fun copy(sessionTime: Long? = null, sortOrder: SortOrder? = null, limit: Int? = null, offset: Int? = null): EntriesQueryCriteria
     }
 
-    class FeedEntriesQueryCriteria(val feedId: Long, override val sessionTime: Long, override val sortOrder: SortOrder) : EntriesQueryCriteria() {
-        override fun config(query: Query.Builder) {
+    class FeedEntriesQueryCriteria(val feedId: Long, sessionTime: Long, sortOrder: SortOrder, limit: Int = 0, offset: Int = 0) : EntriesQueryCriteria(sessionTime, sortOrder, limit, offset) {
+        override fun simpleConfig(query: Query.Builder) {
             val selection: String?
             val selectionArgs: Array<Any?>
             if (sessionTime != 0L) {
@@ -130,15 +135,17 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
             query.orderBy(sortOrder.orderBy)
         }
 
-        override fun copy(sessionTime: Long?, sortOrder: SortOrder?) = FeedEntriesQueryCriteria(
+        override fun copy(sessionTime: Long?, sortOrder: SortOrder?, limit: Int?, offset: Int?) = FeedEntriesQueryCriteria(
                 feedId = feedId,
                 sessionTime = sessionTime ?: this.sessionTime,
-                sortOrder = sortOrder ?: this.sortOrder
+                sortOrder = sortOrder ?: this.sortOrder,
+                limit = limit ?: this.limit,
+                offset = offset ?: this.offset
         )
     }
 
-    class MyFeedEntriesQueryCriteria(override val sessionTime: Long, override val sortOrder: SortOrder) : EntriesQueryCriteria() {
-        override fun config(query: Query.Builder) {
+    class MyFeedEntriesQueryCriteria(sessionTime: Long, sortOrder: SortOrder, limit: Int = 0, offset: Int = 0) : EntriesQueryCriteria(sessionTime, sortOrder, limit, offset) {
+        override fun simpleConfig(query: Query.Builder) {
             if (sessionTime != 0L) {
                 val selection = "e.id IN ($SELECT__MY_FEED_ENTRY_IDS) AND (e.read_time = 0 OR e.read_time > ?)"
                 val selectionArgs: Array<Any?> = arrayOf(sessionTime)
@@ -151,14 +158,16 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
             query.orderBy(sortOrder.orderBy)
         }
 
-        override fun copy(sessionTime: Long?, sortOrder: SortOrder?) = MyFeedEntriesQueryCriteria(
+        override fun copy(sessionTime: Long?, sortOrder: SortOrder?, limit: Int?, offset: Int?) = MyFeedEntriesQueryCriteria(
                 sessionTime = sessionTime ?: this.sessionTime,
-                sortOrder = sortOrder ?: this.sortOrder
+                sortOrder = sortOrder ?: this.sortOrder,
+                limit = limit ?: this.limit,
+                offset = offset ?: this.offset
         )
     }
 
-    class TagEntriesQueryCriteria(val tagId: Long, override val sessionTime: Long, override val sortOrder: SortOrder) : EntriesQueryCriteria() {
-        override fun config(query: Query.Builder) {
+    class TagEntriesQueryCriteria(val tagId: Long, sessionTime: Long, sortOrder: SortOrder, limit: Int = 0, offset: Int = 0) : EntriesQueryCriteria(sessionTime, sortOrder, limit, offset) {
+        override fun simpleConfig(query: Query.Builder) {
             val selection: String
             val selectionArgs: Array<Any?>
             if (sessionTime != 0L) {
@@ -173,10 +182,12 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
             query.orderBy(sortOrder.orderBy)
         }
 
-        override fun copy(sessionTime: Long?, sortOrder: SortOrder?) = TagEntriesQueryCriteria(
+        override fun copy(sessionTime: Long?, sortOrder: SortOrder?, limit: Int?, offset: Int?) = TagEntriesQueryCriteria(
                 tagId = tagId,
                 sessionTime = sessionTime ?: this.sessionTime,
-                sortOrder = sortOrder ?: this.sortOrder
+                sortOrder = sortOrder ?: this.sortOrder,
+                limit = limit ?: this.limit,
+                offset = offset ?: this.offset
         )
     }
 

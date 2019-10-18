@@ -51,8 +51,8 @@ class Query(private val query: String, private val queryArgs: Array<Any?> = empt
         private var whereArgs: Array<Any?> = emptyArray()
         private var groupBy: String? = null
         private var orderBy: String? = null
-
-        fun containsColumn(column: Repository.Column) = columns.contains(column)
+        private var limit: Int? = null
+        private var offset: Int? = null
 
         fun addObservedTables(vararg tables: String) {
             for (table in tables) {
@@ -82,6 +82,16 @@ class Query(private val query: String, private val queryArgs: Array<Any?> = empt
             return this
         }
 
+        fun limit(limit: Int): Builder {
+            this.limit = limit
+            return this
+        }
+
+        fun offset(offset: Int): Builder {
+            this.offset = offset
+            return this
+        }
+
         fun create(): Query {
             val query = StringBuilder()
 
@@ -99,6 +109,9 @@ class Query(private val query: String, private val queryArgs: Array<Any?> = empt
             if (where != null) query.append(" WHERE ").append(where)
             if (groupBy != null) query.append(" GROUP BY ").append(groupBy)
             if (orderBy != null) query.append(" ORDER BY ").append(orderBy)
+
+            limit?.also { query.append(" LIMIT ").append(it) }
+            offset?.also { query.append(" OFFSET ").append(it) }
 
             return Query(query = query.toString(), queryArgs = whereArgs, observedTables = observedTables.toTypedArray())
         }
