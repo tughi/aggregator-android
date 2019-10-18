@@ -59,11 +59,10 @@ object Tags : Repository<Tags.Column, Tags.TableColumn, Tags.UpdateCriteria, Tag
     }
 
     abstract class QueryHelper<Row>(vararg columns: Column) : Repository.QueryHelper<Column, QueryCriteria, Row>(columns) {
-        override fun createQuery(criteria: QueryCriteria) = Query.Builder(columns, "tag t")
+        override fun createQueryBuilder(criteria: QueryCriteria) = Query.Builder(columns, "tag t")
                 .groupBy("t.id")
                 .orderBy("t.name")
                 .also { criteria.config(it, columns) }
-                .create()
     }
 
 }

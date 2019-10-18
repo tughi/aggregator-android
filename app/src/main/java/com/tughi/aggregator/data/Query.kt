@@ -92,7 +92,7 @@ class Query(private val query: String, private val queryArgs: Array<Any?> = empt
             return this
         }
 
-        fun create(): Query {
+        private fun createQuery(): String {
             val query = StringBuilder()
 
             query.append("SELECT ")
@@ -113,7 +113,17 @@ class Query(private val query: String, private val queryArgs: Array<Any?> = empt
             limit?.also { query.append(" LIMIT ").append(it) }
             offset?.also { query.append(" OFFSET ").append(it) }
 
-            return Query(query = query.toString(), queryArgs = whereArgs, observedTables = observedTables.toTypedArray())
+            return query.toString()
+        }
+
+        fun build(): Query {
+            val query = createQuery()
+            return Query(query = query, queryArgs = whereArgs, observedTables = observedTables.toTypedArray())
+        }
+
+        fun buildCount(): Query {
+            val query = "SELECT COUNT(1) FROM (${createQuery()})"
+            return Query(query = query, queryArgs = whereArgs, observedTables = observedTables.toTypedArray())
         }
     }
 

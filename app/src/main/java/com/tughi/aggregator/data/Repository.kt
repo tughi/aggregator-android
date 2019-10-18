@@ -18,6 +18,8 @@ abstract class Repository<Column : Repository.Column, TableColumn : Repository.T
 
     fun <Row> liveQueryOne(criteria: QueryCriteria, helper: QueryHelper<Column, QueryCriteria, Row>) = Database.liveQuery(helper.createQuery(criteria), helper::transformOne)
 
+    fun <Row> liveQueryCount(criteria: QueryCriteria, helper: QueryHelper<Column, QueryCriteria, Row>) = Database.liveQuery(helper.createQueryCount(criteria), helper::transformCount)
+
     open class Column(val name: String, val projection: String, val projectionTables: Array<String>)
 
     interface TableColumn {
@@ -38,21 +40,22 @@ abstract class Repository<Column : Repository.Column, TableColumn : Repository.T
 
     abstract class QueryHelper<Column : Repository.Column, QueryCriteria : Repository.QueryCriteria<Column>, Row>(val columns: Array<out Column>) {
 
-        abstract fun createQuery(criteria: QueryCriteria): Query
+        fun createQuery(criteria: QueryCriteria) = createQueryBuilder(criteria).build()
+
+        fun createQueryCount(criteria: QueryCriteria) = createQueryBuilder(criteria).buildCount()
+
+        abstract fun createQueryBuilder(criteria: QueryCriteria): Query.Builder
 
         abstract fun createRow(cursor: Cursor): Row
 
         internal fun transform(cursor: Cursor): List<Row> {
             if (cursor.moveToFirst()) {
                 val entries = mutableListOf<Row>()
-
                 do {
                     entries.add(createRow(cursor))
                 } while (cursor.moveToNext())
-
                 return entries
             }
-
             return emptyList()
         }
 
@@ -60,8 +63,14 @@ abstract class Repository<Column : Repository.Column, TableColumn : Repository.T
             if (cursor.moveToFirst()) {
                 return createRow(cursor)
             }
-
             return null
+        }
+
+        internal fun transformCount(cursor: Cursor): Int {
+            if (cursor.moveToFirst()) {
+                return cursor.getInt(0)
+            }
+            return 0
         }
 
     }

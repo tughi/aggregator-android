@@ -37,9 +37,8 @@ object FeedTags : Repository<FeedTags.Column, FeedTags.TableColumn, FeedTags.Upd
     }
 
     abstract class QueryHelper<Row>(vararg columns: Column) : Repository.QueryHelper<Column, QueryCriteria, Row>(columns) {
-        override fun createQuery(criteria: QueryCriteria) = Query.Builder(columns, "feed_tag ft LEFT JOIN tag t ON t.id = ft.tag_id")
+        override fun createQueryBuilder(criteria: QueryCriteria) = Query.Builder(columns, "feed_tag ft LEFT JOIN tag t ON t.id = ft.tag_id")
                 .also { criteria.config(it, columns) }
-                .create()
     }
 
 }

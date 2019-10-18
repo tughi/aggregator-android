@@ -30,9 +30,8 @@ object EntryTags : Repository<EntryTags.Column, EntryTags.TableColumn, EntryTags
     }
 
     abstract class QueryHelper<Row>(vararg columns: Column) : Repository.QueryHelper<Column, QueryCriteria, Row>(columns) {
-        override fun createQuery(criteria: QueryCriteria) = Query.Builder(columns, "entry_tag et")
+        override fun createQueryBuilder(criteria: QueryCriteria) = Query.Builder(columns, "entry_tag et")
                 .also { criteria.config(it, columns) }
-                .create()
     }
 
 }

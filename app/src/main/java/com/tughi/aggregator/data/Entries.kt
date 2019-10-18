@@ -233,9 +233,8 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
                 return tables.toString()
             }
 
-        override fun createQuery(criteria: QueryCriteria) = Query.Builder(columns, tables)
+        override fun createQueryBuilder(criteria: QueryCriteria) = Query.Builder(columns, tables)
                 .also { criteria.config(it) }
-                .create()
     }
 
 }
