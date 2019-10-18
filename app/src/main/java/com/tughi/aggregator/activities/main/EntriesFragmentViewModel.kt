@@ -61,29 +61,29 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
                     return@launch
                 }
 
-                var counter = 0
                 val newEntries = Array(storedEntries.size * 2) { index ->
                     when {
                         index == 0 -> storedEntries[0].let { entry ->
                             entry.copy(
                                     id = -entry.numericDate,
                                     readTime = 0,
+                                    pinnedTime = 0,
                                     type = EntriesFragmentEntryType.HEADER
                             )
                         }
                         index % 2 == 0 -> storedEntries[index / 2].let { entry ->
                             if (entry.numericDate != storedEntries[index / 2 - 1].numericDate) {
-                                counter = 0
                                 entry.copy(
                                         id = -entry.numericDate,
                                         readTime = 0,
+                                        pinnedTime = 0,
                                         type = EntriesFragmentEntryType.HEADER
                                 )
                             } else {
-                                counter++
                                 entry.copy(
-                                        id = -entry.numericDate - counter,
+                                        id = -42_000_000L - index,
                                         readTime = 0,
+                                        pinnedTime = 0,
                                         type = EntriesFragmentEntryType.DIVIDER
                                 )
                             }
@@ -153,7 +153,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
 
                 val calendar = Calendar.getInstance()
                 calendar.timeInMillis = publishTime
-                val numericDate = (calendar.get(Calendar.YEAR) * 10_000 + calendar.get(Calendar.MONTH) * 100 + calendar.get(Calendar.DAY_OF_MONTH)) * 100_000L
+                val numericDate = calendar.get(Calendar.YEAR) * 10_000L + calendar.get(Calendar.MONTH) * 100 + calendar.get(Calendar.DAY_OF_MONTH)
 
                 var formattedDate = formattedDates.get(numericDate)
                 if (formattedDate == null) {
