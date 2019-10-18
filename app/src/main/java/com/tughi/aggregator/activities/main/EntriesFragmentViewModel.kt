@@ -30,7 +30,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
         Entries.liveQuery(queryCriteria, Entry.QueryHelper())
     }
 
-    private val transformedEntries = MediatorLiveData<List<Entry>>().also {
+    val entries: LiveData<List<Entry>> = MediatorLiveData<List<Entry>>().also {
         var currentJob: Job? = null
 
         it.addSource(storedEntries) { storedEntries ->
@@ -46,7 +46,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
                 val oldEntries = it.value
                 if (oldEntries != null && oldEntries.size == storedEntries.size * 2) {
                     var changed = false
-                    for (index in 0 until storedEntries.size) {
+                    for (index in storedEntries.indices) {
                         if (oldEntries[index * 2 + 1] != storedEntries[index]) {
                             changed = true
                             break
@@ -100,9 +100,6 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
             }
         }
     }
-
-    val entries: LiveData<List<Entry>>
-        get() = transformedEntries
 
     fun changeSortOrder(sortOrder: Entries.SortOrder) {
         EntryListSettings.entriesSortOrder = sortOrder
