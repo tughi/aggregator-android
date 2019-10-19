@@ -111,6 +111,12 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
         override val formattedDate: String = entry.formattedDate
     }
 
+    object Placeholder : Item {
+        override val id: Long = 0
+        override val numericDate: Int = 0
+        override val formattedDate: String = ""
+    }
+
     data class Entry(
             override val id: Long,
             val feedId: Long,
