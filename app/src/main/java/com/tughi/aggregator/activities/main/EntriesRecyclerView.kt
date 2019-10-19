@@ -14,7 +14,7 @@ class EntriesRecyclerView(context: Context, attrs: AttributeSet) : RecyclerView(
     private val headerView = LayoutInflater.from(context).inflate(R.layout.entry_list_header, FrameLayout(context), false)
     private val headerTextView: TextView = headerView.findViewById(R.id.header)
 
-    private var headerNumericDate: Long = 0
+    private var headerNumericDate: Int = 0
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
@@ -37,10 +37,10 @@ class EntriesRecyclerView(context: Context, attrs: AttributeSet) : RecyclerView(
             val firstChildViewHolder = getChildViewHolder(firstChild)
             if (firstChildViewHolder is EntriesFragmentViewHolder) {
                 // update overlay text
-                val firstChildNumericDate = firstChildViewHolder.entry.numericDate
+                val firstChildNumericDate = firstChildViewHolder.item.numericDate
                 if (headerNumericDate != firstChildNumericDate) {
                     headerNumericDate = firstChildNumericDate
-                    headerTextView.text = firstChildViewHolder.entry.formattedDate
+                    headerTextView.text = firstChildViewHolder.item.formattedDate
 
                     headerView.measure(MeasureSpec.makeMeasureSpec(headerView.width, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(headerView.height, MeasureSpec.EXACTLY))
                     headerView.layout(0, 0, headerView.width, headerView.height)
@@ -51,7 +51,7 @@ class EntriesRecyclerView(context: Context, attrs: AttributeSet) : RecyclerView(
                 if (childCount > 1) {
                     val secondChild = getChildAt(1)
                     val secondChildViewHolder = getChildViewHolder(secondChild) as EntriesFragmentViewHolder
-                    val secondChildNumericDate = secondChildViewHolder.entry.numericDate
+                    val secondChildNumericDate = secondChildViewHolder.item.numericDate
 
                     if (firstChildNumericDate != secondChildNumericDate && secondChild.top < headerView.height) {
                         // snap overlay under the next section

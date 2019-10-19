@@ -2,7 +2,7 @@ package com.tughi.aggregator.activities.main
 
 import android.database.Cursor
 import android.text.format.DateUtils
-import androidx.collection.LongSparseArray
+import androidx.collection.SparseArrayCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
@@ -26,77 +26,53 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
         value = initialQueryCriteria.copy(sessionTime = if (EntryListSettings.showReadEntries) 0 else sessionTime)
     }
 
-    private val storedEntries = Transformations.switchMap(queryCriteria) { queryCriteria ->
+    private val entries = Transformations.switchMap(queryCriteria) { queryCriteria ->
         Entries.liveQuery(queryCriteria, Entry.QueryHelper())
     }
 
-    val entries: LiveData<List<Entry>> = MediatorLiveData<List<Entry>>().also {
+    val items: LiveData<List<Item>> = MediatorLiveData<List<Item>>().also {
         var currentJob: Job? = null
 
-        it.addSource(storedEntries) { storedEntries ->
+        it.addSource(entries) { entries ->
             currentJob?.run {
                 cancel()
             }
 
-            currentJob = GlobalScope.launch {
-                if (!isActive) {
-                    return@launch
-                }
-
-                val oldEntries = it.value
-                if (oldEntries != null && oldEntries.size == storedEntries.size * 2) {
-                    var changed = false
-                    for (index in storedEntries.indices) {
-                        if (oldEntries[index * 2 + 1] != storedEntries[index]) {
-                            changed = true
-                            break
-                        }
-                    }
-                    if (!changed) {
+            if (entries.isEmpty()) {
+                currentJob = null
+                it.postValue(emptyList())
+            } else {
+                currentJob = GlobalScope.launch {
+                    if (!isActive) {
                         return@launch
                     }
-                }
 
-                if (!isActive) {
-                    return@launch
-                }
+                    val items = mutableListOf<Item>()
 
-                val newEntries = Array(storedEntries.size * 2) { index ->
-                    when {
-                        index == 0 -> storedEntries[0].let { entry ->
-                            entry.copy(
-                                    id = -entry.numericDate,
-                                    readTime = 0,
-                                    pinnedTime = 0,
-                                    type = EntriesFragmentEntryType.HEADER
-                            )
+                    val entriesIterator = entries.iterator()
+
+                    var prevEntry = entriesIterator.next()
+                    items.add(Header(prevEntry))
+                    items.add(prevEntry)
+
+                    var index = 0
+                    entriesIterator.forEach { entry ->
+                        index += 1
+                        if (entry.numericDate != prevEntry.numericDate) {
+                            items.add(Header(entry))
+                        } else {
+                            items.add(Divider(entry, index))
                         }
-                        index % 2 == 0 -> storedEntries[index / 2].let { entry ->
-                            if (entry.numericDate != storedEntries[index / 2 - 1].numericDate) {
-                                entry.copy(
-                                        id = -entry.numericDate,
-                                        readTime = 0,
-                                        pinnedTime = 0,
-                                        type = EntriesFragmentEntryType.HEADER
-                                )
-                            } else {
-                                entry.copy(
-                                        id = -42_000_000L - index,
-                                        readTime = 0,
-                                        pinnedTime = 0,
-                                        type = EntriesFragmentEntryType.DIVIDER
-                                )
-                            }
-                        }
-                        else -> storedEntries[index / 2]
+                        items.add(entry)
+                        prevEntry = entry
                     }
-                }
 
-                if (!isActive) {
-                    return@launch
-                }
+                    if (!isActive) {
+                        return@launch
+                    }
 
-                it.postValue(newEntries.asList())
+                    it.postValue(items)
+                }
             }
         }
     }
@@ -117,21 +93,40 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
         }
     }
 
+    interface Item {
+        val id: Long
+        val numericDate: Int
+        val formattedDate: String
+    }
+
+    class Divider(entry: Entry, index: Int) : Item {
+        override val id: Long = -4200_00_00L - index
+        override val numericDate: Int = entry.numericDate
+        override val formattedDate: String = entry.formattedDate
+    }
+
+    class Header(entry: Entry) : Item {
+        override val id: Long = -entry.numericDate.toLong()
+        override val numericDate: Int = entry.numericDate
+        override val formattedDate: String = entry.formattedDate
+    }
+
     data class Entry(
-            val id: Long,
+            override val id: Long,
             val feedId: Long,
             val feedTitle: String,
             val faviconUrl: String?,
             val title: String?,
             val link: String?,
             val author: String?,
-            val formattedDate: String,
+            override val formattedDate: String,
             val formattedTime: String,
             val readTime: Long,
             val pinnedTime: Long,
-            val type: EntriesFragmentEntryType,
-            val numericDate: Long
-    ) {
+            override val numericDate: Int
+    ) : Item {
+        val unread = readTime == 0L || pinnedTime != 0L
+
         class QueryHelper : Entries.QueryHelper<Entry>(
                 Entries.ID,
                 Entries.FEED_ID,
@@ -142,18 +137,17 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
                 Entries.LINK,
                 Entries.PINNED_TIME,
                 Entries.READ_TIME,
-                Entries.TITLE,
-                Entries.TYPE
+                Entries.TITLE
         ) {
             private val context = App.instance
-            private val formattedDates = LongSparseArray<String>()
+            private val formattedDates = SparseArrayCompat<String>()
 
             override fun createRow(cursor: Cursor): Entry {
                 val publishTime = cursor.getLong(5)
 
                 val calendar = Calendar.getInstance()
                 calendar.timeInMillis = publishTime
-                val numericDate = calendar.get(Calendar.YEAR) * 10_000L + calendar.get(Calendar.MONTH) * 100 + calendar.get(Calendar.DAY_OF_MONTH)
+                val numericDate = calendar.get(Calendar.YEAR) * 10_000 + calendar.get(Calendar.MONTH) * 100 + calendar.get(Calendar.DAY_OF_MONTH)
 
                 var formattedDate = formattedDates.get(numericDate)
                 if (formattedDate == null) {
@@ -173,7 +167,6 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
                         pinnedTime = cursor.getLong(7),
                         readTime = cursor.getLong(8),
                         title = cursor.getString(9),
-                        type = EntriesFragmentEntryType.valueOf(cursor.getString(10)),
                         numericDate = numericDate
                 )
             }

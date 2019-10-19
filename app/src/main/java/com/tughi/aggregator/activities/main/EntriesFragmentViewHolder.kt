@@ -9,11 +9,11 @@ import com.tughi.aggregator.utilities.Favicons
 
 internal sealed class EntriesFragmentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-    lateinit var entry: EntriesFragmentViewModel.Entry
-        protected set
+    lateinit var item: EntriesFragmentViewModel.Item
+        private set
 
-    open fun onBind(entry: EntriesFragmentViewModel.Entry) {
-        this.entry = entry
+    open fun onBind(item: EntriesFragmentViewModel.Item) {
+        this.item = item
     }
 
 }
@@ -22,21 +22,23 @@ internal class EntriesFragmentDividerViewHolder(itemView: View) : EntriesFragmen
 
 internal abstract class EntriesFragmentEntryViewHolder(itemView: View, private val listener: EntriesFragmentAdapterListener) : EntriesFragmentViewHolder(itemView) {
 
-    val favicon: ImageView = itemView.findViewById(R.id.favicon)
-    val title: TextView = itemView.findViewById(R.id.title)
-    val feedTitle: TextView = itemView.findViewById(R.id.feed_title)
-    val time: TextView = itemView.findViewById(R.id.time)
-    val author: TextView = itemView.findViewById(R.id.author)
-    val pin: View = itemView.findViewById(R.id.pin)
+    private val favicon: ImageView = itemView.findViewById(R.id.favicon)
+    private val title: TextView = itemView.findViewById(R.id.title)
+    private val feedTitle: TextView = itemView.findViewById(R.id.feed_title)
+    private val time: TextView = itemView.findViewById(R.id.time)
+    private val author: TextView = itemView.findViewById(R.id.author)
+    private val pin: View = itemView.findViewById(R.id.pin)
 
     init {
         itemView.setOnClickListener {
-            listener.onEntryClicked(entry, adapterPosition / 2)
+            listener.onEntryClicked(item as EntriesFragmentViewModel.Entry, adapterPosition / 2)
         }
     }
 
-    override fun onBind(entry: EntriesFragmentViewModel.Entry) {
-        super.onBind(entry)
+    override fun onBind(item: EntriesFragmentViewModel.Item) {
+        super.onBind(item)
+
+        val entry = (item as EntriesFragmentViewModel.Entry)
 
         feedTitle.text = entry.feedTitle
         title.text = entry.title
@@ -62,12 +64,12 @@ internal class EntriesFragmentUnreadEntryViewHolder(itemView: View, listener: En
 
 internal class EntriesFragmentHeaderViewHolder(itemView: View) : EntriesFragmentViewHolder(itemView) {
 
-    val header: TextView = itemView.findViewById(R.id.header)
+    private val header: TextView = itemView.findViewById(R.id.header)
 
-    override fun onBind(entry: EntriesFragmentViewModel.Entry) {
-        super.onBind(entry)
+    override fun onBind(item: EntriesFragmentViewModel.Item) {
+        super.onBind(item)
 
-        header.text = entry.formattedDate
+        header.text = (item as EntriesFragmentViewModel.Header).formattedDate
     }
 
 }

@@ -7,7 +7,7 @@ import com.tughi.aggregator.R
 
 internal class EntriesFragmentEntryAdapter(private val listener: EntriesFragmentAdapterListener) : RecyclerView.Adapter<EntriesFragmentViewHolder>() {
 
-    var entries: List<EntriesFragmentViewModel.Entry> = emptyList()
+    var items: List<EntriesFragmentViewModel.Item> = emptyList()
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -17,19 +17,25 @@ internal class EntriesFragmentEntryAdapter(private val listener: EntriesFragment
         setHasStableIds(true)
     }
 
-    override fun getItemCount() = entries.size
+    override fun getItemCount() = items.size
 
-    override fun getItemId(position: Int) = entries[position].id
+    override fun getItemId(position: Int) = items[position].id
 
-    override fun getItemViewType(position: Int) = entries[position].type.ordinal
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EntriesFragmentViewHolder = when (EntriesFragmentEntryType.values()[viewType]) {
-        EntriesFragmentEntryType.DIVIDER -> EntriesFragmentDividerViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.entry_list_divider, parent, false))
-        EntriesFragmentEntryType.HEADER -> EntriesFragmentHeaderViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.entry_list_header, parent, false))
-        EntriesFragmentEntryType.READ -> EntriesFragmentReadEntryViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.entry_list_read_item, parent, false), listener)
-        EntriesFragmentEntryType.UNREAD -> EntriesFragmentUnreadEntryViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.entry_list_unread_item, parent, false), listener)
+    override fun getItemViewType(position: Int): Int = when (val item = items[position]) {
+        is EntriesFragmentViewModel.Divider -> R.layout.entry_list_divider
+        is EntriesFragmentViewModel.Header -> R.layout.entry_list_header
+        is EntriesFragmentViewModel.Entry -> if (item.unread) R.layout.entry_list_unread_entry else R.layout.entry_list_read_entry
+        else -> throw IllegalStateException("Unsupported item type")
     }
 
-    override fun onBindViewHolder(holder: EntriesFragmentViewHolder, position: Int) = holder.onBind(entries[position])
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EntriesFragmentViewHolder = when (viewType) {
+        R.layout.entry_list_divider -> EntriesFragmentDividerViewHolder(LayoutInflater.from(parent.context).inflate(viewType, parent, false))
+        R.layout.entry_list_header -> EntriesFragmentHeaderViewHolder(LayoutInflater.from(parent.context).inflate(viewType, parent, false))
+        R.layout.entry_list_read_entry -> EntriesFragmentReadEntryViewHolder(LayoutInflater.from(parent.context).inflate(viewType, parent, false), listener)
+        R.layout.entry_list_unread_entry -> EntriesFragmentUnreadEntryViewHolder(LayoutInflater.from(parent.context).inflate(viewType, parent, false), listener)
+        else -> throw IllegalStateException("Unsupported view type")
+    }
+
+    override fun onBindViewHolder(holder: EntriesFragmentViewHolder, position: Int) = holder.onBind(items[position])
 
 }

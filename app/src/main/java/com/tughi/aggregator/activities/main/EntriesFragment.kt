@@ -36,10 +36,10 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
         val progressBar = fragmentView.findViewById<ProgressBar>(R.id.progress)
 
         val adapter = EntriesFragmentEntryAdapter(this)
-        viewModel.entries.observe(this, Observer { entries ->
-            adapter.entries = entries
+        viewModel.items.observe(this, Observer { items ->
+            adapter.items = items
 
-            if (entries == null) {
+            if (items == null) {
                 progressBar.visibility = View.VISIBLE
             } else {
                 progressBar.visibility = View.GONE
@@ -138,7 +138,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
 
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
             if (viewHolder is EntriesFragmentEntryViewHolder) {
-                val entry = viewHolder.entry
+                val entry = viewHolder.item as EntriesFragmentViewModel.Entry
                 GlobalScope.launch {
                     if (entry.readTime == 0L || entry.pinnedTime != 0L) {
                         Entries.markRead(entry.id)
