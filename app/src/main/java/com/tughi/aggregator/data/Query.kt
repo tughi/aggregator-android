@@ -5,7 +5,7 @@ import androidx.sqlite.db.SupportSQLiteQuery
 import com.tughi.aggregator.BuildConfig
 import java.util.StringTokenizer
 
-class Query(private val query: String, private val queryArgs: Array<Any?> = emptyArray(), val observedTables: Array<String>) : SupportSQLiteQuery {
+class Query(private val query: String, private val queryArgs: Array<Any?> = emptyArray(), val observedTables: Set<String>) : SupportSQLiteQuery {
 
     override fun getSql() = query
 
@@ -118,12 +118,12 @@ class Query(private val query: String, private val queryArgs: Array<Any?> = empt
 
         fun build(): Query {
             val query = createQuery()
-            return Query(query = query, queryArgs = whereArgs, observedTables = observedTables.toTypedArray())
+            return Query(query = query, queryArgs = whereArgs, observedTables = observedTables)
         }
 
         fun buildCount(): Query {
             val query = "SELECT COUNT(1) FROM (${createQuery()})"
-            return Query(query = query, queryArgs = whereArgs, observedTables = observedTables.toTypedArray())
+            return Query(query = query, queryArgs = whereArgs, observedTables = observedTables)
         }
     }
 

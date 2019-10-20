@@ -19,7 +19,6 @@ import kotlinx.coroutines.launch
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
-import java.lang.ref.WeakReference
 
 object Database {
 
@@ -122,7 +121,7 @@ object Database {
     private fun insert(table: String, values: ContentValues, conflictAlgorithm: Int): Long {
         val id = sqlite.writableDatabase.insert(table, conflictAlgorithm, values)
         if (id != -1L) {
-            invalidateTable(table)
+            invalidate(table)
         }
         return id
     }
@@ -136,7 +135,7 @@ object Database {
     fun update(table: String, values: ContentValues, selection: String?, selectionArgs: Array<Any>?): Int {
         val result = sqlite.writableDatabase.update(table, SQLiteDatabase.CONFLICT_FAIL, values, selection, selectionArgs)
         if (result > 0) {
-            invalidateTable(table)
+            invalidate(table)
         }
         return result
     }
@@ -144,41 +143,35 @@ object Database {
     fun delete(table: String, selection: String?, selectionArgs: Array<Any>?): Int {
         val result = sqlite.writableDatabase.delete(table, selection, selectionArgs)
         if (result > 0) {
-            invalidateTable(table)
+            invalidate(table)
         }
         return result
     }
 
-    private val tableObservers = mutableSetOf<TableObserver>()
+    private val lastInvalidationTime = mutableMapOf<String, Long>()
 
-    private val invalidatedTables = mutableSetOf<String>()
+    private val invalidationObservers = mutableSetOf<InvalidationObserver>()
 
-    private fun invalidateTable(table: String) {
+    private val transactionInvalidations = mutableSetOf<String>()
+
+    private fun invalidate(vararg tables: String) {
         if (sqlite.writableDatabase.inTransaction()) {
-            synchronized(invalidatedTables) {
-                invalidatedTables.add(table)
+            synchronized(transactionInvalidations) {
+                transactionInvalidations.addAll(tables)
+            }
+        } else {
+            synchronized(lastInvalidationTime) {
+                val now = System.currentTimeMillis()
+                tables.forEach {
+                    lastInvalidationTime[it] = now
+                }
             }
 
-            return
-        }
-
-        synchronized(tableObservers) {
-            if (tableObservers.size > 0) {
-                val vanishedObservers = mutableListOf<TableObserver>()
-
-                for (tableObserver in tableObservers) {
-                    if (tableObserver.table == table) {
-                        val listener = tableObserver.listener
-                        if (listener != null) {
-                            listener.onInvalidated()
-                        } else {
-                            vanishedObservers.add(tableObserver)
-                        }
+            synchronized(invalidationObservers) {
+                if (invalidationObservers.size > 0) {
+                    for (tableObserver in invalidationObservers) {
+                        tableObserver.onInvalidated(tables)
                     }
-                }
-
-                for (tableObserver in vanishedObservers) {
-                    tableObservers.remove(tableObserver)
                 }
             }
         }
@@ -208,12 +201,12 @@ object Database {
         val database = sqlite.writableDatabase
         database.endTransaction()
         if (!database.inTransaction()) {
-            synchronized(invalidatedTables) {
-                for (table in invalidatedTables) {
-                    invalidateTable(table)
-                }
-                invalidatedTables.clear()
+            val tables: Array<String>
+            synchronized(transactionInvalidations) {
+                tables = transactionInvalidations.toTypedArray()
+                transactionInvalidations.clear()
             }
+            invalidate(*tables)
         }
     }
 
@@ -224,15 +217,46 @@ object Database {
     }
 
     fun <T> liveQuery(query: Query, transform: (Cursor) -> T): LiveData<T> {
-        val liveData = object : LiveData<T>(), TableObserver.Listener {
+        val liveData = object : LiveData<T>(), InvalidationObserver {
+            private var inactivationTime = 0L
+
             override fun onActive() {
-                if (value == null) {
+                synchronized(invalidationObservers) {
+                    invalidationObservers.add(this)
+                }
+
+                var invalidated = false
+                synchronized(lastInvalidationTime) {
+                    query.observedTables.forEach {
+                        val time = lastInvalidationTime[it]
+                        if (time == null) {
+                            lastInvalidationTime[it] = System.currentTimeMillis()
+                            invalidated = true
+                        } else if (time > inactivationTime) {
+                            invalidated = true
+                        }
+                    }
+                }
+
+                if (invalidated) {
                     update()
                 }
             }
 
-            override fun onInvalidated() {
-                update()
+            override fun onInactive() {
+                synchronized(invalidationObservers) {
+                    invalidationObservers.remove(this)
+                }
+                inactivationTime = System.currentTimeMillis()
+            }
+
+            override fun onInvalidated(tables: Array<out String>) {
+                for (index in tables.indices) {
+                    if (query.observedTables.contains(tables[index])) {
+                        update()
+                        break
+                    }
+                }
             }
 
             private fun update() {
@@ -245,28 +269,11 @@ object Database {
             }
         }
 
-        synchronized(tableObservers) {
-            for (observedTable in query.observedTables) {
-                tableObservers.add(TableObserver(observedTable, liveData))
-            }
-        }
-
         return liveData
     }
 
-    private class TableObserver(val table: String, listener: Listener) {
-
-        private val reference = WeakReference(listener)
-
-        val listener
-            get() = reference.get()
-
-        interface Listener {
-
-            fun onInvalidated()
-
-        }
-
+    private interface InvalidationObserver {
+        fun onInvalidated(tables: Array<out String>)
     }
 
 }
