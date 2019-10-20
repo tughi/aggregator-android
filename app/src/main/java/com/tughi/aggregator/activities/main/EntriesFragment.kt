@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.reader.ReaderActivity
@@ -47,6 +48,26 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
         })
 
         entriesRecyclerView.adapter = adapter
+        entriesRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            val layoutManager = entriesRecyclerView.layoutManager as LinearLayoutManager
+
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                val itemsRangeStart = viewModel.itemsRangeStart.value ?: 0
+                val itemsRangeSize = viewModel.itemsRangeSize
+
+                if (dy > 0) {
+                    val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
+                    if (lastVisibleItemPosition - itemsRangeStart > itemsRangeSize * .75) {
+                        viewModel.itemsRangeStart.value = itemsRangeStart + itemsRangeSize / 2
+                    }
+                } else {
+                    val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+                    if (itemsRangeStart > 0 && firstVisibleItemPosition - itemsRangeStart < itemsRangeSize * .25) {
+                        viewModel.itemsRangeStart.value = itemsRangeStart - itemsRangeSize / 2
+                    }
+                }
+            }
+        })
         ItemTouchHelper(SwipeItemTouchHelper()).attachToRecyclerView(entriesRecyclerView)
 
         toolbar = fragmentView.findViewById(R.id.toolbar)

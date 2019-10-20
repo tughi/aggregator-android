@@ -20,7 +20,7 @@ internal sealed class EntriesFragmentViewHolder(itemView: View) : RecyclerView.V
 
 internal class EntriesFragmentDividerViewHolder(itemView: View) : EntriesFragmentViewHolder(itemView)
 
-internal class EntriesFragmentPlaceholderViewHolder(itemView: View) : EntriesFragmentViewHolder(itemView)
+internal class EntriesFragmentEntryPlaceholderViewHolder(itemView: View) : EntriesFragmentViewHolder(itemView)
 
 internal abstract class EntriesFragmentEntryViewHolder(itemView: View, private val listener: EntriesFragmentAdapterListener) : EntriesFragmentViewHolder(itemView) {
 

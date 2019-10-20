@@ -2,14 +2,15 @@ package com.tughi.aggregator.activities.main
 
 import android.database.Cursor
 import android.text.format.DateUtils
+import android.util.Log
 import androidx.collection.SparseArrayCompat
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.App
+import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.preferences.EntryListSettings
 import kotlinx.coroutines.GlobalScope
@@ -26,52 +27,76 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
         value = initialQueryCriteria.copy(sessionTime = if (EntryListSettings.showReadEntries) 0 else sessionTime)
     }
 
-    private val entries = Transformations.switchMap(queryCriteria) { queryCriteria ->
-        Entries.liveQuery(queryCriteria, Entry.QueryHelper())
+    val itemsRangeSize = 100 // must be a factor of 20
+
+    val itemsRangeStart = MutableLiveData<Int>().apply {
+        value = 0
     }
 
-    val items: LiveData<List<Item>> = MediatorLiveData<List<Item>>().also {
-        var currentJob: Job? = null
+    val items = MediatorLiveData<List<Item>>().also {
+        val liveEntriesCount = Transformations.switchMap(queryCriteria) { queryCriteria ->
+            Entries.liveQueryCount(queryCriteria, Entry.QueryHelper)
+        }
 
-        it.addSource(entries) { entries ->
-            currentJob?.run {
-                cancel()
+        it.addSource(liveEntriesCount) { entriesCount ->
+            val itemsRangeStart = itemsRangeStart.value
+            if (itemsRangeStart != null) {
+                loadItemsRange(entriesCount * 2, itemsRangeStart)
             }
+        }
 
-            if (entries.isEmpty()) {
-                currentJob = null
-                it.postValue(emptyList())
-            } else {
-                currentJob = GlobalScope.launch {
-                    if (!isActive) {
-                        return@launch
+        it.addSource(itemsRangeStart) { itemsRangeStart ->
+            val entriesCount = liveEntriesCount.value
+            if (entriesCount != null) {
+                loadItemsRange(entriesCount * 2, itemsRangeStart)
+            }
+        }
+    }
+
+    private var currentItemsLoaderJob: Job? = null
+
+    private fun loadItemsRange(itemsSize: Int, itemsRangeStart: Int) {
+        currentItemsLoaderJob?.apply { cancel() }
+
+        val queryLimit = itemsRangeSize / 2
+        val queryOffset = itemsRangeStart / 2
+        val queryCriteria = queryCriteria.value!!.copy(limit = queryLimit, offset = queryOffset)
+
+        if (BuildConfig.DEBUG) {
+            Log.d(javaClass.name, "Load $queryLimit entries from $queryOffset (range $itemsRangeStart:${itemsRangeStart + itemsRangeSize})")
+        }
+
+        currentItemsLoaderJob = GlobalScope.launch {
+            val entries = Entries.query(queryCriteria, Entry.QueryHelper)
+
+            if (isActive) {
+                if (entries.isEmpty()) {
+                    items.postValue(emptyList())
+                    return@launch
+                }
+
+                val entriesIterator = entries.iterator()
+
+                val itemsRange = mutableListOf<Item>()
+
+                var prevEntry = entriesIterator.next()
+                itemsRange.add(Header(prevEntry.numericDate, prevEntry.formattedDate))
+                itemsRange.add(prevEntry)
+
+                var index = queryCriteria.offset
+                entriesIterator.forEach { entry ->
+                    index += 1
+                    if (entry.numericDate != prevEntry.numericDate) {
+                        itemsRange.add(Header(entry.numericDate, entry.formattedDate))
+                    } else {
+                        itemsRange.add(FixedDivider(entry.numericDate, entry.formattedDate, index))
                     }
+                    itemsRange.add(entry)
+                    prevEntry = entry
+                }
 
-                    val items = mutableListOf<Item>()
-
-                    val entriesIterator = entries.iterator()
-
-                    var prevEntry = entriesIterator.next()
-                    items.add(Header(prevEntry))
-                    items.add(prevEntry)
-
-                    var index = 0
-                    entriesIterator.forEach { entry ->
-                        index += 1
-                        if (entry.numericDate != prevEntry.numericDate) {
-                            items.add(Header(entry))
-                        } else {
-                            items.add(Divider(entry, index))
-                        }
-                        items.add(entry)
-                        prevEntry = entry
-                    }
-
-                    if (!isActive) {
-                        return@launch
-                    }
-
-                    it.postValue(items)
+                if (isActive) {
+                    items.postValue(LoadedItems(itemsSize, itemsRangeStart, itemsRange.toTypedArray()))
                 }
             }
         }
@@ -99,22 +124,24 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
         val formattedDate: String
     }
 
-    class Divider(entry: Entry, index: Int) : Item {
+    interface Divider : Item
+
+    class FixedDivider(override val numericDate: Int, override val formattedDate: String, index: Int) : Divider {
         override val id: Long = -4200_00_00L - index
-        override val numericDate: Int = entry.numericDate
-        override val formattedDate: String = entry.formattedDate
     }
 
-    class Header(entry: Entry) : Item {
-        override val id: Long = -entry.numericDate.toLong()
-        override val numericDate: Int = entry.numericDate
-        override val formattedDate: String = entry.formattedDate
+    data class DividerPlaceholder(override var numericDate: Int = 0, override var formattedDate: String = "", internal var index: Int = 0) : Divider {
+        override val id: Long
+            get() = -4200_00_00L - index
     }
 
-    object Placeholder : Item {
-        override val id: Long = 0
-        override val numericDate: Int = 0
-        override val formattedDate: String = ""
+    class Header(override val numericDate: Int, override val formattedDate: String) : Item {
+        override val id: Long = -numericDate.toLong()
+    }
+
+    data class EntryPlaceholder(override var numericDate: Int = 0, override var formattedDate: String = "", internal var index: Int = 0) : Item {
+        override val id: Long
+            get() = -4200_00_00L - index
     }
 
     data class Entry(
@@ -133,7 +160,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
     ) : Item {
         val unread = readTime == 0L || pinnedTime != 0L
 
-        class QueryHelper : Entries.QueryHelper<Entry>(
+        object QueryHelper : Entries.QueryHelper<Entry>(
                 Entries.ID,
                 Entries.FEED_ID,
                 Entries.AUTHOR,
@@ -177,6 +204,38 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
                 )
             }
         }
+    }
+
+    class LoadedItems(override val size: Int, private val rangeStart: Int, private val range: Array<Item>) : AbstractList<Item>() {
+        private val topDividerPlaceholder = DividerPlaceholder(numericDate = range[0].numericDate, formattedDate = range[0].formattedDate)
+        private val topEntryPlaceholder = EntryPlaceholder(numericDate = range[0].numericDate, formattedDate = range[0].formattedDate)
+        private val bottomDividerPlaceholder = DividerPlaceholder(numericDate = range[range.size - 1].numericDate, formattedDate = range[range.size - 1].formattedDate)
+        private val bottomEntryPlaceholder = EntryPlaceholder(numericDate = range[range.size - 1].numericDate, formattedDate = range[range.size - 1].formattedDate)
+
+        override fun get(index: Int): Item = when {
+            index < rangeStart -> when {
+                index % 2 == 0 -> {
+                    topDividerPlaceholder.index = index
+                    topDividerPlaceholder
+                }
+                else -> {
+                    topEntryPlaceholder.index = index
+                    topEntryPlaceholder
+                }
+            }
+            index >= rangeStart + range.size -> when {
+                index % 2 == 0 -> {
+                    bottomDividerPlaceholder.index = index
+                    bottomDividerPlaceholder
+                }
+                else -> {
+                    bottomEntryPlaceholder.index = index
+                    bottomEntryPlaceholder
+                }
+            }
+            else -> range[index - rangeStart]
+        }
+
     }
 
     class Factory(private val initialQueryCriteria: Entries.EntriesQueryCriteria) : ViewModelProvider.Factory {

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.tughi.aggregator.widgets.EntryItemLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinatorLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clipToPadding="false"
+    android:focusable="true"
+    android:paddingStart="?listPreferredItemPaddingLeft"
+    android:paddingTop="16dp"
+    android:paddingEnd="?listPreferredItemPaddingRight"
+    android:paddingBottom="16dp">
+
+    <FrameLayout
+        android:id="@+id/selector"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:paddingStart="?listPreferredItemPaddingLeft"
+        android:paddingEnd="?listPreferredItemPaddingLeft">
+
+        <View
+            android:layout_width="24dp"
+            android:layout_height="match_parent"
+            android:visibility="invisible" />
+
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/feed_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:ellipsize="end"
+        android:enabled="false"
+        android:maxLines="1"
+        android:textAppearance="?textAppearanceBody2"
+        android:textColor="?android:textColorSecondary"
+        tools:text="Aggregator News" />
+
+    <com.tughi.aggregator.widgets.InlineImageView
+        android:id="@+id/pin"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_marginEnd="4dp"
+        android:alpha="0.3"
+        android:scaleType="fitXY"
+        android:src="@drawable/entry_state_pinned"
+        android:textAppearance="?textAppearanceBody2"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:gravity="center_vertical"
+        android:textAppearance="?textAppearanceBody2"
+        android:textColor="?android:textColorSecondary"
+        tools:text="03:42" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="56dp"
+        android:enabled="false"
+        android:text="@string/entry_list_placeholder__loading"
+        android:textAppearance="?textAppearanceBody1" />
+
+    <com.tughi.aggregator.widgets.InlineImageView
+        android:id="@+id/favicon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:alpha="0.3"
+        android:padding="4dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/favicon_placeholder"
+        android:textAppearance="?textAppearanceBody1"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/author"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:enabled="false"
+        android:maxLines="1"
+        android:textAppearance="?textAppearanceBody2"
+        android:textColor="?android:textColorSecondary"
+        android:visibility="gone" />
+
+</com.tughi.aggregator.widgets.EntryItemLayout>
