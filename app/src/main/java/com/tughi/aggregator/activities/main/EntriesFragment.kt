@@ -57,13 +57,13 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
 
                 if (dy > 0) {
                     val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
-                    if (lastVisibleItemPosition - itemsRangeStart > itemsRangeSize * .75) {
-                        viewModel.itemsRangeStart.value = itemsRangeStart + itemsRangeSize / 2
+                    if (lastVisibleItemPosition - itemsRangeStart > itemsRangeSize / 2) {
+                        viewModel.itemsRangeStart.value = itemsRangeStart + itemsRangeSize / 3
                     }
                 } else {
                     val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
-                    if (itemsRangeStart > 0 && firstVisibleItemPosition - itemsRangeStart < itemsRangeSize * .25) {
-                        viewModel.itemsRangeStart.value = itemsRangeStart - itemsRangeSize / 2
+                    if (itemsRangeStart > 0 && firstVisibleItemPosition - itemsRangeStart < itemsRangeSize / 2) {
+                        viewModel.itemsRangeStart.value = itemsRangeStart - itemsRangeSize / 3
                     }
                 }
             }

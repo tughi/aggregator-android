@@ -27,7 +27,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
         value = initialQueryCriteria.copy(sessionTime = if (EntryListSettings.showReadEntries) 0 else sessionTime)
     }
 
-    val itemsRangeSize = 100 // must be a factor of 20
+    val itemsRangeSize = 15 * 6 // must be a factor of 6
 
     val itemsRangeStart = MutableLiveData<Int>().apply {
         value = 0
