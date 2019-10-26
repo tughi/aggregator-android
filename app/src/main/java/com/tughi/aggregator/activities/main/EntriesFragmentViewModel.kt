@@ -207,10 +207,26 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
     }
 
     class LoadedItems(override val size: Int, private val rangeStart: Int, private val range: Array<Item>) : AbstractList<Item>() {
-        private val topDividerPlaceholder = DividerPlaceholder(numericDate = range[0].numericDate, formattedDate = range[0].formattedDate)
-        private val topEntryPlaceholder = EntryPlaceholder(numericDate = range[0].numericDate, formattedDate = range[0].formattedDate)
-        private val bottomDividerPlaceholder = DividerPlaceholder(numericDate = range[range.size - 1].numericDate, formattedDate = range[range.size - 1].formattedDate)
-        private val bottomEntryPlaceholder = EntryPlaceholder(numericDate = range[range.size - 1].numericDate, formattedDate = range[range.size - 1].formattedDate)
+        private val topDividerPlaceholder: DividerPlaceholder
+        private val topEntryPlaceholder: EntryPlaceholder
+        private val bottomDividerPlaceholder: DividerPlaceholder
+        private val bottomEntryPlaceholder: EntryPlaceholder
+
+        init {
+            if (range.isEmpty()) {
+                topDividerPlaceholder = DividerPlaceholder()
+                topEntryPlaceholder = EntryPlaceholder()
+                bottomDividerPlaceholder = DividerPlaceholder()
+                bottomEntryPlaceholder = EntryPlaceholder()
+            } else {
+                val firstItem = range[0]
+                topDividerPlaceholder = DividerPlaceholder(numericDate = firstItem.numericDate, formattedDate = firstItem.formattedDate)
+                topEntryPlaceholder = EntryPlaceholder(numericDate = firstItem.numericDate, formattedDate = firstItem.formattedDate)
+                val lastItem = range[range.size - 1]
+                bottomDividerPlaceholder = DividerPlaceholder(numericDate = lastItem.numericDate, formattedDate = lastItem.formattedDate)
+                bottomEntryPlaceholder = EntryPlaceholder(numericDate = lastItem.numericDate, formattedDate = lastItem.formattedDate)
+            }
+        }
 
         override fun get(index: Int): Item = when {
             index < rangeStart -> when {
