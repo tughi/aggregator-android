@@ -1,6 +1,8 @@
 package com.tughi.aggregator.activities.reader
 
+import android.content.Intent
 import android.database.Cursor
+import android.net.Uri
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.LayoutInflater
@@ -9,6 +11,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -16,7 +19,9 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.webkit.WebViewClientCompat
 import com.tughi.aggregator.App
+import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.entrytags.EntryTagsActivity
 import com.tughi.aggregator.data.Entries
@@ -34,6 +39,12 @@ class ReaderFragment : Fragment() {
     companion object {
         internal const val ARG_ENTRY_ID = "entry_id"
 
+        private val ENTRY_LINK_URL = Uri.Builder()
+                .scheme("https")
+                .authority(BuildConfig.APPLICATION_ID)
+                .path("entry-link")
+                .build()
+
         private val entryTemplate by lazy {
             App.instance.resources
                     .openRawResource(R.raw.entry)
@@ -48,6 +59,7 @@ class ReaderFragment : Fragment() {
     private lateinit var removeStarMenuItem: MenuItem
 
     private var loadedEntry: Entry? = null
+    private var loadedEntryLink: String? = null
     private var loadedEntryHtml: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,9 +78,10 @@ class ReaderFragment : Fragment() {
             val viewModel = ViewModelProviders.of(this, viewModelFactory).get(ReaderViewModel::class.java)
 
             val webView: WebView = fragmentView.findViewById(R.id.content)
+            webView.webViewClient = CustomWebViewClient()
 
             webView.settings.apply {
-                javaScriptEnabled = false // TODO: enable one content is sanitized
+                javaScriptEnabled = false // TODO: enable once content is sanitized
                 setSupportZoom(true)
                 builtInZoomControls = true
                 displayZoomControls = false
@@ -90,19 +103,28 @@ class ReaderFragment : Fragment() {
                 val entryContent = entry.content
                 val entryAuthor = entry.author
 
+                val entryTitleHtml = if (entryTitle != null) {
+                    if (entryLink != null) {
+                        """<a href="$ENTRY_LINK_URL">${Html.encode(entryTitle)}</a>"""
+                    } else {
+                        Html.encode(entryTitle)
+                    }
+                } else {
+                    ""
+                }
+
                 // TODO: run this in a coroutine
                 val entryHtml = entryTemplate
                         .replace("#ff6600", style.accentHexColor)
                         .replace("{{ reader.theme }}", App.style.value?.theme?.name?.toLowerCase() ?: "")
                         .replace("{{ layout_direction }}", if (Language.isRightToLeft(entryFeedLanguage)) "rtl" else "ltr")
-                        .replace("{{ entry.feed_name }}", entryFeedTitle)
-                        .replace("{{ entry.link }}", entryLink ?: "#")
+                        .replace("{{ entry.source }}", if (entryAuthor != null) "$entryFeedTitle — $entryAuthor" else entryFeedTitle)
                         .replace("{{ entry.date }}", DateUtils.formatDateTime(activity, entryPublished, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_YEAR))
-                        .replace("{{ entry.title }}", Html.encode(entryTitle ?: ""))
-                        .replace("{{ entry.author }}", entryAuthor ?: "")
+                        .replace("{{ entry.title }}", entryTitleHtml)
                         .replace("{{ entry.content }}", entryContent ?: "")
 
                 if (entryHtml != loadedEntryHtml) {
+                    loadedEntryLink = entryLink
                     loadedEntryHtml = entryHtml
                     webView.loadDataWithBaseURL(entryLink, entryHtml, "text/html", null, null)
                 }
@@ -248,6 +270,21 @@ class ReaderFragment : Fragment() {
                 }
                 throw UnsupportedOperationException()
             }
+        }
+    }
+
+    inner class CustomWebViewClient : WebViewClientCompat() {
+        override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+            val requestUrl = request.url
+            if (requestUrl == ENTRY_LINK_URL) {
+                if (loadedEntryLink != null) {
+                    val entryUrl = Uri.parse(loadedEntryLink)
+                    startActivity(Intent(Intent.ACTION_VIEW, entryUrl))
+                }
+            } else {
+                startActivity(Intent(Intent.ACTION_VIEW, requestUrl))
+            }
+            return true
         }
     }
 

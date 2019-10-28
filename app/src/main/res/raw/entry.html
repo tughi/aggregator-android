@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
@@ -89,6 +90,10 @@
             border-bottom: 1px solid #ff6600;
         }
 
+        .aggregator-entry-source {
+            margin: 0 0 1rem;
+        }
+
         .aggregator-entry-content {
             overflow-x: auto;
             margin: 0 0 1rem;
@@ -108,12 +113,12 @@
 <body class="{{ reader.theme }}" dir="{{ layout_direction }}">
     <div class="aggregator-entry">
         <div class="aggregator-entry-header">
-            <h2>
-                <a href="{{ entry.link }}">{{ entry.title }}</a>
-            </h2>
-            <div>
-                {{ entry.feed_name }} - {{ entry.author }}
+            <div class="aggregator-entry-source">
+                {{ entry.source }}
             </div>
+            <h2>
+                {{ entry.title }}
+            </h2>
             <div>
                 {{ entry.date }}
             </div>
