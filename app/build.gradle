@@ -11,7 +11,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 29
 
-        versionName = 'Preview:022'
+        versionName = 'Preview:023'
         versionCode = 299000 + Integer.parseInt(versionName.split(':')[1])
     }
 
