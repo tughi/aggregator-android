@@ -7,7 +7,7 @@ import com.tughi.aggregator.R
 
 internal class EntriesFragmentEntryAdapter(private val listener: EntriesFragmentAdapterListener) : RecyclerView.Adapter<EntriesFragmentViewHolder>() {
 
-    var items: List<EntriesFragmentViewModel.Item> = emptyList()
+    var items: EntriesFragmentViewModel.LoadedItems = EntriesFragmentViewModel.LoadedItems(0, 0, emptyArray())
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -19,7 +19,7 @@ internal class EntriesFragmentEntryAdapter(private val listener: EntriesFragment
 
     override fun getItemCount() = items.size
 
-    override fun getItemId(position: Int) = items[position].id
+    override fun getItemId(position: Int) = items.getId(position)
 
     override fun getItemViewType(position: Int): Int = when (val item = items[position]) {
         is EntriesFragmentViewModel.Divider -> R.layout.entry_list_divider

@@ -35,7 +35,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
         value = 0
     }
 
-    val items = MediatorLiveData<List<Item>>().also {
+    val items = MediatorLiveData<LoadedItems>().also {
         val liveEntriesCount = Transformations.switchMap(queryCriteria) { queryCriteria ->
             Entries.liveQueryCount(queryCriteria, Entry.QueryHelper)
         }
@@ -81,7 +81,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
 
             if (isActive) {
                 if (entries.isEmpty()) {
-                    items.postValue(emptyList())
+                    items.postValue(LoadedItems(0, 0, emptyArray()))
                     return@launch
                 }
 
@@ -137,12 +137,12 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
     interface Divider : Item
 
     class FixedDivider(override val numericDate: Int, override val formattedDate: String, index: Int) : Divider {
-        override val id: Long = -4200_00_00L - index
+        override val id: Long = createPlaceholderId(index)
     }
 
     data class DividerPlaceholder(override var numericDate: Int = 0, override var formattedDate: String = "", internal var index: Int = 0) : Divider {
         override val id: Long
-            get() = -4200_00_00L - index
+            get() = createPlaceholderId(index)
     }
 
     class Header(override val numericDate: Int, override val formattedDate: String) : Item {
@@ -151,7 +151,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
 
     data class EntryPlaceholder(override var numericDate: Int = 0, override var formattedDate: String = "", internal var index: Int = 0) : Item {
         override val id: Long
-            get() = -4200_00_00L - index
+            get() = createPlaceholderId(index)
     }
 
     data class Entry(
@@ -262,6 +262,10 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
             else -> range[index - rangeStart]
         }
 
+        fun getId(index: Int): Long = when {
+            index < rangeStart || index >= rangeStart + range.size -> createPlaceholderId(index)
+            else -> range[index - rangeStart].id
+        }
     }
 
     class Factory(private val initialQueryCriteria: Entries.EntriesQueryCriteria) : ViewModelProvider.Factory {
@@ -277,3 +281,5 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
     }
 
 }
+
+private fun createPlaceholderId(index: Int) = -4200_00_00L - index
