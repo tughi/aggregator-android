@@ -55,16 +55,20 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
                 val itemsRangeStart = viewModel.itemsRangeStart.value ?: 0
                 val itemsRangeSize = viewModel.itemsRangeSize
 
+                var newItemsRangeStart = itemsRangeStart
                 if (dy > 0) {
                     val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
-                    if (lastVisibleItemPosition - itemsRangeStart > itemsRangeSize / 2) {
-                        viewModel.itemsRangeStart.value = itemsRangeStart + itemsRangeSize / 3
+                    while (lastVisibleItemPosition - newItemsRangeStart > itemsRangeSize / 2) {
+                        newItemsRangeStart += itemsRangeSize / 3
                     }
                 } else {
                     val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
-                    if (itemsRangeStart > 0 && firstVisibleItemPosition - itemsRangeStart < itemsRangeSize / 2) {
-                        viewModel.itemsRangeStart.value = itemsRangeStart - itemsRangeSize / 3
+                    while (newItemsRangeStart > 0 && firstVisibleItemPosition - newItemsRangeStart < itemsRangeSize / 2) {
+                        newItemsRangeStart -= itemsRangeSize / 3
                     }
+                }
+                if (newItemsRangeStart != itemsRangeStart) {
+                    viewModel.itemsRangeStart.value = newItemsRangeStart
                 }
             }
         })
