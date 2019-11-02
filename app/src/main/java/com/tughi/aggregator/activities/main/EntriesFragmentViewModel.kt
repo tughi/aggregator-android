@@ -18,6 +18,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import kotlin.math.ceil
+import kotlin.math.max
 
 class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteria) : ViewModel() {
 
@@ -41,7 +43,15 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
         it.addSource(liveEntriesCount) { entriesCount ->
             val itemsRangeStart = itemsRangeStart.value
             if (itemsRangeStart != null) {
-                loadItemsRange(entriesCount * 2, itemsRangeStart)
+                val itemsCount = entriesCount * 2
+                val pageSize = itemsRangeSize / 3
+                val pages = ceil(itemsCount / pageSize.toDouble()).toInt()
+                val maxItemsRangeStart = max((pages - 3) * pageSize, 0)
+                if (itemsRangeStart > maxItemsRangeStart) {
+                    this.itemsRangeStart.value = maxItemsRangeStart
+                } else {
+                    loadItemsRange(itemsCount, itemsRangeStart)
+                }
             }
         }
 
@@ -55,7 +65,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
 
     private var currentItemsLoaderJob: Job? = null
 
-    private fun loadItemsRange(itemsSize: Int, itemsRangeStart: Int) {
+    private fun loadItemsRange(itemsCount: Int, itemsRangeStart: Int) {
         currentItemsLoaderJob?.apply { cancel() }
 
         val queryLimit = itemsRangeSize / 2
@@ -96,7 +106,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
                 }
 
                 if (isActive) {
-                    items.postValue(LoadedItems(itemsSize, itemsRangeStart, itemsRange.toTypedArray()))
+                    items.postValue(LoadedItems(itemsCount, itemsRangeStart, itemsRange.toTypedArray()))
                 }
             }
         }
