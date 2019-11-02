@@ -1,5 +1,6 @@
 package com.tughi.aggregator.activities.main
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -23,9 +24,26 @@ import kotlinx.coroutines.launch
 
 abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Toolbar.OnMenuItemClickListener {
 
+    companion object {
+        private const val REQUEST_ENTRY_POSITION = 1
+    }
+
     private lateinit var viewModel: EntriesFragmentViewModel
 
     private lateinit var toolbar: Toolbar
+
+    private lateinit var entriesRecyclerView: RecyclerView
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQUEST_ENTRY_POSITION && resultCode == Activity.RESULT_OK) {
+            val entryPosition = data?.extras?.getInt(ReaderActivity.EXTRA_ENTRIES_POSITION, -1) ?: -1
+            if (entryPosition != -1) {
+                entriesRecyclerView.scrollToPosition(entryPosition * 2 + 1)
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data)
+        }
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val fragmentView = inflater.inflate(R.layout.entry_list_fragment, container, false)
@@ -33,7 +51,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
         val viewModelFactory = EntriesFragmentViewModel.Factory(initialQueryCriteria)
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(EntriesFragmentViewModel::class.java)
 
-        val entriesRecyclerView = fragmentView.findViewById<RecyclerView>(R.id.entries)
+        entriesRecyclerView = fragmentView.findViewById(R.id.entries)
         val progressBar = fragmentView.findViewById<ProgressBar>(R.id.progress)
 
         val adapter = EntriesFragmentEntryAdapter(this)
@@ -140,10 +158,11 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
 
     override fun onEntryClicked(entry: EntriesFragmentViewModel.Entry, position: Int) {
         context?.run {
-            startActivity(
+            startActivityForResult(
                     Intent(this, ReaderActivity::class.java)
                             .putExtra(ReaderActivity.EXTRA_ENTRIES_QUERY_CRITERIA, viewModel.queryCriteria.value)
-                            .putExtra(ReaderActivity.EXTRA_ENTRIES_POSITION, position)
+                            .putExtra(ReaderActivity.EXTRA_ENTRIES_POSITION, position),
+                    REQUEST_ENTRY_POSITION
             )
         }
     }
