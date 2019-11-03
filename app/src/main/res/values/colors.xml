@@ -4,7 +4,7 @@
     <color name="dark_theme__background">#212121</color>
     <color name="dark_theme__primary">#212121</color>
     <color name="dark_theme__primary_dark">#000000</color>
-    <color name="dark_theme__entry_list_header">#424242</color>
+    <color name="dark_theme__entry_list_header">#323232</color>
     <color name="dark_theme__gray">#616161</color>
 
     <color name="light_theme__background">#fafafa</color>
