@@ -33,12 +33,13 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
     private lateinit var toolbar: Toolbar
 
     private lateinit var entriesRecyclerView: RecyclerView
+    private lateinit var entriesLayoutManager: LinearLayoutManager
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_ENTRY_POSITION && resultCode == Activity.RESULT_OK) {
             val entryPosition = data?.extras?.getInt(ReaderActivity.EXTRA_ENTRIES_POSITION, -1) ?: -1
             if (entryPosition != -1) {
-                entriesRecyclerView.scrollToPosition(entryPosition * 2 + 1)
+                entriesLayoutManager.scrollToPositionWithOffset(entryPosition * 2 + 1, entriesRecyclerView.height / 3)
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data)
@@ -52,6 +53,8 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(EntriesFragmentViewModel::class.java)
 
         entriesRecyclerView = fragmentView.findViewById(R.id.entries)
+        entriesLayoutManager = entriesRecyclerView.layoutManager as LinearLayoutManager
+
         val progressBar = fragmentView.findViewById<ProgressBar>(R.id.progress)
 
         val adapter = EntriesFragmentEntryAdapter(this)
@@ -67,20 +70,18 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
 
         entriesRecyclerView.adapter = adapter
         entriesRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            val layoutManager = entriesRecyclerView.layoutManager as LinearLayoutManager
-
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 val itemsRangeStart = viewModel.itemsRangeStart.value ?: 0
                 val itemsRangeSize = viewModel.itemsRangeSize
 
                 var newItemsRangeStart = itemsRangeStart
                 if (dy > 0) {
-                    val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
+                    val lastVisibleItemPosition = entriesLayoutManager.findLastVisibleItemPosition()
                     while (lastVisibleItemPosition - newItemsRangeStart > itemsRangeSize / 2) {
                         newItemsRangeStart += itemsRangeSize / 3
                     }
                 } else {
-                    val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+                    val firstVisibleItemPosition = entriesLayoutManager.findFirstVisibleItemPosition()
                     while (newItemsRangeStart > 0 && firstVisibleItemPosition - newItemsRangeStart < itemsRangeSize / 2) {
                         newItemsRangeStart -= itemsRangeSize / 3
                     }
