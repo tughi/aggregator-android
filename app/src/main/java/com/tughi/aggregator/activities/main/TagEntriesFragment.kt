@@ -6,7 +6,8 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import com.tughi.aggregator.data.Entries
+import com.tughi.aggregator.data.EntriesQueryCriteria
+import com.tughi.aggregator.data.TagEntriesQueryCriteria
 import com.tughi.aggregator.data.Tags
 import com.tughi.aggregator.preferences.EntryListSettings
 
@@ -26,10 +27,10 @@ class TagEntriesFragment : EntriesFragment() {
 
     private val tagId by lazy { arguments!!.getLong(ARGUMENT_TAG_ID) }
 
-    override val initialQueryCriteria: Entries.EntriesQueryCriteria
+    override val initialQueryCriteria: EntriesQueryCriteria
         get() = when (tagId) {
-            Tags.STARRED -> Entries.TagEntriesQueryCriteria(tagId = tagId, sessionTime = 0, sortOrder = EntryListSettings.entriesSortOrder)
-            else -> Entries.TagEntriesQueryCriteria(tagId = tagId, sessionTime = System.currentTimeMillis(), sortOrder = EntryListSettings.entriesSortOrder)
+            Tags.STARRED -> TagEntriesQueryCriteria(tagId = tagId, sessionTime = 0, sortOrder = EntryListSettings.entriesSortOrder)
+            else -> TagEntriesQueryCriteria(tagId = tagId, sessionTime = System.currentTimeMillis(), sortOrder = EntryListSettings.entriesSortOrder)
         }
 
 

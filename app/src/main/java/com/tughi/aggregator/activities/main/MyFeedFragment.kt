@@ -8,7 +8,8 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.myfeedsettings.MyFeedSettingsActivity
-import com.tughi.aggregator.data.Entries
+import com.tughi.aggregator.data.EntriesQueryCriteria
+import com.tughi.aggregator.data.MyFeedEntriesQueryCriteria
 import com.tughi.aggregator.preferences.EntryListSettings
 
 class MyFeedFragment : EntriesFragment() {
@@ -24,8 +25,8 @@ class MyFeedFragment : EntriesFragment() {
         return fragmentView
     }
 
-    override val initialQueryCriteria: Entries.EntriesQueryCriteria
-        get() = Entries.MyFeedEntriesQueryCriteria(sessionTime = System.currentTimeMillis(), sortOrder = EntryListSettings.entriesSortOrder)
+    override val initialQueryCriteria: EntriesQueryCriteria
+        get() = MyFeedEntriesQueryCriteria(sessionTime = System.currentTimeMillis(), sortOrder = EntryListSettings.entriesSortOrder)
 
     override fun onMenuItemClick(item: MenuItem?): Boolean {
         when (item?.itemId) {

@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.reader.ReaderActivity
 import com.tughi.aggregator.data.Entries
+import com.tughi.aggregator.data.EntriesQueryCriteria
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -145,7 +146,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
         return true
     }
 
-    internal abstract val initialQueryCriteria: Entries.EntriesQueryCriteria
+    internal abstract val initialQueryCriteria: EntriesQueryCriteria
 
     abstract fun onNavigationClick()
 

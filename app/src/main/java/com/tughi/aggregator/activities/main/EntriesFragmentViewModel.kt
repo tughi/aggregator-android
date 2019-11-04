@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.App
 import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.data.Entries
+import com.tughi.aggregator.data.EntriesQueryCriteria
 import com.tughi.aggregator.preferences.EntryListSettings
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -21,11 +22,11 @@ import java.util.Calendar
 import kotlin.math.ceil
 import kotlin.math.max
 
-class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteria) : ViewModel() {
+class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : ViewModel() {
 
     private val sessionTime = initialQueryCriteria.sessionTime
 
-    val queryCriteria = MutableLiveData<Entries.EntriesQueryCriteria>().apply {
+    val queryCriteria = MutableLiveData<EntriesQueryCriteria>().apply {
         value = initialQueryCriteria.copy(sessionTime = if (EntryListSettings.showReadEntries) 0 else sessionTime)
     }
 
@@ -268,7 +269,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: Entries.EntriesQueryCriteri
         }
     }
 
-    class Factory(private val initialQueryCriteria: Entries.EntriesQueryCriteria) : ViewModelProvider.Factory {
+    class Factory(private val initialQueryCriteria: EntriesQueryCriteria) : ViewModelProvider.Factory {
 
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(EntriesFragmentViewModel::class.java)) {
