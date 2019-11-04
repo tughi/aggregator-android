@@ -8,6 +8,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
@@ -59,6 +60,8 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
         val progressBar = fragmentView.findViewById<ProgressBar>(R.id.progress)
 
         val adapter = EntriesFragmentEntryAdapter(this)
+        entriesRecyclerView.adapter = adapter
+
         viewModel.items.observe(this, Observer { items ->
             adapter.items = items
 
@@ -69,7 +72,6 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
             }
         })
 
-        entriesRecyclerView.adapter = adapter
         entriesRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 val itemsRangeStart = viewModel.itemsRangeStart.value ?: 0
@@ -92,6 +94,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
                 }
             }
         })
+
         ItemTouchHelper(SwipeItemTouchHelper()).attachToRecyclerView(entriesRecyclerView)
 
         toolbar = fragmentView.findViewById(R.id.toolbar)
@@ -104,17 +107,23 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
         toolbar.inflateMenu(R.menu.entry_list_fragment)
         toolbar.setOnMenuItemClickListener(this)
 
-        viewModel.queryCriteria.observe(this, Observer { entriesQuery ->
+        viewModel.entriesQueryCriteria.observe(this, Observer { entriesQueryCriteria ->
             toolbar.menu?.let {
-                val sortMenuItemId = when (entriesQuery.sortOrder) {
+                val sortMenuItemId = when (entriesQueryCriteria.sortOrder) {
                     Entries.SortOrder.ByDateAscending -> R.id.sort_by_date_asc
                     Entries.SortOrder.ByDateDescending -> R.id.sort_by_date_desc
                     Entries.SortOrder.ByTitle -> R.id.sort_by_title
                 }
                 it.findItem(sortMenuItemId).isChecked = true
 
-                it.findItem(R.id.show_read_entries).isChecked = entriesQuery.sessionTime == 0L
+                it.findItem(R.id.show_read_entries).isChecked = entriesQueryCriteria.sessionTime == 0L
             }
+        })
+
+        val unreadEntriesTextView: TextView = fragmentView.findViewById(R.id.unread_entries)
+
+        viewModel.unreadEntriesCount.observe(this, Observer { unreadEntriesCount ->
+            unreadEntriesTextView.text = if (unreadEntriesCount > 0) "%d".format(unreadEntriesCount) else ""
         })
 
         return fragmentView
@@ -135,7 +144,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
                 viewModel.changeSortOrder(Entries.SortOrder.ByTitle)
             }
             R.id.mark_all_read -> {
-                viewModel.queryCriteria.value?.let { queryCriteria ->
+                viewModel.entriesQueryCriteria.value?.let { queryCriteria ->
                     GlobalScope.launch {
                         Entries.markRead(queryCriteria)
                     }
@@ -162,7 +171,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
         context?.run {
             startActivityForResult(
                     Intent(this, ReaderActivity::class.java)
-                            .putExtra(ReaderActivity.EXTRA_ENTRIES_QUERY_CRITERIA, viewModel.queryCriteria.value)
+                            .putExtra(ReaderActivity.EXTRA_ENTRIES_QUERY_CRITERIA, viewModel.entriesQueryCriteria.value)
                             .putExtra(ReaderActivity.EXTRA_ENTRIES_POSITION, position),
                     REQUEST_ENTRY_POSITION
             )

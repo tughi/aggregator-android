@@ -212,15 +212,17 @@ class MyFeedEntriesQueryCriteria(sessionTime: Long, sortOrder: Entries.SortOrder
     )
 }
 
+private const val SELECT__TAGGED_ENTRY_IDS = "SELECT e1.id FROM entry_fts ef LEFT JOIN entry e1 ON ef.docid = e1.id WHERE ef.tags MATCH ?"
+
 class TagEntriesQueryCriteria(val tagId: Long, sessionTime: Long, sortOrder: Entries.SortOrder, limit: Int = 0, offset: Int = 0) : EntriesQueryCriteria(sessionTime, sortOrder, limit, offset) {
     override fun simpleConfig(query: Query.Builder) {
         val selection: String
         val selectionArgs: Array<Any?>
         if (sessionTime != 0L) {
-            selection = "e.id IN (SELECT e1.id FROM entry_fts ef LEFT JOIN entry e1 ON ef.docid = e1.id WHERE ef.tags MATCH ? AND (e1.read_time = 0 OR e1.read_time > ?))"
+            selection = "e.id IN ($SELECT__TAGGED_ENTRY_IDS AND (e1.read_time = 0 OR e1.read_time > ?))"
             selectionArgs = arrayOf(tagId, sessionTime)
         } else {
-            selection = "e.id IN (SELECT e1.id FROM entry_fts ef LEFT JOIN entry e1 ON ef.docid = e1.id WHERE ef.tags MATCH ?)"
+            selection = "e.id IN ($SELECT__TAGGED_ENTRY_IDS)"
             selectionArgs = arrayOf(tagId)
         }
         query.addObservedTables("entry", "entry_tag", "feed_tag")
@@ -235,4 +237,28 @@ class TagEntriesQueryCriteria(val tagId: Long, sessionTime: Long, sortOrder: Ent
             limit = limit ?: this.limit,
             offset = offset ?: this.offset
     )
+}
+
+class UnreadEntriesQueryCriteria(private val queryCriteria: EntriesQueryCriteria) : Entries.QueryCriteria {
+    override fun config(query: Query.Builder) {
+        val selection: String
+        val selectionArgs: Array<Any?>
+        when (queryCriteria) {
+            is FeedEntriesQueryCriteria -> {
+                selection = "e.feed_id = ?"
+                selectionArgs = arrayOf(queryCriteria.feedId)
+            }
+            is MyFeedEntriesQueryCriteria -> {
+                selection = "e.id IN ($SELECT__MY_FEED_ENTRY_IDS)"
+                selectionArgs = emptyArray()
+                query.addObservedTables("my_feed_tag")
+            }
+            is TagEntriesQueryCriteria -> {
+                selection = "e.id IN ($SELECT__TAGGED_ENTRY_IDS)"
+                selectionArgs = arrayOf(queryCriteria.tagId)
+                query.addObservedTables("entry", "entry_tag", "feed_tag")
+            }
+        }
+        query.where("$selection AND e.read_time = 0", selectionArgs)
+    }
 }

@@ -13,6 +13,7 @@ import com.tughi.aggregator.App
 import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.data.EntriesQueryCriteria
+import com.tughi.aggregator.data.UnreadEntriesQueryCriteria
 import com.tughi.aggregator.preferences.EntryListSettings
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -26,8 +27,12 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : Vie
 
     private val sessionTime = initialQueryCriteria.sessionTime
 
-    val queryCriteria = MutableLiveData<EntriesQueryCriteria>().apply {
+    val entriesQueryCriteria = MutableLiveData<EntriesQueryCriteria>().apply {
         value = initialQueryCriteria.copy(sessionTime = if (EntryListSettings.showReadEntries) 0 else sessionTime)
+    }
+
+    val unreadEntriesCount = Transformations.switchMap(entriesQueryCriteria) { entriesQueryCriteria ->
+        Entries.liveQueryCount(UnreadEntriesQueryCriteria(entriesQueryCriteria), Entry.QueryHelper)
     }
 
     val itemsRangeSize = 15 * 6 // must be a factor of 6
@@ -37,7 +42,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : Vie
     }
 
     val items = MediatorLiveData<LoadedItems>().also {
-        val liveEntriesCount = Transformations.switchMap(queryCriteria) { queryCriteria ->
+        val liveEntriesCount = Transformations.switchMap(entriesQueryCriteria) { queryCriteria ->
             Entries.liveQueryCount(queryCriteria, Entry.QueryHelper)
         }
 
@@ -71,7 +76,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : Vie
 
         val queryLimit = itemsRangeSize / 2
         val queryOffset = itemsRangeStart / 2
-        val queryCriteria = queryCriteria.value!!.copy(limit = queryLimit, offset = queryOffset)
+        val queryCriteria = entriesQueryCriteria.value!!.copy(limit = queryLimit, offset = queryOffset)
 
         if (BuildConfig.DEBUG) {
             Log.d(javaClass.name, "Load $queryLimit entries from $queryOffset (range $itemsRangeStart:${itemsRangeStart + itemsRangeSize})")
@@ -116,16 +121,16 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : Vie
     fun changeSortOrder(sortOrder: Entries.SortOrder) {
         EntryListSettings.entriesSortOrder = sortOrder
 
-        queryCriteria.value?.let { value ->
-            queryCriteria.value = value.copy(sortOrder = sortOrder)
+        entriesQueryCriteria.value?.let { value ->
+            entriesQueryCriteria.value = value.copy(sortOrder = sortOrder)
         }
     }
 
     fun changeShowRead(showRead: Boolean) {
         EntryListSettings.showReadEntries = showRead
 
-        queryCriteria.value?.let { value ->
-            queryCriteria.value = value.copy(sessionTime = if (showRead) 0 else sessionTime)
+        entriesQueryCriteria.value?.let { value ->
+            entriesQueryCriteria.value = value.copy(sessionTime = if (showRead) 0 else sessionTime)
         }
     }
 
