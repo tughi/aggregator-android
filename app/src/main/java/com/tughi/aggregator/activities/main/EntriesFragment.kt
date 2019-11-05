@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.annotation.StringRes
@@ -21,6 +22,7 @@ import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.reader.ReaderActivity
 import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.data.EntriesQueryCriteria
+import com.tughi.aggregator.data.TagEntriesQueryCriteria
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -54,10 +56,18 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
         val viewModelFactory = EntriesFragmentViewModel.Factory(initialQueryCriteria)
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(EntriesFragmentViewModel::class.java)
 
+        val progressBar = fragmentView.findViewById<ProgressBar>(R.id.progress)
+
+        val emptyView = fragmentView.findViewById<View>(R.id.empty)
+        val emptyMessageTextView = emptyView.findViewById<TextView>(R.id.message)
+        val showReadEntriesButton = emptyView.findViewById<Button>(R.id.show_read_entries)
+
+        showReadEntriesButton.setOnClickListener {
+            viewModel.changeShowRead(true)
+        }
+
         entriesRecyclerView = fragmentView.findViewById(R.id.entries)
         entriesLayoutManager = entriesRecyclerView.layoutManager as LinearLayoutManager
-
-        val progressBar = fragmentView.findViewById<ProgressBar>(R.id.progress)
 
         val adapter = EntriesFragmentEntryAdapter(this)
         entriesRecyclerView.adapter = adapter
@@ -67,8 +77,31 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
 
             if (items == null) {
                 progressBar.visibility = View.VISIBLE
+                emptyView.visibility = View.GONE
             } else {
                 progressBar.visibility = View.GONE
+                if (items.isEmpty()) {
+                    val entriesQueryCriteria = viewModel.entriesQueryCriteria.value!!
+                    if (entriesQueryCriteria.sessionTime == 0L) {
+                        if (entriesQueryCriteria is TagEntriesQueryCriteria) {
+                            emptyMessageTextView.setText(R.string.entry_list__no_tagged_entries__all)
+                        } else {
+                            emptyMessageTextView.setText(R.string.entry_list__no_feed_entries__all)
+                        }
+                        showReadEntriesButton.visibility = View.GONE
+                    } else {
+                        if (entriesQueryCriteria is TagEntriesQueryCriteria) {
+                            emptyMessageTextView.setText(R.string.entry_list__no_tagged_entries__unread)
+                        } else {
+                            emptyMessageTextView.setText(R.string.entry_list__no_feed_entries__unread)
+                        }
+                        showReadEntriesButton.visibility = View.VISIBLE
+                    }
+
+                    emptyView.visibility = View.VISIBLE
+                } else {
+                    emptyView.visibility = View.GONE
+                }
             }
         })
 

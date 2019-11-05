@@ -64,7 +64,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="56dp"
         android:enabled="false"
-        android:text="@string/entry_list_placeholder__loading"
+        android:text="@string/entry_list__placeholder__loading"
         android:textAppearance="?textAppearanceBody1" />
 
     <com.tughi.aggregator.widgets.InlineImageView
