@@ -7,7 +7,7 @@ import com.tughi.aggregator.R
 
 internal class EntriesFragmentEntryAdapter(private val listener: EntriesFragmentAdapterListener) : RecyclerView.Adapter<EntriesFragmentViewHolder>() {
 
-    var items: EntriesFragmentViewModel.LoadedItems = EntriesFragmentViewModel.LoadedItems(0, 0, emptyArray())
+    var items: EntriesFragmentViewModel.LoadedItems = EntriesFragmentViewModel.LoadedItems.EMPTY
         set(value) {
             field = value
             notifyDataSetChanged()

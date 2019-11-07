@@ -87,7 +87,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : Vie
 
             if (isActive) {
                 if (entries.isEmpty()) {
-                    items.postValue(LoadedItems(0, 0, emptyArray()))
+                    items.postValue(LoadedItems.EMPTY)
                     return@launch
                 }
 
@@ -223,6 +223,10 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : Vie
     }
 
     class LoadedItems(override val size: Int, private val rangeStart: Int, private val range: Array<Item>) : AbstractList<Item>() {
+        companion object {
+            val EMPTY = LoadedItems(0, 0, emptyArray())
+        }
+
         private val topDividerPlaceholder: DividerPlaceholder
         private val topEntryPlaceholder: EntryPlaceholder
         private val bottomDividerPlaceholder: DividerPlaceholder
