@@ -35,7 +35,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : Vie
         Entries.liveQueryCount(UnreadEntriesQueryCriteria(entriesQueryCriteria), Entry.QueryHelper)
     }
 
-    val itemsRangeSize = 15 * 6 // must be a factor of 6
+    val itemsRangeSize = 30 * 6 // must be a factor of 6
 
     val itemsRangeStart = MutableLiveData<Int>().apply {
         value = 0
