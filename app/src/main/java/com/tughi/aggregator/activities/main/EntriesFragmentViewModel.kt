@@ -85,12 +85,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : Vie
         currentItemsLoaderJob = GlobalScope.launch {
             val entries = Entries.query(queryCriteria, Entry.QueryHelper)
 
-            if (isActive) {
-                if (entries.isEmpty()) {
-                    items.postValue(LoadedItems.EMPTY)
-                    return@launch
-                }
-
+            if (entries.isNotEmpty() && isActive) {
                 val entriesIterator = entries.iterator()
 
                 val itemsRange = mutableListOf<Item>()
@@ -100,8 +95,9 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : Vie
                 itemsRange.add(prevEntry)
 
                 var index = queryCriteria.offset
-                entriesIterator.forEach { entry ->
+                while (entriesIterator.hasNext()) {
                     index += 1
+                    val entry = entriesIterator.next()
                     if (entry.numericDate != prevEntry.numericDate) {
                         itemsRange.add(Header(entry.numericDate, entry.formattedDate))
                     } else {
