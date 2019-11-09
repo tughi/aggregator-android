@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import kotlin.math.ceil
 import kotlin.math.max
+import kotlin.math.min
 
 class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : ViewModel() {
 
@@ -53,33 +54,68 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : Vie
                 val pageSize = itemsRangeSize / 3
                 val pages = ceil(itemsCount / pageSize.toDouble()).toInt()
                 val maxItemsRangeStart = max((pages - 3) * pageSize, 0)
-                if (itemsRangeStart > maxItemsRangeStart) {
-                    this.itemsRangeStart.value = maxItemsRangeStart
-                } else {
-                    loadItemsRange(itemsCount, itemsRangeStart)
-                }
+                loadItemsRange(itemsCount, min(itemsRangeStart, maxItemsRangeStart), null)
             }
         }
 
         it.addSource(itemsRangeStart) { itemsRangeStart ->
             val entriesCount = liveEntriesCount.value
             if (entriesCount != null) {
-                loadItemsRange(entriesCount * 2, itemsRangeStart)
+                loadItemsRange(entriesCount * 2, itemsRangeStart, it.value)
             }
         }
     }
 
     private var currentItemsLoaderJob: Job? = null
 
-    private fun loadItemsRange(itemsCount: Int, itemsRangeStart: Int) {
+    private fun loadItemsRange(itemsCount: Int, itemsRangeStart: Int, loadedItems: LoadedItems?) {
         currentItemsLoaderJob?.apply { cancel() }
 
-        val queryLimit = itemsRangeSize / 2
-        val queryOffset = itemsRangeStart / 2
+        var loadedItemsBefore: Array<Item>? = null
+        var loadedItemsAfter: Array<Item>? = null
+
+        val loadRangeStart: Int
+        val loadRangeLimit: Int
+        if (loadedItems != null) {
+            val loadedItemsRangeStart = loadedItems.rangeStart
+            if (itemsRangeStart == loadedItemsRangeStart) {
+                // already loaded
+                return
+            }
+
+            if (itemsRangeStart < loadedItemsRangeStart) {
+                loadRangeStart = itemsRangeStart
+                if (itemsRangeStart + itemsRangeSize > loadedItemsRangeStart) {
+                    loadRangeLimit = loadedItemsRangeStart - itemsRangeStart
+                    loadedItemsAfter = loadedItems.range.sliceArray(0 until min(itemsRangeSize - loadRangeLimit, loadedItems.range.size))
+                } else {
+                    loadRangeLimit = itemsRangeSize
+                }
+            } else {
+                if (itemsRangeStart < loadedItemsRangeStart + itemsRangeSize) {
+                    loadRangeStart = loadedItemsRangeStart + itemsRangeSize
+                    if (loadRangeStart >= itemsCount) {
+                        // already reached the end
+                        return
+                    }
+                    loadRangeLimit = itemsRangeStart + itemsRangeSize - loadRangeStart
+                    loadedItemsBefore = loadedItems.range.sliceArray(itemsRangeStart - loadedItemsRangeStart until loadedItems.range.size)
+                } else {
+                    loadRangeStart = itemsRangeStart
+                    loadRangeLimit = itemsRangeSize
+                }
+            }
+        } else {
+            loadRangeStart = itemsRangeStart
+            loadRangeLimit = itemsRangeSize
+        }
+
+        val queryOffset = loadRangeStart / 2
+        val queryLimit = loadRangeLimit / 2
         val queryCriteria = entriesQueryCriteria.value!!.copy(limit = queryLimit, offset = queryOffset)
 
         if (BuildConfig.DEBUG) {
-            Log.d(javaClass.name, "Load $queryLimit entries from $queryOffset (range $itemsRangeStart:${itemsRangeStart + itemsRangeSize})")
+            Log.d(javaClass.name, "Load $queryLimit entries from $queryOffset (range $loadRangeStart:${loadRangeLimit})")
         }
 
         currentItemsLoaderJob = GlobalScope.launch {
@@ -90,21 +126,45 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : Vie
 
                 val itemsRange = mutableListOf<Item>()
 
-                var prevEntry = entriesIterator.next()
-                itemsRange.add(Header(prevEntry.numericDate, prevEntry.formattedDate))
-                itemsRange.add(prevEntry)
+                var entryIndex = queryCriteria.offset
 
-                var index = queryCriteria.offset
+                var prevEntry: Entry
+                if (loadedItemsBefore != null) {
+                    itemsRange.addAll(loadedItemsBefore)
+                    prevEntry = loadedItemsBefore.last() as Entry
+
+                    entryIndex += loadedItemsBefore.size
+                } else {
+                    prevEntry = entriesIterator.next()
+                    itemsRange.add(Header(prevEntry.numericDate, prevEntry.formattedDate))
+                    itemsRange.add(prevEntry)
+                }
+
                 while (entriesIterator.hasNext()) {
-                    index += 1
+                    entryIndex += 1
                     val entry = entriesIterator.next()
                     if (entry.numericDate != prevEntry.numericDate) {
                         itemsRange.add(Header(entry.numericDate, entry.formattedDate))
                     } else {
-                        itemsRange.add(FixedDivider(entry.numericDate, entry.formattedDate, index))
+                        itemsRange.add(FixedDivider(entry.numericDate, entry.formattedDate, entryIndex))
                     }
                     itemsRange.add(entry)
                     prevEntry = entry
+                }
+
+                if (loadedItemsAfter != null) {
+                    val firstAfterItem = loadedItemsAfter[0]
+                    if (firstAfterItem.numericDate != prevEntry.numericDate) {
+                        if (firstAfterItem !is Header) {
+                            loadedItemsAfter[0] = Header(firstAfterItem.numericDate, firstAfterItem.formattedDate)
+                        }
+                    } else {
+                        if (firstAfterItem !is FixedDivider) {
+                            loadedItemsAfter[0] = FixedDivider(firstAfterItem.numericDate, firstAfterItem.formattedDate, entryIndex + 1)
+                        }
+                    }
+
+                    itemsRange.addAll(loadedItemsAfter)
                 }
 
                 if (isActive) {
@@ -218,7 +278,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : Vie
         }
     }
 
-    class LoadedItems(override val size: Int, private val rangeStart: Int, private val range: Array<Item>) : AbstractList<Item>() {
+    class LoadedItems(override val size: Int, internal val rangeStart: Int, internal val range: Array<Item>) : AbstractList<Item>() {
         companion object {
             val EMPTY = LoadedItems(0, 0, emptyArray())
         }
