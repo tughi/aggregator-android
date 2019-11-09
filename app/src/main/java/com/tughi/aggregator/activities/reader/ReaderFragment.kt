@@ -274,8 +274,15 @@ class ReaderFragment : Fragment() {
     }
 
     inner class CustomWebViewClient : WebViewClientCompat() {
+        override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+            return shouldOverrideUrlLoading(Uri.parse(url))
+        }
+
         override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
-            val requestUrl = request.url
+            return shouldOverrideUrlLoading(request.url)
+        }
+
+        private fun shouldOverrideUrlLoading(requestUrl: Uri): Boolean {
             if (requestUrl == ENTRY_LINK_URL) {
                 if (loadedEntryLink != null) {
                     val entryUrl = Uri.parse(loadedEntryLink)
