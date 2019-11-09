@@ -13,13 +13,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import androidx.webkit.WebViewClientCompat
 import com.tughi.aggregator.App
 import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.R
@@ -273,7 +273,7 @@ class ReaderFragment : Fragment() {
         }
     }
 
-    inner class CustomWebViewClient : WebViewClientCompat() {
+    inner class CustomWebViewClient : WebViewClient() {
         override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
             return shouldOverrideUrlLoading(Uri.parse(url))
         }
