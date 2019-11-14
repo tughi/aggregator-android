@@ -91,6 +91,8 @@
 
     <string name="opml_import__title">OPML feeds</string>
 
+    <string name="sharing__share_via">Share via…</string>
+
     <string name="styling__title">Styling</string>
     <string name="styling__bottom_navigation">Bottom navigation</string>
 

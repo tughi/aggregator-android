@@ -14,7 +14,6 @@ import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
@@ -29,6 +28,7 @@ import com.tughi.aggregator.data.EntryTags
 import com.tughi.aggregator.data.Tags
 import com.tughi.aggregator.utilities.Html
 import com.tughi.aggregator.utilities.Language
+import com.tughi.aggregator.utilities.shareLink
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.nio.charset.Charset
@@ -196,8 +196,9 @@ class ReaderFragment : Fragment() {
                 }
             }
             R.id.share -> {
-                // TODO: share entry
-                Toast.makeText(context!!, "Not implemented yet", Toast.LENGTH_SHORT).show()
+                loadedEntryLink?.also {
+                    activity?.shareLink(it)
+                }
             }
             R.id.tag -> {
                 context?.let { context ->
