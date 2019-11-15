@@ -71,6 +71,11 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : Vie
     private fun loadItemsRange(itemsCount: Int, itemsRangeStart: Int, loadedItems: LoadedItems?) {
         currentItemsLoaderJob?.apply { cancel() }
 
+        if (itemsCount == 0) {
+            items.postValue(LoadedItems.EMPTY)
+            return
+        }
+
         var loadedItemsBefore: Array<Item>? = null
         var loadedItemsAfter: Array<Item>? = null
 
