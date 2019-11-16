@@ -26,10 +26,8 @@ import kotlin.math.min
 
 class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : ViewModel() {
 
-    private val sessionTime = initialQueryCriteria.sessionTime
-
     val entriesQueryCriteria = MutableLiveData<EntriesQueryCriteria>().apply {
-        value = initialQueryCriteria.copy(sessionTime = if (EntryListSettings.showReadEntries) 0 else sessionTime)
+        value = initialQueryCriteria
     }
 
     val unreadEntriesCount = Transformations.switchMap(entriesQueryCriteria) { entriesQueryCriteria ->
@@ -191,7 +189,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : Vie
         EntryListSettings.showReadEntries = showRead
 
         entriesQueryCriteria.value?.let { value ->
-            entriesQueryCriteria.value = value.copy(sessionTime = if (showRead) 0 else sessionTime)
+            entriesQueryCriteria.value = value.copy(showRead = showRead)
         }
     }
 

@@ -154,7 +154,7 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
 
 }
 
-sealed class EntriesQueryCriteria(val sessionTime: Long, val sortOrder: Entries.SortOrder, val limit: Int, val offset: Int) : Entries.QueryCriteria, Serializable {
+sealed class EntriesQueryCriteria(val sessionTime: Long, val showRead: Boolean, val sortOrder: Entries.SortOrder, val limit: Int, val offset: Int) : Entries.QueryCriteria, Serializable {
     final override fun config(query: Query.Builder) {
         simpleConfig(query)
         if (limit > 0) query.limit(limit)
@@ -163,14 +163,14 @@ sealed class EntriesQueryCriteria(val sessionTime: Long, val sortOrder: Entries.
 
     abstract fun simpleConfig(query: Query.Builder)
 
-    abstract fun copy(sessionTime: Long? = null, sortOrder: Entries.SortOrder? = null, limit: Int? = null, offset: Int? = null): EntriesQueryCriteria
+    abstract fun copy(sessionTime: Long? = null, showRead: Boolean? = null, sortOrder: Entries.SortOrder? = null, limit: Int? = null, offset: Int? = null): EntriesQueryCriteria
 }
 
-class FeedEntriesQueryCriteria(val feedId: Long, sessionTime: Long, sortOrder: Entries.SortOrder, limit: Int = 0, offset: Int = 0) : EntriesQueryCriteria(sessionTime, sortOrder, limit, offset) {
+class FeedEntriesQueryCriteria(val feedId: Long, sessionTime: Long, showRead: Boolean, sortOrder: Entries.SortOrder, limit: Int = 0, offset: Int = 0) : EntriesQueryCriteria(sessionTime, showRead, sortOrder, limit, offset) {
     override fun simpleConfig(query: Query.Builder) {
         val selection: String?
         val selectionArgs: Array<Any?>
-        if (sessionTime != 0L) {
+        if (!showRead) {
             selection = "e.feed_id = ? AND (e.read_time = 0 OR e.read_time > ?)"
             selectionArgs = arrayOf(feedId, sessionTime)
         } else {
@@ -181,18 +181,19 @@ class FeedEntriesQueryCriteria(val feedId: Long, sessionTime: Long, sortOrder: E
         query.orderBy(sortOrder.orderBy)
     }
 
-    override fun copy(sessionTime: Long?, sortOrder: Entries.SortOrder?, limit: Int?, offset: Int?) = FeedEntriesQueryCriteria(
+    override fun copy(sessionTime: Long?, showRead: Boolean?, sortOrder: Entries.SortOrder?, limit: Int?, offset: Int?) = FeedEntriesQueryCriteria(
             feedId = feedId,
             sessionTime = sessionTime ?: this.sessionTime,
+            showRead = showRead ?: this.showRead,
             sortOrder = sortOrder ?: this.sortOrder,
             limit = limit ?: this.limit,
             offset = offset ?: this.offset
     )
 }
 
-class MyFeedEntriesQueryCriteria(sessionTime: Long, sortOrder: Entries.SortOrder, limit: Int = 0, offset: Int = 0) : EntriesQueryCriteria(sessionTime, sortOrder, limit, offset) {
+class MyFeedEntriesQueryCriteria(sessionTime: Long, showRead: Boolean, sortOrder: Entries.SortOrder, limit: Int = 0, offset: Int = 0) : EntriesQueryCriteria(sessionTime, showRead, sortOrder, limit, offset) {
     override fun simpleConfig(query: Query.Builder) {
-        if (sessionTime != 0L) {
+        if (!showRead) {
             val selection = "e.id IN ($SELECT__MY_FEED_ENTRY_IDS) AND (e.read_time = 0 OR e.read_time > ?)"
             val selectionArgs: Array<Any?> = arrayOf(sessionTime)
             query.where(selection, selectionArgs)
@@ -204,8 +205,9 @@ class MyFeedEntriesQueryCriteria(sessionTime: Long, sortOrder: Entries.SortOrder
         query.orderBy(sortOrder.orderBy)
     }
 
-    override fun copy(sessionTime: Long?, sortOrder: Entries.SortOrder?, limit: Int?, offset: Int?) = MyFeedEntriesQueryCriteria(
+    override fun copy(sessionTime: Long?, showRead: Boolean?, sortOrder: Entries.SortOrder?, limit: Int?, offset: Int?) = MyFeedEntriesQueryCriteria(
             sessionTime = sessionTime ?: this.sessionTime,
+            showRead = showRead ?: this.showRead,
             sortOrder = sortOrder ?: this.sortOrder,
             limit = limit ?: this.limit,
             offset = offset ?: this.offset
@@ -214,11 +216,11 @@ class MyFeedEntriesQueryCriteria(sessionTime: Long, sortOrder: Entries.SortOrder
 
 private const val SELECT__TAGGED_ENTRY_IDS = "SELECT e1.id FROM entry_fts ef LEFT JOIN entry e1 ON ef.docid = e1.id WHERE ef.tags MATCH ?"
 
-class TagEntriesQueryCriteria(val tagId: Long, sessionTime: Long, sortOrder: Entries.SortOrder, limit: Int = 0, offset: Int = 0) : EntriesQueryCriteria(sessionTime, sortOrder, limit, offset) {
+class TagEntriesQueryCriteria(val tagId: Long, sessionTime: Long, showRead: Boolean,  sortOrder: Entries.SortOrder, limit: Int = 0, offset: Int = 0) : EntriesQueryCriteria(sessionTime, showRead, sortOrder, limit, offset) {
     override fun simpleConfig(query: Query.Builder) {
         val selection: String
         val selectionArgs: Array<Any?>
-        if (sessionTime != 0L) {
+        if (!showRead) {
             selection = "e.id IN ($SELECT__TAGGED_ENTRY_IDS AND (e1.read_time = 0 OR e1.read_time > ?))"
             selectionArgs = arrayOf(tagId, sessionTime)
         } else {
@@ -230,9 +232,10 @@ class TagEntriesQueryCriteria(val tagId: Long, sessionTime: Long, sortOrder: Ent
         query.orderBy(sortOrder.orderBy)
     }
 
-    override fun copy(sessionTime: Long?, sortOrder: Entries.SortOrder?, limit: Int?, offset: Int?) = TagEntriesQueryCriteria(
+    override fun copy(sessionTime: Long?, showRead: Boolean?, sortOrder: Entries.SortOrder?, limit: Int?, offset: Int?) = TagEntriesQueryCriteria(
             tagId = tagId,
             sessionTime = sessionTime ?: this.sessionTime,
+            showRead = showRead ?: this.showRead,
             sortOrder = sortOrder ?: this.sortOrder,
             limit = limit ?: this.limit,
             offset = offset ?: this.offset

@@ -82,7 +82,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
                 progressBar.visibility = View.GONE
                 if (items.isEmpty()) {
                     val entriesQueryCriteria = viewModel.entriesQueryCriteria.value!!
-                    if (entriesQueryCriteria.sessionTime == 0L) {
+                    if (entriesQueryCriteria.showRead) {
                         if (entriesQueryCriteria is TagEntriesQueryCriteria) {
                             emptyMessageTextView.setText(R.string.entry_list__no_tagged_entries__all)
                         } else {
@@ -149,7 +149,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
                 }
                 it.findItem(sortMenuItemId).isChecked = true
 
-                it.findItem(R.id.show_read_entries).isChecked = entriesQueryCriteria.sessionTime == 0L
+                it.findItem(R.id.show_read_entries).isChecked = entriesQueryCriteria.showRead
             }
         })
 

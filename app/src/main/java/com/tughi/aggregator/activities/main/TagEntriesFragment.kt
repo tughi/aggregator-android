@@ -29,8 +29,8 @@ class TagEntriesFragment : EntriesFragment() {
 
     override val initialQueryCriteria: EntriesQueryCriteria
         get() = when (tagId) {
-            Tags.STARRED -> TagEntriesQueryCriteria(tagId = tagId, sessionTime = 0, sortOrder = EntryListSettings.entriesSortOrder)
-            else -> TagEntriesQueryCriteria(tagId = tagId, sessionTime = System.currentTimeMillis(), sortOrder = EntryListSettings.entriesSortOrder)
+            Tags.STARRED -> TagEntriesQueryCriteria(tagId = tagId, sessionTime = System.currentTimeMillis(), showRead = true, sortOrder = EntryListSettings.entriesSortOrder)
+            else -> TagEntriesQueryCriteria(tagId = tagId, sessionTime = System.currentTimeMillis(), showRead = EntryListSettings.showReadEntries, sortOrder = EntryListSettings.entriesSortOrder)
         }
 
 

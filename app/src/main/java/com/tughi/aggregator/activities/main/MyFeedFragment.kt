@@ -26,7 +26,7 @@ class MyFeedFragment : EntriesFragment() {
     }
 
     override val initialQueryCriteria: EntriesQueryCriteria
-        get() = MyFeedEntriesQueryCriteria(sessionTime = System.currentTimeMillis(), sortOrder = EntryListSettings.entriesSortOrder)
+        get() = MyFeedEntriesQueryCriteria(sessionTime = System.currentTimeMillis(), showRead = EntryListSettings.showReadEntries, sortOrder = EntryListSettings.entriesSortOrder)
 
     override fun onMenuItemClick(item: MenuItem?): Boolean {
         when (item?.itemId) {
