@@ -150,7 +150,3 @@ CREATE TRIGGER entry_fts__after_delete__feed_tag AFTER DELETE ON feed_tag
     END;
 
 --
-
-PRAGMA user_version = 21;
-
---
