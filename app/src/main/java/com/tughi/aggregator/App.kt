@@ -22,6 +22,8 @@ class App : Application() {
                 preferences.getEnum(PREF_STYLE_ACCENT, Style.Accent.ORANGE),
                 preferences.getEnum(PREF_STYLE_NAVIGATION_BAR, Style.NavigationBar.ACCENT)
         )
+
+        Notifications.setupChannels(this)
     }
 
     private inline fun <reified T : Enum<T>> SharedPreferences.getEnum(key: String, default: T): T {
