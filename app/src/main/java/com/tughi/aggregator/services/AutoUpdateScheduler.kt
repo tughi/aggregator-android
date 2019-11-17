@@ -8,6 +8,7 @@ import android.database.Cursor
 import android.text.format.DateUtils
 import android.util.Log
 import com.tughi.aggregator.App
+import com.tughi.aggregator.JOB_SERVICE_FEEDS_UPDATER
 import com.tughi.aggregator.data.AdaptiveUpdateMode
 import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.DefaultUpdateMode
@@ -26,8 +27,8 @@ import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.OnAppLaunchUpdateMode
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.preferences.UpdateSettings
-import com.tughi.aggregator.utilities.JOB_SERVICE_FEEDS_UPDATER
-import java.util.*
+import java.util.Calendar
+import java.util.Date
 import kotlin.math.max
 import kotlin.math.min
 

@@ -6,8 +6,8 @@ import android.content.ComponentName
 import android.content.Context
 import android.os.PersistableBundle
 import com.tughi.aggregator.App
-import com.tughi.aggregator.utilities.FEED_JOB__INCREMENT__FAVICON_UPDATER
-import com.tughi.aggregator.utilities.FEED_JOB__MULTIPLIER
+import com.tughi.aggregator.FEED_JOB__INCREMENT__FAVICON_UPDATER
+import com.tughi.aggregator.FEED_JOB__MULTIPLIER
 
 object FaviconUpdateScheduler {
 

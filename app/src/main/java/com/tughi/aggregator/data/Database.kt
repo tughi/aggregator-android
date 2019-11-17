@@ -11,7 +11,7 @@ import androidx.sqlite.db.SupportSQLiteQuery
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.sqlite.db.transaction
 import com.tughi.aggregator.App
-import com.tughi.aggregator.utilities.DATABASE_NAME
+import com.tughi.aggregator.DATABASE_NAME
 import com.tughi.aggregator.utilities.restoreFeeds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope

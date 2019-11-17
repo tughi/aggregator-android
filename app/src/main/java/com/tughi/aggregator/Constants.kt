@@ -1,4 +1,4 @@
-package com.tughi.aggregator.utilities
+package com.tughi.aggregator
 
 const val DATABASE_NAME = "data.sqlite"
 

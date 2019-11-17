@@ -4,9 +4,6 @@ import android.app.Application
 import android.content.SharedPreferences
 import androidx.lifecycle.MutableLiveData
 import androidx.preference.PreferenceManager
-import com.tughi.aggregator.utilities.PREF_STYLE_ACCENT
-import com.tughi.aggregator.utilities.PREF_STYLE_NAVIGATION_BAR
-import com.tughi.aggregator.utilities.PREF_STYLE_THEME
 
 class App : Application() {
 

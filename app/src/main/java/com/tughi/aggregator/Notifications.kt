@@ -4,7 +4,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
-import com.tughi.aggregator.utilities.NOTIFICATION_CHANNEL__NEW_ENTRIES
 
 object Notifications {
 
