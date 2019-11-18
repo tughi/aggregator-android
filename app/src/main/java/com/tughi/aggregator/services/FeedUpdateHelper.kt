@@ -4,7 +4,9 @@ import android.database.Cursor
 import android.util.Log
 import android.util.Xml
 import androidx.lifecycle.MutableLiveData
+import com.tughi.aggregator.App
 import com.tughi.aggregator.BuildConfig
+import com.tughi.aggregator.Notifications
 import com.tughi.aggregator.data.Age1MonthCleanupMode
 import com.tughi.aggregator.data.Age1WeekCleanupMode
 import com.tughi.aggregator.data.Age1YearCleanupMode
@@ -56,6 +58,8 @@ object FeedUpdateHelper {
                 is Failure -> updateFeedMetadata(feed, result.cause)
             }
         } finally {
+            Notifications.refreshNewEntriesNotification(App.instance) // TODO: should be called after all feeds were updated
+
             withContext(NonCancellable) {
                 removeUpdatingFeed(feed.id)
             }

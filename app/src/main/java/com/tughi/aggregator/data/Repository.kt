@@ -18,6 +18,8 @@ abstract class Repository<Column : Repository.Column, TableColumn : Repository.T
 
     fun <Row> liveQueryOne(criteria: QueryCriteria, helper: QueryHelper<Column, QueryCriteria, Row>) = Database.liveQuery(helper.createQuery(criteria), helper::transformOne)
 
+    fun <Row> queryCount(criteria: QueryCriteria, helper: QueryHelper<Column, QueryCriteria, Row>) = Database.query(helper.createQueryCount(criteria), helper::transformCount)
+
     fun <Row> liveQueryCount(criteria: QueryCriteria, helper: QueryHelper<Column, QueryCriteria, Row>) = Database.liveQuery(helper.createQueryCount(criteria), helper::transformCount)
 
     open class Column(val name: String, val projection: String, val projectionTables: Array<String>)
