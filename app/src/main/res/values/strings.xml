@@ -90,6 +90,14 @@
     <string name="my_feed_settings__included_tags__none">None</string>
 
     <string name="notification_channel__new_entries">New entries</string>
+    <plurals name="notification__new_entries">
+        <item quantity="one">You have 1 new entry</item>
+        <item quantity="other">You have %d new entries</item>
+    </plurals>
+    <plurals name="notification__new_entries__tap">
+        <item quantity="one">Tap to check it out</item>
+        <item quantity="other">Tap to check them out</item>
+    </plurals>
 
     <string name="opml_import__title">OPML feeds</string>
 

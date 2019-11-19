@@ -57,8 +57,8 @@ object Notifications {
                     val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL__NEW_ENTRIES)
                             .setSmallIcon(R.drawable.notification)
                             .setColor(accentColor)
-                            .setContentTitle("New entries") // TODO: i18n
-                            .setContentText("$count") // TODO: i18n
+                            .setContentTitle(context.resources.getQuantityString(R.plurals.notification__new_entries, count, count))
+                            .setContentText(context.resources.getQuantityString(R.plurals.notification__new_entries__tap, count))
                             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                             .setContentIntent(PendingIntent.getActivity(context, 0, intent, 0))
                             // TODO: .setDeleteIntent()
