@@ -94,6 +94,8 @@
             android:label="@string/my_feed_settings"
             android:parentActivityName=".activities.main.MainActivity" />
 
+        <activity android:name=".activities.notifications.NewEntriesActivity" />
+
     </application>
 
 </manifest>

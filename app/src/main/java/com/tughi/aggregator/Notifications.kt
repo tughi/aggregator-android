@@ -10,7 +10,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.res.ResourcesCompat
-import com.tughi.aggregator.activities.main.MainActivity
+import com.tughi.aggregator.activities.notifications.NewEntriesActivity
 import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.data.MyFeedEntriesQueryCriteria
 import com.tughi.aggregator.data.UnreadEntriesQueryCriteria
@@ -42,7 +42,7 @@ object Notifications {
 
             launch(Dispatchers.Main) {
                 if (count > 0) {
-                    val intent = Intent(context, MainActivity::class.java)
+                    val intent = Intent(context, NewEntriesActivity::class.java)
 
                     val accentColor = ResourcesCompat.getColor(context.resources,
                             when (App.style.value!!.accent) {
