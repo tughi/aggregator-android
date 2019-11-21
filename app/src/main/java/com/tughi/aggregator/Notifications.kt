@@ -9,7 +9,6 @@ import android.database.Cursor
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.res.ResourcesCompat
 import com.tughi.aggregator.activities.notifications.NewEntriesActivity
 import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.data.MyFeedEntriesQueryCriteria
@@ -25,7 +24,7 @@ object Notifications {
         if (Build.VERSION.SDK_INT >= 26) {
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-            val notificationChannel = NotificationChannel(NOTIFICATION_CHANNEL__NEW_ENTRIES, context.getString(R.string.notification_channel__new_entries), NotificationManager.IMPORTANCE_DEFAULT)
+            val notificationChannel = NotificationChannel(NOTIFICATION_CHANNEL__MY_FEED, context.getString(R.string.notification_channel__my_feed), NotificationManager.IMPORTANCE_DEFAULT)
             notificationManager.createNotificationChannel(notificationChannel)
 
             for (otherNotificationChannel in notificationManager.notificationChannels) {
@@ -45,31 +44,20 @@ object Notifications {
                 if (count > 0) {
                     val intent = Intent(context, NewEntriesActivity::class.java)
 
-                    val accentColor = ResourcesCompat.getColor(context.resources,
-                            when (App.style.value!!.accent) {
-                                App.Style.Accent.BLUE -> R.color.accent__blue
-                                App.Style.Accent.GREEN -> R.color.accent__green
-                                App.Style.Accent.ORANGE -> R.color.accent__orange
-                                App.Style.Accent.PURPLE -> R.color.accent__purple
-                                App.Style.Accent.RED -> R.color.accent__red
-                            },
-                            null)
-
-                    val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL__NEW_ENTRIES)
+                    val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL__MY_FEED)
                             .setSmallIcon(R.drawable.notification)
-                            .setColor(accentColor)
-                            .setContentTitle(context.resources.getQuantityString(R.plurals.notification__new_entries, count, count))
+                            .setColor(App.accentColor)
+                            .setContentTitle(context.resources.getQuantityString(R.plurals.notification__my_feed__new_entries, count, count))
                             .setContentText(context.resources.getQuantityString(R.plurals.notification__new_entries__tap, count))
                             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                             .setContentIntent(PendingIntent.getActivity(context, 0, intent, 0))
-                            // TODO: .setDeleteIntent()
                             .setWhen(System.currentTimeMillis())
                             .setAutoCancel(true)
                             .build()
 
-                    NotificationManagerCompat.from(context).notify(NOTIFICATION__NEW_ENTRIES, notification)
+                    NotificationManagerCompat.from(context).notify(NOTIFICATION__NEW_ENTRIES__MY_FEED, notification)
                 } else {
-                    NotificationManagerCompat.from(context).cancel(NOTIFICATION__NEW_ENTRIES)
+                    NotificationManagerCompat.from(context).cancel(NOTIFICATION__NEW_ENTRIES__MY_FEED)
                 }
             }
         }
