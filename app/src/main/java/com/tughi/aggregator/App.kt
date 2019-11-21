@@ -2,6 +2,7 @@ package com.tughi.aggregator
 
 import android.app.Application
 import android.content.SharedPreferences
+import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.preference.PreferenceManager
 
@@ -14,7 +15,7 @@ class App : Application() {
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this)
 
-        App.style.value = Style(
+        style.value = Style(
                 preferences.getEnum(PREF_STYLE_THEME, Style.Theme.DARK),
                 preferences.getEnum(PREF_STYLE_ACCENT, Style.Accent.ORANGE),
                 preferences.getEnum(PREF_STYLE_NAVIGATION_BAR, Style.NavigationBar.ACCENT)
@@ -61,6 +62,19 @@ class App : Application() {
                 }
             }
         }
+
+        val accentColor: Int
+            get() = ResourcesCompat.getColor(
+                    instance.resources,
+                    when (style.value!!.accent) {
+                        Style.Accent.BLUE -> R.color.accent__blue
+                        Style.Accent.GREEN -> R.color.accent__green
+                        Style.Accent.ORANGE -> R.color.accent__orange
+                        Style.Accent.PURPLE -> R.color.accent__purple
+                        Style.Accent.RED -> R.color.accent__red
+                    },
+                    null
+            )
     }
 
     data class Style(val theme: Theme, val accent: Accent, val navigationBar: NavigationBar) {
