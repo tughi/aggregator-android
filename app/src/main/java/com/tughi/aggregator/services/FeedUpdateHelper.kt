@@ -58,8 +58,6 @@ object FeedUpdateHelper {
                 is Failure -> updateFeedMetadata(feed, result.cause)
             }
         } finally {
-            Notifications.refreshNewEntriesNotification(App.instance) // TODO: should be called after all feeds were updated
-
             withContext(NonCancellable) {
                 removeUpdatingFeed(feed.id)
             }
@@ -103,6 +101,10 @@ object FeedUpdateHelper {
             val feedIds = updatingFeedIds.value
             feedIds?.remove(feedId)
             updatingFeedIds.value = if (feedIds?.size != 0) feedIds else null
+
+            if (updatingFeedIds.value.isNullOrEmpty()) {
+                Notifications.refreshNewEntriesNotification(App.instance)
+            }
 
             it.resume(Unit)
         }
