@@ -9,6 +9,7 @@ import com.tughi.aggregator.App
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
 import com.tughi.aggregator.preferences.UpdateSettings
+import com.tughi.aggregator.preferences.User
 import com.tughi.aggregator.services.FeedUpdateHelper
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -124,6 +125,12 @@ class MainActivity : AppActivity() {
             it.setDisplayHomeAsUpEnabled(true)
             it.setHomeAsUpIndicator(R.drawable.action_menu)
         }
+    }
+
+    override fun onDestroy() {
+        User.lastSeen = System.currentTimeMillis()
+
+        super.onDestroy()
     }
 
     override fun onBackPressed() {

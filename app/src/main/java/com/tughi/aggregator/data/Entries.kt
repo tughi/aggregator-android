@@ -154,92 +154,68 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
 
 }
 
-sealed class EntriesQueryCriteria(val sessionTime: Long, val showRead: Boolean, val sortOrder: Entries.SortOrder, val limit: Int, val offset: Int) : Entries.QueryCriteria, Serializable {
+sealed class EntriesQueryCriteria(private val sessionTime: Long, val showRead: Boolean, val sortOrder: Entries.SortOrder, val minInsertTime: Long?, private val limit: Int, val offset: Int) : Entries.QueryCriteria, Serializable {
     final override fun config(query: Query.Builder) {
-        simpleConfig(query)
-        if (limit > 0) query.limit(limit)
-        if (offset > 0) query.offset(offset)
-    }
+        var selection: String
+        val selectionArgs = mutableListOf<Any?>()
 
-    abstract fun simpleConfig(query: Query.Builder)
+        selection = firstSelection(query, selectionArgs)
 
-    abstract fun copy(sessionTime: Long? = null, showRead: Boolean? = null, sortOrder: Entries.SortOrder? = null, limit: Int? = null, offset: Int? = null): EntriesQueryCriteria
-}
-
-class FeedEntriesQueryCriteria(val feedId: Long, sessionTime: Long, showRead: Boolean, sortOrder: Entries.SortOrder, limit: Int = 0, offset: Int = 0) : EntriesQueryCriteria(sessionTime, showRead, sortOrder, limit, offset) {
-    override fun simpleConfig(query: Query.Builder) {
-        val selection: String?
-        val selectionArgs: Array<Any?>
-        if (!showRead) {
-            selection = "e.feed_id = ? AND (e.read_time = 0 OR e.read_time > ?)"
-            selectionArgs = arrayOf(feedId, sessionTime)
-        } else {
-            selection = "e.feed_id = ?"
-            selectionArgs = arrayOf(feedId)
+        if (minInsertTime != null) {
+            selection += " AND e.insert_time > ?"
+            selectionArgs.add(minInsertTime)
         }
-        query.where(selection, selectionArgs)
+
+        if (!showRead) {
+            selection += " AND (e.read_time = 0 OR e.read_time > ?)"
+            selectionArgs.add(sessionTime)
+        }
+
+        query.where(selection, selectionArgs.toTypedArray())
+
         query.orderBy(sortOrder.orderBy)
+
+        if (limit > 0) {
+            query.limit(limit)
+            if (offset > 0) {
+                query.offset(offset)
+            }
+        }
     }
 
-    override fun copy(sessionTime: Long?, showRead: Boolean?, sortOrder: Entries.SortOrder?, limit: Int?, offset: Int?) = FeedEntriesQueryCriteria(
-            feedId = feedId,
-            sessionTime = sessionTime ?: this.sessionTime,
-            showRead = showRead ?: this.showRead,
-            sortOrder = sortOrder ?: this.sortOrder,
-            limit = limit ?: this.limit,
-            offset = offset ?: this.offset
-    )
+    abstract fun firstSelection(query: Query.Builder, selectionArgs: MutableList<Any?>): String
+
+    abstract fun copy(sessionTime: Long = this.sessionTime, showRead: Boolean = this.showRead, sortOrder: Entries.SortOrder = this.sortOrder, limit: Int = this.limit, offset: Int = this.offset): EntriesQueryCriteria
 }
 
-class MyFeedEntriesQueryCriteria(sessionTime: Long, showRead: Boolean, sortOrder: Entries.SortOrder, limit: Int = 0, offset: Int = 0) : EntriesQueryCriteria(sessionTime, showRead, sortOrder, limit, offset) {
-    override fun simpleConfig(query: Query.Builder) {
-        if (!showRead) {
-            val selection = "e.id IN ($SELECT__MY_FEED_ENTRY_IDS) AND (e.read_time = 0 OR e.read_time > ?)"
-            val selectionArgs: Array<Any?> = arrayOf(sessionTime)
-            query.where(selection, selectionArgs)
-        } else {
-            val selection = "e.id IN ($SELECT__MY_FEED_ENTRY_IDS)"
-            query.where(selection, emptyArray())
-        }
+class FeedEntriesQueryCriteria(val feedId: Long, sessionTime: Long, showRead: Boolean, sortOrder: Entries.SortOrder, limit: Int = 0, offset: Int = 0) : EntriesQueryCriteria(sessionTime, showRead, sortOrder, null, limit, offset) {
+    override fun firstSelection(query: Query.Builder, selectionArgs: MutableList<Any?>): String {
+        selectionArgs.add(feedId)
+        return "e.feed_id = ?"
+    }
+
+    override fun copy(sessionTime: Long, showRead: Boolean, sortOrder: Entries.SortOrder, limit: Int, offset: Int) = FeedEntriesQueryCriteria(feedId, sessionTime, showRead, sortOrder, limit, offset)
+}
+
+class MyFeedEntriesQueryCriteria(sessionTime: Long, showRead: Boolean, sortOrder: Entries.SortOrder, minInsertTime: Long? = null, limit: Int = 0, offset: Int = 0) : EntriesQueryCriteria(sessionTime, showRead, sortOrder, minInsertTime, limit, offset) {
+    override fun firstSelection(query: Query.Builder, selectionArgs: MutableList<Any?>): String {
         query.addObservedTables("my_feed_tag")
-        query.orderBy(sortOrder.orderBy)
+        return "e.id IN ($SELECT__MY_FEED_ENTRY_IDS)"
     }
 
-    override fun copy(sessionTime: Long?, showRead: Boolean?, sortOrder: Entries.SortOrder?, limit: Int?, offset: Int?) = MyFeedEntriesQueryCriteria(
-            sessionTime = sessionTime ?: this.sessionTime,
-            showRead = showRead ?: this.showRead,
-            sortOrder = sortOrder ?: this.sortOrder,
-            limit = limit ?: this.limit,
-            offset = offset ?: this.offset
-    )
+    override fun copy(sessionTime: Long, showRead: Boolean, sortOrder: Entries.SortOrder, limit: Int, offset: Int) = MyFeedEntriesQueryCriteria(sessionTime, showRead, sortOrder, this.minInsertTime, limit, offset)
 }
 
 private const val SELECT__TAGGED_ENTRY_IDS = "SELECT e1.id FROM entry_fts ef LEFT JOIN entry e1 ON ef.docid = e1.id WHERE ef.tags MATCH ?"
 
-class TagEntriesQueryCriteria(val tagId: Long, sessionTime: Long, showRead: Boolean,  sortOrder: Entries.SortOrder, limit: Int = 0, offset: Int = 0) : EntriesQueryCriteria(sessionTime, showRead, sortOrder, limit, offset) {
-    override fun simpleConfig(query: Query.Builder) {
-        val selection: String
-        val selectionArgs: Array<Any?>
-        if (!showRead) {
-            selection = "e.id IN ($SELECT__TAGGED_ENTRY_IDS AND (e1.read_time = 0 OR e1.read_time > ?))"
-            selectionArgs = arrayOf(tagId, sessionTime)
-        } else {
-            selection = "e.id IN ($SELECT__TAGGED_ENTRY_IDS)"
-            selectionArgs = arrayOf(tagId)
-        }
+class TagEntriesQueryCriteria(val tagId: Long, sessionTime: Long, showRead: Boolean, sortOrder: Entries.SortOrder, limit: Int = 0, offset: Int = 0) : EntriesQueryCriteria(sessionTime, showRead, sortOrder, null, limit, offset) {
+    override fun firstSelection(query: Query.Builder, selectionArgs: MutableList<Any?>): String {
         query.addObservedTables("entry", "entry_tag", "feed_tag")
-        query.where(selection, selectionArgs)
-        query.orderBy(sortOrder.orderBy)
+        selectionArgs.add(tagId)
+        return "e.id IN ($SELECT__TAGGED_ENTRY_IDS)"
     }
 
-    override fun copy(sessionTime: Long?, showRead: Boolean?, sortOrder: Entries.SortOrder?, limit: Int?, offset: Int?) = TagEntriesQueryCriteria(
-            tagId = tagId,
-            sessionTime = sessionTime ?: this.sessionTime,
-            showRead = showRead ?: this.showRead,
-            sortOrder = sortOrder ?: this.sortOrder,
-            limit = limit ?: this.limit,
-            offset = offset ?: this.offset
-    )
+    override fun copy(sessionTime: Long, showRead: Boolean, sortOrder: Entries.SortOrder, limit: Int, offset: Int) = TagEntriesQueryCriteria(tagId, sessionTime, showRead, sortOrder, limit, offset)
 }
 
 class UnreadEntriesQueryCriteria(private val queryCriteria: EntriesQueryCriteria) : Entries.QueryCriteria {
@@ -248,17 +224,17 @@ class UnreadEntriesQueryCriteria(private val queryCriteria: EntriesQueryCriteria
         val selectionArgs: Array<Any?>
         when (queryCriteria) {
             is FeedEntriesQueryCriteria -> {
-                selection = "e.feed_id = ?"
-                selectionArgs = arrayOf(queryCriteria.feedId)
+                selection = "e.feed_id = ? AND e.insert_time > ?"
+                selectionArgs = arrayOf(queryCriteria.feedId, queryCriteria.minInsertTime)
             }
             is MyFeedEntriesQueryCriteria -> {
-                selection = "e.id IN ($SELECT__MY_FEED_ENTRY_IDS)"
-                selectionArgs = emptyArray()
+                selection = "e.id IN ($SELECT__MY_FEED_ENTRY_IDS) AND e.insert_time > ?"
+                selectionArgs = arrayOf(queryCriteria.minInsertTime)
                 query.addObservedTables("my_feed_tag")
             }
             is TagEntriesQueryCriteria -> {
-                selection = "e.id IN ($SELECT__TAGGED_ENTRY_IDS)"
-                selectionArgs = arrayOf(queryCriteria.tagId)
+                selection = "e.id IN ($SELECT__TAGGED_ENTRY_IDS AND e1.insert_time > ?)"
+                selectionArgs = arrayOf(queryCriteria.tagId, queryCriteria.minInsertTime)
                 query.addObservedTables("entry", "entry_tag", "feed_tag")
             }
         }

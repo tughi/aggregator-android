@@ -14,6 +14,7 @@ import com.tughi.aggregator.activities.notifications.NewEntriesActivity
 import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.data.MyFeedEntriesQueryCriteria
 import com.tughi.aggregator.data.UnreadEntriesQueryCriteria
+import com.tughi.aggregator.preferences.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -37,7 +38,7 @@ object Notifications {
 
     fun refreshNewEntriesNotification(context: Context) {
         GlobalScope.launch {
-            val entriesQueryCriteria = MyFeedEntriesQueryCriteria(0L, true, sortOrder = Entries.SortOrder.ByDateAscending)
+            val entriesQueryCriteria = MyFeedEntriesQueryCriteria(minInsertTime = User.lastSeen, sessionTime = 0L, showRead = false, sortOrder = Entries.SortOrder.ByDateAscending)
             val count = Entries.queryCount(UnreadEntriesQueryCriteria(entriesQueryCriteria), Count.QueryHelper)
 
             launch(Dispatchers.Main) {
