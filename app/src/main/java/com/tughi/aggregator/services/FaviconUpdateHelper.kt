@@ -128,10 +128,11 @@ object FaviconUpdateHelper {
 
     class Feed(val link: String?) {
         object QueryHelper : Feeds.QueryHelper<Feed>(
-                Feeds.LINK
+                Feeds.LINK,
+                Feeds.URL
         ) {
             override fun createRow(cursor: Cursor) = Feed(
-                    cursor.getString(0)
+                    cursor.getString(0) ?: cursor.getString(1)
             )
         }
     }
