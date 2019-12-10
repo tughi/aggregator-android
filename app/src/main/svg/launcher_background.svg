@@ -27,7 +27,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="5.4731901"
-     inkscape:cx="72.275854"
+     inkscape:cx="37.287119"
      inkscape:cy="47.052926"
      inkscape:document-units="px"
      inkscape:current-layer="g1904"
@@ -113,7 +113,7 @@
     </rdf:RDF>
   </metadata>
   <g
-     style="display:none"
+     style="display:inline"
      inkscape:label="main"
      id="g1859"
      inkscape:groupmode="layer"
@@ -149,7 +149,7 @@
      inkscape:groupmode="layer"
      id="g1904"
      inkscape:label="debug"
-     style="display:inline">
+     style="display:none">
     <circle
        r="77"
        cy="54"
