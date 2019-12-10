@@ -93,7 +93,7 @@ class SubscribeFeedFragment : Fragment() {
                 val arguments = arguments!!
                 val title = arguments.getString(ARG_TITLE)!!
                 val customTitle = titleTextView.text.toString()
-                val link = arguments.getString(ARG_LINK)!!
+                val link = arguments.getString(ARG_LINK)
 
                 GlobalScope.launch(Dispatchers.IO) {
                     val feedId = Feeds.insert(
