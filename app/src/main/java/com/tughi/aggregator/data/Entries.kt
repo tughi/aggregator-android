@@ -220,24 +220,29 @@ class TagEntriesQueryCriteria(val tagId: Long, sessionTime: Long, showRead: Bool
 
 class UnreadEntriesQueryCriteria(private val queryCriteria: EntriesQueryCriteria) : Entries.QueryCriteria {
     override fun config(query: Query.Builder) {
-        val selection: String
-        val selectionArgs: Array<Any?>
+        var selection: String
+        val selectionArgs = mutableListOf<Any?>()
         when (queryCriteria) {
             is FeedEntriesQueryCriteria -> {
-                selection = "e.feed_id = ? AND e.insert_time > ?"
-                selectionArgs = arrayOf(queryCriteria.feedId, queryCriteria.minInsertTime)
+                selection = "e.feed_id = ?"
+                selectionArgs.add(queryCriteria.feedId)
             }
             is MyFeedEntriesQueryCriteria -> {
-                selection = "e.id IN ($SELECT__MY_FEED_ENTRY_IDS) AND e.insert_time > ?"
-                selectionArgs = arrayOf(queryCriteria.minInsertTime)
+                selection = "e.id IN ($SELECT__MY_FEED_ENTRY_IDS)"
                 query.addObservedTables("my_feed_tag")
             }
             is TagEntriesQueryCriteria -> {
-                selection = "e.id IN ($SELECT__TAGGED_ENTRY_IDS AND e1.insert_time > ?)"
-                selectionArgs = arrayOf(queryCriteria.tagId, queryCriteria.minInsertTime)
+                selection = "e.id IN ($SELECT__TAGGED_ENTRY_IDS)"
+                selectionArgs.add(queryCriteria.tagId)
                 query.addObservedTables("entry", "entry_tag", "feed_tag")
             }
         }
-        query.where("$selection AND e.read_time = 0", selectionArgs)
+
+        if (queryCriteria.minInsertTime != null) {
+            selection += " AND e.insert_time > ?"
+            selectionArgs.add(queryCriteria.minInsertTime)
+        }
+
+        query.where("$selection AND e.read_time = 0", selectionArgs.toTypedArray())
     }
 }
