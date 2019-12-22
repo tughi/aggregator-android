@@ -13,6 +13,7 @@ import com.tughi.aggregator.activities.notifications.NewEntriesActivity
 import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.data.MyFeedEntriesQueryCriteria
 import com.tughi.aggregator.data.UnreadEntriesQueryCriteria
+import com.tughi.aggregator.preferences.MyFeedSettings
 import com.tughi.aggregator.preferences.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -38,7 +39,7 @@ object Notifications {
     fun refreshNewEntriesNotification(context: Context) {
         val notificationManager = NotificationManagerCompat.from(context)
 
-        if (notificationManager.channelImportance(NOTIFICATION_CHANNEL__MY_FEED) > NotificationManagerCompat.IMPORTANCE_NONE) {
+        if (MyFeedSettings.notification && notificationManager.channelImportance(NOTIFICATION_CHANNEL__MY_FEED) > NotificationManagerCompat.IMPORTANCE_NONE) {
             GlobalScope.launch {
                 val entriesQueryCriteria = MyFeedEntriesQueryCriteria(minInsertTime = User.lastSeen, sessionTime = 0L, showRead = false, sortOrder = Entries.SortOrder.ByDateAscending)
                 val count = Entries.queryCount(UnreadEntriesQueryCriteria(entriesQueryCriteria), Count.QueryHelper)
@@ -67,15 +68,14 @@ object Notifications {
         }
     }
 
-    private fun NotificationManagerCompat.channelImportance(name: String): Int {
+    fun NotificationManagerCompat.channelImportance(name: String): Int {
         if (Build.VERSION.SDK_INT < 26) {
             return NotificationManagerCompat.IMPORTANCE_DEFAULT
         }
         if (importance == NotificationManagerCompat.IMPORTANCE_NONE) {
             return NotificationManagerCompat.IMPORTANCE_NONE
         }
-        val channel = getNotificationChannel(name)
-                ?: return NotificationManagerCompat.IMPORTANCE_DEFAULT
+        val channel = getNotificationChannel(name) ?: return NotificationManagerCompat.IMPORTANCE_DEFAULT
         return channel.importance
     }
 

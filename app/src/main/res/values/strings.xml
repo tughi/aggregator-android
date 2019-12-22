@@ -88,6 +88,7 @@
     <string name="my_feed_settings__included_tags">Included tags</string>
     <string name="my_feed_settings__included_tags__intro">If <b>included tags</b> are specified, <b>My Feed</b> will show all entries that have been tagged with at least one of these tags.</string>
     <string name="my_feed_settings__included_tags__none">None</string>
+    <string name="my_feed_settings__notification">Notify about new entries</string>
 
     <string name="notification_channel__my_feed">My feed</string>
     <plurals name="notification__my_feed__new_entries">

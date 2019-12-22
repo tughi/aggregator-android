@@ -8,12 +8,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.appcompat.widget.SwitchCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProviders
+import com.tughi.aggregator.NOTIFICATION_CHANNEL__MY_FEED
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.tagspicker.TagsPickerActivity
 import com.tughi.aggregator.data.Database
@@ -23,11 +26,14 @@ import com.tughi.aggregator.widgets.DropDownButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import com.tughi.aggregator.Notifications.channelImportance
+import com.tughi.aggregator.preferences.MyFeedSettings
 
 class MyFeedSettingsFragment : Fragment() {
 
     private val viewModel by lazy { ViewModelProviders.of(this).get(MyFeedSettingsViewModel::class.java) }
 
+    private lateinit var notificationSwitch: SwitchCompat
     private lateinit var includedTags: DropDownButton
     private lateinit var excludedTags: DropDownButton
 
@@ -38,6 +44,16 @@ class MyFeedSettingsFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val fragmentView = inflater.inflate(R.layout.my_feed_settings_fragment, container, false)
+
+        notificationSwitch = fragmentView.findViewById(R.id.notification)
+        if (NotificationManagerCompat.from(context!!).channelImportance(NOTIFICATION_CHANNEL__MY_FEED) > NotificationManagerCompat.IMPORTANCE_NONE) {
+            notificationSwitch.isChecked = viewModel.newNotificationValue
+        } else {
+            notificationSwitch.isEnabled = false
+        }
+        notificationSwitch.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.newNotificationValue = isChecked
+        }
 
         includedTags = fragmentView.findViewById(R.id.included_tags)
         includedTags.setOnClickListener {
@@ -92,6 +108,10 @@ class MyFeedSettingsFragment : Fragment() {
         val newIncludedTagIds = viewModel.newIncludedTagIds.value ?: LongArray(0)
         val oldExcludedTagIds = viewModel.oldExcludedTagIds
         val newExcludedTagIds = viewModel.newExcludedTagIds.value ?: LongArray(0)
+
+        if (viewModel.newNotificationValue != viewModel.oldNotificationValue) {
+            MyFeedSettings.notification = viewModel.newNotificationValue
+        }
 
         GlobalScope.launch {
             Database.transaction {
@@ -161,6 +181,9 @@ class MyFeedSettingsFragment : Fragment() {
     }
 
     class MyFeedSettingsViewModel : ViewModel() {
+        val oldNotificationValue = MyFeedSettings.notification
+        var newNotificationValue = MyFeedSettings.notification
+
         var oldIncludedTagIds = LongArray(0)
         var newIncludedTagIds = MutableLiveData<LongArray>()
         val includedTags = MediatorLiveData<List<MyFeedTag>>()
