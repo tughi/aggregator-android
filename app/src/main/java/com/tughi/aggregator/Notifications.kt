@@ -36,36 +36,52 @@ object Notifications {
     }
 
     fun refreshNewEntriesNotification(context: Context) {
-        GlobalScope.launch {
-            val entriesQueryCriteria = MyFeedEntriesQueryCriteria(minInsertTime = User.lastSeen, sessionTime = 0L, showRead = false, sortOrder = Entries.SortOrder.ByDateAscending)
-            val count = Entries.queryCount(UnreadEntriesQueryCriteria(entriesQueryCriteria), Count.QueryHelper)
+        val notificationManager = NotificationManagerCompat.from(context)
 
-            launch(Dispatchers.Main) {
-                if (count > 0) {
-                    val intent = Intent(context, NewEntriesActivity::class.java)
+        if (notificationManager.channelImportance(NOTIFICATION_CHANNEL__MY_FEED) > NotificationManagerCompat.IMPORTANCE_NONE) {
+            GlobalScope.launch {
+                val entriesQueryCriteria = MyFeedEntriesQueryCriteria(minInsertTime = User.lastSeen, sessionTime = 0L, showRead = false, sortOrder = Entries.SortOrder.ByDateAscending)
+                val count = Entries.queryCount(UnreadEntriesQueryCriteria(entriesQueryCriteria), Count.QueryHelper)
 
-                    val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL__MY_FEED)
-                            .setSmallIcon(R.drawable.notification)
-                            .setColor(App.accentColor)
-                            .setContentTitle(context.resources.getQuantityString(R.plurals.notification__my_feed__new_entries, count, count))
-                            .setContentText(context.resources.getQuantityString(R.plurals.notification__new_entries__tap, count))
-                            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                            .setContentIntent(PendingIntent.getActivity(context, 0, intent, 0))
-                            .setWhen(System.currentTimeMillis())
-                            .setAutoCancel(true)
-                            .build()
+                launch(Dispatchers.Main) {
+                    if (count > 0) {
+                        val intent = Intent(context, NewEntriesActivity::class.java)
 
-                    NotificationManagerCompat.from(context).notify(NOTIFICATION__NEW_ENTRIES__MY_FEED, notification)
-                } else {
-                    NotificationManagerCompat.from(context).cancel(NOTIFICATION__NEW_ENTRIES__MY_FEED)
+                        val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL__MY_FEED)
+                                .setSmallIcon(R.drawable.notification)
+                                .setColor(App.accentColor)
+                                .setContentTitle(context.resources.getQuantityString(R.plurals.notification__my_feed__new_entries, count, count))
+                                .setContentText(context.resources.getQuantityString(R.plurals.notification__new_entries__tap, count))
+                                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                .setContentIntent(PendingIntent.getActivity(context, 0, intent, 0))
+                                .setWhen(System.currentTimeMillis())
+                                .setAutoCancel(true)
+                                .build()
+
+                        notificationManager.notify(NOTIFICATION__NEW_ENTRIES__MY_FEED, notification)
+                    } else {
+                        notificationManager.cancel(NOTIFICATION__NEW_ENTRIES__MY_FEED)
+                    }
                 }
             }
         }
     }
 
-    data class Count(val unreadEntries: Int) {
+    private fun NotificationManagerCompat.channelImportance(name: String): Int {
+        if (Build.VERSION.SDK_INT < 26) {
+            return NotificationManagerCompat.IMPORTANCE_DEFAULT
+        }
+        if (importance == NotificationManagerCompat.IMPORTANCE_NONE) {
+            return NotificationManagerCompat.IMPORTANCE_NONE
+        }
+        val channel = getNotificationChannel(name)
+                ?: return NotificationManagerCompat.IMPORTANCE_DEFAULT
+        return channel.importance
+    }
+
+    class Count {
         object QueryHelper : Entries.QueryHelper<Count>() {
-            override fun createRow(cursor: Cursor) = Count(0)
+            override fun createRow(cursor: Cursor) = Count()
         }
     }
 }
