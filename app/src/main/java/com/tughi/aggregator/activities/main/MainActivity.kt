@@ -1,5 +1,6 @@
 package com.tughi.aggregator.activities.main
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.FragmentManager
@@ -7,6 +8,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.tughi.aggregator.App
 import com.tughi.aggregator.AppActivity
+import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.R
 import com.tughi.aggregator.preferences.UpdateSettings
 import com.tughi.aggregator.preferences.User
@@ -17,7 +19,9 @@ import kotlinx.coroutines.launch
 class MainActivity : AppActivity() {
 
     companion object {
-        private const val PREF_ACTIVE_TAB = "active-tab"
+        const val ACTION_VIEW_MY_FEED = BuildConfig.APPLICATION_ID + ".intent.action.VIEW_MY_FEED"
+
+        private const val PREF_ACTIVE_TAB = "main__active_tab"
 
         private const val TAB_FEEDS = "feeds"
         private const val TAB_MY_FEED = "my-feed"
@@ -103,7 +107,14 @@ class MainActivity : AppActivity() {
         bottomSheetView.findViewById<View>(R.id.theme_light).setOnClickListener(onThemeClickListener)
 
         if (savedInstanceState == null) {
-            bottomNavigationView.selectedItemId = when (App.preferences.getString(PREF_ACTIVE_TAB, TAB_FEEDS)) {
+            val activeTab: String?
+            if (intent.action == ACTION_VIEW_MY_FEED) {
+                activeTab = TAB_MY_FEED
+            } else {
+                activeTab = App.preferences.getString(PREF_ACTIVE_TAB, null)
+            }
+
+            bottomNavigationView.selectedItemId = when (activeTab) {
                 TAB_FEEDS -> R.id.navigation_feeds
                 TAB_MY_FEED -> R.id.navigation_my_feeds
                 TAB_TAGS -> R.id.navigation_tags
@@ -124,6 +135,14 @@ class MainActivity : AppActivity() {
         supportActionBar?.let {
             it.setDisplayHomeAsUpEnabled(true)
             it.setHomeAsUpIndicator(R.drawable.action_menu)
+        }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+
+        if (intent?.action == ACTION_VIEW_MY_FEED) {
+            bottomNavigationView.selectedItemId = R.id.navigation_my_feeds
         }
     }
 

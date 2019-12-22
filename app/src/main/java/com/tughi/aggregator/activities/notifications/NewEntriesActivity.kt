@@ -11,6 +11,7 @@ class NewEntriesActivity : AppActivity() {
         super.onCreate(savedInstanceState)
 
         val intent = Intent(this, MainActivity::class.java).apply {
+            action = MainActivity.ACTION_VIEW_MY_FEED
             flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         startActivity(intent)
