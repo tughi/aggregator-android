@@ -10,7 +10,7 @@ object MyFeedSettings {
 
     var notification: Boolean
         get() {
-            return preferences.getBoolean(PREFERENCE_NOTIFICATION, false)
+            return preferences.getBoolean(PREFERENCE_NOTIFICATION, true)
         }
         set(value) {
             preferences.edit()
