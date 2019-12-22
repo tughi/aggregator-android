@@ -48,6 +48,16 @@
         android:textAppearance="?textAppearanceBody2"
         android:tint="?colorAccent" />
 
+    <com.tughi.aggregator.widgets.InlineImageView
+        android:id="@+id/star"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_marginEnd="4dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/entry_state_starred"
+        android:textAppearance="?textAppearanceBody2"
+        android:tint="?colorAccent" />
+
     <TextView
         android:id="@+id/time"
         android:layout_width="wrap_content"

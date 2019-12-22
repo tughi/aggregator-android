@@ -14,41 +14,48 @@ class EntryItemLayout(context: Context, attrs: AttributeSet) : ViewGroup(context
     private lateinit var authorView: View
 
     private lateinit var faviconView: View
-    private lateinit var faviconLayoutParams: ViewGroup.MarginLayoutParams
+    private lateinit var faviconLayoutParams: MarginLayoutParams
 
     private lateinit var feedView: View
 
     private lateinit var selectorView: View
 
     private lateinit var pinView: View
-    private lateinit var pinLayoutParams: ViewGroup.MarginLayoutParams
+    private lateinit var pinLayoutParams: MarginLayoutParams
+
+    private lateinit var starView: View
+    private lateinit var starLayoutParams: MarginLayoutParams
 
     private lateinit var timeView: View
-    private lateinit var timeLayoutParams: ViewGroup.MarginLayoutParams
+    private lateinit var timeLayoutParams: MarginLayoutParams
 
     private lateinit var titleView: View
-    private lateinit var titleLayoutParams: ViewGroup.MarginLayoutParams
+    private lateinit var titleLayoutParams: MarginLayoutParams
 
-    override fun addView(child: View, index: Int, params: ViewGroup.LayoutParams) {
+    override fun addView(child: View, index: Int, params: LayoutParams) {
         when (child.id) {
             R.id.author -> authorView = child
             R.id.favicon -> {
                 faviconView = child
-                faviconLayoutParams = params as ViewGroup.MarginLayoutParams
+                faviconLayoutParams = params as MarginLayoutParams
             }
             R.id.feed_title -> feedView = child
             R.id.selector -> selectorView = child
             R.id.pin -> {
                 pinView = child
-                pinLayoutParams = params as ViewGroup.MarginLayoutParams
+                pinLayoutParams = params as MarginLayoutParams
+            }
+            R.id.star -> {
+                starView = child
+                starLayoutParams = params as MarginLayoutParams
             }
             R.id.time -> {
                 timeView = child
-                timeLayoutParams = params as ViewGroup.MarginLayoutParams
+                timeLayoutParams = params as MarginLayoutParams
             }
             R.id.title -> {
                 titleView = child
-                titleLayoutParams = params as ViewGroup.MarginLayoutParams
+                titleLayoutParams = params as MarginLayoutParams
             }
         }
 
@@ -59,41 +66,45 @@ class EntryItemLayout(context: Context, attrs: AttributeSet) : ViewGroup(context
         val paddingLeft = paddingLeft
         val paddingRight = paddingRight
 
-        val measuredWidth = View.MeasureSpec.getSize(widthMeasureSpec)
+        val measuredWidth = MeasureSpec.getSize(widthMeasureSpec)
         var measuredHeight = paddingTop + paddingBottom
 
         val maxLineWidth = measuredWidth - paddingLeft - paddingRight - titleLayoutParams.marginStart
 
         // first line
 
-        pinView.measure(View.MeasureSpec.makeMeasureSpec(pinLayoutParams.width, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(pinLayoutParams.height, View.MeasureSpec.EXACTLY))
-        timeView.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
+        pinView.measure(MeasureSpec.makeMeasureSpec(pinLayoutParams.width, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(pinLayoutParams.height, MeasureSpec.EXACTLY))
+        starView.measure(MeasureSpec.makeMeasureSpec(starLayoutParams.width, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(starLayoutParams.height, MeasureSpec.EXACTLY))
+        timeView.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED))
 
         var feedMaxWidth = maxLineWidth
         if (pinView.visibility != View.GONE) {
             feedMaxWidth -= pinLayoutParams.marginStart + pinView.measuredWidth + pinLayoutParams.marginEnd
         }
+        if (starView.visibility != View.GONE) {
+            feedMaxWidth -= starLayoutParams.marginStart + starView.measuredWidth + starLayoutParams.marginEnd
+        }
         feedMaxWidth -= timeLayoutParams.marginStart + timeView.measuredWidth + timeLayoutParams.marginEnd
-        feedView.measure(View.MeasureSpec.makeMeasureSpec(feedMaxWidth, View.MeasureSpec.AT_MOST), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
+        feedView.measure(MeasureSpec.makeMeasureSpec(feedMaxWidth, MeasureSpec.AT_MOST), MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED))
         measuredHeight += feedView.measuredHeight
 
         // second line
 
-        titleView.measure(View.MeasureSpec.makeMeasureSpec(maxLineWidth, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
+        titleView.measure(MeasureSpec.makeMeasureSpec(maxLineWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED))
         measuredHeight += titleView.measuredHeight
 
-        faviconView.measure(View.MeasureSpec.makeMeasureSpec(faviconLayoutParams.width, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(faviconLayoutParams.height, View.MeasureSpec.EXACTLY))
+        faviconView.measure(MeasureSpec.makeMeasureSpec(faviconLayoutParams.width, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(faviconLayoutParams.height, MeasureSpec.EXACTLY))
 
         // third line
 
         if (authorView.visibility != View.GONE) {
-            authorView.measure(View.MeasureSpec.makeMeasureSpec(maxLineWidth, View.MeasureSpec.AT_MOST), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
+            authorView.measure(MeasureSpec.makeMeasureSpec(maxLineWidth, MeasureSpec.AT_MOST), MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED))
             measuredHeight += authorView.measuredHeight
         }
 
         // selectors
 
-        selectorView.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(measuredHeight, View.MeasureSpec.EXACTLY))
+        selectorView.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(measuredHeight, MeasureSpec.EXACTLY))
 
         setMeasuredDimension(measuredWidth, measuredHeight)
     }
@@ -133,6 +144,20 @@ class EntryItemLayout(context: Context, attrs: AttributeSet) : ViewGroup(context
         }
 
         firstLineRight = timeLeft - timeLayoutParams.marginStart
+
+        if (starView.visibility != View.GONE) {
+            firstLineRight -= starLayoutParams.marginEnd
+
+            val starLeft = firstLineRight - starView.measuredWidth
+            val starTop = firstLineBaseline - starView.baseline
+            if (rtl) {
+                starView.layout(width - firstLineRight, starTop, width - starLeft, starTop + starView.measuredHeight)
+            } else {
+                starView.layout(starLeft, starTop, firstLineRight, starTop + starView.measuredHeight)
+            }
+
+            firstLineRight = starLeft - starLayoutParams.marginStart
+        }
 
         if (pinView.visibility != View.GONE) {
             firstLineRight -= pinLayoutParams.marginEnd
@@ -182,8 +207,8 @@ class EntryItemLayout(context: Context, attrs: AttributeSet) : ViewGroup(context
         }
     }
 
-    override fun generateLayoutParams(attrs: AttributeSet): ViewGroup.LayoutParams {
-        return ViewGroup.MarginLayoutParams(context, attrs)
+    override fun generateLayoutParams(attrs: AttributeSet): LayoutParams {
+        return MarginLayoutParams(context, attrs)
     }
 
 }

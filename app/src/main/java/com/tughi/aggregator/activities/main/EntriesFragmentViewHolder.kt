@@ -30,6 +30,7 @@ internal abstract class EntriesFragmentEntryViewHolder(itemView: View, private v
     private val time: TextView = itemView.findViewById(R.id.time)
     private val author: TextView = itemView.findViewById(R.id.author)
     private val pin: View = itemView.findViewById(R.id.pin)
+    private val star: View = itemView.findViewById(R.id.star)
 
     init {
         itemView.setOnClickListener {
@@ -54,6 +55,7 @@ internal abstract class EntriesFragmentEntryViewHolder(itemView: View, private v
         }
 
         pin.visibility = if (entry.pinnedTime > 0) View.VISIBLE else View.GONE
+        star.visibility = if (entry.starredTime > 0) View.VISIBLE else View.GONE
 
         Favicons.load(entry.feedId, entry.faviconUrl, favicon)
     }

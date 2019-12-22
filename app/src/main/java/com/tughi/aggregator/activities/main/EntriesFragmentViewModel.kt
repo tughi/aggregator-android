@@ -231,6 +231,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : Vie
             val formattedTime: String,
             val readTime: Long,
             val pinnedTime: Long,
+            val starredTime: Long,
             override val numericDate: Int
     ) : Item {
         val unread = readTime == 0L || pinnedTime != 0L
@@ -245,6 +246,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : Vie
                 Entries.LINK,
                 Entries.PINNED_TIME,
                 Entries.READ_TIME,
+                Entries.STAR_TIME,
                 Entries.TITLE
         ) {
             private val context = App.instance
@@ -274,7 +276,8 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : Vie
                         link = cursor.getString(6),
                         pinnedTime = cursor.getLong(7),
                         readTime = cursor.getLong(8),
-                        title = cursor.getString(9),
+                        starredTime = cursor.getLong(9),
+                        title = cursor.getString(10),
                         numericDate = numericDate
                 )
             }
