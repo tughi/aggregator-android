@@ -28,16 +28,10 @@ object EntryTagRules : Repository<EntryTagRules.Column, EntryTagRules.TableColum
 
 }
 
-class EntryTagRulesQueryCriteria(val feedId: Long?) : EntryTagRules.QueryCriteria {
+class EntryTagRulesQueryCriteria(val feedId: Long) : EntryTagRules.QueryCriteria {
     override fun config(query: Query.Builder, columns: Array<out EntryTagRules.Column>) {
-        var selection = "etr.feed_id IS NULL"
-        val selectionArgs = mutableListOf<Any?>()
-
-        if (feedId != null) {
-            selection += " OR etr.feed_id = ?"
-            selectionArgs.add(feedId)
-        }
-
+        val selection = "etr.feed_id IS NULL OR etr.feed_id = ?"
+        val selectionArgs = listOf<Any?>(feedId)
         query.where(selection, selectionArgs.toTypedArray())
     }
 }

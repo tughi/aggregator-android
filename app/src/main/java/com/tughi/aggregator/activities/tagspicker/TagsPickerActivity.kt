@@ -31,9 +31,20 @@ class TagsPickerActivity : AppActivity() {
 
     companion object {
         const val EXTRA_SELECTED_TAGS = "selected_tags"
+        private const val EXTRA_SINGLE_CHOICE = "single_choice"
         private const val EXTRA_TITLE = "title"
 
-        fun startForResult(fragment: Fragment, resultCode: Int, selectedTags: LongArray, title: String?) {
+        fun startForResult(activity: Activity, resultCode: Int, selectedTags: LongArray, singleChoice: Boolean, title: String? = null) {
+            activity.startActivityForResult(
+                    Intent(activity, TagsPickerActivity::class.java)
+                            .putExtra(EXTRA_SELECTED_TAGS, selectedTags)
+                            .putExtra(EXTRA_SINGLE_CHOICE, singleChoice)
+                            .putExtra(EXTRA_TITLE, title),
+                    resultCode
+            )
+        }
+
+        fun startForResult(fragment: Fragment, resultCode: Int, selectedTags: LongArray, title: String? = null) {
             fragment.context?.let { context ->
                 fragment.startActivityForResult(
                         Intent(context, TagsPickerActivity::class.java)
@@ -45,6 +56,8 @@ class TagsPickerActivity : AppActivity() {
         }
     }
 
+    private val singleChoice by lazy { intent.getBooleanExtra(EXTRA_SINGLE_CHOICE, false) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -53,8 +66,8 @@ class TagsPickerActivity : AppActivity() {
         }
 
         val selectedTagIds = intent.getLongArrayExtra(EXTRA_SELECTED_TAGS) ?: LongArray(0)
-        val viewModelFactory = FeedTagsViewModel.Factory(selectedTagIds)
-        val viewModel = ViewModelProviders.of(this, viewModelFactory).get(FeedTagsViewModel::class.java)
+        val viewModelFactory = TagsPickerViewModel.Factory(selectedTagIds, singleChoice)
+        val viewModel = ViewModelProviders.of(this, viewModelFactory).get(TagsPickerViewModel::class.java)
 
         setContentView(R.layout.tags_picker_activity)
         val recyclerView = findViewById<RecyclerView>(R.id.list)
@@ -64,7 +77,7 @@ class TagsPickerActivity : AppActivity() {
             override fun onTagClick(tag: Tag) {
                 viewModel.toggleTag(tag.id)
             }
-        })
+        }, singleChoice)
 
         recyclerView.adapter = adapter
 
@@ -114,7 +127,7 @@ class TagsPickerActivity : AppActivity() {
         }
     }
 
-    class FeedTagsViewModel(initialSelectedTagIds: LongArray) : ViewModel() {
+    class TagsPickerViewModel(initialSelectedTagIds: LongArray, private val singleChoice: Boolean) : ViewModel() {
         private val selectedTagIds = MutableLiveData<LongSparseArray<Boolean>>().apply {
             val selectedTags = LongSparseArray<Boolean>()
             for (selectedTag in initialSelectedTagIds) {
@@ -147,16 +160,21 @@ class TagsPickerActivity : AppActivity() {
         fun toggleTag(tagId: Long) {
             selectedTagIds.apply {
                 val selectedTags = value ?: LongSparseArray()
-                selectedTags.put(tagId, !selectedTags.get(tagId, false))
+                if (singleChoice) {
+                    selectedTags.clear()
+                    selectedTags.put(tagId, true)
+                } else {
+                    selectedTags.put(tagId, !selectedTags.get(tagId, false))
+                }
                 value = selectedTags
             }
         }
 
-        class Factory(private val selectedTagIds: LongArray) : ViewModelProvider.Factory {
+        class Factory(private val selectedTagIds: LongArray, private val singleChoice: Boolean) : ViewModelProvider.Factory {
             override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                if (modelClass.isAssignableFrom(FeedTagsViewModel::class.java)) {
+                if (modelClass.isAssignableFrom(TagsPickerViewModel::class.java)) {
                     @Suppress("UNCHECKED_CAST")
-                    return FeedTagsViewModel(selectedTagIds) as T
+                    return TagsPickerViewModel(selectedTagIds, singleChoice) as T
                 }
                 throw UnsupportedOperationException()
             }
@@ -189,7 +207,7 @@ class TagsPickerActivity : AppActivity() {
         }
     }
 
-    class TagsAdapter(private val listener: Listener) : RecyclerView.Adapter<TagViewHolder>() {
+    class TagsAdapter(private val listener: Listener, private val singleChoice: Boolean) : RecyclerView.Adapter<TagViewHolder>() {
         var tags: List<Tag> = emptyList()
             set(value) {
                 field = value
@@ -205,7 +223,7 @@ class TagsPickerActivity : AppActivity() {
         override fun getItemId(position: Int): Long = tags[position].id
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = TagViewHolder(
-                LayoutInflater.from(parent.context).inflate(R.layout.tags_picker_item, parent, false),
+                LayoutInflater.from(parent.context).inflate(if (singleChoice) R.layout.tags_picker_item__single_choice else R.layout.tags_picker_item__multiple_choice, parent, false),
                 listener
         )
 

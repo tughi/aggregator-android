@@ -4,6 +4,7 @@ import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +19,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
+import com.tughi.aggregator.activities.entrytagrule.EntryTagRuleActivity
 import com.tughi.aggregator.data.EntryTagRules
 import com.tughi.aggregator.data.EntryTagRulesQueryCriteria
 
@@ -26,7 +28,7 @@ class EntryTagRulesActivity : AppActivity() {
     companion object {
         private const val EXTRA_FEED_ID = "feed_id"
 
-        fun startForResult(fragment: Fragment, resultCode: Int, feedId: Long?) {
+        fun startForResult(fragment: Fragment, resultCode: Int, feedId: Long) {
             fragment.context?.let { context ->
                 fragment.startActivityForResult(
                         Intent(context, EntryTagRulesActivity::class.java)
@@ -37,7 +39,7 @@ class EntryTagRulesActivity : AppActivity() {
         }
     }
 
-    private val feedId: Long? by lazy { intent.getLongExtra(EXTRA_FEED_ID, 0).let { if (it > 0) it else null } }
+    private val feedId: Long by lazy { intent.getLongExtra(EXTRA_FEED_ID, 0) }
     private val viewModel: EntryTagRulesViewModel by lazy {
         val viewModelFactory = EntryTagRulesViewModel.Factory(feedId)
         ViewModelProviders.of(this, viewModelFactory).get(EntryTagRulesViewModel::class.java)
@@ -49,11 +51,6 @@ class EntryTagRulesActivity : AppActivity() {
         supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
             setHomeAsUpIndicator(R.drawable.action_back)
-            if (feedId != null) {
-                setTitle(R.string.entry_tag_rules__title__feed)
-            } else {
-                setTitle(R.string.entry_tag_rules__title__all)
-            }
         }
 
         setContentView(R.layout.entry_tag_rules_activity)
@@ -79,20 +76,35 @@ class EntryTagRulesActivity : AppActivity() {
         })
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
-        android.R.id.home -> {
-            finish()
-            true
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        super.onCreateOptionsMenu(menu)
+
+        if (menu != null) {
+            menuInflater.inflate(R.menu.entry_tag_rules_activity, menu)
         }
-        else -> {
-            super.onOptionsItemSelected(item)
-        }
+
+        return true
     }
 
-    class EntryTagRulesViewModel(feedId: Long?) : ViewModel() {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.add -> {
+                EntryTagRuleActivity.start(this, feedId)
+            }
+            android.R.id.home -> {
+                finish()
+            }
+            else -> {
+                return super.onOptionsItemSelected(item)
+            }
+        }
+        return true
+    }
+
+    class EntryTagRulesViewModel(feedId: Long) : ViewModel() {
         val entryTagRules = EntryTagRules.liveQuery(EntryTagRulesQueryCriteria(feedId), EntryTagRule.QueryHelper)
 
-        class Factory(private val feedId: Long?) : ViewModelProvider.Factory {
+        class Factory(private val feedId: Long) : ViewModelProvider.Factory {
             override fun <T : ViewModel?> create(modelClass: Class<T>): T {
                 if (modelClass.isAssignableFrom(EntryTagRulesViewModel::class.java)) {
                     @Suppress("UNCHECKED_CAST")

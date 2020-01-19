@@ -96,7 +96,13 @@
 
         <activity android:name=".activities.notifications.NewEntriesActivity" />
 
-        <activity android:name=".activities.entrytagrules.EntryTagRulesActivity" />
+        <activity
+            android:name=".activities.entrytagrules.EntryTagRulesActivity"
+            android:label="@string/entry_tag_rules__title" />
+
+        <activity
+            android:name=".activities.entrytagrule.EntryTagRuleActivity"
+            android:label="@string/entry_tag_rule__title" />
 
     </application>
 

@@ -59,9 +59,17 @@
     <string name="entry_list__no_tagged_entries__unread">There are no unread entries with this tag.</string>
     <string name="entry_list__placeholder__loading">Loading…</string>
 
+    <string name="entry_tag_rule__action__save_and_tag">Save and tag now</string>
+    <string name="entry_tag_rule__condition">Condition</string>
+    <string name="entry_tag_rule__tag">Tag</string>
+    <string name="entry_tag_rule__title">Entry tag rule</string>
+    <string name="entry_tag_rule__type">Type</string>
+    <string name="entry_tag_rule__type__feed">Feed rule</string>
+    <string name="entry_tag_rule__type__global">Global type</string>
+
+    <string name="entry_tag_rules__action__new">New entry tag all</string>
     <string name="entry_tag_rules__condition__any">Any</string>
-    <string name="entry_tag_rules__title__all">All entry tag rules</string>
-    <string name="entry_tag_rules__title__feed">Feed entry tag rules</string>
+    <string name="entry_tag_rules__title">Entry tag rules</string>
 
     <string name="entry_tags">Entry tags</string>
 
