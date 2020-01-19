@@ -96,6 +96,8 @@
 
         <activity android:name=".activities.notifications.NewEntriesActivity" />
 
+        <activity android:name=".activities.entrytagrules.EntryTagRulesActivity" />
+
     </application>
 
 </manifest>

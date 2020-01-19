@@ -22,6 +22,7 @@ import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.cleanupmode.CleanupModeActivity
 import com.tughi.aggregator.activities.cleanupmode.startCleanupModeActivity
 import com.tughi.aggregator.activities.cleanupmode.toString
+import com.tughi.aggregator.activities.entrytagrules.EntryTagRulesActivity
 import com.tughi.aggregator.activities.tagspicker.TagsPickerActivity
 import com.tughi.aggregator.activities.updatemode.UpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.startUpdateModeActivity
@@ -48,6 +49,7 @@ class FeedSettingsFragment : Fragment() {
         const val REQUEST_TAGS = 1
         const val REQUEST_UPDATE_MODE = 2
         const val REQUEST_CLEANUP_MODE = 3
+        const val REQUEST_ENTRY_RULES = 4
     }
 
     private lateinit var urlEditText: EditText
@@ -55,6 +57,7 @@ class FeedSettingsFragment : Fragment() {
     private lateinit var updateModeView: DropDownButton
     private lateinit var cleanupModeView: DropDownButton
     private lateinit var tagsView: DropDownButton
+    private lateinit var entryTagRulesView: DropDownButton
 
     private lateinit var viewModel: FeedSettingsViewModel
 
@@ -72,6 +75,7 @@ class FeedSettingsFragment : Fragment() {
         updateModeView = fragmentView.findViewById(R.id.update_mode)
         cleanupModeView = fragmentView.findViewById(R.id.cleanup_mode)
         tagsView = fragmentView.findViewById(R.id.tags)
+        entryTagRulesView = fragmentView.findViewById(R.id.entry_tag_rules)
 
         updateModeView.setOnClickListener {
             val feed = viewModel.feed.value ?: return@setOnClickListener
@@ -86,6 +90,11 @@ class FeedSettingsFragment : Fragment() {
         tagsView.setOnClickListener {
             val feedTags = viewModel.feedTags.value ?: return@setOnClickListener
             TagsPickerActivity.startForResult(this, REQUEST_TAGS, selectedTags = LongArray(feedTags.size) { feedTags[it].id }, title = getString(R.string.feed_tags))
+        }
+
+        entryTagRulesView.setOnClickListener {
+            val feed = viewModel.feed.value ?: return@setOnClickListener
+            EntryTagRulesActivity.startForResult(this, REQUEST_ENTRY_RULES, feedId = feed.id)
         }
 
         val feedId = arguments!!.getLong(ARG_FEED_ID)

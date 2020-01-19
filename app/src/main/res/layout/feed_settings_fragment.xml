@@ -70,6 +70,13 @@
                 android:layout_marginTop="8dp"
                 android:hint="@string/feed_settings__cleanup_mode" />
 
+            <com.tughi.aggregator.widgets.DropDownButton
+                android:id="@+id/entry_tag_rules"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:hint="@string/feed_settings__entry_tag_rules" />
+
         </LinearLayout>
 
     </ScrollView>
