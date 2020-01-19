@@ -4,10 +4,12 @@ import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
@@ -44,6 +46,16 @@ class EntryTagRulesActivity : AppActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            setHomeAsUpIndicator(R.drawable.action_back)
+            if (feedId != null) {
+                setTitle(R.string.entry_tag_rules__title__feed)
+            } else {
+                setTitle(R.string.entry_tag_rules__title__all)
+            }
+        }
+
         setContentView(R.layout.entry_tag_rules_activity)
 
         val recyclerView = findViewById<RecyclerView>(R.id.list)
@@ -51,7 +63,7 @@ class EntryTagRulesActivity : AppActivity() {
 
         val adapter = EntryTagRulesAdapter(object : EntryTagRulesAdapter.Listener {
             override fun onEntryTagRuleClick(entryTagRule: EntryTagRule) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                Toast.makeText(recyclerView.context, "Not implemented!", Toast.LENGTH_SHORT).show()
             }
         })
         recyclerView.adapter = adapter
@@ -65,6 +77,16 @@ class EntryTagRulesActivity : AppActivity() {
                 progressBar.visibility = View.GONE
             }
         })
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+        android.R.id.home -> {
+            finish()
+            true
+        }
+        else -> {
+            super.onOptionsItemSelected(item)
+        }
     }
 
     class EntryTagRulesViewModel(feedId: Long?) : ViewModel() {
@@ -100,11 +122,21 @@ class EntryTagRulesActivity : AppActivity() {
         private var entryTagRule: EntryTagRule? = null
 
         private val tagNameView = itemView.findViewById<TextView>(R.id.tag_name)
+        private val conditionView = itemView.findViewById<TextView>(R.id.condition)
+
+        init {
+            itemView.setOnClickListener {
+                entryTagRule?.let {
+                    listener.onEntryTagRuleClick(it)
+                }
+            }
+        }
 
         fun onBind(entryTagRule: EntryTagRule) {
             this.entryTagRule = entryTagRule
 
             tagNameView.text = entryTagRule.tagName
+            conditionView.setText(R.string.entry_tag_rules__condition__any)
         }
     }
 

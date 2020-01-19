@@ -10,6 +10,21 @@
     android:focusable="true"
     android:minHeight="56dp">
 
+    <TextView
+        android:id="@+id/tag_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="72dp"
+        android:layout_marginEnd="?listPreferredItemPaddingLeft"
+        android:gravity="center_vertical"
+        android:textAppearance="?textAppearanceBody1"
+        android:textColor="?android:textColorPrimary"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:text="Tag name" />
+
     <com.tughi.aggregator.widgets.InlineImageView
         android:id="@+id/favicon"
         android:layout_width="24dp"
@@ -20,25 +35,23 @@
         android:padding="4dp"
         android:src="@drawable/favicon_tag"
         android:textAppearance="?textAppearanceBody1"
+        app:layout_constraintBaseline_toBaselineOf="@id/tag_name"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
 
     <TextView
-        android:id="@+id/tag_name"
+        android:id="@+id/condition"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="72dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
         android:layout_marginBottom="16dp"
         android:gravity="center_vertical"
-        android:textAppearance="?textAppearanceBody1"
-        android:textColor="?android:textColorPrimary"
-        android:textSize="16sp"
-        app:layout_constraintBaseline_toBaselineOf="@id/favicon"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:text="Tag name" />
+        android:textAppearance="?textAppearanceBody2"
+        android:textColor="?android:textColorSecondary"
+        app:layout_constraintTop_toBottomOf="@id/tag_name"
+        app:layout_constraintEnd_toEndOf="@id/tag_name"
+        app:layout_constraintStart_toStartOf="@id/tag_name"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:text="Rule condition" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

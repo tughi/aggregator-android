@@ -59,6 +59,10 @@
     <string name="entry_list__no_tagged_entries__unread">There are no unread entries with this tag.</string>
     <string name="entry_list__placeholder__loading">Loading…</string>
 
+    <string name="entry_tag_rules__condition__any">Any</string>
+    <string name="entry_tag_rules__title__all">All entry tag rules</string>
+    <string name="entry_tag_rules__title__feed">Feed entry tag rules</string>
+
     <string name="entry_tags">Entry tags</string>
 
     <string name="feed_list_item__last_update_error">Update error %1$d: %2$s</string>
