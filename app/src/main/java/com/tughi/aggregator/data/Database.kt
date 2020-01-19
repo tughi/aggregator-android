@@ -25,7 +25,7 @@ object Database {
     private val sqlite: SupportSQLiteOpenHelper = FrameworkSQLiteOpenHelperFactory().create(
             SupportSQLiteOpenHelper.Configuration.builder(App.instance)
                     .name(DATABASE_NAME)
-                    .callback(object : SupportSQLiteOpenHelper.Callback(22) {
+                    .callback(object : SupportSQLiteOpenHelper.Callback(23) {
                         override fun onConfigure(db: SupportSQLiteDatabase?) {
                             db?.apply {
                                 setForeignKeyConstraintsEnabled(true)
