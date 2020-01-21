@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?colorEntryListHeader"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:drawableStart="@drawable/radio_button_checked"
+        android:drawablePadding="32dp"
+        android:drawableTint="?colorControlActivated"
+        android:gravity="center_vertical"
+        android:minHeight="?listPreferredItemHeight"
+        android:paddingStart="?listPreferredItemPaddingLeft"
+        android:paddingEnd="?listPreferredItemPaddingRight"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        tools:text="Option" />
+
+    <TextView
+        android:id="@+id/description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="?listPreferredItemPaddingLeft"
+        android:layout_marginEnd="?listPreferredItemPaddingRight"
+        android:paddingStart="56dp"
+        android:paddingEnd="0dp"
+        android:paddingBottom="16dp"
+        tools:text="Option description" />
+
+</LinearLayout>

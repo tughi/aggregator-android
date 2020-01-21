@@ -14,6 +14,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
+import com.tughi.aggregator.activities.optionpicker.Option
+import com.tughi.aggregator.activities.optionpicker.OptionPickerActivity
 import com.tughi.aggregator.activities.tagspicker.TagsPickerActivity
 import com.tughi.aggregator.data.EntryTagRules
 import com.tughi.aggregator.data.Tags
@@ -24,7 +26,8 @@ class EntryTagRuleActivity : AppActivity() {
     companion object {
         private const val EXTRA_FEED_ID = "feed_id"
 
-        private const val REQUEST_TAGS = 1
+        private const val REQUEST_ENTRY_TAG_RULE_TYPE = 1
+        private const val REQUEST_TAGS = 2
 
         fun start(activity: Activity, feedId: Long) {
             activity.startActivity(
@@ -32,6 +35,11 @@ class EntryTagRuleActivity : AppActivity() {
                             .putExtra(EXTRA_FEED_ID, feedId)
             )
         }
+
+
+        private val TYPE_OPTION_FEED = Option("feed-type", R.string.entry_tag_rule__type__feed, R.string.entry_tag_rule__type__feed__description)
+        private val TYPE_OPTION_GLOBAL = Option("global-type", R.string.entry_tag_rule__type__global, R.string.entry_tag_rule__type__global__description)
+        private val TYPE_OPTIONS = arrayOf(TYPE_OPTION_FEED, TYPE_OPTION_GLOBAL)
     }
 
     private val feedId: Long by lazy { intent.getLongExtra(EXTRA_FEED_ID, 0) }
@@ -55,12 +63,22 @@ class EntryTagRuleActivity : AppActivity() {
         setContentView(R.layout.entry_tag_rule_activity)
 
         typeView = findViewById(R.id.type)
-        tagView = findViewById(R.id.tag)
-        conditionView = findViewById(R.id.condition)
+        typeView.setOnClickListener {
+            OptionPickerActivity.startForResult(this, REQUEST_ENTRY_TAG_RULE_TYPE, TYPE_OPTIONS, viewModel.newTypeOption.value, titleResource = R.string.entry_tag_rule__type__title)
+        }
 
+        tagView = findViewById(R.id.tag)
         tagView.setOnClickListener {
             TagsPickerActivity.startForResult(this, REQUEST_TAGS, selectedTags = longArrayOf(viewModel.newTagId.value ?: 0), singleChoice = true)
         }
+
+        conditionView = findViewById(R.id.condition)
+
+        viewModel.newTypeOption.observe(this, Observer { type ->
+            if (type != null) {
+                typeView.setText(type.name)
+            }
+        })
 
         viewModel.newTag.observe(this, Observer { tag ->
             if (tag != null) {
@@ -72,6 +90,11 @@ class EntryTagRuleActivity : AppActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
+                REQUEST_ENTRY_TAG_RULE_TYPE -> {
+                    val selectedOption: Option = data?.getParcelableExtra(OptionPickerActivity.EXTRA_SELECTED_OPTION) ?: return
+                    viewModel.newTypeOption.value = selectedOption
+                    return
+                }
                 REQUEST_TAGS -> {
                     val selectedTags = data?.getLongArrayExtra(TagsPickerActivity.EXTRA_SELECTED_TAGS) ?: return
                     viewModel.newTagId.value = selectedTags[0]
@@ -96,6 +119,8 @@ class EntryTagRuleActivity : AppActivity() {
     }
 
     class EntryTagRuleViewModel(val feedId: Long) : ViewModel() {
+        val newTypeOption = MutableLiveData<Option>()
+
         val newTagId = MutableLiveData<Long>()
         val newTag = Transformations.switchMap(newTagId) { newTagId ->
             Tags.liveQueryOne(Tags.QueryTagCriteria(newTagId), Tag.QueryHelper)

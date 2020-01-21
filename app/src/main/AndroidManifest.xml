@@ -104,6 +104,8 @@
             android:name=".activities.entrytagrule.EntryTagRuleActivity"
             android:label="@string/entry_tag_rule__title" />
 
+        <activity android:name=".activities.optionpicker.OptionPickerActivity" />
+
     </application>
 
 </manifest>
