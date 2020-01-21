@@ -59,7 +59,6 @@
     <string name="entry_list__no_tagged_entries__unread">There are no unread entries with this tag.</string>
     <string name="entry_list__placeholder__loading">Loading…</string>
 
-    <string name="entry_tag_rule__action__save_and_tag">Save and tag now</string>
     <string name="entry_tag_rule__condition">Condition</string>
     <string name="entry_tag_rule__tag">Tag</string>
     <string name="entry_tag_rule__title">Entry tag rule</string>

@@ -5,6 +5,7 @@ import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.Button
 import android.widget.EditText
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -20,6 +21,8 @@ import com.tughi.aggregator.activities.tagspicker.TagsPickerActivity
 import com.tughi.aggregator.data.EntryTagRules
 import com.tughi.aggregator.data.Tags
 import com.tughi.aggregator.widgets.DropDownButton
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class EntryTagRuleActivity : AppActivity() {
 
@@ -72,6 +75,12 @@ class EntryTagRuleActivity : AppActivity() {
             TagsPickerActivity.startForResult(this, REQUEST_TAGS, selectedTags = longArrayOf(viewModel.newTagId.value ?: 0), singleChoice = true)
         }
 
+        val saveButton = findViewById<Button>(R.id.save)
+        saveButton.isEnabled = false
+        saveButton.setOnClickListener {
+            viewModel.save()
+        }
+
         conditionView = findViewById(R.id.condition)
 
         viewModel.newTypeOption.observe(this, Observer { type ->
@@ -84,6 +93,10 @@ class EntryTagRuleActivity : AppActivity() {
             if (tag != null) {
                 tagView.setText(tag.name)
             }
+        })
+
+        viewModel.validated.observe(this, Observer { validated ->
+            saveButton.isEnabled = validated
         })
     }
 
@@ -124,6 +137,37 @@ class EntryTagRuleActivity : AppActivity() {
         val newTagId = MutableLiveData<Long>()
         val newTag = Transformations.switchMap(newTagId) { newTagId ->
             Tags.liveQueryOne(Tags.QueryTagCriteria(newTagId), Tag.QueryHelper)
+        }
+
+        private val invalid = MutableLiveData<Boolean>().also { it.value = false }
+        private val valid = MutableLiveData<Boolean>().also { it.value = true }
+
+        val validated = Transformations.switchMap(newTag) { tag ->
+            if (tag != null) {
+                Transformations.switchMap(newTypeOption) { type ->
+                    if (type != null) {
+                        valid
+                    } else {
+                        invalid
+                    }
+                }
+            } else {
+                invalid
+            }
+        }
+
+        fun save() {
+            val feedId = if (newTypeOption.value == TYPE_OPTION_GLOBAL) null else feedId
+            val tagId = newTagId.value ?: return
+            val condition = ""
+
+            GlobalScope.launch {
+                EntryTagRules.insert(
+                        EntryTagRules.FEED_ID to feedId,
+                        EntryTagRules.TAG_ID to tagId,
+                        EntryTagRules.CONDITION to condition
+                )
+            }
         }
 
         class Factory(private val feedId: Long) : ViewModelProvider.Factory {
