@@ -26,6 +26,7 @@ import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.tagsettings.TagSettingsActivity
 import com.tughi.aggregator.data.Tags
+import com.tughi.aggregator.utilities.has
 
 class TagsPickerActivity : AppActivity() {
 
@@ -61,6 +62,11 @@ class TagsPickerActivity : AppActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            setHomeAsUpIndicator(R.drawable.action_back)
+        }
+
         intent.getStringExtra(EXTRA_TITLE)?.let {
             title = it
         }
@@ -91,11 +97,18 @@ class TagsPickerActivity : AppActivity() {
             }
         })
 
-        findViewById<Button>(R.id.select).setOnClickListener {
+        val selectButton = findViewById<Button>(R.id.select)
+        selectButton.setOnClickListener {
             val selectedTags = viewModel.tags.value?.filter { it.selected } ?: emptyList()
             setResult(Activity.RESULT_OK, Intent().putExtra(EXTRA_SELECTED_TAGS, LongArray(selectedTags.size) { selectedTags[it].id }))
 
             finish()
+        }
+        if (singleChoice) {
+            selectButton.isEnabled = false
+            viewModel.tags.observe(this, Observer { tags ->
+                selectButton.isEnabled = viewModel.tags.value?.has { it.selected } ?: false
+            })
         }
     }
 
@@ -108,6 +121,10 @@ class TagsPickerActivity : AppActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+        android.R.id.home -> {
+            finish()
+            true
+        }
         R.id.add -> {
             TagSettingsActivity.start(this, null)
             true

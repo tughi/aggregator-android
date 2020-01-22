@@ -83,7 +83,7 @@
 
         <activity
             android:name=".activities.tagspicker.TagsPickerActivity"
-            android:parentActivityName=".activities.main.MainActivity" />
+            android:label="@string/title_tags" />
 
         <activity
             android:name=".activities.feedspicker.FeedsPickerActivity"
