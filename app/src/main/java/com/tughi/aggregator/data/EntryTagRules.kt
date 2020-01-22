@@ -28,7 +28,25 @@ object EntryTagRules : Repository<EntryTagRules.Column, EntryTagRules.TableColum
 
 }
 
-class EntryTagRulesQueryCriteria(val feedId: Long) : EntryTagRules.QueryCriteria {
+class UpdateEntryTagRuleCriteria(val id: Long) : EntryTagRules.UpdateCriteria {
+    override val selection: String? = "id = ?"
+    override val selectionArgs: Array<Any>? = arrayOf(id)
+}
+
+class DeleteEntryTagRuleCriteria(val id: Long) : EntryTagRules.DeleteCriteria {
+    override val selection: String? = "id = ?"
+    override val selectionArgs: Array<Any>? = arrayOf(id)
+}
+
+class EntryTagRuleQueryCriteria(val id: Long) : EntryTagRules.QueryCriteria {
+    override fun config(query: Query.Builder, columns: Array<out EntryTagRules.Column>) {
+        val selection = "etr.id = ?"
+        val selectionArgs = listOf<Any?>(id)
+        query.where(selection, selectionArgs.toTypedArray())
+    }
+}
+
+class FeedEntryTagRulesQueryCriteria(val feedId: Long) : EntryTagRules.QueryCriteria {
     override fun config(query: Query.Builder, columns: Array<out EntryTagRules.Column>) {
         val selection = "etr.feed_id IS NULL OR etr.feed_id = ?"
         val selectionArgs = listOf<Any?>(feedId)

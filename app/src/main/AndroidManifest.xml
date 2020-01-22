@@ -97,11 +97,11 @@
         <activity android:name=".activities.notifications.NewEntriesActivity" />
 
         <activity
-            android:name=".activities.entrytagrules.EntryTagRulesActivity"
+            android:name=".activities.feedentrytagrules.FeedEntryTagRulesActivity"
             android:label="@string/entry_tag_rules__title" />
 
         <activity
-            android:name=".activities.entrytagrule.EntryTagRuleActivity"
+            android:name=".activities.entrytagrulesettings.EntryTagRuleSettingsActivity"
             android:label="@string/entry_tag_rule__title" />
 
         <activity android:name=".activities.optionpicker.OptionPickerActivity" />

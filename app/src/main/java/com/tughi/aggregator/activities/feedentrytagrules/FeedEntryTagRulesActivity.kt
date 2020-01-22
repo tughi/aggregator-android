@@ -1,4 +1,4 @@
-package com.tughi.aggregator.activities.entrytagrules
+package com.tughi.aggregator.activities.feedentrytagrules
 
 import android.content.Intent
 import android.database.Cursor
@@ -10,7 +10,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
@@ -19,11 +18,11 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
-import com.tughi.aggregator.activities.entrytagrule.EntryTagRuleActivity
+import com.tughi.aggregator.activities.entrytagrulesettings.EntryTagRuleSettingsActivity
 import com.tughi.aggregator.data.EntryTagRules
-import com.tughi.aggregator.data.EntryTagRulesQueryCriteria
+import com.tughi.aggregator.data.FeedEntryTagRulesQueryCriteria
 
-class EntryTagRulesActivity : AppActivity() {
+class FeedEntryTagRulesActivity : AppActivity() {
 
     companion object {
         private const val EXTRA_FEED_ID = "feed_id"
@@ -31,7 +30,7 @@ class EntryTagRulesActivity : AppActivity() {
         fun startForResult(fragment: Fragment, resultCode: Int, feedId: Long) {
             fragment.context?.let { context ->
                 fragment.startActivityForResult(
-                        Intent(context, EntryTagRulesActivity::class.java)
+                        Intent(context, FeedEntryTagRulesActivity::class.java)
                                 .putExtra(EXTRA_FEED_ID, feedId),
                         resultCode
                 )
@@ -40,9 +39,9 @@ class EntryTagRulesActivity : AppActivity() {
     }
 
     private val feedId: Long by lazy { intent.getLongExtra(EXTRA_FEED_ID, 0) }
-    private val viewModel: EntryTagRulesViewModel by lazy {
-        val viewModelFactory = EntryTagRulesViewModel.Factory(feedId)
-        ViewModelProviders.of(this, viewModelFactory).get(EntryTagRulesViewModel::class.java)
+    private val viewModel: FeedEntryTagRulesViewModel by lazy {
+        val viewModelFactory = FeedEntryTagRulesViewModel.Factory(feedId)
+        ViewModelProviders.of(this, viewModelFactory).get(FeedEntryTagRulesViewModel::class.java)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,14 +52,14 @@ class EntryTagRulesActivity : AppActivity() {
             setHomeAsUpIndicator(R.drawable.action_back)
         }
 
-        setContentView(R.layout.entry_tag_rules_activity)
+        setContentView(R.layout.feed_entry_tag_rules_activity)
 
         val recyclerView = findViewById<RecyclerView>(R.id.list)
         val progressBar = findViewById<ProgressBar>(R.id.progress)
 
         val adapter = EntryTagRulesAdapter(object : EntryTagRulesAdapter.Listener {
             override fun onEntryTagRuleClick(entryTagRule: EntryTagRule) {
-                Toast.makeText(recyclerView.context, "Not implemented!", Toast.LENGTH_SHORT).show()
+                EntryTagRuleSettingsActivity.start(this@FeedEntryTagRulesActivity, entryTagRule.id, feedId)
             }
         })
         recyclerView.adapter = adapter
@@ -80,7 +79,7 @@ class EntryTagRulesActivity : AppActivity() {
         super.onCreateOptionsMenu(menu)
 
         if (menu != null) {
-            menuInflater.inflate(R.menu.entry_tag_rules_activity, menu)
+            menuInflater.inflate(R.menu.feed_entry_tag_rules_activity, menu)
         }
 
         return true
@@ -89,7 +88,7 @@ class EntryTagRulesActivity : AppActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.add -> {
-                EntryTagRuleActivity.start(this, feedId)
+                EntryTagRuleSettingsActivity.start(this, null, feedId)
             }
             android.R.id.home -> {
                 finish()
@@ -101,14 +100,14 @@ class EntryTagRulesActivity : AppActivity() {
         return true
     }
 
-    class EntryTagRulesViewModel(feedId: Long) : ViewModel() {
-        val entryTagRules = EntryTagRules.liveQuery(EntryTagRulesQueryCriteria(feedId), EntryTagRule.QueryHelper)
+    class FeedEntryTagRulesViewModel(feedId: Long) : ViewModel() {
+        val entryTagRules = EntryTagRules.liveQuery(FeedEntryTagRulesQueryCriteria(feedId), EntryTagRule.QueryHelper)
 
         class Factory(private val feedId: Long) : ViewModelProvider.Factory {
             override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-                if (modelClass.isAssignableFrom(EntryTagRulesViewModel::class.java)) {
+                if (modelClass.isAssignableFrom(FeedEntryTagRulesViewModel::class.java)) {
                     @Suppress("UNCHECKED_CAST")
-                    return EntryTagRulesViewModel(feedId) as T
+                    return FeedEntryTagRulesViewModel(feedId) as T
                 }
                 throw UnsupportedOperationException()
             }

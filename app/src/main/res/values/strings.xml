@@ -60,6 +60,7 @@
     <string name="entry_list__placeholder__loading">Loading…</string>
 
     <string name="entry_tag_rule__condition">Condition</string>
+    <string name="entry_tag_rule__delete__message">Are you sure you want to delete this entry tag rule?</string>
     <string name="entry_tag_rule__tag">Tag</string>
     <string name="entry_tag_rule__title">Entry tag rule</string>
     <string name="entry_tag_rule__type">Type</string>

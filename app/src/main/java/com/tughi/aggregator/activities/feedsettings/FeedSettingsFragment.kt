@@ -22,7 +22,7 @@ import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.cleanupmode.CleanupModeActivity
 import com.tughi.aggregator.activities.cleanupmode.startCleanupModeActivity
 import com.tughi.aggregator.activities.cleanupmode.toString
-import com.tughi.aggregator.activities.entrytagrules.EntryTagRulesActivity
+import com.tughi.aggregator.activities.feedentrytagrules.FeedEntryTagRulesActivity
 import com.tughi.aggregator.activities.tagspicker.TagsPickerActivity
 import com.tughi.aggregator.activities.updatemode.UpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.startUpdateModeActivity
@@ -94,7 +94,7 @@ class FeedSettingsFragment : Fragment() {
 
         entryTagRulesView.setOnClickListener {
             val feed = viewModel.feed.value ?: return@setOnClickListener
-            EntryTagRulesActivity.startForResult(this, REQUEST_ENTRY_RULES, feedId = feed.id)
+            FeedEntryTagRulesActivity.startForResult(this, REQUEST_ENTRY_RULES, feedId = feed.id)
         }
 
         val feedId = arguments!!.getLong(ARG_FEED_ID)
