@@ -13,7 +13,6 @@ import android.view.ViewGroup
 import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -23,13 +22,11 @@ import com.tughi.aggregator.activities.cleanupmode.CleanupModeActivity
 import com.tughi.aggregator.activities.cleanupmode.startCleanupModeActivity
 import com.tughi.aggregator.activities.cleanupmode.toString
 import com.tughi.aggregator.activities.feedentrytagrules.FeedEntryTagRulesActivity
-import com.tughi.aggregator.activities.tagspicker.TagsPickerActivity
 import com.tughi.aggregator.activities.updatemode.UpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.startUpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.toString
 import com.tughi.aggregator.data.CleanupMode
 import com.tughi.aggregator.data.Database
-import com.tughi.aggregator.data.FeedTags
 import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.Tags
 import com.tughi.aggregator.data.UpdateMode
@@ -46,7 +43,6 @@ class FeedSettingsFragment : Fragment() {
     companion object {
         const val ARG_FEED_ID = "feed_id"
 
-        const val REQUEST_TAGS = 1
         const val REQUEST_UPDATE_MODE = 2
         const val REQUEST_CLEANUP_MODE = 3
         const val REQUEST_ENTRY_RULES = 4
@@ -56,7 +52,6 @@ class FeedSettingsFragment : Fragment() {
     private lateinit var titleEditText: EditText
     private lateinit var updateModeView: DropDownButton
     private lateinit var cleanupModeView: DropDownButton
-    private lateinit var tagsView: DropDownButton
     private lateinit var entryTagRulesView: DropDownButton
 
     private lateinit var viewModel: FeedSettingsViewModel
@@ -74,7 +69,6 @@ class FeedSettingsFragment : Fragment() {
         titleEditText = fragmentView.findViewById(R.id.title)
         updateModeView = fragmentView.findViewById(R.id.update_mode)
         cleanupModeView = fragmentView.findViewById(R.id.cleanup_mode)
-        tagsView = fragmentView.findViewById(R.id.tags)
         entryTagRulesView = fragmentView.findViewById(R.id.entry_tag_rules)
 
         updateModeView.setOnClickListener {
@@ -85,11 +79,6 @@ class FeedSettingsFragment : Fragment() {
         cleanupModeView.setOnClickListener {
             val feed = viewModel.feed.value ?: return@setOnClickListener
             startCleanupModeActivity(REQUEST_CLEANUP_MODE, viewModel.newCleanupMode ?: feed.cleanupMode)
-        }
-
-        tagsView.setOnClickListener {
-            val feedTags = viewModel.feedTags.value ?: return@setOnClickListener
-            TagsPickerActivity.startForResult(this, REQUEST_TAGS, selectedTags = LongArray(feedTags.size) { feedTags[it].id }, title = getString(R.string.feed_tags))
         }
 
         entryTagRulesView.setOnClickListener {
@@ -106,14 +95,7 @@ class FeedSettingsFragment : Fragment() {
                 titleEditText.setText(feed.customTitle ?: feed.title)
                 updateModeView.setText(feed.updateMode.toString(updateModeView.context))
                 cleanupModeView.setText(feed.cleanupMode.toString(cleanupModeView.context))
-            }
-        })
-
-        viewModel.feedTags.observe(this, Observer { feedTags ->
-            if (feedTags != null && feedTags.isNotEmpty()) {
-                tagsView.setText(feedTags.joinToString())
-            } else {
-                tagsView.setText(R.string.feed_settings__tags__none)
+                entryTagRulesView.setText(resources.getQuantityString(R.plurals.feed_settings__entry_tag_rules, feed.entryTagRuleCount, feed.entryTagRuleCount))
             }
         })
 
@@ -127,10 +109,6 @@ class FeedSettingsFragment : Fragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
-                REQUEST_TAGS -> {
-                    val selectedTags = data?.getLongArrayExtra(TagsPickerActivity.EXTRA_SELECTED_TAGS) ?: return
-                    viewModel.newSelectedTagIds.value = selectedTags
-                }
                 REQUEST_UPDATE_MODE -> {
                     val serializedUpdateMode = data?.getStringExtra(UpdateModeActivity.EXTRA_UPDATE_MODE) ?: return
                     viewModel.newUpdateMode = UpdateMode.deserialize(serializedUpdateMode).also { updateMode ->
@@ -167,9 +145,6 @@ class FeedSettingsFragment : Fragment() {
         val cleanupMode = viewModel.newCleanupMode
         val updateMode = viewModel.newUpdateMode
 
-        val oldSelectedTagIds = viewModel.oldSelectedTagIds
-        val newSelectedTagIds = viewModel.newSelectedTagIds.value ?: LongArray(0)
-
         viewModel.feed.value?.let { feed ->
             GlobalScope.launch {
                 Database.transaction {
@@ -180,22 +155,6 @@ class FeedSettingsFragment : Fragment() {
                             Feeds.CLEANUP_MODE to (cleanupMode ?: feed.cleanupMode).serialize(),
                             Feeds.UPDATE_MODE to (updateMode ?: feed.updateMode).serialize()
                     )
-
-                    for (tagId in newSelectedTagIds) {
-                        if (!oldSelectedTagIds.contains(tagId)) {
-                            FeedTags.insert(
-                                    FeedTags.FEED_ID to feed.id,
-                                    FeedTags.TAG_ID to tagId,
-                                    FeedTags.TAG_TIME to System.currentTimeMillis()
-                            )
-                        }
-                    }
-
-                    for (tagId in oldSelectedTagIds) {
-                        if (!newSelectedTagIds.contains(tagId)) {
-                            FeedTags.delete(FeedTags.DeleteFeedTagCriteria(feed.id, tagId))
-                        }
-                    }
                 }
 
                 if (updateMode != null && updateMode != feed.updateMode) {
@@ -228,7 +187,7 @@ class FeedSettingsFragment : Fragment() {
             val customTitle: String?,
             val cleanupMode: CleanupMode,
             val updateMode: UpdateMode,
-            val tags: String?
+            val entryTagRuleCount: Int
     ) {
         object QueryHelper : Feeds.QueryHelper<Feed>(
                 Feeds.ID,
@@ -237,7 +196,7 @@ class FeedSettingsFragment : Fragment() {
                 Feeds.CUSTOM_TITLE,
                 Feeds.CLEANUP_MODE,
                 Feeds.UPDATE_MODE,
-                Feeds.TAG_NAMES
+                Feeds.ENTRY_TAG_RULE_COUNT
         ) {
             override fun createRow(cursor: Cursor) = Feed(
                     id = cursor.getLong(0),
@@ -246,24 +205,7 @@ class FeedSettingsFragment : Fragment() {
                     customTitle = cursor.getString(3),
                     cleanupMode = CleanupMode.deserialize(cursor.getString(4)),
                     updateMode = UpdateMode.deserialize(cursor.getString(5)),
-                    tags = cursor.getString(6)
-            )
-        }
-    }
-
-    class FeedTag(
-            val id: Long,
-            val name: String
-    ) {
-        override fun toString(): String = name
-
-        object QueryHelper : FeedTags.QueryHelper<FeedTag>(
-                FeedTags.TAG_ID,
-                FeedTags.TAG_NAME
-        ) {
-            override fun createRow(cursor: Cursor) = FeedTag(
-                    id = cursor.getLong(0),
-                    name = cursor.getString(1)
+                    entryTagRuleCount = cursor.getInt(6)
             )
         }
     }
@@ -288,47 +230,15 @@ class FeedSettingsFragment : Fragment() {
     class FeedSettingsViewModel(feedId: Long) : ViewModel() {
 
         val feed = MediatorLiveData<Feed>()
-        val feedTags = MediatorLiveData<List<FeedTag>>()
 
         var newUpdateMode: UpdateMode? = null
         var newCleanupMode: CleanupMode? = null
-
-        var oldSelectedTagIds = LongArray(0)
-        val newSelectedTagIds = MutableLiveData<LongArray>()
 
         init {
             val liveFeed = Feeds.liveQueryOne(Feeds.QueryRowCriteria(feedId), Feed.QueryHelper)
             feed.addSource(liveFeed) {
                 feed.value = it
                 feed.removeSource(liveFeed)
-            }
-
-            val liveFeedTags = FeedTags.liveQuery(FeedTags.QueryFeedTagsCriteria(feedId), FeedTag.QueryHelper)
-            val liveTags = Tags.liveQuery(Tags.QueryAllTagsCriteria, Tag.QueryHelper)
-            feedTags.addSource(liveFeedTags) {
-                val selectedTagIds = LongArray(it.size) { index -> it[index].id }
-                oldSelectedTagIds = selectedTagIds
-                newSelectedTagIds.value = selectedTagIds
-
-                feedTags.removeSource(liveFeedTags)
-            }
-            feedTags.addSource(liveTags) { updateFeedTags(it, newSelectedTagIds.value) }
-            feedTags.addSource(newSelectedTagIds) { updateFeedTags(liveTags.value, it) }
-        }
-
-        private fun updateFeedTags(tags: List<Tag>?, selectedTagIds: LongArray?) {
-            when {
-                tags == null || selectedTagIds == null -> return
-                selectedTagIds.isEmpty() -> feedTags.value = emptyList()
-                else -> {
-                    val newFeedTags = ArrayList<FeedTag>()
-                    for (tag in tags) {
-                        if (selectedTagIds.contains(tag.id)) {
-                            newFeedTags.add(FeedTag(tag.id, tag.name))
-                        }
-                    }
-                    this.feedTags.value = newFeedTags
-                }
             }
         }
 

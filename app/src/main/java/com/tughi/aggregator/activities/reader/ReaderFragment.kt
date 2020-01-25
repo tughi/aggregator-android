@@ -203,7 +203,7 @@ class ReaderFragment : Fragment() {
             R.id.tag -> {
                 context?.let { context ->
                     loadedEntry?.let { entry ->
-                        EntryTagsActivity.start(context, entry.id, entry.feedId)
+                        EntryTagsActivity.start(context, entry.id)
                     }
                 }
             }

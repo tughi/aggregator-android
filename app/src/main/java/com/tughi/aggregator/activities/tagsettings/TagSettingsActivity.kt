@@ -1,29 +1,23 @@
 package com.tughi.aggregator.activities.tagsettings
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
-import com.tughi.aggregator.activities.feedspicker.FeedsPickerActivity
 import com.tughi.aggregator.data.Database
-import com.tughi.aggregator.data.FeedTags
 import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.Tags
-import com.tughi.aggregator.widgets.DropDownButton
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -31,8 +25,6 @@ class TagSettingsActivity : AppActivity() {
 
     companion object {
         private const val EXTRA_TAG_ID = "tag_id"
-
-        const val REQUEST_TAGGED_FEEDS = 1
 
         fun start(context: Context, tagId: Long?) {
             context.startActivity(
@@ -59,41 +51,13 @@ class TagSettingsActivity : AppActivity() {
 
         findViewById<Button>(R.id.save).setOnClickListener { onSaveTag() }
 
-        val feedsDropDownButton = findViewById<DropDownButton>(R.id.feeds)
-        feedsDropDownButton.setOnClickListener {
-            val taggedFeeds = viewModel.taggedFeeds.value ?: return@setOnClickListener
-            val taggedFeedIds = LongArray(taggedFeeds.size) { taggedFeeds[it].id }
-            FeedsPickerActivity.startForResult(this, REQUEST_TAGGED_FEEDS, taggedFeedIds, title = getString(R.string.tag_settings__tagged_feeds))
-        }
-
         viewModel.tag.observe(this, Observer { tag ->
             if (tag != null) {
                 invalidateOptionsMenu()
 
                 nameTextView.text = tag.name
-
-                if (!tag.deletable) {
-                    feedsDropDownButton.visibility = View.GONE
-                }
             }
         })
-
-        viewModel.taggedFeeds.observe(this, Observer { feeds ->
-            if (feeds != null && feeds.isNotEmpty()) {
-                feedsDropDownButton.setText(feeds.joinToString())
-            } else {
-                feedsDropDownButton.setText(R.string.feed_settings__tags__none)
-            }
-        })
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_TAGGED_FEEDS) {
-            val selectedFeedIds = data?.extras?.getLongArray(FeedsPickerActivity.EXTRA_SELECTED_FEEDS)
-            viewModel.newSelectedFeedIds.value = selectedFeedIds
-        } else {
-            super.onActivityResult(requestCode, resultCode, data)
-        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -130,37 +94,18 @@ class TagSettingsActivity : AppActivity() {
     private fun onSaveTag() {
         val tag = viewModel.tag.value
         val name = nameTextView.text.toString().trim()
-        val newSelectedFeedIds = viewModel.newSelectedFeedIds.value ?: LongArray(0)
-        val oldSelectedFeedIds = viewModel.oldSelectedFeedIds
 
         GlobalScope.launch {
             Database.transaction {
-                val tagId = if (tag != null) {
+                if (tag != null) {
                     Tags.update(
                             Tags.UpdateTagCriteria(tag.id),
                             Tags.NAME to name
                     )
-                    tag.id
                 } else {
                     Tags.insert(
                             Tags.NAME to name
                     )
-                }
-
-                for (feedId in newSelectedFeedIds) {
-                    if (!oldSelectedFeedIds.contains(feedId)) {
-                        FeedTags.insert(
-                                FeedTags.FEED_ID to feedId,
-                                FeedTags.TAG_ID to tagId,
-                                FeedTags.TAG_TIME to System.currentTimeMillis()
-                        )
-                    }
-                }
-
-                for (feedId in oldSelectedFeedIds) {
-                    if (!newSelectedFeedIds.contains(feedId)) {
-                        FeedTags.delete(FeedTags.DeleteFeedTagCriteria(feedId, tagId))
-                    }
                 }
             }
         }
@@ -186,18 +131,6 @@ class TagSettingsActivity : AppActivity() {
         }
     }
 
-    class FeedTag(
-            val feedId: Long
-    ) {
-        object QueryHelper : FeedTags.QueryHelper<FeedTag>(
-                FeedTags.FEED_ID
-        ) {
-            override fun createRow(cursor: Cursor) = FeedTag(
-                    feedId = cursor.getLong(0)
-            )
-        }
-    }
-
     class Tag(val id: Long, val name: String, val deletable: Boolean) {
         object QueryHelper : Tags.QueryHelper<Tag>(
                 Tags.ID,
@@ -214,10 +147,6 @@ class TagSettingsActivity : AppActivity() {
 
     class TagSettingsViewModel(tagId: Long?) : ViewModel() {
         val tag = MediatorLiveData<Tag>()
-        val taggedFeeds = MediatorLiveData<List<Feed>>()
-
-        var oldSelectedFeedIds = LongArray(0)
-        val newSelectedFeedIds = MutableLiveData<LongArray>()
 
         init {
             if (tagId != null) {
@@ -225,37 +154,6 @@ class TagSettingsActivity : AppActivity() {
                 tag.addSource(liveTag) {
                     tag.value = it
                     tag.removeSource(liveTag)
-                }
-
-                val liveFeedTags = FeedTags.liveQuery(FeedTags.QueryTaggedFeedsCriteria(tagId), FeedTag.QueryHelper)
-                taggedFeeds.addSource(liveFeedTags) {
-                    val selectedFeedIds = LongArray(it.size) { index -> it[index].feedId }
-                    oldSelectedFeedIds = selectedFeedIds
-                    newSelectedFeedIds.value = selectedFeedIds
-
-                    taggedFeeds.removeSource(liveFeedTags)
-                }
-            } else {
-                newSelectedFeedIds.value = LongArray(0)
-            }
-
-            val liveFeeds = Feeds.liveQuery(Feeds.AllCriteria, Feed.QueryHelper)
-            taggedFeeds.addSource(liveFeeds) { updateTaggedFeeds(it, newSelectedFeedIds.value) }
-            taggedFeeds.addSource(newSelectedFeedIds) { updateTaggedFeeds(liveFeeds.value, it) }
-        }
-
-        private fun updateTaggedFeeds(feeds: List<Feed>?, selectedFeedIds: LongArray?) {
-            when {
-                feeds == null || selectedFeedIds == null -> return
-                selectedFeedIds.isEmpty() -> taggedFeeds.value = emptyList()
-                else -> {
-                    val newTaggedFeeds = ArrayList<Feed>()
-                    for (feed in feeds) {
-                        if (selectedFeedIds.contains(feed.id)) {
-                            newTaggedFeeds.add(feed)
-                        }
-                    }
-                    this.taggedFeeds.value = newTaggedFeeds
                 }
             }
         }

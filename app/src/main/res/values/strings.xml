@@ -83,13 +83,13 @@
     <string name="feed_list_item__next_update_time__disabled">Auto update: disabled</string>
     <string name="feed_list_item__next_update_time__on_app_launch">Auto update: on app launch</string>
 
-    <string name="feed_tags">Feed tags</string>
-
     <string name="feed_settings">Feed settings</string>
     <string name="feed_settings__cleanup_mode">Cleanup mode</string>
     <string name="feed_settings__entry_tag_rules">Entry tag rules</string>
-    <string name="feed_settings__tags">Tags</string>
-    <string name="feed_settings__tags__none">None</string>
+    <plurals name="feed_settings__entry_tag_rules">
+        <item quantity="one">1 rule</item>
+        <item quantity="other">%d rules</item>
+    </plurals>
     <string name="feed_settings__title">Title</string>
     <string name="feed_settings__update_mode">Update mode</string>
     <string name="feed_settings__url">URL</string>
@@ -128,7 +128,6 @@
 
     <string name="tag_settings">Tag settings</string>
     <string name="tag_settings__name">Name</string>
-    <string name="tag_settings__tagged_feeds">Tagged feeds</string>
     <string name="tag_settings__url">URL</string>
 
     <string name="tags_item__total_entries">Total entries: %1$d</string>

@@ -42,7 +42,7 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     object UPDATE_TIME : Column("update_time", "e.update_time"), TableColumn
     object READ_TIME : Column("read_time", "e.read_time"), TableColumn
     object PINNED_TIME : Column("pinned_time", "e.pinned_time"), TableColumn
-    object STAR_TIME : Column("star_time", "(SELECT ft.tag_time FROM feed_tag ft WHERE ft.feed_id = e.feed_id AND ft.tag_id = ${Tags.STARRED} UNION ALL SELECT et.tag_time FROM entry_tag et WHERE et.entry_id = e.id AND et.tag_id = ${Tags.STARRED})", arrayOf("entry", "entry_tag", "feed_tag"))
+    object STAR_TIME : Column("star_time", "(SELECT et.tag_time FROM entry_tag et WHERE et.entry_id = e.id AND et.tag_id = ${Tags.STARRED})", arrayOf("entry", "entry_tag"))
 
     fun markRead(entryId: Long): Int = update(UpdateEntryCriteria(entryId), READ_TIME to System.currentTimeMillis(), PINNED_TIME to 0)
 
@@ -210,7 +210,7 @@ private const val SELECT__TAGGED_ENTRY_IDS = "SELECT e1.id FROM entry_fts ef LEF
 
 class TagEntriesQueryCriteria(val tagId: Long, sessionTime: Long, showRead: Boolean, sortOrder: Entries.SortOrder, limit: Int = 0, offset: Int = 0) : EntriesQueryCriteria(sessionTime, showRead, sortOrder, null, limit, offset) {
     override fun firstSelection(query: Query.Builder, selectionArgs: MutableList<Any?>): String {
-        query.addObservedTables("entry", "entry_tag", "feed_tag")
+        query.addObservedTables("entry", "entry_tag")
         selectionArgs.add(tagId)
         return "e.id IN ($SELECT__TAGGED_ENTRY_IDS)"
     }
@@ -234,7 +234,7 @@ class UnreadEntriesQueryCriteria(private val queryCriteria: EntriesQueryCriteria
             is TagEntriesQueryCriteria -> {
                 selection = "e.id IN ($SELECT__TAGGED_ENTRY_IDS)"
                 selectionArgs.add(queryCriteria.tagId)
-                query.addObservedTables("entry", "entry_tag", "feed_tag")
+                query.addObservedTables("entry", "entry_tag")
             }
         }
 

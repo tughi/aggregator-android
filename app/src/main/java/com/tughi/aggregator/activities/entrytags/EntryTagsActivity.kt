@@ -23,7 +23,6 @@ import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.tagsettings.TagSettingsActivity
 import com.tughi.aggregator.data.EntryTags
-import com.tughi.aggregator.data.FeedTags
 import com.tughi.aggregator.data.Tags
 import com.tughi.aggregator.utilities.has
 import kotlinx.coroutines.GlobalScope
@@ -33,22 +32,19 @@ class EntryTagsActivity : AppActivity() {
 
     companion object {
         private const val EXTRA_ENTRY_ID = "entry_id"
-        private const val EXTRA_ENTRY_FEED_ID = "entry_feed_id"
 
-        fun start(context: Context, entryId: Long, entryFeedId: Long) {
+        fun start(context: Context, entryId: Long) {
             context.startActivity(
                     Intent(context, EntryTagsActivity::class.java)
                             .putExtra(EXTRA_ENTRY_ID, entryId)
-                            .putExtra(EXTRA_ENTRY_FEED_ID, entryFeedId)
             )
         }
     }
 
     private val entryId by lazy { intent.getLongExtra(EXTRA_ENTRY_ID, 0) }
-    private val entryFeedId by lazy { intent.getLongExtra(EXTRA_ENTRY_FEED_ID, 0) }
 
     private val viewModel: EntryTagsViewModel by lazy {
-        val viewModelFactory = EntryTagsViewModel.Factory(entryId, entryFeedId)
+        val viewModelFactory = EntryTagsViewModel.Factory(entryId)
         ViewModelProviders.of(this, viewModelFactory).get(EntryTagsViewModel::class.java)
     }
 
@@ -121,7 +117,7 @@ class EntryTagsActivity : AppActivity() {
         finish()
     }
 
-    data class Tag(val id: Long, val name: String, val feedTag: Boolean = false, val oldEntryTag: Boolean = false, var newEntryTag: Boolean = false) {
+    data class Tag(val id: Long, val name: String, val oldEntryTag: Boolean = false, var newEntryTag: Boolean = false) {
         object QueryHelper : Tags.QueryHelper<Tag>(
                 Tags.ID,
                 Tags.NAME
@@ -143,36 +139,23 @@ class EntryTagsActivity : AppActivity() {
         }
     }
 
-    class FeedTag(val tagId: Long) {
-        object QueryHelper : FeedTags.QueryHelper<FeedTag>(
-                FeedTags.TAG_ID
-        ) {
-            override fun createRow(cursor: Cursor) = FeedTag(
-                    tagId = cursor.getLong(0)
-            )
-        }
-    }
-
-    class EntryTagsViewModel(entryId: Long, entryFeedId: Long) : ViewModel() {
+    class EntryTagsViewModel(entryId: Long) : ViewModel() {
         val tags = MediatorLiveData<List<Tag>>()
 
         init {
             val tags = Tags.liveQuery(Tags.QueryUserTagsCriteria, Tag.QueryHelper)
             val entryTags = EntryTags.liveQuery(EntryTags.QueryEntryTagsCriteria(entryId), EntryTag.QueryHelper)
-            val feedTags = FeedTags.liveQuery(FeedTags.QueryFeedTagsCriteria(entryFeedId), FeedTag.QueryHelper)
 
-            this.tags.addSource(tags) { mergeTags(it, entryTags.value, feedTags.value) }
-            this.tags.addSource(entryTags) { mergeTags(tags.value, it, feedTags.value) }
-            this.tags.addSource(feedTags) { mergeTags(tags.value, entryTags.value, it) }
+            this.tags.addSource(tags) { mergeTags(it, entryTags.value) }
+            this.tags.addSource(entryTags) { mergeTags(tags.value, it) }
         }
 
-        private fun mergeTags(tags: List<Tag>?, entryTags: List<EntryTag>?, feedTags: List<FeedTag>?) {
+        private fun mergeTags(tags: List<Tag>?, entryTags: List<EntryTag>?) {
             this.tags.value = when {
-                tags == null || entryTags == null || feedTags == null -> emptyList()
-                entryTags.isEmpty() && feedTags.isEmpty() -> tags
+                tags == null || entryTags == null -> emptyList()
+                entryTags.isEmpty() -> tags
                 else -> tags.map { tag ->
                     tag.copy(
-                            feedTag = feedTags.has { it.tagId == tag.id },
                             oldEntryTag = entryTags.has { it.tagId == tag.id },
                             newEntryTag = entryTags.has { it.tagId == tag.id }
                     )
@@ -180,11 +163,11 @@ class EntryTagsActivity : AppActivity() {
             }
         }
 
-        class Factory(private val entryId: Long, private val entryFeedId: Long) : ViewModelProvider.Factory {
+        class Factory(private val entryId: Long) : ViewModelProvider.Factory {
             override fun <T : ViewModel?> create(modelClass: Class<T>): T {
                 if (modelClass.isAssignableFrom(EntryTagsViewModel::class.java)) {
                     @Suppress("UNCHECKED_CAST")
-                    return EntryTagsViewModel(entryId, entryFeedId) as T
+                    return EntryTagsViewModel(entryId) as T
                 }
                 throw UnsupportedOperationException()
             }
@@ -206,18 +189,14 @@ class EntryTagsActivity : AppActivity() {
         fun onBind(tag: Tag) {
             this.tag = tag
 
-            itemView.isEnabled = !tag.feedTag
-
             faviconView.setImageResource(when (tag.id) {
                 Tags.ALL -> R.drawable.favicon_aggregator
                 Tags.STARRED -> R.drawable.favicon_star
                 else -> R.drawable.favicon_tag
             })
-            faviconView.isEnabled = !tag.feedTag
 
             textView.text = tag.name
-            textView.isChecked = tag.newEntryTag || tag.feedTag
-            textView.isEnabled = !tag.feedTag
+            textView.isChecked = tag.newEntryTag
         }
     }
 
