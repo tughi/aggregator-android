@@ -206,6 +206,10 @@ class TagsFragment : Fragment() {
                         favicon.setImageResource(R.drawable.favicon_star)
                         count.text = if (tag.totalEntryCount > 0) tag.totalEntryCount.toString() else ""
                     }
+                    Tags.IMPORTANT -> {
+                        favicon.setImageResource(R.drawable.favicon_pin)
+                        count.text = if (tag.unreadEntryCount > 0) tag.unreadEntryCount.toString() else ""
+                    }
                     else -> {
                         favicon.setImageResource(R.drawable.favicon_tag)
                         count.text = if (tag.unreadEntryCount > 0) tag.unreadEntryCount.toString() else ""

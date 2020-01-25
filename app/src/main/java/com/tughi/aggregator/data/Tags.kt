@@ -49,13 +49,13 @@ object Tags : Repository<Tags.Column, Tags.TableColumn, Tags.UpdateCriteria, Tag
     object QueryUserTagsCriteria : QueryCriteria {
         override fun config(query: Query.Builder, columns: Array<out Column>) {
             query.where("t.id >= $STARRED", emptyArray())
-            query.orderBy("(CASE WHEN t.id > $STARRED THEN 1 ELSE 0 END), t.name")
+            query.orderBy("(CASE WHEN t.id > $IMPORTANT THEN 10 ELSE t.id END), t.name")
         }
     }
 
     object QueryVisibleTagsCriteria : QueryCriteria {
         override fun config(query: Query.Builder, columns: Array<out Column>) {
-            query.orderBy("(CASE WHEN t.id > $STARRED THEN 1 ELSE 0 END), t.name")
+            query.orderBy("(CASE WHEN t.id > $IMPORTANT THEN 10 ELSE t.id END), t.name")
         }
     }
 
