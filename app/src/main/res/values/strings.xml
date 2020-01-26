@@ -65,10 +65,10 @@
     <string name="entry_tag_rule__title">Entry tag rule</string>
     <string name="entry_tag_rule__type">Type</string>
     <string name="entry_tag_rule__type__feed">Feed rule</string>
-    <string name="entry_tag_rule__type__feed__description">This rule is applied on entries that belong to the currently selected feed.</string>
-    <string name="entry_tag_rule__type__global">Global type</string>
-    <string name="entry_tag_rule__type__global__description">This rule is applied on any entries that is being aggregated.</string>
-    <string name="entry_tag_rule__type__title">Entry tag rule type</string>
+    <string name="entry_tag_rule__type__feed__description">This rule is applied on entries that belong to \"&lt;b>%s&lt;/b>\" only.</string>
+    <string name="entry_tag_rule__type__global">Global rule</string>
+    <string name="entry_tag_rule__type__global__description">This rule is applied on any entry, no matter what feed they belong to.</string>
+    <string name="entry_tag_rule__type__title">Rule type</string>
 
     <string name="entry_tag_rules__action__new">New entry tag all</string>
     <string name="entry_tag_rules__condition__any">Any</string>

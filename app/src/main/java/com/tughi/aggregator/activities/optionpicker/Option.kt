@@ -2,14 +2,13 @@ package com.tughi.aggregator.activities.optionpicker
 
 import android.os.Parcel
 import android.os.Parcelable
-import androidx.annotation.StringRes
 
-data class Option(val value: String, @StringRes val name: Int, @StringRes val description: Int?) : Parcelable {
+data class Option(val value: String, val name: String, val description: String?) : Parcelable {
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(value)
-        parcel.writeInt(name)
-        parcel.writeInt(description ?: 0)
+        parcel.writeString(name)
+        parcel.writeString(description)
     }
 
     override fun describeContents(): Int {
@@ -20,10 +19,8 @@ data class Option(val value: String, @StringRes val name: Int, @StringRes val de
         override fun createFromParcel(parcel: Parcel): Option {
             return Option(
                     parcel.readString()!!,
-                    parcel.readInt(),
-                    with(parcel.readInt()) {
-                        if (this == 0) null else this
-                    }
+                    parcel.readString()!!,
+                    parcel.readString()
             )
         }
 

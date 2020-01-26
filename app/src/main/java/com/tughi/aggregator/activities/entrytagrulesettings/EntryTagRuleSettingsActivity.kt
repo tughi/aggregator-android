@@ -22,6 +22,7 @@ import com.tughi.aggregator.activities.optionpicker.OptionPickerActivity
 import com.tughi.aggregator.activities.tagspicker.TagsPickerActivity
 import com.tughi.aggregator.data.EntryTagRuleQueryCriteria
 import com.tughi.aggregator.data.EntryTagRules
+import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.Tags
 import com.tughi.aggregator.data.UpdateEntryTagRuleCriteria
 import com.tughi.aggregator.widgets.DropDownButton
@@ -45,11 +46,6 @@ class EntryTagRuleSettingsActivity : AppActivity() {
                             .putExtra(EXTRA_FEED_ID, feedId)
             )
         }
-
-
-        private val TYPE_OPTION_FEED = Option("feed-type", R.string.entry_tag_rule__type__feed, R.string.entry_tag_rule__type__feed__description)
-        private val TYPE_OPTION_GLOBAL = Option("global-type", R.string.entry_tag_rule__type__global, R.string.entry_tag_rule__type__global__description)
-        private val TYPE_OPTIONS = arrayOf(TYPE_OPTION_FEED, TYPE_OPTION_GLOBAL)
     }
 
     private val entryTagRuleId: Long? by lazy {
@@ -85,7 +81,12 @@ class EntryTagRuleSettingsActivity : AppActivity() {
 
         typeView = findViewById(R.id.type)
         typeView.setOnClickListener {
-            OptionPickerActivity.startForResult(this, REQUEST_ENTRY_TAG_RULE_TYPE, TYPE_OPTIONS, viewModel.newTypeOption.value, titleResource = R.string.entry_tag_rule__type__title)
+            val options = arrayOf(
+                    Option("feed", getString(R.string.entry_tag_rule__type__feed), getString(R.string.entry_tag_rule__type__feed__description, viewModel.feedTitle)),
+                    Option("global", getString(R.string.entry_tag_rule__type__global), getString(R.string.entry_tag_rule__type__global__description))
+            )
+            val selectedOption = if (viewModel.newFeedId.value == feedId) options[0] else options[1]
+            OptionPickerActivity.startForResult(this, REQUEST_ENTRY_TAG_RULE_TYPE, options, selectedOption, titleResource = R.string.entry_tag_rule__type__title)
         }
 
         tagView = findViewById(R.id.tag)
@@ -102,9 +103,11 @@ class EntryTagRuleSettingsActivity : AppActivity() {
 
         conditionView = findViewById(R.id.condition)
 
-        viewModel.newTypeOption.observe(this, Observer { type ->
-            if (type != null) {
-                typeView.setText(type.name)
+        viewModel.newFeedId.observe(this, Observer { feedId ->
+            if (feedId != null) {
+                typeView.setText(R.string.entry_tag_rule__type__feed)
+            } else {
+                typeView.setText(R.string.entry_tag_rule__type__global)
             }
         })
 
@@ -124,7 +127,7 @@ class EntryTagRuleSettingsActivity : AppActivity() {
             when (requestCode) {
                 REQUEST_ENTRY_TAG_RULE_TYPE -> {
                     val selectedOption: Option = data?.getParcelableExtra(OptionPickerActivity.EXTRA_SELECTED_OPTION) ?: return
-                    viewModel.newTypeOption.value = selectedOption
+                    viewModel.newFeedId.value = if (selectedOption.value == "feed") viewModel.feedId else null
                     return
                 }
                 REQUEST_TAGS -> {
@@ -166,8 +169,59 @@ class EntryTagRuleSettingsActivity : AppActivity() {
         return true
     }
 
-    class EntryTagRuleViewModel(val entryTagRuleId: Long?, val feedId: Long) : ViewModel() {
-        val newTypeOption = MutableLiveData<Option>()
+    internal class EntryTagRule(
+            val id: Long,
+            val feedId: Long?,
+            val tagId: Long,
+            val condition: String
+    ) {
+        object QueryHelper : EntryTagRules.QueryHelper<EntryTagRule>(
+                EntryTagRules.ID,
+                EntryTagRules.FEED_ID,
+                EntryTagRules.TAG_ID,
+                EntryTagRules.CONDITION
+        ) {
+            override fun createRow(cursor: Cursor) = EntryTagRule(
+                    cursor.getLong(0),
+                    cursor.getLongOrNull(1),
+                    cursor.getLong(2),
+                    cursor.getString(3)
+            )
+        }
+    }
+
+    internal class Feed(
+            val title: String
+    ) {
+        object QueryHelper : Feeds.QueryHelper<Feed>(
+                Feeds.TITLE,
+                Feeds.CUSTOM_TITLE
+        ) {
+            override fun createRow(cursor: Cursor) = Feed(
+                    cursor.getString(1) ?: cursor.getString(0)
+            )
+        }
+    }
+
+    internal class Tag(
+            val id: Long,
+            val name: String
+    ) {
+        object QueryHelper : Tags.QueryHelper<Tag>(
+                Tags.ID,
+                Tags.NAME
+        ) {
+            override fun createRow(cursor: Cursor) = Tag(
+                    cursor.getLong(0),
+                    cursor.getString(1)
+            )
+        }
+    }
+
+    internal class EntryTagRuleViewModel(val entryTagRuleId: Long?, val feedId: Long) : ViewModel() {
+        var feedTitle: String = ""
+
+        val newFeedId = MutableLiveData<Long>()
 
         val newTagId = MutableLiveData<Long>()
         val newTag = Transformations.switchMap(newTagId) { newTagId ->
@@ -175,16 +229,23 @@ class EntryTagRuleSettingsActivity : AppActivity() {
         }
 
         init {
+            GlobalScope.launch {
+                Feeds.queryOne(Feeds.QueryRowCriteria(feedId), Feed.QueryHelper)?.also {
+                    feedTitle = it.title
+                }
+            }
             if (entryTagRuleId != null) {
                 GlobalScope.launch {
                     val entryTagRule = EntryTagRules.queryOne(EntryTagRuleQueryCriteria(entryTagRuleId), EntryTagRule.QueryHelper)
                     if (entryTagRule != null) {
                         launch(Dispatchers.Main) {
-                            newTypeOption.value = if (entryTagRule.feedId != null) TYPE_OPTION_FEED else TYPE_OPTION_GLOBAL
+                            newFeedId.value = if (entryTagRule.feedId == feedId) feedId else null
                             newTagId.value = entryTagRule.tagId
                         }
                     }
                 }
+            } else {
+                newFeedId.value = feedId
             }
         }
 
@@ -193,13 +254,7 @@ class EntryTagRuleSettingsActivity : AppActivity() {
 
         val validated = Transformations.switchMap(newTag) { tag ->
             if (tag != null) {
-                Transformations.switchMap(newTypeOption) { type ->
-                    if (type != null) {
-                        valid
-                    } else {
-                        invalid
-                    }
-                }
+                valid
             } else {
                 invalid
             }
@@ -207,7 +262,7 @@ class EntryTagRuleSettingsActivity : AppActivity() {
 
         fun save() {
             val entryTagRuleId = entryTagRuleId
-            val feedId = if (newTypeOption.value == TYPE_OPTION_GLOBAL) null else feedId
+            val feedId = newFeedId.value
             val tagId = newTagId.value ?: return
             val condition = ""
 
@@ -239,42 +294,6 @@ class EntryTagRuleSettingsActivity : AppActivity() {
                 }
                 throw UnsupportedOperationException()
             }
-        }
-    }
-
-    class EntryTagRule(
-            val id: Long,
-            val feedId: Long?,
-            val tagId: Long,
-            val condition: String
-    ) {
-        object QueryHelper : EntryTagRules.QueryHelper<EntryTagRule>(
-                EntryTagRules.ID,
-                EntryTagRules.FEED_ID,
-                EntryTagRules.TAG_ID,
-                EntryTagRules.CONDITION
-        ) {
-            override fun createRow(cursor: Cursor) = EntryTagRule(
-                    cursor.getLong(0),
-                    cursor.getLongOrNull(1),
-                    cursor.getLong(2),
-                    cursor.getString(3)
-            )
-        }
-    }
-
-    class Tag(
-            val id: Long,
-            val name: String
-    ) {
-        object QueryHelper : Tags.QueryHelper<Tag>(
-                Tags.ID,
-                Tags.NAME
-        ) {
-            override fun createRow(cursor: Cursor) = Tag(
-                    cursor.getLong(0),
-                    cursor.getString(1)
-            )
         }
     }
 

@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.annotation.StringRes
+import androidx.core.text.HtmlCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
@@ -117,9 +118,9 @@ class OptionPickerActivity : AppActivity() {
         fun onBind(option: Option) {
             this.option = option
 
-            titleView.setText(option.name)
+            titleView.text = option.name
             if (descriptionView != null && option.description != null) {
-                descriptionView.setText(option.description)
+                descriptionView.text = HtmlCompat.fromHtml(option.description, HtmlCompat.FROM_HTML_MODE_LEGACY)
             }
         }
     }
