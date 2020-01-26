@@ -27,7 +27,6 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
     object HTTP_ETAG : Column("http_etag", "f.http_etag"), TableColumn
     object HTTP_LAST_MODIFIED : Column("http_last_modified", "f.http_last_modified"), TableColumn
     object UNREAD_ENTRY_COUNT : Column("unread_entry_count", "(SELECT COUNT(1) FROM entry e WHERE f.id = e.feed_id AND e.read_time = 0)", arrayOf("feed", "entry"))
-    object ENTRY_TAG_RULE_COUNT : Column("entry_tag_rule_count", "(SELECT COUNT(1) FROM entry_tag_rule etr WHERE etr.feed_id IS NULL OR etr.feed_id = f.id)", arrayOf("feed", "entry_tag_rule"))
 
     fun queryAllCount() = Database.query(SimpleSQLiteQuery("SELECT COUNT(1) FROM feed")) { cursor ->
         cursor.moveToFirst()

@@ -27,8 +27,9 @@ import com.tughi.aggregator.activities.updatemode.startUpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.toString
 import com.tughi.aggregator.data.CleanupMode
 import com.tughi.aggregator.data.Database
+import com.tughi.aggregator.data.EntryTagRules
+import com.tughi.aggregator.data.FeedEntryTagRulesQueryCriteria
 import com.tughi.aggregator.data.Feeds
-import com.tughi.aggregator.data.Tags
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.AutoUpdateScheduler
 import com.tughi.aggregator.services.FaviconUpdateScheduler
@@ -95,8 +96,11 @@ class FeedSettingsFragment : Fragment() {
                 titleEditText.setText(feed.customTitle ?: feed.title)
                 updateModeView.setText(feed.updateMode.toString(updateModeView.context))
                 cleanupModeView.setText(feed.cleanupMode.toString(cleanupModeView.context))
-                entryTagRulesView.setText(resources.getQuantityString(R.plurals.feed_settings__entry_tag_rules, feed.entryTagRuleCount, feed.entryTagRuleCount))
             }
+        })
+
+        viewModel.entryTagRuleCount.observe(this, Observer { count ->
+            entryTagRulesView.setText(resources.getQuantityString(R.plurals.feed_settings__entry_tag_rules, count, count))
         })
 
         fragmentView.findViewById<View>(R.id.save).setOnClickListener {
@@ -186,8 +190,7 @@ class FeedSettingsFragment : Fragment() {
             val title: String,
             val customTitle: String?,
             val cleanupMode: CleanupMode,
-            val updateMode: UpdateMode,
-            val entryTagRuleCount: Int
+            val updateMode: UpdateMode
     ) {
         object QueryHelper : Feeds.QueryHelper<Feed>(
                 Feeds.ID,
@@ -195,8 +198,7 @@ class FeedSettingsFragment : Fragment() {
                 Feeds.TITLE,
                 Feeds.CUSTOM_TITLE,
                 Feeds.CLEANUP_MODE,
-                Feeds.UPDATE_MODE,
-                Feeds.ENTRY_TAG_RULE_COUNT
+                Feeds.UPDATE_MODE
         ) {
             override fun createRow(cursor: Cursor) = Feed(
                     id = cursor.getLong(0),
@@ -204,25 +206,19 @@ class FeedSettingsFragment : Fragment() {
                     title = cursor.getString(2),
                     customTitle = cursor.getString(3),
                     cleanupMode = CleanupMode.deserialize(cursor.getString(4)),
-                    updateMode = UpdateMode.deserialize(cursor.getString(5)),
-                    entryTagRuleCount = cursor.getInt(6)
+                    updateMode = UpdateMode.deserialize(cursor.getString(5))
             )
         }
     }
 
-    class Tag(
-            val id: Long,
-            val name: String
+    class EntryTagRule(
+            val id: Long
     ) {
-        override fun toString(): String = name
-
-        object QueryHelper : Tags.QueryHelper<Tag>(
-                Tags.ID,
-                Tags.NAME
+        object QueryHelper : EntryTagRules.QueryHelper<EntryTagRule>(
+                EntryTagRules.ID
         ) {
-            override fun createRow(cursor: Cursor) = Tag(
-                    id = cursor.getLong(0),
-                    name = cursor.getString(1)
+            override fun createRow(cursor: Cursor) = EntryTagRule(
+                    id = cursor.getLong(0)
             )
         }
     }
@@ -233,6 +229,8 @@ class FeedSettingsFragment : Fragment() {
 
         var newUpdateMode: UpdateMode? = null
         var newCleanupMode: CleanupMode? = null
+
+        val entryTagRuleCount = EntryTagRules.liveQueryCount(FeedEntryTagRulesQueryCriteria(feedId), EntryTagRule.QueryHelper)
 
         init {
             val liveFeed = Feeds.liveQueryOne(Feeds.QueryRowCriteria(feedId), Feed.QueryHelper)
