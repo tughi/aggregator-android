@@ -54,7 +54,7 @@ CREATE TABLE tag (
 INSERT INTO tag (id, name, editable) VALUES
     (0, 'All', 0),
     (1, 'Starred', 0),
-    (2, 'Important', 0);
+    (2, 'Pinned', 0);
 
 --
 

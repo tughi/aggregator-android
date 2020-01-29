@@ -40,7 +40,7 @@ UPDATE feed_tag SET tag_id = (SELECT MAX(t.id) FROM tag t) WHERE tag_id = 2;
 
 --
 
-INSERT OR REPLACE INTO tag (id, name, editable) VALUES (2, 'Important', 0);
+INSERT OR REPLACE INTO tag (id, name, editable) VALUES (2, 'Pinned', 0);
 
 --
 

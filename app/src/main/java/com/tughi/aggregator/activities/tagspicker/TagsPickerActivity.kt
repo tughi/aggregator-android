@@ -216,7 +216,7 @@ class TagsPickerActivity : AppActivity() {
             faviconView.setImageResource(when (tag.id) {
                 Tags.ALL -> R.drawable.favicon_aggregator
                 Tags.STARRED -> R.drawable.favicon_star
-                Tags.IMPORTANT -> R.drawable.favicon_pin
+                Tags.PINNED -> R.drawable.favicon_pin
                 else -> R.drawable.favicon_tag
             })
 
