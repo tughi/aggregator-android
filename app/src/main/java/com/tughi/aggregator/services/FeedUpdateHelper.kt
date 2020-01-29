@@ -19,6 +19,9 @@ import com.tughi.aggregator.data.CleanupMode
 import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.DefaultCleanupMode
 import com.tughi.aggregator.data.Entries
+import com.tughi.aggregator.data.EntryTagRules
+import com.tughi.aggregator.data.EntryTags
+import com.tughi.aggregator.data.FeedEntryTagRulesQueryCriteria
 import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.NeverCleanupMode
 import com.tughi.aggregator.data.UpdateMode
@@ -146,6 +149,8 @@ object FeedUpdateHelper {
             val httpEtag = response.header("Etag")
             val httpLastModified = response.header("Last-Modified")
 
+            val entryTagRules = EntryTagRules.query(FeedEntryTagRulesQueryCriteria(feed.id), EntryTagRule.QueryHelper)
+
             val feedParser = FeedParser(feed.url, object : FeedParser.Listener() {
                 override fun onParsedEntry(uid: String, title: String?, link: String?, content: String?, author: String?, publishDate: Date?, publishDateText: String?) {
                     val result = Entries.update(
@@ -159,7 +164,7 @@ object FeedUpdateHelper {
                     )
 
                     if (result == 0) {
-                        Entries.insert(
+                        val entryId = Entries.insert(
                                 Entries.FEED_ID to feed.id,
                                 Entries.UID to uid,
                                 Entries.TITLE to title,
@@ -170,6 +175,17 @@ object FeedUpdateHelper {
                                 Entries.INSERT_TIME to System.currentTimeMillis(),
                                 Entries.UPDATE_TIME to updateTime
                         )
+
+                        for (entryTagRule in entryTagRules) {
+                            if (entryTagRule.matches(title, link, content)) {
+                                EntryTags.insert(
+                                        EntryTags.ENTRY_ID to entryId,
+                                        EntryTags.TAG_ID to entryTagRule.tagId,
+                                        EntryTags.TAG_TIME to updateTime,
+                                        EntryTags.ENTRY_TAG_RULE_ID to entryTagRule.id
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -288,6 +304,32 @@ object FeedUpdateHelper {
                     httpEtag = cursor.getString(5),
                     httpLastModified = cursor.getString(6),
                     lastUpdateTime = cursor.getLong(7)
+            )
+        }
+    }
+
+    class EntryTagRule(
+            val id: Long,
+            val tagId: Long,
+            val condition: String,
+            val feedId: Long?
+    ) {
+        fun matches(title: String?, link: String?, content: String?): Boolean {
+            // TODO: use condition
+            return true
+        }
+
+        object QueryHelper : EntryTagRules.QueryHelper<EntryTagRule>(
+                EntryTagRules.ID,
+                EntryTagRules.TAG_ID,
+                EntryTagRules.CONDITION,
+                EntryTagRules.FEED_ID
+        ) {
+            override fun createRow(cursor: Cursor): EntryTagRule = EntryTagRule(
+                    cursor.getLong(0),
+                    cursor.getLong(1),
+                    cursor.getString(2),
+                    if (cursor.isNull(3)) null else cursor.getLong(3)
             )
         }
     }

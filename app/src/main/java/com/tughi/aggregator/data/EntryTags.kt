@@ -9,6 +9,7 @@ object EntryTags : Repository<EntryTags.Column, EntryTags.TableColumn, EntryTags
     object ENTRY_ID : Column("entry_id", "et.entry_id"), TableColumn
     object TAG_ID : Column("tag_id", "et.tag_id"), TableColumn
     object TAG_TIME : Column("tag_time", "et.tag_time"), TableColumn
+    object ENTRY_TAG_RULE_ID : Column("entry_tag_rule_id", "et.entry_tag_rule_id"), TableColumn
 
     interface UpdateCriteria : Repository.UpdateCriteria
 
