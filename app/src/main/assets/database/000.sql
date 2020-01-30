@@ -34,6 +34,7 @@ CREATE TABLE entry (
     update_time INTEGER NOT NULL,
     read_time INTEGER NOT NULL DEFAULT 0,
     pinned_time INTEGER NOT NULL DEFAULT 0,
+    starred_time INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (feed_id) REFERENCES feed (id) ON DELETE CASCADE
 );
 
@@ -129,6 +130,22 @@ CREATE TRIGGER entry_fts__after_delete__entry_tag AFTER DELETE ON entry_tag
         DELETE FROM entry_fts WHERE docid = OLD.entry_id;
         INSERT INTO entry_fts (docid, tags)
             SELECT e.id, (SELECT group_concat(s.tag_id) FROM (SELECT 0 AS tag_id UNION SELECT et.tag_id FROM entry_tag et WHERE et.entry_id = e.id) AS s) FROM entry e WHERE e.id = OLD.entry_id;
+    END;
+
+--
+
+CREATE TRIGGER entry__after_insert__entry_tag AFTER INSERT ON entry_tag
+    BEGIN
+        UPDATE entry SET starred_time = NEW.tag_time WHERE NEW.tag_id = 1 AND id = NEW.entry_id;
+        UPDATE entry SET pinned_time = NEW.tag_time WHERE NEW.tag_id = 2 AND id = NEW.entry_id;
+    END;
+
+--
+
+CREATE TRIGGER entry__after_delete__entry_tag AFTER DELETE ON entry_tag
+    BEGIN
+        UPDATE entry SET starred_time = (SELECT COALESCE(MAX(tag_time), 0) FROM entry_tag WHERE entry_id = entry.id AND tag_id = 1) WHERE OLD.tag_id = 1 AND id = OLD.entry_id;
+        UPDATE entry SET pinned_time = (SELECT COALESCE(MAX(tag_time), 0) FROM entry_tag WHERE entry_id = entry.id AND tag_id = 2) WHERE OLD.tag_id = 2 AND id = OLD.entry_id;
     END;
 
 --

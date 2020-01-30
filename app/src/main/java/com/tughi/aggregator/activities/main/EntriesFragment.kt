@@ -3,6 +3,7 @@ package com.tughi.aggregator.activities.main
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -20,9 +21,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.reader.ReaderActivity
+import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.data.EntriesQueryCriteria
+import com.tughi.aggregator.data.EntryTags
 import com.tughi.aggregator.data.TagEntriesQueryCriteria
+import com.tughi.aggregator.data.Tags
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -229,9 +233,18 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
                 val entry = viewHolder.item as EntriesFragmentViewModel.Entry
                 GlobalScope.launch {
                     if (entry.readTime == 0L || entry.pinnedTime != 0L) {
-                        Entries.markRead(entry.id)
+                        Database.transaction {
+                            val updated = Entries.update(Entries.UpdateEntryCriteria(entry.id), Entries.READ_TIME to System.currentTimeMillis())
+                            val deleted = EntryTags.delete(EntryTags.DeleteEntryTagCriteria(entry.id, Tags.PINNED))
+
+                            Log.i(javaClass.name, "entry updated: $updated and removed pinned tags: $deleted")
+                        }
                     } else {
-                        Entries.markPinned(entry.id)
+                        EntryTags.insert(
+                                EntryTags.ENTRY_ID to entry.id,
+                                EntryTags.TAG_ID to Tags.PINNED,
+                                EntryTags.TAG_TIME to System.currentTimeMillis()
+                        )
                     }
                 }
             }

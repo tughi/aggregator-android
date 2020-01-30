@@ -41,18 +41,14 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     object INSERT_TIME : Column("insert_time", "e.insert_time"), TableColumn
     object UPDATE_TIME : Column("update_time", "e.update_time"), TableColumn
     object READ_TIME : Column("read_time", "e.read_time"), TableColumn
-    object PINNED_TIME : Column("pinned_time", "e.pinned_time"), TableColumn
-    object STAR_TIME : Column("star_time", "(SELECT et.tag_time FROM entry_tag et WHERE et.entry_id = e.id AND et.tag_id = ${Tags.STARRED})", arrayOf("entry", "entry_tag"))
-
-    fun markRead(entryId: Long): Int = update(UpdateEntryCriteria(entryId), READ_TIME to System.currentTimeMillis(), PINNED_TIME to 0)
-
-    fun markPinned(entryId: Long): Int = update(UpdateEntryCriteria(entryId), READ_TIME to 0, PINNED_TIME to System.currentTimeMillis())
+    object PINNED_TIME : Column("pinned_time", "e.pinned_time", arrayOf("entry", "entry_tag"))
+    object STARRED_TIME : Column("starred_time", "e.starred_time", arrayOf("entry", "entry_tag"))
 
     fun markRead(criteria: EntriesQueryCriteria): Int {
         val updateCriteria = when (criteria) {
-            is FeedEntriesQueryCriteria -> SimpleUpdateCriteria("feed_id = ? AND pinned_time = 0 AND read_time = 0", arrayOf(criteria.feedId))
-            is MyFeedEntriesQueryCriteria -> SimpleUpdateCriteria("id IN ($SELECT__MY_FEED_ENTRY_IDS) AND pinned_time = 0 AND read_time = 0", emptyArray())
-            is TagEntriesQueryCriteria -> SimpleUpdateCriteria("id IN (SELECT ef.docid FROM entry_fts ef WHERE tags MATCH ?) AND pinned_time = 0 AND read_time = 0", arrayOf(criteria.tagId))
+            is FeedEntriesQueryCriteria -> SimpleUpdateCriteria("feed_id = ? AND read_time = 0", arrayOf(criteria.feedId))
+            is MyFeedEntriesQueryCriteria -> SimpleUpdateCriteria("id IN ($SELECT__MY_FEED_ENTRY_IDS) AND read_time = 0", emptyArray())
+            is TagEntriesQueryCriteria -> SimpleUpdateCriteria("id IN (SELECT ef.docid FROM entry_fts ef WHERE tags MATCH ?) AND read_time = 0", arrayOf(criteria.tagId))
         }
         return update(updateCriteria, READ_TIME to System.currentTimeMillis())
     }
@@ -79,11 +75,6 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
         override val selectionArgs = arrayOf<Any>(id)
     }
 
-    class UpdateUnreadEntryCriteria(id: Long) : UpdateCriteria {
-        override val selection = "id = ? AND read_time = 0 AND pinned_time = 0"
-        override val selectionArgs = arrayOf<Any>(id)
-    }
-
     class UpdateLastFeedUpdateEntriesCriteria(feedId: Long, lastUpdateTime: Long) : UpdateCriteria {
         override val selection = "feed_id = ? AND update_time = ?"
         override val selectionArgs = arrayOf<Any>(feedId, lastUpdateTime)
@@ -92,7 +83,7 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     interface DeleteCriteria : Repository.DeleteCriteria
 
     class DeleteOldFeedEntriesCriteria(feedId: Long, oldMarkerTime: Long) : DeleteCriteria {
-        override val selection = "feed_id = ? AND pinned_time = 0 AND COALESCE(publish_time, update_time) < ? AND 0 IN (SELECT COUNT(1) FROM entry_tag WHERE entry_id = id AND tag_id = ${Tags.STARRED})"
+        override val selection = "feed_id = ? AND pinned_time = 0 AND starred_time = 0 AND COALESCE(publish_time, update_time) < ?"
         override val selectionArgs: Array<Any>? = arrayOf(feedId, oldMarkerTime)
     }
 
@@ -167,7 +158,7 @@ sealed class EntriesQueryCriteria(private val sessionTime: Long, val showRead: B
         }
 
         if (!showRead) {
-            selection += " AND (e.read_time = 0 OR e.read_time > ?)"
+            selection += " AND (e.pinned_time != 0 OR e.read_time = 0 OR e.read_time > ?)"
             selectionArgs.add(sessionTime)
         }
 
@@ -243,6 +234,6 @@ class UnreadEntriesQueryCriteria(private val queryCriteria: EntriesQueryCriteria
             selectionArgs.add(queryCriteria.minInsertTime)
         }
 
-        query.where("$selection AND e.read_time = 0", selectionArgs.toTypedArray())
+        query.where("$selection AND (e.read_time = 0 OR e.pinned_time != 0)", selectionArgs.toTypedArray())
     }
 }

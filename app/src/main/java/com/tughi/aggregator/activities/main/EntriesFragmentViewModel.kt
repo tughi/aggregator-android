@@ -246,7 +246,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : Vie
                 Entries.LINK,
                 Entries.PINNED_TIME,
                 Entries.READ_TIME,
-                Entries.STAR_TIME,
+                Entries.STARRED_TIME,
                 Entries.TITLE
         ) {
             private val context = App.instance

@@ -155,10 +155,10 @@ class ReaderFragment : Fragment() {
         markDoneMenuItem.isVisible = !read
         markPinnedMenuItem.isVisible = read
 
-        val star = loadedEntry?.run { starTime != 0L } ?: false
+        val starred = loadedEntry?.run { starredTime != 0L } ?: false
 
-        addStarMenuItem.isVisible = !star
-        removeStarMenuItem.isVisible = star
+        addStarMenuItem.isVisible = !starred
+        removeStarMenuItem.isVisible = starred
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -166,14 +166,18 @@ class ReaderFragment : Fragment() {
             R.id.mark_done -> {
                 loadedEntry?.let {
                     GlobalScope.launch {
-                        Entries.markRead(it.id)
+                        EntryTags.delete(EntryTags.DeleteEntryTagCriteria(it.id, Tags.PINNED))
                     }
                 }
             }
             R.id.mark_pinned -> {
                 loadedEntry?.let {
                     GlobalScope.launch {
-                        Entries.markPinned(it.id)
+                        EntryTags.insert(
+                                EntryTags.ENTRY_ID to it.id,
+                                EntryTags.TAG_ID to Tags.PINNED,
+                                EntryTags.TAG_TIME to System.currentTimeMillis()
+                        )
                     }
                 }
             }
@@ -227,7 +231,7 @@ class ReaderFragment : Fragment() {
             val feedLanguage: String?,
             val readTime: Long,
             val pinnedTime: Long,
-            val starTime: Long
+            val starredTime: Long
     ) {
         object QueryHelper : Entries.QueryHelper<Entry>(
                 Entries.ID,
@@ -241,7 +245,7 @@ class ReaderFragment : Fragment() {
                 Entries.FEED_LANGUAGE,
                 Entries.READ_TIME,
                 Entries.PINNED_TIME,
-                Entries.STAR_TIME
+                Entries.STARRED_TIME
         ) {
             override fun createRow(cursor: Cursor) = Entry(
                     id = cursor.getLong(0),
@@ -255,7 +259,7 @@ class ReaderFragment : Fragment() {
                     feedLanguage = cursor.getString(8),
                     readTime = cursor.getLong(9),
                     pinnedTime = cursor.getLong(10),
-                    starTime = cursor.getLong(11)
+                    starredTime = cursor.getLong(11)
             )
         }
     }

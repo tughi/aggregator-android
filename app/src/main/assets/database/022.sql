@@ -117,6 +117,34 @@ INSERT INTO entry_tag (entry_id, tag_id, tag_time, entry_tag_rule_id) SELECT e.i
 
 --
 
+ALTER TABLE entry ADD COLUMN starred_time INTEGER NOT NULL DEFAULT 0;
+
+--
+
+UPDATE entry SET starred_time = (SELECT COALESCE(MAX(tag_time), 0) FROM entry_tag WHERE entry_id = entry.id AND tag_id = 1);
+
+--
+
+INSERT OR REPLACE INTO entry_tag (entry_id, tag_id, tag_time) SELECT id, 2, pinned_time FROM entry;
+
+--
+
+CREATE TRIGGER entry__after_insert__entry_tag AFTER INSERT ON entry_tag
+    BEGIN
+        UPDATE entry SET starred_time = NEW.tag_time WHERE NEW.tag_id = 1 AND id = NEW.entry_id;
+        UPDATE entry SET pinned_time = NEW.tag_time WHERE NEW.tag_id = 2 AND id = NEW.entry_id;
+    END;
+
+--
+
+CREATE TRIGGER entry__after_delete__entry_tag AFTER DELETE ON entry_tag
+    BEGIN
+        UPDATE entry SET starred_time = (SELECT COALESCE(MAX(tag_time), 0) FROM entry_tag WHERE entry_id = entry.id AND tag_id = 1) WHERE OLD.tag_id = 1 AND id = OLD.entry_id;
+        UPDATE entry SET pinned_time = (SELECT COALESCE(MAX(tag_time), 0) FROM entry_tag WHERE entry_id = entry.id AND tag_id = 2) WHERE OLD.tag_id = 2 AND id = OLD.entry_id;
+    END;
+
+--
+
 PRAGMA user_version = 23;
 
 --

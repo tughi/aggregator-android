@@ -133,7 +133,7 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
             actionBar.setDisplayShowTitleEnabled(true)
 
             GlobalScope.launch {
-                Entries.update(Entries.UpdateUnreadEntryCriteria(entry.id), Entries.READ_TIME to System.currentTimeMillis())
+                Entries.update(Entries.UpdateEntryCriteria(entry.id), Entries.READ_TIME to System.currentTimeMillis())
             }
         }
 

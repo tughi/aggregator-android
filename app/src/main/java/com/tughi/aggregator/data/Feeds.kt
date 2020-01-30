@@ -26,7 +26,7 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
     object NEXT_UPDATE_RETRY : Column("next_update_retry", "f.next_update_retry"), TableColumn
     object HTTP_ETAG : Column("http_etag", "f.http_etag"), TableColumn
     object HTTP_LAST_MODIFIED : Column("http_last_modified", "f.http_last_modified"), TableColumn
-    object UNREAD_ENTRY_COUNT : Column("unread_entry_count", "(SELECT COUNT(1) FROM entry e WHERE f.id = e.feed_id AND e.read_time = 0)", arrayOf("feed", "entry"))
+    object UNREAD_ENTRY_COUNT : Column("unread_entry_count", "(SELECT COUNT(1) FROM entry e WHERE f.id = e.feed_id AND (e.read_time = 0 OR e.pinned_time != 0))", arrayOf("feed", "entry", "entry_tag"))
 
     fun queryAllCount() = Database.query(SimpleSQLiteQuery("SELECT COUNT(1) FROM feed")) { cursor ->
         cursor.moveToFirst()
