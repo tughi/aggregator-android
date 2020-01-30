@@ -113,7 +113,7 @@ CREATE TRIGGER entry_fts__after_delete__entry_tag AFTER DELETE ON entry_tag
 
 --
 
-INSERT INTO entry_tag (entry_id, tag_id, tag_time, entry_tag_rule_id) SELECT e.id, etr.tag_id, strftime('%s', 'now') * 1000, etr.id FROM entry_tag_rule etr LEFT JOIN entry e ON etr.feed_id = e.feed_id;
+INSERT INTO entry_tag (entry_id, tag_id, tag_time, entry_tag_rule_id) SELECT e.id, etr.tag_id, strftime('%s', 'now') * 1000, etr.id FROM entry_tag_rule etr JOIN entry e ON etr.feed_id = e.feed_id;
 
 --
 
@@ -125,7 +125,7 @@ UPDATE entry SET starred_time = (SELECT COALESCE(MAX(tag_time), 0) FROM entry_ta
 
 --
 
-INSERT OR REPLACE INTO entry_tag (entry_id, tag_id, tag_time) SELECT id, 2, pinned_time FROM entry;
+INSERT OR REPLACE INTO entry_tag (entry_id, tag_id, tag_time) SELECT id, 2, pinned_time FROM entry WHERE pinned_time != 0;
 
 --
 
