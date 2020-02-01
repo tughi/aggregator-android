@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinatorLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?selectableItemBackground"
+    android:paddingTop="16dp"
+    android:paddingStart="?listPreferredItemPaddingLeft"
+    android:paddingEnd="?listPreferredItemPaddingRight"
+    android:paddingBottom="16dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tagged_entries"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:textAppearance="?textAppearanceBody1"
+        android:textColor="?android:textColorPrimary"
+        android:text="Automatically added to XXX entries" />
+
+    <TextView
+        android:id="@+id/feeds"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:textAppearance="?textAppearanceBody1"
+        android:textColor="?android:textColorPrimary"
+        android:layout_marginStart="?listPreferredItemPaddingLeft"
+        tools:text="from any feed" />
+
+    <TextView
+        android:id="@+id/condition"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:textAppearance="?textAppearanceBody1"
+        android:textColor="?android:textColorPrimary"
+        android:layout_marginStart="?listPreferredItemPaddingLeft"
+        android:visibility="gone"
+        tools:text="if title contains XXX" />
+
+</LinearLayout>

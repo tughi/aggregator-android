@@ -3,6 +3,7 @@
     <string name="app_name" translatable="false">Aggregator</string>
 
     <string name="action__add_star">Add star</string>
+    <string name="action__add_rule">Add rule</string>
     <string name="action__delete">Delete</string>
     <string name="action__invert_selection">Invert selection</string>
     <string name="action__mark_all_read">Mark all as read</string>
@@ -128,7 +129,16 @@
 
     <string name="tag_settings">Tag settings</string>
     <string name="tag_settings__name">Name</string>
-    <string name="tag_settings__url">URL</string>
+    <plurals name="tag_settings__tagged_entries__automatically">
+        <item quantity="one">Automatically tagged entries: 1</item>
+        <item quantity="other">Automatically tagged entries: %d</item>
+    </plurals>
+    <string name="tag_settings__tagged_entries__from_all_feeds">from all feeds</string>
+    <string name="tag_settings__tagged_entries__from_one_feed">from %s</string>
+    <plurals name="tag_settings__tagged_entries__manually">
+        <item quantity="one">Manually tagged entries: 1</item>
+        <item quantity="other">Manually tagged entries: %d</item>
+    </plurals>
 
     <string name="tags_item__total_entries">Total entries: %1$d</string>
     <string name="tags_item__unread_entries">Unread entries: %1$d</string>

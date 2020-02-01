@@ -4,19 +4,28 @@ import android.content.Context
 import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
+import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
-import com.tughi.aggregator.data.Database
+import com.tughi.aggregator.data.EntryTagRules
+import com.tughi.aggregator.data.EntryTags
 import com.tughi.aggregator.data.Feeds
+import com.tughi.aggregator.data.TagEntryRulesQueryCriteria
 import com.tughi.aggregator.data.Tags
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -39,7 +48,7 @@ class TagSettingsActivity : AppActivity() {
 
     private lateinit var viewModel: TagSettingsViewModel
 
-    private val nameTextView by lazy { findViewById<TextView>(R.id.name) }
+    private val adapter = Adapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,14 +58,29 @@ class TagSettingsActivity : AppActivity() {
 
         setContentView(R.layout.tag_settings_activity)
 
-        findViewById<Button>(R.id.save).setOnClickListener { onSaveTag() }
+        val recyclerView = findViewById<RecyclerView>(R.id.list)
+        recyclerView.adapter = adapter
+
+        val saveButton = findViewById<Button>(R.id.save)
+        saveButton.setOnClickListener { onSaveTag() }
 
         viewModel.tag.observe(this, Observer { tag ->
             if (tag != null) {
                 invalidateOptionsMenu()
-
-                nameTextView.text = tag.name
             }
+        })
+
+        viewModel.tagRules.observe(this, Observer { tagRules ->
+            adapter.tagRules = tagRules
+        })
+
+        viewModel.manualTags.observe(this, Observer { manualTags ->
+            adapter.manualTags = manualTags
+        })
+
+        viewModel.newTagName.observe(this, Observer { newTagName ->
+            val tagName = newTagName?.trim() ?: ""
+            saveButton.isEnabled = tagName.isNotEmpty() && tagName != viewModel.tag.value?.name
         })
     }
 
@@ -93,20 +117,18 @@ class TagSettingsActivity : AppActivity() {
 
     private fun onSaveTag() {
         val tag = viewModel.tag.value
-        val name = nameTextView.text.toString().trim()
+        val name = viewModel.newTagName.value ?: return
 
         GlobalScope.launch {
-            Database.transaction {
-                if (tag != null) {
-                    Tags.update(
-                            Tags.UpdateTagCriteria(tag.id),
-                            Tags.NAME to name
-                    )
-                } else {
-                    Tags.insert(
-                            Tags.NAME to name
-                    )
-                }
+            if (tag != null) {
+                Tags.update(
+                        Tags.UpdateTagCriteria(tag.id),
+                        Tags.NAME to name
+                )
+            } else {
+                Tags.insert(
+                        Tags.NAME to name
+                )
             }
         }
 
@@ -145,13 +167,49 @@ class TagSettingsActivity : AppActivity() {
         }
     }
 
+    class TagRule(val id: Long, val feedTitle: String?, val condition: String, val taggedEntries: Int) {
+        object QueryHelper : EntryTagRules.QueryHelper<TagRule>(
+                EntryTagRules.ID,
+                EntryTagRules.FEED_TITLE,
+                EntryTagRules.CONDITION,
+                EntryTagRules.TAGGED_ENTRIES
+        ) {
+            override fun createRow(cursor: Cursor) = TagRule(
+                    id = cursor.getLong(0),
+                    feedTitle = cursor.getString(1),
+                    condition = cursor.getString(2),
+                    taggedEntries = cursor.getInt(3)
+            )
+        }
+    }
+
+    class EntryTag(val entryId: Long) {
+        object QueryHelper : EntryTags.QueryHelper<EntryTag>(
+                EntryTags.ENTRY_ID
+        ) {
+            override fun createRow(cursor: Cursor) = EntryTag(
+                    cursor.getLong(0)
+            )
+        }
+    }
+
     class TagSettingsViewModel(tagId: Long?) : ViewModel() {
+
         val tag = MediatorLiveData<Tag>()
+
+        val tagRules = EntryTagRules.liveQuery(TagEntryRulesQueryCriteria(tagId ?: 0), TagRule.QueryHelper)
+
+        val manualTags = EntryTags.liveQueryCount(EntryTags.ManuallyTaggedEntriesQueryCriteria(tagId ?: 0), EntryTag.QueryHelper)
+
+        var newTagName = MutableLiveData<String>()
 
         init {
             if (tagId != null) {
                 val liveTag = Tags.liveQueryOne(Tags.QueryTagCriteria(tagId), Tag.QueryHelper)
                 tag.addSource(liveTag) {
+                    if (it != null) {
+                        newTagName.value = it.name
+                    }
                     tag.value = it
                     tag.removeSource(liveTag)
                 }
@@ -167,7 +225,79 @@ class TagSettingsActivity : AppActivity() {
                 throw IllegalArgumentException("Unsupported model class: $modelClass")
             }
         }
+
     }
 
+    internal abstract class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+
+    internal inner class TagNameViewHolder(itemView: View) : ViewHolder(itemView) {
+        val name = itemView.findViewById<EditText>(R.id.name).also {
+            it.doAfterTextChanged { text ->
+                viewModel.newTagName.value = text.toString()
+            }
+        }
+    }
+
+    internal class ManualTagsViewHolder(itemView: View) : ViewHolder(itemView) {
+        val taggedEntries = itemView.findViewById<TextView>(R.id.tagged_entries)
+    }
+
+    internal class TagRuleViewHolder(itemView: View) : ViewHolder(itemView) {
+        val taggedEntries = itemView.findViewById<TextView>(R.id.tagged_entries)
+        val feeds = itemView.findViewById<TextView>(R.id.feeds)
+    }
+
+    internal inner class Adapter : RecyclerView.Adapter<ViewHolder>() {
+        var tagRules: List<TagRule> = emptyList()
+            set(value) {
+                field = value
+                notifyDataSetChanged()
+            }
+
+        var manualTags: Int = 0
+            set(value) {
+                field = value
+                notifyItemChanged(1)
+            }
+
+        override fun getItemCount(): Int = tagRules.size + 2
+
+        override fun getItemViewType(position: Int): Int = when (position) {
+            0 -> R.layout.tag_settings_activity__name
+            1 -> R.layout.tag_settings_activity__entries
+            else -> R.layout.tag_settings_activity__rule
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val view = LayoutInflater.from(parent.context).inflate(viewType, parent, false)
+            return when (viewType) {
+                R.layout.tag_settings_activity__name -> TagNameViewHolder(view)
+                R.layout.tag_settings_activity__entries -> ManualTagsViewHolder(view)
+                else -> TagRuleViewHolder(view)
+            }
+        }
+
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) = when (holder) {
+            is TagNameViewHolder -> {
+                holder.name.setText(viewModel.newTagName.value)
+            }
+            is ManualTagsViewHolder -> {
+                holder.taggedEntries.text = resources.getQuantityString(R.plurals.tag_settings__tagged_entries__manually, manualTags, manualTags)
+            }
+            is TagRuleViewHolder -> {
+                val tagRule = tagRules[position - 2]
+                holder.taggedEntries.text = resources.getQuantityString(R.plurals.tag_settings__tagged_entries__automatically, tagRule.taggedEntries, tagRule.taggedEntries)
+                if (tagRule.feedTitle != null) {
+                    holder.feeds.text = getString(R.string.tag_settings__tagged_entries__from_one_feed, tagRule.feedTitle)
+                } else {
+                    holder.feeds.text = getString(R.string.tag_settings__tagged_entries__from_all_feeds)
+                }
+            }
+            else -> {
+                throw IllegalArgumentException("Unsupported holder type: ${holder.javaClass.name}")
+            }
+        }
+
+    }
 
 }

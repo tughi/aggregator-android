@@ -8,9 +8,11 @@ object EntryTagRules : Repository<EntryTagRules.Column, EntryTagRules.TableColum
 
     object ID : Column("id", "etr.id"), TableColumn
     object FEED_ID : Column("feed_id", "etr.feed_id"), TableColumn
+    object FEED_TITLE : Column("feed_title", "COALESCE(f.custom_title, f.title)", arrayOf("feed"))
     object TAG_ID : Column("tag_id", "etr.tag_id"), TableColumn
     object TAG_NAME : Column("tag_name", "t.name", arrayOf("tag"))
     object CONDITION : Column("condition", "etr.condition"), TableColumn
+    object TAGGED_ENTRIES : Column("tagged_entries", "(SELECT COUNT(1) FROM entry_tag et WHERE et.entry_tag_rule_id = etr.id)", arrayOf("entry_tag"))
 
     interface UpdateCriteria : Repository.UpdateCriteria
 
@@ -21,7 +23,7 @@ object EntryTagRules : Repository<EntryTagRules.Column, EntryTagRules.TableColum
     }
 
     abstract class QueryHelper<Row>(vararg columns: Column) : Repository.QueryHelper<Column, QueryCriteria, Row>(columns) {
-        override fun createQueryBuilder(criteria: QueryCriteria) = Query.Builder(columns, "entry_tag_rule etr LEFT JOIN tag t ON etr.tag_id = t.id")
+        override fun createQueryBuilder(criteria: QueryCriteria) = Query.Builder(columns, "entry_tag_rule etr JOIN tag t ON etr.tag_id = t.id LEFT JOIN feed f ON etr.feed_id = f.id")
                 .also { criteria.config(it, columns) }
     }
 
@@ -49,6 +51,14 @@ class FeedEntryTagRulesQueryCriteria(val feedId: Long) : EntryTagRules.QueryCrit
     override fun config(query: Query.Builder, columns: Array<out EntryTagRules.Column>) {
         val selection = "etr.feed_id IS NULL OR etr.feed_id = ?"
         val selectionArgs = listOf<Any?>(feedId)
+        query.where(selection, selectionArgs.toTypedArray())
+    }
+}
+
+class TagEntryRulesQueryCriteria(val tagId: Long) : EntryTagRules.QueryCriteria {
+    override fun config(query: Query.Builder, columns: Array<out EntryTagRules.Column>) {
+        val selection = "etr.tag_id = ?"
+        val selectionArgs = listOf<Any?>(tagId)
         query.where(selection, selectionArgs.toTypedArray())
     }
 }
