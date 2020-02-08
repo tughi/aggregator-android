@@ -75,7 +75,7 @@ class TagSettingsActivity : AppActivity() {
         })
 
         viewModel.manualTags.observe(this, Observer { manualTags ->
-            adapter.manualTags = manualTags
+            adapter.userTags = manualTags
         })
 
         viewModel.newTagName.observe(this, Observer { newTagName ->
@@ -238,13 +238,13 @@ class TagSettingsActivity : AppActivity() {
         }
     }
 
-    internal class ManualTagsViewHolder(itemView: View) : ViewHolder(itemView) {
-        val taggedEntries = itemView.findViewById<TextView>(R.id.tagged_entries)
+    internal class UserTagsViewHolder(itemView: View) : ViewHolder(itemView) {
+        val countView = itemView.findViewById<TextView>(R.id.count)
     }
 
     internal class TagRuleViewHolder(itemView: View) : ViewHolder(itemView) {
-        val taggedEntries = itemView.findViewById<TextView>(R.id.tagged_entries)
-        val feeds = itemView.findViewById<TextView>(R.id.feeds)
+        val textView = itemView.findViewById<TextView>(R.id.text)
+        val countView = itemView.findViewById<TextView>(R.id.count)
     }
 
     internal inner class Adapter : RecyclerView.Adapter<ViewHolder>() {
@@ -254,7 +254,7 @@ class TagSettingsActivity : AppActivity() {
                 notifyDataSetChanged()
             }
 
-        var manualTags: Int = 0
+        var userTags: Int = 0
             set(value) {
                 field = value
                 notifyItemChanged(1)
@@ -264,7 +264,7 @@ class TagSettingsActivity : AppActivity() {
 
         override fun getItemViewType(position: Int): Int = when (position) {
             0 -> R.layout.tag_settings_activity__name
-            1 -> R.layout.tag_settings_activity__entries
+            1 -> R.layout.tag_settings_activity__user
             else -> R.layout.tag_settings_activity__rule
         }
 
@@ -272,7 +272,7 @@ class TagSettingsActivity : AppActivity() {
             val view = LayoutInflater.from(parent.context).inflate(viewType, parent, false)
             return when (viewType) {
                 R.layout.tag_settings_activity__name -> TagNameViewHolder(view)
-                R.layout.tag_settings_activity__entries -> ManualTagsViewHolder(view)
+                R.layout.tag_settings_activity__user -> UserTagsViewHolder(view)
                 else -> TagRuleViewHolder(view)
             }
         }
@@ -281,16 +281,15 @@ class TagSettingsActivity : AppActivity() {
             is TagNameViewHolder -> {
                 holder.name.setText(viewModel.newTagName.value)
             }
-            is ManualTagsViewHolder -> {
-                holder.taggedEntries.text = resources.getQuantityString(R.plurals.tag_settings__tagged_entries__manually, manualTags, manualTags)
+            is UserTagsViewHolder -> {
+                holder.countView.text = userTags.toString()
             }
             is TagRuleViewHolder -> {
                 val tagRule = tagRules[position - 2]
-                holder.taggedEntries.text = resources.getQuantityString(R.plurals.tag_settings__tagged_entries__automatically, tagRule.taggedEntries, tagRule.taggedEntries)
-                if (tagRule.feedTitle != null) {
-                    holder.feeds.text = getString(R.string.tag_settings__tagged_entries__from_one_feed, tagRule.feedTitle)
-                } else {
-                    holder.feeds.text = getString(R.string.tag_settings__tagged_entries__from_all_feeds)
+                holder.countView.text = tagRule.taggedEntries.toString()
+                holder.textView.text = when {
+                    tagRule.feedTitle != null -> resources.getString(R.string.tag_settings__tagged_entries__rule__from_feed, tagRule.feedTitle)
+                    else -> resources.getString(R.string.tag_settings__tagged_entries__rule__all_feeds)
                 }
             }
             else -> {

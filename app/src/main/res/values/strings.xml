@@ -129,16 +129,11 @@
 
     <string name="tag_settings">Tag settings</string>
     <string name="tag_settings__name">Name</string>
-    <plurals name="tag_settings__tagged_entries__automatically">
-        <item quantity="one">Automatically tagged entries: 1</item>
-        <item quantity="other">Automatically tagged entries: %d</item>
-    </plurals>
-    <string name="tag_settings__tagged_entries__from_all_feeds">from all feeds</string>
-    <string name="tag_settings__tagged_entries__from_one_feed">from %s</string>
-    <plurals name="tag_settings__tagged_entries__manually">
-        <item quantity="one">Manually tagged entries: 1</item>
-        <item quantity="other">Manually tagged entries: %d</item>
-    </plurals>
+    <string name="tag_settings__tagged_entries__user">Tagged entries</string>
+    <string name="tag_settings__tagged_entries__rule__all_feeds">Tagged entries from any feed</string>
+    <string name="tag_settings__tagged_entries__rule__all_feeds_with_condition">Tagged entries from any feed, where %s</string>
+    <string name="tag_settings__tagged_entries__rule__from_feed">Tagged entries from %s</string>
+    <string name="tag_settings__tagged_entries__rule__from_feed_with_condition">Tagged entries from %s, where %s</string>
 
     <string name="tags_item__total_entries">Total entries: %1$d</string>
     <string name="tags_item__unread_entries">Unread entries: %1$d</string>
