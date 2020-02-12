@@ -98,6 +98,7 @@ class TagSettingsActivity : AppActivity() {
         if (menu != null) {
             val tag = viewModel.tag.value
             menu.findItem(R.id.delete)?.isVisible = tag?.deletable ?: false
+            menu.findItem(R.id.add_rule)?.isVisible = tag?.id != Tags.ALL
         }
 
         return true
@@ -193,7 +194,7 @@ class TagSettingsActivity : AppActivity() {
         }
     }
 
-    class TagSettingsViewModel(tagId: Long?) : ViewModel() {
+    class TagSettingsViewModel(val tagId: Long?) : ViewModel() {
 
         val tag = MediatorLiveData<Tag>()
 
@@ -260,7 +261,10 @@ class TagSettingsActivity : AppActivity() {
                 notifyItemChanged(1)
             }
 
-        override fun getItemCount(): Int = tagRules.size + 2
+        override fun getItemCount(): Int = when (viewModel.tagId) {
+            Tags.ALL -> 1
+            else -> tagRules.size + 2
+        }
 
         override fun getItemViewType(position: Int): Int = when (position) {
             0 -> R.layout.tag_settings_activity__name
