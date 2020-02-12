@@ -71,7 +71,6 @@
     <string name="entry_tag_rule__type__global__description">This rule is applied on any entry, no matter what feed they belong to.</string>
     <string name="entry_tag_rule__type__title">Rule type</string>
 
-    <string name="entry_tag_rules__action__new">New entry tag all</string>
     <string name="entry_tag_rules__condition__any">Any</string>
     <string name="entry_tag_rules__title">Entry tag rules</string>
 

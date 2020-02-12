@@ -4,8 +4,8 @@
 
     <item
         android:id="@+id/add"
-        android:icon="@drawable/action_add"
-        android:title="@string/entry_tag_rules__action__new"
+        android:icon="@drawable/action_add_rule"
+        android:title="@string/action__add_rule"
         app:showAsAction="ifRoom" />
 
 </menu>
