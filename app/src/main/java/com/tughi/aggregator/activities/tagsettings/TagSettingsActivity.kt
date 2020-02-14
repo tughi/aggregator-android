@@ -4,6 +4,10 @@ import android.content.Context
 import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.SpannableStringBuilder
+import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -20,6 +24,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
+import com.tughi.aggregator.App
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
 import com.tughi.aggregator.data.EntryTagRules
@@ -291,9 +296,14 @@ class TagSettingsActivity : AppActivity() {
             is TagRuleViewHolder -> {
                 val tagRule = tagRules[position - 2]
                 holder.countView.text = tagRule.taggedEntries.toString()
-                holder.textView.text = when {
-                    tagRule.feedTitle != null -> resources.getString(R.string.tag_settings__tagged_entries__rule__from_feed, tagRule.feedTitle)
-                    else -> resources.getString(R.string.tag_settings__tagged_entries__rule__all_feeds)
+                if (tagRule.feedTitle != null) {
+                    val text = SpannableStringBuilder(getString(R.string.tag_settings__tagged_entries__rule__from_feed))
+                    val chipStart = text.indexOf("%s")
+                    text.replace(chipStart, chipStart + 2, SpannableString(tagRule.feedTitle).also { it.setSpan(ForegroundColorSpan(App.accentColor), 0, it.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE) })
+
+                    holder.textView.text = text
+                } else {
+                    holder.textView.text = getString(R.string.tag_settings__tagged_entries__rule__all_feeds)
                 }
             }
             else -> {
