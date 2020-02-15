@@ -6,6 +6,7 @@ import android.database.Cursor
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import androidx.core.database.getLongOrNull
@@ -17,6 +18,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
+import com.tughi.aggregator.activities.feedspicker.FeedsPickerActivity
 import com.tughi.aggregator.activities.optionpicker.Option
 import com.tughi.aggregator.activities.optionpicker.OptionPickerActivity
 import com.tughi.aggregator.activities.tagspicker.TagsPickerActivity
@@ -34,38 +36,38 @@ class EntryTagRuleSettingsActivity : AppActivity() {
 
     companion object {
         private const val EXTRA_ENTRY_TAG_RULE_ID = "entry_tag_rule_id"
-        private const val EXTRA_FEED_ID = "feed_id"
+        private const val EXTRA_PRESET_FEED_ID = "preset_feed_id"
+        private const val EXTRA_PRESET_TAG_ID = "preset_tag_id"
 
-        private const val REQUEST_ENTRY_TAG_RULE_TYPE = 1
-        private const val REQUEST_TAGS = 2
+        private const val REQUEST_TYPE = 1
+        private const val REQUEST_FEED = 2
+        private const val REQUEST_TAGS = 3
 
-        fun start(activity: Activity, entryTagRuleId: Long?, feedId: Long) {
+        private const val TYPE_FEED = "feed"
+        private const val TYPE_GLOBAL = "global"
+
+        fun start(activity: Activity, entryTagRuleId: Long? = null, presetFeedId: Long? = null, presetTagId: Long? = null) {
             activity.startActivity(
-                    Intent(activity, EntryTagRuleSettingsActivity::class.java)
-                            .putExtra(EXTRA_ENTRY_TAG_RULE_ID, entryTagRuleId)
-                            .putExtra(EXTRA_FEED_ID, feedId)
+                    Intent(activity, EntryTagRuleSettingsActivity::class.java).apply {
+                        if (entryTagRuleId != null) putExtra(EXTRA_ENTRY_TAG_RULE_ID, entryTagRuleId)
+                        if (presetFeedId != null) putExtra(EXTRA_PRESET_FEED_ID, presetFeedId)
+                        if (presetTagId != null) putExtra(EXTRA_PRESET_TAG_ID, presetTagId)
+                    }
             )
         }
     }
 
-    private val entryTagRuleId: Long? by lazy {
-        intent.getLongExtra(EXTRA_ENTRY_TAG_RULE_ID, 0).let {
-            if (it != 0L) {
-                it
-            } else {
-                null
-            }
-        }
-    }
-    private val feedId: Long by lazy {
-        intent.getLongExtra(EXTRA_FEED_ID, 0)
-    }
     private val viewModel: EntryTagRuleViewModel by lazy {
-        val viewModelFactory = EntryTagRuleViewModel.Factory(entryTagRuleId, feedId)
+        val entryTagRuleId = if (intent.hasExtra(EXTRA_ENTRY_TAG_RULE_ID)) intent.getLongExtra(EXTRA_ENTRY_TAG_RULE_ID, 0) else null
+        val presetFeedId = if (intent.hasExtra(EXTRA_PRESET_FEED_ID)) intent.getLongExtra(EXTRA_PRESET_FEED_ID, 0) else null
+        val presetTagId = if (intent.hasExtra(EXTRA_PRESET_TAG_ID)) intent.getLongExtra(EXTRA_PRESET_TAG_ID, 0) else null
+
+        val viewModelFactory = EntryTagRuleViewModel.Factory(entryTagRuleId, presetTagId, presetFeedId)
         ViewModelProviders.of(this, viewModelFactory).get(EntryTagRuleViewModel::class.java)
     }
 
     private lateinit var typeView: DropDownButton
+    private lateinit var feedView: DropDownButton
     private lateinit var tagView: DropDownButton
     private lateinit var conditionView: EditText
 
@@ -82,11 +84,18 @@ class EntryTagRuleSettingsActivity : AppActivity() {
         typeView = findViewById(R.id.type)
         typeView.setOnClickListener {
             val options = arrayOf(
-                    Option("feed", getString(R.string.entry_tag_rule__type__feed), getString(R.string.entry_tag_rule__type__feed__description, viewModel.feedTitle)),
-                    Option("global", getString(R.string.entry_tag_rule__type__global), getString(R.string.entry_tag_rule__type__global__description))
+                    Option(TYPE_FEED, getString(R.string.entry_tag_rule__type__feed), getString(R.string.entry_tag_rule__type__feed__description)),
+                    Option(TYPE_GLOBAL, getString(R.string.entry_tag_rule__type__global), getString(R.string.entry_tag_rule__type__global__description))
             )
-            val selectedOption = if (viewModel.newFeedId.value == feedId) options[0] else options[1]
-            OptionPickerActivity.startForResult(this, REQUEST_ENTRY_TAG_RULE_TYPE, options, selectedOption, titleResource = R.string.entry_tag_rule__type__title)
+            val selectedOption = options[if (viewModel.newType.value == TYPE_FEED) 0 else 1]
+            OptionPickerActivity.startForResult(this, REQUEST_TYPE, options, selectedOption, titleResource = R.string.entry_tag_rule__type__title)
+        }
+
+        feedView = findViewById(R.id.feed)
+        feedView.setOnClickListener {
+            val feedId = viewModel.newFeedId.value
+            val selectedFeeds = if (feedId != null) longArrayOf(feedId) else longArrayOf()
+            FeedsPickerActivity.startForResult(this, REQUEST_FEED, selectedFeeds, null)
         }
 
         tagView = findViewById(R.id.tag)
@@ -103,36 +112,46 @@ class EntryTagRuleSettingsActivity : AppActivity() {
 
         conditionView = findViewById(R.id.condition)
 
-        viewModel.newFeedId.observe(this, Observer { feedId ->
-            if (feedId != null) {
+        viewModel.newType.observe(this, Observer { type ->
+            if (type == TYPE_FEED) {
                 typeView.setText(R.string.entry_tag_rule__type__feed)
+                feedView.visibility = View.VISIBLE
             } else {
                 typeView.setText(R.string.entry_tag_rule__type__global)
+                feedView.visibility = View.GONE
             }
+            // TODO: saveButton.isEnabled = viewModel.isValid()
+        })
+
+        viewModel.newFeed.observe(this, Observer { feed ->
+            feedView.setText(feed?.title ?: "")
+            // TODO: saveButton.isEnabled = viewModel.isValid()
         })
 
         viewModel.newTag.observe(this, Observer { tag ->
             if (tag != null) {
                 tagView.setText(tag.name)
             }
-        })
-
-        viewModel.validated.observe(this, Observer { validated ->
-            saveButton.isEnabled = validated
+            // TODO: saveButton.isEnabled = viewModel.isValid()
         })
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
-                REQUEST_ENTRY_TAG_RULE_TYPE -> {
-                    val selectedOption: Option = data?.getParcelableExtra(OptionPickerActivity.EXTRA_SELECTED_OPTION) ?: return
-                    viewModel.newFeedId.value = if (selectedOption.value == "feed") viewModel.feedId else null
+                REQUEST_FEED -> {
+                    val selectedFeeds = data?.getLongArrayExtra(FeedsPickerActivity.EXTRA_SELECTED_FEEDS) ?: longArrayOf()
+                    viewModel.newFeedId.value = if (selectedFeeds.isNotEmpty()) selectedFeeds[0] else null
                     return
                 }
                 REQUEST_TAGS -> {
                     val selectedTags = data?.getLongArrayExtra(TagsPickerActivity.EXTRA_SELECTED_TAGS) ?: return
                     viewModel.newTagId.value = selectedTags[0]
+                    return
+                }
+                REQUEST_TYPE -> {
+                    val selectedOption: Option = data?.getParcelableExtra(OptionPickerActivity.EXTRA_SELECTED_OPTION) ?: return
+                    viewModel.newType.value = selectedOption.value
                     return
                 }
             }
@@ -146,7 +165,7 @@ class EntryTagRuleSettingsActivity : AppActivity() {
 
         if (menu != null) {
             menuInflater.inflate(R.menu.entry_tag_rule_settings_activity, menu)
-            menu.findItem(R.id.delete).isVisible = entryTagRuleId != null
+            menu.findItem(R.id.delete).isVisible = viewModel.entryTagRuleId != null
         }
 
         return true
@@ -218,10 +237,13 @@ class EntryTagRuleSettingsActivity : AppActivity() {
         }
     }
 
-    internal class EntryTagRuleViewModel(val entryTagRuleId: Long?, val feedId: Long) : ViewModel() {
-        var feedTitle: String = ""
+    internal class EntryTagRuleViewModel(val entryTagRuleId: Long?, presetTagId: Long?, presetFeedId: Long?) : ViewModel() {
+        val newType = MutableLiveData<String>()
 
         val newFeedId = MutableLiveData<Long>()
+        val newFeed = Transformations.switchMap(newFeedId) { newFeedId ->
+            Feeds.liveQueryOne(Feeds.QueryRowCriteria(newFeedId ?: 0), Feed.QueryHelper)
+        }
 
         val newTagId = MutableLiveData<Long>()
         val newTag = Transformations.switchMap(newTagId) { newTagId ->
@@ -229,34 +251,21 @@ class EntryTagRuleSettingsActivity : AppActivity() {
         }
 
         init {
-            GlobalScope.launch {
-                Feeds.queryOne(Feeds.QueryRowCriteria(feedId), Feed.QueryHelper)?.also {
-                    feedTitle = it.title
-                }
-            }
             if (entryTagRuleId != null) {
                 GlobalScope.launch {
                     val entryTagRule = EntryTagRules.queryOne(EntryTagRuleQueryCriteria(entryTagRuleId), EntryTagRule.QueryHelper)
                     if (entryTagRule != null) {
                         launch(Dispatchers.Main) {
-                            newFeedId.value = if (entryTagRule.feedId == feedId) feedId else null
+                            newType.value = if (entryTagRule.feedId != null) TYPE_FEED else TYPE_GLOBAL
+                            newFeedId.value = entryTagRule.feedId
                             newTagId.value = entryTagRule.tagId
                         }
                     }
                 }
             } else {
-                newFeedId.value = feedId
-            }
-        }
-
-        private val invalid = MutableLiveData<Boolean>().also { it.value = false }
-        private val valid = MutableLiveData<Boolean>().also { it.value = true }
-
-        val validated = Transformations.switchMap(newTag) { tag ->
-            if (tag != null) {
-                valid
-            } else {
-                invalid
+                newType.value = if (presetFeedId != null) TYPE_FEED else TYPE_GLOBAL
+                newFeedId.value = presetFeedId
+                newTagId.value = presetTagId
             }
         }
 
@@ -286,11 +295,11 @@ class EntryTagRuleSettingsActivity : AppActivity() {
             }
         }
 
-        class Factory(private val entryTagRuleId: Long?, private val feedId: Long) : ViewModelProvider.Factory {
+        class Factory(private val entryTagRuleId: Long?, private val presetTagId: Long?, private val presetFeedId: Long?) : ViewModelProvider.Factory {
             override fun <T : ViewModel?> create(modelClass: Class<T>): T {
                 if (modelClass.isAssignableFrom(EntryTagRuleViewModel::class.java)) {
                     @Suppress("UNCHECKED_CAST")
-                    return EntryTagRuleViewModel(entryTagRuleId, feedId) as T
+                    return EntryTagRuleViewModel(entryTagRuleId, presetTagId, presetFeedId) as T
                 }
                 throw UnsupportedOperationException()
             }

@@ -62,11 +62,13 @@
 
     <string name="entry_tag_rule__condition">Condition</string>
     <string name="entry_tag_rule__delete__message">Are you sure you want to delete this entry tag rule?</string>
+    <string name="entry_tag_rule__feed">Feed</string>
+    <string name="entry_tag_rule__feed__any">Any</string>
     <string name="entry_tag_rule__tag">Tag</string>
     <string name="entry_tag_rule__title">Entry tag rule</string>
     <string name="entry_tag_rule__type">Type</string>
     <string name="entry_tag_rule__type__feed">Feed rule</string>
-    <string name="entry_tag_rule__type__feed__description">This rule is applied on entries that belong to \"&lt;b>%s&lt;/b>\" only.</string>
+    <string name="entry_tag_rule__type__feed__description">This rule is applied on entries that belong to one feed only.</string>
     <string name="entry_tag_rule__type__global">Global rule</string>
     <string name="entry_tag_rule__type__global__description">This rule is applied on any entry, no matter what feed they belong to.</string>
     <string name="entry_tag_rule__type__title">Rule type</string>
