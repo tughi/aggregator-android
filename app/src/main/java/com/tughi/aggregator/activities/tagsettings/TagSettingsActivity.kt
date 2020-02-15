@@ -27,6 +27,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.App
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
+import com.tughi.aggregator.activities.entrytagrulesettings.EntryTagRuleSettingsActivity
 import com.tughi.aggregator.data.EntryTagRules
 import com.tughi.aggregator.data.EntryTags
 import com.tughi.aggregator.data.Feeds
@@ -109,8 +110,12 @@ class TagSettingsActivity : AppActivity() {
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item?.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.add_rule -> {
+                EntryTagRuleSettingsActivity.start(this, presetTagId = viewModel.tagId)
+                return true
+            }
             R.id.delete -> {
                 viewModel.tag.value?.let { tag ->
                     DeleteTagDialogFragment.show(supportFragmentManager, tag.id, tag.name, true)
@@ -118,7 +123,7 @@ class TagSettingsActivity : AppActivity() {
                 return true
             }
         }
-        return false
+        return super.onOptionsItemSelected(item)
     }
 
     private fun onSaveTag() {
@@ -248,9 +253,20 @@ class TagSettingsActivity : AppActivity() {
         val countView = itemView.findViewById<TextView>(R.id.count)
     }
 
-    internal class TagRuleViewHolder(itemView: View) : ViewHolder(itemView) {
+    internal inner class TagRuleViewHolder(itemView: View) : ViewHolder(itemView) {
         val textView = itemView.findViewById<TextView>(R.id.text)
         val countView = itemView.findViewById<TextView>(R.id.count)
+
+        var tagRule: TagRule? = null
+
+        init {
+            itemView.setOnClickListener {
+                val tagRule = tagRule
+                if (tagRule != null) {
+                    EntryTagRuleSettingsActivity.start(this@TagSettingsActivity, tagRule.id)
+                }
+            }
+        }
     }
 
     internal inner class Adapter : RecyclerView.Adapter<ViewHolder>() {
@@ -295,6 +311,7 @@ class TagSettingsActivity : AppActivity() {
             }
             is TagRuleViewHolder -> {
                 val tagRule = tagRules[position - 2]
+                holder.tagRule = tagRule
                 holder.countView.text = tagRule.taggedEntries.toString()
                 if (tagRule.feedTitle != null) {
                     val text = SpannableStringBuilder(getString(R.string.tag_settings__tagged_entries__rule__from_feed))
