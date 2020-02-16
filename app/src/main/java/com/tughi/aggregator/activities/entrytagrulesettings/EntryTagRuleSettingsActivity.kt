@@ -95,7 +95,7 @@ class EntryTagRuleSettingsActivity : AppActivity() {
         feedView.setOnClickListener {
             val feedId = viewModel.newFeedId.value
             val selectedFeeds = if (feedId != null) longArrayOf(feedId) else longArrayOf()
-            FeedsPickerActivity.startForResult(this, REQUEST_FEED, selectedFeeds, null)
+            FeedsPickerActivity.startForResult(this, REQUEST_FEED, selectedFeeds, true, null)
         }
 
         tagView = findViewById(R.id.tag)

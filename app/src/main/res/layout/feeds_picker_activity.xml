@@ -16,7 +16,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:listitem="@layout/feeds_picker_item" />
+        tools:listitem="@layout/feeds_picker_item__multiple_choice" />
 
     <ProgressBar
         android:id="@+id/progress"

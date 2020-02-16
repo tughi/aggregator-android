@@ -26,43 +26,51 @@ import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.subscribe.SubscribeActivity
 import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.utilities.Favicons
+import com.tughi.aggregator.utilities.has
 
 class FeedsPickerActivity : AppActivity() {
 
     companion object {
         const val EXTRA_SELECTED_FEEDS = "selected_feeds"
+        private const val EXTRA_SINGLE_CHOICE = "single_choice"
         private const val EXTRA_TITLE = "title"
 
-        fun startForResult(activity: Activity, resultCode: Int, selectedFeeds: LongArray, title: String?) {
+        fun startForResult(activity: Activity, resultCode: Int, selectedFeeds: LongArray, singleChoice: Boolean, title: String?) {
             activity.startActivityForResult(
                     Intent(activity, FeedsPickerActivity::class.java)
                             .putExtra(EXTRA_SELECTED_FEEDS, selectedFeeds)
+                            .putExtra(EXTRA_SINGLE_CHOICE, singleChoice)
                             .putExtra(EXTRA_TITLE, title),
                     resultCode
             )
         }
     }
 
+    private val singleChoice by lazy { intent.getBooleanExtra(EXTRA_SINGLE_CHOICE, false) }
+
+    private val viewModel by lazy {
+        val selectedFeedIds = intent.getLongArrayExtra(EXTRA_SELECTED_FEEDS) ?: LongArray(0)
+        val viewModelFactory = FeedViewModel.Factory(selectedFeedIds, singleChoice)
+        return@lazy ViewModelProviders.of(this, viewModelFactory).get(FeedViewModel::class.java)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            setHomeAsUpIndicator(R.drawable.action_back)
+        }
 
         intent.getStringExtra(EXTRA_TITLE)?.let {
             title = it
         }
 
-        val selectedFeedIds = intent.getLongArrayExtra(EXTRA_SELECTED_FEEDS) ?: LongArray(0)
-        val viewModelFactory = FeedViewModel.Factory(selectedFeedIds)
-        val viewModel = ViewModelProviders.of(this, viewModelFactory).get(FeedViewModel::class.java)
-
         setContentView(R.layout.feeds_picker_activity)
         val recyclerView = findViewById<RecyclerView>(R.id.list)
         val progressBar = findViewById<ProgressBar>(R.id.progress)
 
-        val adapter = FeedsAdapter(object : FeedsAdapter.Listener {
-            override fun onFeedClick(feed: Feed) {
-                viewModel.toggleFeed(feed.id)
-            }
-        })
+        val adapter = FeedsAdapter()
 
         recyclerView.adapter = adapter
 
@@ -76,11 +84,18 @@ class FeedsPickerActivity : AppActivity() {
             }
         })
 
-        findViewById<Button>(R.id.select).setOnClickListener {
+        val selectButton = findViewById<Button>(R.id.select)
+        selectButton.setOnClickListener {
             val selectedFeeds = viewModel.feeds.value?.filter { it.selected } ?: emptyList()
             setResult(Activity.RESULT_OK, Intent().putExtra(EXTRA_SELECTED_FEEDS, LongArray(selectedFeeds.size) { selectedFeeds[it].id }))
 
             finish()
+        }
+        if (singleChoice) {
+            selectButton.isEnabled = false
+            viewModel.feeds.observe(this, Observer { _ ->
+                selectButton.isEnabled = viewModel.feeds.value?.has { it.selected } ?: false
+            })
         }
     }
 
@@ -93,11 +108,19 @@ class FeedsPickerActivity : AppActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+        android.R.id.home -> {
+            finish()
+            true
+        }
         R.id.add -> {
             SubscribeActivity.start(this)
             true
         }
         else -> super.onOptionsItemSelected(item)
+    }
+
+    fun onFeedSelected(feed: Feed) {
+        viewModel.toggleFeed(feed.id)
     }
 
     data class Feed(val id: Long, val title: String, val faviconUrl: String?, val selected: Boolean = false) {
@@ -115,7 +138,7 @@ class FeedsPickerActivity : AppActivity() {
         }
     }
 
-    class FeedViewModel(initialSelectedFeedIds: LongArray) : ViewModel() {
+    class FeedViewModel(initialSelectedFeedIds: LongArray, private val singleChoice: Boolean) : ViewModel() {
         private val selectedFeedIds = MutableLiveData<LongSparseArray<Boolean>>().apply {
             val selectedFeeds = LongSparseArray<Boolean>()
             for (selectedFeed in initialSelectedFeedIds) {
@@ -148,23 +171,28 @@ class FeedsPickerActivity : AppActivity() {
         fun toggleFeed(feedId: Long) {
             selectedFeedIds.apply {
                 val selectedFeeds = value ?: LongSparseArray()
-                selectedFeeds.put(feedId, !selectedFeeds.get(feedId, false))
+                if (singleChoice) {
+                    selectedFeeds.clear()
+                    selectedFeeds.put(feedId, true)
+                } else {
+                    selectedFeeds.put(feedId, !selectedFeeds.get(feedId, false))
+                }
                 value = selectedFeeds
             }
         }
 
-        class Factory(private val selectedFeedIds: LongArray) : ViewModelProvider.Factory {
+        class Factory(private val selectedFeedIds: LongArray, private val singleChoice: Boolean) : ViewModelProvider.Factory {
             override fun <T : ViewModel?> create(modelClass: Class<T>): T {
                 if (modelClass.isAssignableFrom(FeedViewModel::class.java)) {
                     @Suppress("UNCHECKED_CAST")
-                    return FeedViewModel(selectedFeedIds) as T
+                    return FeedViewModel(selectedFeedIds, singleChoice) as T
                 }
                 throw UnsupportedOperationException()
             }
         }
     }
 
-    class FeedViewHolder(itemView: View, listener: FeedsAdapter.Listener) : RecyclerView.ViewHolder(itemView) {
+    internal inner class FeedViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private var feed: Feed? = null
 
         private val faviconView: ImageView = itemView.findViewById(R.id.favicon)
@@ -172,7 +200,7 @@ class FeedsPickerActivity : AppActivity() {
 
         init {
             itemView.setOnClickListener {
-                feed?.let { feed -> listener.onFeedClick(feed) }
+                feed?.let { onFeedSelected(it) }
             }
         }
 
@@ -186,7 +214,7 @@ class FeedsPickerActivity : AppActivity() {
         }
     }
 
-    class FeedsAdapter(private val listener: Listener) : RecyclerView.Adapter<FeedViewHolder>() {
+    internal inner class FeedsAdapter : RecyclerView.Adapter<FeedViewHolder>() {
         var feeds: List<Feed> = emptyList()
             set(value) {
                 field = value
@@ -202,15 +230,10 @@ class FeedsPickerActivity : AppActivity() {
         override fun getItemId(position: Int): Long = feeds[position].id
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = FeedViewHolder(
-                LayoutInflater.from(parent.context).inflate(R.layout.feeds_picker_item, parent, false),
-                listener
+                LayoutInflater.from(parent.context).inflate(if (singleChoice) R.layout.feeds_picker_item__single_choice else R.layout.feeds_picker_item__multiple_choice, parent, false)
         )
 
         override fun onBindViewHolder(holder: FeedViewHolder, position: Int) = holder.onBind(feeds[position])
-
-        interface Listener {
-            fun onFeedClick(feed: Feed)
-        }
     }
 
 }
