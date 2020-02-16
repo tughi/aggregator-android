@@ -104,7 +104,7 @@ class TagSettingsActivity : AppActivity() {
         if (menu != null) {
             val tag = viewModel.tag.value
             menu.findItem(R.id.delete)?.isVisible = tag?.deletable ?: false
-            menu.findItem(R.id.add_rule)?.isVisible = tag?.id != Tags.ALL
+            menu.findItem(R.id.add_rule)?.isVisible = tag != null && tag.id != Tags.ALL
         }
 
         return true
@@ -283,7 +283,7 @@ class TagSettingsActivity : AppActivity() {
             }
 
         override fun getItemCount(): Int = when (viewModel.tagId) {
-            Tags.ALL -> 1
+            null, Tags.ALL -> 1
             else -> tagRules.size + 2
         }
 
