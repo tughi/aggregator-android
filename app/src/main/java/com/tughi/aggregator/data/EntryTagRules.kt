@@ -60,5 +60,6 @@ class TagEntryRulesQueryCriteria(val tagId: Long) : EntryTagRules.QueryCriteria 
         val selection = "etr.tag_id = ?"
         val selectionArgs = listOf<Any?>(tagId)
         query.where(selection, selectionArgs.toTypedArray())
+        query.orderBy("feed_title, condition")
     }
 }
