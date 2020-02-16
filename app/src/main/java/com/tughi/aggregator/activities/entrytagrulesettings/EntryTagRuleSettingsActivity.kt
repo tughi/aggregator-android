@@ -120,19 +120,19 @@ class EntryTagRuleSettingsActivity : AppActivity() {
                 typeView.setText(R.string.entry_tag_rule__type__global)
                 feedView.visibility = View.GONE
             }
-            // TODO: saveButton.isEnabled = viewModel.isValid()
+            saveButton.isEnabled = viewModel.canSave
         })
 
         viewModel.newFeed.observe(this, Observer { feed ->
             feedView.setText(feed?.title ?: "")
-            // TODO: saveButton.isEnabled = viewModel.isValid()
+            saveButton.isEnabled = viewModel.canSave
         })
 
         viewModel.newTag.observe(this, Observer { tag ->
             if (tag != null) {
                 tagView.setText(tag.name)
             }
-            // TODO: saveButton.isEnabled = viewModel.isValid()
+            saveButton.isEnabled = viewModel.canSave
         })
     }
 
@@ -238,6 +238,8 @@ class EntryTagRuleSettingsActivity : AppActivity() {
     }
 
     internal class EntryTagRuleViewModel(val entryTagRuleId: Long?, presetTagId: Long?, presetFeedId: Long?) : ViewModel() {
+        private var entryTagRule: EntryTagRule? = null
+
         val newType = MutableLiveData<String>()
 
         val newFeedId = MutableLiveData<Long>()
@@ -256,6 +258,7 @@ class EntryTagRuleSettingsActivity : AppActivity() {
                     val entryTagRule = EntryTagRules.queryOne(EntryTagRuleQueryCriteria(entryTagRuleId), EntryTagRule.QueryHelper)
                     if (entryTagRule != null) {
                         launch(Dispatchers.Main) {
+                            this@EntryTagRuleViewModel.entryTagRule = entryTagRule
                             newType.value = if (entryTagRule.feedId != null) TYPE_FEED else TYPE_GLOBAL
                             newFeedId.value = entryTagRule.feedId
                             newTagId.value = entryTagRule.tagId
@@ -269,9 +272,22 @@ class EntryTagRuleSettingsActivity : AppActivity() {
             }
         }
 
+        val canSave: Boolean
+            get() {
+                val entryTagRule = entryTagRule
+                val newType = newType.value
+                val newTagId = newTagId.value
+                val newFeedId = newFeedId.value
+                return when {
+                    newTagId == null || newType == null || (newType == TYPE_FEED && newFeedId == null) -> false
+                    entryTagRule != null -> entryTagRule.tagId != newTagId || (newType == TYPE_FEED && entryTagRule.feedId != newFeedId) || (newType == TYPE_GLOBAL && entryTagRule.feedId != null)
+                    else -> true
+                }
+            }
+
         fun save() {
             val entryTagRuleId = entryTagRuleId
-            val feedId = newFeedId.value
+            val feedId = if (newType.value == TYPE_FEED) newFeedId.value else null
             val tagId = newTagId.value ?: return
             val condition = ""
 
