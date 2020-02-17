@@ -308,32 +308,6 @@ object FeedUpdateHelper {
         }
     }
 
-    class EntryTagRule(
-            val id: Long,
-            val tagId: Long,
-            val condition: String,
-            val feedId: Long?
-    ) {
-        fun matches(title: String?, link: String?, content: String?): Boolean {
-            // TODO: use condition
-            return true
-        }
-
-        object QueryHelper : EntryTagRules.QueryHelper<EntryTagRule>(
-                EntryTagRules.ID,
-                EntryTagRules.TAG_ID,
-                EntryTagRules.CONDITION,
-                EntryTagRules.FEED_ID
-        ) {
-            override fun createRow(cursor: Cursor): EntryTagRule = EntryTagRule(
-                    cursor.getLong(0),
-                    cursor.getLong(1),
-                    cursor.getString(2),
-                    if (cursor.isNull(3)) null else cursor.getLong(3)
-            )
-        }
-    }
-
     class UnexpectedHttpResponseException(response: Response) : Exception("Unexpected HTTP response: $response")
 
 }

@@ -20,6 +20,11 @@ object EntryTags : Repository<EntryTags.Column, EntryTags.TableColumn, EntryTags
         override val selectionArgs: Array<Any>? = arrayOf(entryId, tagId)
     }
 
+    class DeleteRuleTagsCriteria(entryTagRuleId: Long) : DeleteCriteria {
+        override val selection: String = "entry_tag_rule_id = ?"
+        override val selectionArgs: Array<Any>? = arrayOf(entryTagRuleId)
+    }
+
     interface QueryCriteria : Repository.QueryCriteria<Column> {
         fun config(query: Query.Builder, columns: Array<out Column>)
     }

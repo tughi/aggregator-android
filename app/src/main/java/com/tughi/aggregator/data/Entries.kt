@@ -237,3 +237,16 @@ class UnreadEntriesQueryCriteria(private val queryCriteria: EntriesQueryCriteria
         query.where("$selection AND (e.read_time = 0 OR e.pinned_time != 0)", selectionArgs.toTypedArray())
     }
 }
+
+class AllEntriesQueryCriteria : Entries.QueryCriteria {
+    override fun config(query: Query.Builder) {
+        query.orderBy(Entries.INSERT_TIME.projection)
+    }
+}
+
+class AllFeedEntriesQueryCriteria(private val feedId: Long) : Entries.QueryCriteria {
+    override fun config(query: Query.Builder) {
+        query.where("e.feed_id = ?", arrayOf(feedId))
+        query.orderBy("e.insert_time")
+    }
+}

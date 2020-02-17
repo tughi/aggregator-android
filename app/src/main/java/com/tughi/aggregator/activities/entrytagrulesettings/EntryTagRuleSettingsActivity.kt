@@ -27,6 +27,7 @@ import com.tughi.aggregator.data.EntryTagRules
 import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.Tags
 import com.tughi.aggregator.data.UpdateEntryTagRuleCriteria
+import com.tughi.aggregator.services.EntryTagRuleHelper
 import com.tughi.aggregator.widgets.DropDownButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -299,15 +300,15 @@ class EntryTagRuleSettingsActivity : AppActivity() {
                             EntryTagRules.TAG_ID to tagId,
                             EntryTagRules.CONDITION to condition
                     )
-                    // TODO: delete existing tags
+                    EntryTagRuleHelper.apply(entryTagRuleId, deleteOldTags = true)
                 } else {
-                    EntryTagRules.insert(
+                    val id = EntryTagRules.insert(
                             EntryTagRules.FEED_ID to feedId,
                             EntryTagRules.TAG_ID to tagId,
                             EntryTagRules.CONDITION to condition
                     )
+                    EntryTagRuleHelper.apply(id)
                 }
-                // TODO: run this rule
             }
         }
 
