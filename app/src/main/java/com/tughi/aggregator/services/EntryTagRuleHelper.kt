@@ -1,6 +1,9 @@
 package com.tughi.aggregator.services
 
 import android.database.Cursor
+import android.database.SQLException
+import android.text.format.DateUtils
+import androidx.collection.LongSparseArray
 import com.tughi.aggregator.data.AllEntriesQueryCriteria
 import com.tughi.aggregator.data.AllFeedEntriesQueryCriteria
 import com.tughi.aggregator.data.Database
@@ -8,13 +11,29 @@ import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.data.EntryTagRuleQueryCriteria
 import com.tughi.aggregator.data.EntryTagRules
 import com.tughi.aggregator.data.EntryTags
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 object EntryTagRuleHelper {
 
+    private val activeJobs = LongSparseArray<Job>()
+
     fun apply(entryTagRuleId: Long, deleteOldTags: Boolean = false) {
-        GlobalScope.launch {
+        val job = GlobalScope.launch {
+            val currentJob = coroutineContext[Job]
+
+            val oldJob = synchronized(activeJobs) {
+                val oldJob = activeJobs.get(entryTagRuleId)
+                activeJobs.put(entryTagRuleId, currentJob)
+                return@synchronized oldJob
+            }
+
+            oldJob?.cancelAndJoin()
+
             val entryTagRule = EntryTagRules.queryOne(EntryTagRuleQueryCriteria(entryTagRuleId), EntryTagRule.QueryHelper) ?: return@launch
             val entryTagTime = System.currentTimeMillis()
 
@@ -24,16 +43,24 @@ object EntryTagRuleHelper {
 
             val entriesQueryCriteria = if (entryTagRule.feedId != null) AllFeedEntriesQueryCriteria(entryTagRule.feedId) else AllEntriesQueryCriteria()
 
-            val matchedEntryIds = Longs(100)
+            val matchedEntryIds = Longs(1000)
 
             Entries.query(entriesQueryCriteria, object : Entries.QueryHelper<Any>(Entries.ID, Entries.TITLE) {
+                var lastCommitTime = entryTagTime
+
                 override fun createRow(cursor: Cursor): Any {
+                    if (!isActive) {
+                        throw CancellationException()
+                    }
+
                     val entryId = cursor.getLong(0)
                     val entryTitle = cursor.getString(1)
 
                     if (entryTagRule.matches(entryTitle, null, null)) {
-                        if (matchedEntryIds.isFull()) {
+                        val currentTime = System.currentTimeMillis()
+                        if (matchedEntryIds.isFull() || currentTime - lastCommitTime > DateUtils.SECOND_IN_MILLIS) {
                             tagEntries(matchedEntryIds, entryTagRule, entryTagTime)
+                            lastCommitTime = System.currentTimeMillis()
                         }
 
                         matchedEntryIds.add(entryId)
@@ -45,22 +72,32 @@ object EntryTagRuleHelper {
 
             tagEntries(matchedEntryIds, entryTagRule, entryTagTime)
         }
+
+        job.invokeOnCompletion {
+            synchronized(activeJobs) { activeJobs.remove(entryTagRuleId, job) }
+        }
     }
 
     private fun tagEntries(entryIds: Longs, entryTagRule: EntryTagRule, entryTagTime: Long) {
-        Database.transaction {
-            val array = entryIds.array
-            val arraySize = entryIds.size
-            for (index in 0 until arraySize) {
-                EntryTags.insert(
-                        EntryTags.ENTRY_ID to array[index],
-                        EntryTags.TAG_ID to entryTagRule.tagId,
-                        EntryTags.TAG_TIME to entryTagTime,
-                        EntryTags.ENTRY_TAG_RULE_ID to entryTagRule.id
-                )
+        val arraySize = entryIds.size
+        if (arraySize > 0) {
+            Database.transaction {
+                val array = entryIds.array
+                for (index in 0 until arraySize) {
+                    try {
+                        EntryTags.insert(
+                                EntryTags.ENTRY_ID to array[index],
+                                EntryTags.TAG_ID to entryTagRule.tagId,
+                                EntryTags.TAG_TIME to entryTagTime,
+                                EntryTags.ENTRY_TAG_RULE_ID to entryTagRule.id
+                        )
+                    } catch (_: SQLException) {
+                        // ignored... probably, entry doesn't exist anymore
+                    }
+                }
             }
+            entryIds.clear()
         }
-        entryIds.clear()
     }
 
     internal class Longs(private val capacity: Int) {
