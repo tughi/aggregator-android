@@ -17,7 +17,6 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.core.widget.doAfterTextChanged
-import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
@@ -194,35 +193,32 @@ class TagSettingsActivity : AppActivity() {
         }
     }
 
-    class EntryTag(val entryId: Long) {
-        object QueryHelper : EntryTags.QueryHelper<EntryTag>(
-                EntryTags.ENTRY_ID
-        ) {
-            override fun createRow(cursor: Cursor) = EntryTag(
-                    cursor.getLong(0)
-            )
-        }
-    }
-
     class TagSettingsViewModel(val tagId: Long?) : ViewModel() {
 
-        val tag = MediatorLiveData<Tag>()
+        val tag = MutableLiveData<Tag>()
+        val manualTags = MutableLiveData<Int>()
 
         val tagRules = EntryTagRules.liveQuery(TagEntryRulesQueryCriteria(tagId ?: 0), TagRule.QueryHelper)
-
-        val manualTags = EntryTags.liveQueryCount(EntryTags.ManuallyTaggedEntriesQueryCriteria(tagId ?: 0), EntryTag.QueryHelper)
 
         var newTagName = MutableLiveData<String>()
 
         init {
             if (tagId != null) {
-                val liveTag = Tags.liveQueryOne(Tags.QueryTagCriteria(tagId), Tag.QueryHelper)
-                tag.addSource(liveTag) {
-                    if (it != null) {
-                        newTagName.value = it.name
+                GlobalScope.launch {
+                    Tags.queryOne(Tags.QueryTagCriteria(tagId), Tag.QueryHelper)?.let {
+                        tag.postValue(it)
+                        newTagName.postValue(it.name)
                     }
-                    tag.value = it
-                    tag.removeSource(liveTag)
+                }
+                GlobalScope.launch {
+                    manualTags.postValue(
+                            EntryTags.queryCount(
+                                    EntryTags.ManuallyTaggedEntriesQueryCriteria(tagId),
+                                    object : EntryTags.QueryHelper<Any>(EntryTags.ENTRY_ID) {
+                                        override fun createRow(cursor: Cursor) = Unit
+                                    }
+                            )
+                    )
                 }
             }
         }
