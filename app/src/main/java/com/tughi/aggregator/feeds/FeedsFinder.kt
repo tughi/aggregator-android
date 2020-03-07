@@ -5,7 +5,7 @@ import com.tughi.aggregator.utilities.toAbsoluteUrl
 import java.io.BufferedReader
 import java.io.CharArrayWriter
 import java.io.Reader
-import java.util.*
+import java.util.HashMap
 import java.util.regex.Pattern
 
 class FeedsFinder(private val listener: Listener) {
@@ -39,8 +39,8 @@ class FeedsFinder(private val listener: Listener) {
             val attributes = HashMap<String, String>()
             val attributeMatcher = attributePattern.matcher(linkAttributes)
             while (attributeMatcher.find()) {
-                val name = attributeMatcher.group(1)
-                var value = attributeMatcher.group(2)
+                val name = attributeMatcher.group(1) ?: throw IllegalStateException()
+                var value = attributeMatcher.group(2) ?: throw IllegalStateException()
                 if (value[0] == '"' || value[0] == '\'') {
                     value = value.substring(1, value.length - 1)
                 }
