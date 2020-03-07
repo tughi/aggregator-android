@@ -15,7 +15,7 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -34,7 +34,7 @@ class TagsFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val fragmentView = inflater.inflate(R.layout.tags_fragment, container, false)
 
-        val viewModel = ViewModelProviders.of(this).get(TagsViewModel::class.java)
+        val viewModel = ViewModelProvider(this).get(TagsViewModel::class.java)
 
         val tagsRecyclerView = fragmentView.findViewById<RecyclerView>(R.id.tags)
         val progressBar = fragmentView.findViewById<ProgressBar>(R.id.progress)
@@ -47,7 +47,7 @@ class TagsFragment : Fragment() {
             }
 
             override fun onTagClicked(tag: Tag) {
-                fragmentManager!!.beginTransaction()
+                parentFragmentManager.beginTransaction()
                         .setCustomAnimations(R.anim.slide_in, 0, 0, R.anim.fade_out)
                         .add(id, TagEntriesFragment.newInstance(tagId = tag.id), "tag")
                         .addToBackStack(null)
@@ -60,7 +60,7 @@ class TagsFragment : Fragment() {
         }
 
         val tagsAdapter = TagsAdapter(tagsAdapterListener).also { tagsRecyclerView.adapter = it }
-        viewModel.tags.observe(this, Observer { tags ->
+        viewModel.tags.observe(viewLifecycleOwner, Observer { tags ->
             progressBar.visibility = if (tags != null) View.GONE else View.VISIBLE
             tagsAdapter.submitList(tags)
         })

@@ -15,7 +15,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.feedspicker.FeedsPickerActivity
@@ -64,7 +63,7 @@ class EntryTagRuleSettingsActivity : AppActivity() {
         val presetTagId = if (intent.hasExtra(EXTRA_PRESET_TAG_ID)) intent.getLongExtra(EXTRA_PRESET_TAG_ID, 0) else null
 
         val viewModelFactory = EntryTagRuleViewModel.Factory(entryTagRuleId, presetTagId, presetFeedId)
-        ViewModelProviders.of(this, viewModelFactory).get(EntryTagRuleViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(EntryTagRuleViewModel::class.java)
     }
 
     private lateinit var typeView: DropDownButton

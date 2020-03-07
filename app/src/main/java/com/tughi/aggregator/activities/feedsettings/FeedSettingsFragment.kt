@@ -16,7 +16,6 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.cleanupmode.CleanupModeActivity
 import com.tughi.aggregator.activities.cleanupmode.startCleanupModeActivity
@@ -87,10 +86,10 @@ class FeedSettingsFragment : Fragment() {
             FeedEntryTagRulesActivity.startForResult(this, REQUEST_ENTRY_RULES, feedId = feed.id)
         }
 
-        val feedId = arguments!!.getLong(ARG_FEED_ID)
-        viewModel = ViewModelProviders.of(this, FeedSettingsViewModel.Factory(feedId)).get(FeedSettingsViewModel::class.java)
+        val feedId = requireArguments().getLong(ARG_FEED_ID)
+        viewModel = ViewModelProvider(this, FeedSettingsViewModel.Factory(feedId)).get(FeedSettingsViewModel::class.java)
 
-        viewModel.feed.observe(this, Observer { feed ->
+        viewModel.feed.observe(viewLifecycleOwner, Observer { feed ->
             if (feed != null) {
                 urlEditText.setText(feed.url)
                 titleEditText.setText(feed.customTitle ?: feed.title)
@@ -99,7 +98,7 @@ class FeedSettingsFragment : Fragment() {
             }
         })
 
-        viewModel.entryTagRuleCount.observe(this, Observer { count ->
+        viewModel.entryTagRuleCount.observe(viewLifecycleOwner, Observer { count ->
             entryTagRulesView.setText(resources.getQuantityString(R.plurals.feed_settings__entry_tag_rules, count, count))
         })
 
@@ -180,7 +179,7 @@ class FeedSettingsFragment : Fragment() {
 
     private fun onUnsubscribe() {
         viewModel.feed.value?.let {
-            UnsubscribeDialogFragment.show(fragmentManager!!, it.id, it.customTitle ?: it.title, true)
+            UnsubscribeDialogFragment.show(parentFragmentManager, it.id, it.customTitle ?: it.title, true)
         }
     }
 

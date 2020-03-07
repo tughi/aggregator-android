@@ -20,7 +20,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
@@ -73,7 +72,7 @@ class TagsPickerActivity : AppActivity() {
 
         val selectedTagIds = intent.getLongArrayExtra(EXTRA_SELECTED_TAGS) ?: LongArray(0)
         val viewModelFactory = TagsPickerViewModel.Factory(selectedTagIds, singleChoice)
-        val viewModel = ViewModelProviders.of(this, viewModelFactory).get(TagsPickerViewModel::class.java)
+        val viewModel = ViewModelProvider(this, viewModelFactory).get(TagsPickerViewModel::class.java)
 
         setContentView(R.layout.tags_picker_activity)
         val recyclerView = findViewById<RecyclerView>(R.id.list)
@@ -106,7 +105,7 @@ class TagsPickerActivity : AppActivity() {
         }
         if (singleChoice) {
             selectButton.isEnabled = false
-            viewModel.tags.observe(this, Observer { tags ->
+            viewModel.tags.observe(this, Observer { _ ->
                 selectButton.isEnabled = viewModel.tags.value?.has { it.selected } ?: false
             })
         }

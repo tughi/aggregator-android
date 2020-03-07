@@ -13,7 +13,7 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputLayout
 import com.tughi.aggregator.OpmlImportActivity
@@ -44,8 +44,8 @@ class SubscribeSearchFragment : Fragment(), SubscribeSearchFragmentAdapterListen
         feedsRecyclerView = view.findViewById(R.id.feeds)
 
         val activity = activity as SubscribeActivity
-        viewModel = ViewModelProviders.of(activity).get(SubscribeSearchFragmentViewModel::class.java)
-        viewModel.state.observe(this, Observer {
+        viewModel = ViewModelProvider(activity).get(SubscribeSearchFragmentViewModel::class.java)
+        viewModel.state.observe(viewLifecycleOwner, Observer {
             updateUI(it)
         })
 
@@ -118,7 +118,7 @@ class SubscribeSearchFragment : Fragment(), SubscribeSearchFragmentAdapterListen
     private fun updateUI(state: SubscribeSearchFragmentViewModel.State) {
         urlEditText.isEnabled = !state.loading
 
-        if (state.loading || !state.feeds.isEmpty() || state.message != null) {
+        if (state.loading || state.feeds.isNotEmpty() || state.message != null) {
             introView.visibility = View.GONE
             feedsRecyclerView.visibility = View.VISIBLE
 

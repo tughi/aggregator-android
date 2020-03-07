@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
+import kotlin.system.exitProcess
 
 object Database {
 
@@ -26,26 +27,16 @@ object Database {
             SupportSQLiteOpenHelper.Configuration.builder(App.instance)
                     .name(DATABASE_NAME)
                     .callback(object : SupportSQLiteOpenHelper.Callback(23) {
-                        override fun onConfigure(db: SupportSQLiteDatabase?) {
-                            db?.apply {
-                                setForeignKeyConstraintsEnabled(true)
-                                enableWriteAheadLogging()
-                            }
+                        override fun onConfigure(db: SupportSQLiteDatabase) {
+                            db.setForeignKeyConstraintsEnabled(true)
+                            db.enableWriteAheadLogging()
                         }
 
-                        override fun onCreate(database: SupportSQLiteDatabase?) {
-                            if (database == null) {
-                                throw IllegalStateException()
-                            }
-
+                        override fun onCreate(database: SupportSQLiteDatabase) {
                             executeScript(database, 0)
                         }
 
-                        override fun onUpgrade(database: SupportSQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-                            if (database == null) {
-                                throw IllegalStateException()
-                            }
-
+                        override fun onUpgrade(database: SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) {
                             var databaseVersion = database.version
                             while (databaseVersion != newVersion) {
                                 executeScript(database, databaseVersion)
@@ -99,17 +90,17 @@ object Database {
                             }
                         }
 
-                        override fun onDowngrade(database: SupportSQLiteDatabase?, oldVersion: Int, newVersion: Int) {
+                        override fun onDowngrade(database: SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) {
                             dropDatabase(database, "Cannot downgrade from version $oldVersion to $newVersion")
                         }
 
-                        private fun dropDatabase(database: SupportSQLiteDatabase?, message: String) {
+                        private fun dropDatabase(database: SupportSQLiteDatabase, message: String) {
                             Log.e(javaClass.name, message)
                             onCorruption(database)
-                            System.exit(1)
+                            exitProcess(1)
                         }
 
-                        override fun onOpen(db: SupportSQLiteDatabase?) {
+                        override fun onOpen(db: SupportSQLiteDatabase) {
                             GlobalScope.launch(Dispatchers.IO) {
                                 restoreFeeds()
                             }
@@ -217,7 +208,7 @@ object Database {
     }
 
     fun <T> liveQuery(query: Query, transform: (Cursor) -> T): LiveData<T> {
-        val liveData = object : LiveData<T>(), InvalidationObserver {
+        return object : LiveData<T>(), InvalidationObserver {
             private var inactivationTime = 0L
 
             override fun onActive() {
@@ -268,8 +259,6 @@ object Database {
                 }
             }
         }
-
-        return liveData
     }
 
     private interface InvalidationObserver {

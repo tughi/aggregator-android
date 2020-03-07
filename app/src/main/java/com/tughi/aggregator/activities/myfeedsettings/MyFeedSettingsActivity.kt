@@ -3,7 +3,6 @@ package com.tughi.aggregator.activities.myfeedsettings
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import com.tughi.aggregator.AppActivity
 
 class MyFeedSettingsActivity : AppActivity() {
@@ -20,7 +19,7 @@ class MyFeedSettingsActivity : AppActivity() {
         val fragmentManager = supportFragmentManager
         var fragment = fragmentManager.findFragmentById(android.R.id.content)
         if (fragment == null) {
-            fragment = Fragment.instantiate(this, MyFeedSettingsFragment::class.java.name)
+            fragment = MyFeedSettingsFragment()
             fragmentManager.beginTransaction()
                     .replace(android.R.id.content, fragment)
                     .commit()

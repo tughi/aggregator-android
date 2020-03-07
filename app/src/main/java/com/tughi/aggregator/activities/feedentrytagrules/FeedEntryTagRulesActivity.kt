@@ -14,7 +14,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
@@ -41,7 +40,7 @@ class FeedEntryTagRulesActivity : AppActivity() {
     private val feedId: Long by lazy { intent.getLongExtra(EXTRA_FEED_ID, 0) }
     private val viewModel: FeedEntryTagRulesViewModel by lazy {
         val viewModelFactory = FeedEntryTagRulesViewModel.Factory(feedId)
-        ViewModelProviders.of(this, viewModelFactory).get(FeedEntryTagRulesViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(FeedEntryTagRulesViewModel::class.java)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

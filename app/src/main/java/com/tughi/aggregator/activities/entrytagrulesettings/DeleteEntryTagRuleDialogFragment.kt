@@ -30,10 +30,10 @@ class DeleteEntryTagRuleDialogFragment : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val arguments = arguments!!
+        val arguments = requireArguments()
         val entryTagRuleId = arguments.getLong(ARG_ENTRY_TAG_RULE_ID)
         val finishActivity = arguments.getBoolean(ARG_FINISH_ACTIVITY)
-        return AlertDialog.Builder(context!!)
+        return AlertDialog.Builder(requireContext())
                 .setMessage(R.string.entry_tag_rule__delete__message)
                 .setNegativeButton(R.string.action__no, null)
                 .setPositiveButton(R.string.action__yes) { _, _ ->

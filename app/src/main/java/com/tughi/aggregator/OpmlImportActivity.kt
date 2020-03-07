@@ -15,7 +15,7 @@ import android.widget.TextView
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -95,7 +95,7 @@ class OpmlImportActivity : AppActivity() {
             setHomeAsUpIndicator(R.drawable.action_back)
         }
 
-        viewModel = ViewModelProviders.of(this).get(OpmlImportViewModel::class.java)
+        viewModel = ViewModelProvider(this).get(OpmlImportViewModel::class.java)
 
         val feedsAdapter = OpmlFeedsAdapter(viewModel)
 
@@ -167,8 +167,8 @@ class OpmlImportActivity : AppActivity() {
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item?.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
             android.R.id.home -> finish()
             R.id.invert_selection -> viewModel.toggleAllFeeds()
             else -> return super.onOptionsItemSelected(item)

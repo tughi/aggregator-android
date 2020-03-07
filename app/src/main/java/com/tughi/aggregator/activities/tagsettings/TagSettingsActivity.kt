@@ -21,7 +21,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.App
 import com.tughi.aggregator.AppActivity
@@ -59,7 +58,7 @@ class TagSettingsActivity : AppActivity() {
         super.onCreate(savedInstanceState)
 
         val viewModelFactory = TagSettingsViewModel.Factory(intent.getLongExtra(EXTRA_TAG_ID, -1L).let { if (it == -1L) null else it })
-        viewModel = ViewModelProviders.of(this, viewModelFactory).get(TagSettingsViewModel::class.java)
+        viewModel = ViewModelProvider(this, viewModelFactory).get(TagSettingsViewModel::class.java)
 
         setContentView(R.layout.tag_settings_activity)
 

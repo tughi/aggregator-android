@@ -9,7 +9,7 @@ import android.widget.Button
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.subscribe.SubscribeActivity
@@ -27,14 +27,14 @@ class FeedListFragment : Fragment(), FeedsFragmentFeedAdapterListener {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val fragmentView = inflater.inflate(R.layout.feeds_fragment, container, false)
 
-        viewModel = ViewModelProviders.of(this).get(FeedsFragmentViewModel::class.java)
+        viewModel = ViewModelProvider(this).get(FeedsFragmentViewModel::class.java)
 
         val feedsRecyclerView = fragmentView.findViewById<RecyclerView>(R.id.feeds)
         val emptyView = fragmentView.findViewById<View>(R.id.empty)
         val progressBar = fragmentView.findViewById<View>(R.id.progress)
 
         feedsRecyclerView.adapter = FeedsFragmentFeedAdapter(this).also { adapter ->
-            viewModel.feeds.observe(this, Observer { feeds ->
+            viewModel.feeds.observe(viewLifecycleOwner, Observer { feeds ->
                 adapter.submitList(feeds)
 
                 progressBar.visibility = View.GONE
@@ -80,7 +80,7 @@ class FeedListFragment : Fragment(), FeedsFragmentFeedAdapterListener {
     }
 
     override fun onFeedClicked(feed: FeedsFragmentViewModel.Feed) {
-        fragmentManager!!.beginTransaction()
+        parentFragmentManager.beginTransaction()
                 .setCustomAnimations(R.anim.slide_in, 0, 0, R.anim.fade_out)
                 .add(id, FeedEntriesFragment.newInstance(feedId = feed.id), TAG)
                 .addToBackStack(null)

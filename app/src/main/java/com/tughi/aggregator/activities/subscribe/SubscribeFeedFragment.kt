@@ -12,7 +12,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.updatemode.UpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.startUpdateModeActivity
@@ -51,9 +51,9 @@ class SubscribeFeedFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val fragmentView = inflater.inflate(R.layout.subscribe_feed_fragment, container, false)
-        val arguments = arguments!!
+        val arguments = requireArguments()
 
-        viewModel = ViewModelProviders.of(this, SubscribeFeedFragmentViewModel.Factory())
+        viewModel = ViewModelProvider(this, SubscribeFeedFragmentViewModel.Factory())
                 .get(SubscribeFeedFragmentViewModel::class.java)
 
         urlTextView = fragmentView.findViewById(R.id.url)
@@ -68,7 +68,7 @@ class SubscribeFeedFragment : Fragment() {
             startUpdateModeActivity(REQUEST_UPDATE_MODE, currentUpdateMode)
         }
 
-        viewModel.updateMode.observe(this, Observer {
+        viewModel.updateMode.observe(viewLifecycleOwner, Observer {
             updateModeTextView.setText(it.toString(updateModeTextView.context))
         })
 
@@ -90,7 +90,7 @@ class SubscribeFeedFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.add -> {
-                val arguments = arguments!!
+                val arguments = requireArguments()
                 val title = arguments.getString(ARG_TITLE)!!
                 val customTitle = titleTextView.text.toString()
                 val link = arguments.getString(ARG_LINK)

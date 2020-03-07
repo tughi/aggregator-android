@@ -107,12 +107,7 @@ class MainActivity : AppActivity() {
         bottomSheetView.findViewById<View>(R.id.theme_light).setOnClickListener(onThemeClickListener)
 
         if (savedInstanceState == null) {
-            val activeTab: String?
-            if (intent.action == ACTION_VIEW_MY_FEED) {
-                activeTab = TAB_MY_FEED
-            } else {
-                activeTab = App.preferences.getString(PREF_ACTIVE_TAB, null)
-            }
+            val activeTab: String? = if (intent.action == ACTION_VIEW_MY_FEED) TAB_MY_FEED else App.preferences.getString(PREF_ACTIVE_TAB, null)
 
             bottomNavigationView.selectedItemId = when (activeTab) {
                 TAB_FEEDS -> R.id.navigation_feeds

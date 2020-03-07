@@ -31,11 +31,11 @@ class DeleteTagDialogFragment : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val arguments = arguments!!
+        val arguments = requireArguments()
         val tagId = arguments.getLong(ARG_TAG_ID)
         val tagName = arguments.getString(ARG_TAG_NAME)
         val finishActivity = arguments.getBoolean(ARG_FINISH_ACTIVITY)
-        return AlertDialog.Builder(context!!)
+        return AlertDialog.Builder(requireContext())
                 .setTitle(tagName)
                 .setMessage(R.string.delete_tag__message)
                 .setNegativeButton(R.string.action__no, null)

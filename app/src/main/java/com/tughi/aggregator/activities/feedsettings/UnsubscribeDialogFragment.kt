@@ -32,11 +32,11 @@ class UnsubscribeDialogFragment : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val arguments = arguments!!
+        val arguments = requireArguments()
         val feedId = arguments.getLong(ARG_FEED_ID)
         val feedTitle = arguments.getString(ARG_FEED_TITLE)
         val finishActivity = arguments.getBoolean(ARG_FINISH_ACTIVITY)
-        return AlertDialog.Builder(context!!)
+        return AlertDialog.Builder(requireContext())
                 .setTitle(feedTitle)
                 .setMessage(R.string.unsubscribe_feed__message)
                 .setNegativeButton(R.string.action__no, null)

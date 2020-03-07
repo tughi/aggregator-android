@@ -5,7 +5,6 @@ import android.os.Bundle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import com.tughi.aggregator.data.EntriesQueryCriteria
 import com.tughi.aggregator.data.TagEntriesQueryCriteria
 import com.tughi.aggregator.data.Tags
@@ -25,7 +24,7 @@ class TagEntriesFragment : EntriesFragment() {
         }
     }
 
-    private val tagId by lazy { arguments!!.getLong(ARGUMENT_TAG_ID) }
+    private val tagId by lazy { requireArguments().getLong(ARGUMENT_TAG_ID) }
 
     override val initialQueryCriteria: EntriesQueryCriteria
         get() = when (tagId) {
@@ -38,8 +37,8 @@ class TagEntriesFragment : EntriesFragment() {
         super.onCreate(savedInstanceState)
 
         val viewModelFactory = TagEntriesViewModel.Factory(tagId)
-        val viewModel = ViewModelProviders.of(this, viewModelFactory).get(TagEntriesViewModel::class.java)
-        viewModel.tag.observe(this, Observer { tag ->
+        val viewModel = ViewModelProvider(this, viewModelFactory).get(TagEntriesViewModel::class.java)
+        viewModel.tag.observe(viewLifecycleOwner, Observer { tag ->
             if (tag != null) {
                 setTitle(tag.name)
             }
@@ -47,7 +46,7 @@ class TagEntriesFragment : EntriesFragment() {
     }
 
     override fun onNavigationClick() {
-        fragmentManager?.popBackStack()
+        parentFragmentManager.popBackStack()
     }
 
     class Tag(val name: String) {

@@ -15,7 +15,7 @@ import kotlin.coroutines.resume
 
 object Http {
 
-    val client: OkHttpClient = OkHttpClient.Builder()
+    private val client: OkHttpClient = OkHttpClient.Builder()
             .connectTimeout(5, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .addInterceptor(UserAgentInterceptor())
@@ -44,8 +44,8 @@ object Http {
                 it.resume(Success(response))
             }
 
-            override fun onFailure(call: Call, exception: IOException) {
-                it.resume(Failure(exception))
+            override fun onFailure(call: Call, e: IOException) {
+                it.resume(Failure(e))
             }
         })
     }

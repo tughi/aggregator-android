@@ -17,7 +17,6 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
@@ -45,7 +44,7 @@ class EntryTagsActivity : AppActivity() {
 
     private val viewModel: EntryTagsViewModel by lazy {
         val viewModelFactory = EntryTagsViewModel.Factory(entryId)
-        ViewModelProviders.of(this, viewModelFactory).get(EntryTagsViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(EntryTagsViewModel::class.java)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

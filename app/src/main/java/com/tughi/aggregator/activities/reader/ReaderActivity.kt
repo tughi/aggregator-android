@@ -14,7 +14,6 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.viewpager.widget.ViewPager
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
@@ -67,7 +66,7 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
         val queryCriteria = intent.getSerializableExtra(EXTRA_ENTRIES_QUERY_CRITERIA) as Entries.QueryCriteria
 
         val viewModelFactory = ReaderViewModel.Factory(queryCriteria)
-        viewModel = ViewModelProviders.of(this, viewModelFactory).get(ReaderViewModel::class.java)
+        viewModel = ViewModelProvider(this, viewModelFactory).get(ReaderViewModel::class.java)
 
         viewModel.entries.observe(this, Observer { entries ->
             this.entries = entries
@@ -106,8 +105,8 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
         super.onSaveInstanceState(outState)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item?.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
             android.R.id.home -> {
                 finish()
             }
@@ -144,15 +143,17 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
         // nothing to do here
     }
 
+    @Suppress("DEPRECATION")
     private inner class ReaderAdapter : FragmentStatePagerAdapter(supportFragmentManager) {
         override fun getCount(): Int = entries.size
 
         override fun getItem(position: Int): Fragment {
             val entry = entries[position]
-            val arguments = Bundle().apply {
-                putLong(ReaderFragment.ARG_ENTRY_ID, entry.id)
+            return ReaderFragment().apply {
+                arguments = Bundle().apply {
+                    putLong(ReaderFragment.ARG_ENTRY_ID, entry.id)
+                }
             }
-            return Fragment.instantiate(this@ReaderActivity, ReaderFragment::class.java.name, arguments)
         }
     }
 

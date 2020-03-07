@@ -15,7 +15,7 @@ import androidx.annotation.StringRes
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -58,7 +58,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
         val fragmentView = inflater.inflate(R.layout.entry_list_fragment, container, false)
 
         val viewModelFactory = EntriesFragmentViewModel.Factory(initialQueryCriteria)
-        viewModel = ViewModelProviders.of(this, viewModelFactory).get(EntriesFragmentViewModel::class.java)
+        viewModel = ViewModelProvider(this, viewModelFactory).get(EntriesFragmentViewModel::class.java)
 
         val progressBar = fragmentView.findViewById<ProgressBar>(R.id.progress)
 
@@ -76,7 +76,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
         val adapter = EntriesFragmentEntryAdapter(this)
         entriesRecyclerView.adapter = adapter
 
-        viewModel.items.observe(this, Observer { items ->
+        viewModel.items.observe(viewLifecycleOwner, Observer { items ->
             adapter.items = items
 
             if (items == null) {
@@ -144,7 +144,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
         toolbar.inflateMenu(R.menu.entry_list_fragment)
         toolbar.setOnMenuItemClickListener(this)
 
-        viewModel.entriesQueryCriteria.observe(this, Observer { entriesQueryCriteria ->
+        viewModel.entriesQueryCriteria.observe(viewLifecycleOwner, Observer { entriesQueryCriteria ->
             toolbar.menu?.let {
                 val sortMenuItemId = when (entriesQueryCriteria.sortOrder) {
                     Entries.SortOrder.ByDateAscending -> R.id.sort_by_date_asc
@@ -159,7 +159,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
 
         val unreadEntriesTextView: TextView = fragmentView.findViewById(R.id.unread_entries)
 
-        viewModel.unreadEntriesCount.observe(this, Observer { unreadEntriesCount ->
+        viewModel.unreadEntriesCount.observe(viewLifecycleOwner, Observer { unreadEntriesCount ->
             unreadEntriesTextView.text = if (unreadEntriesCount > 0) "%d".format(unreadEntriesCount) else ""
         })
 

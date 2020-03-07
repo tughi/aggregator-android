@@ -19,7 +19,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
@@ -51,7 +50,7 @@ class FeedsPickerActivity : AppActivity() {
     private val viewModel by lazy {
         val selectedFeedIds = intent.getLongArrayExtra(EXTRA_SELECTED_FEEDS) ?: LongArray(0)
         val viewModelFactory = FeedViewModel.Factory(selectedFeedIds, singleChoice)
-        return@lazy ViewModelProviders.of(this, viewModelFactory).get(FeedViewModel::class.java)
+        return@lazy ViewModelProvider(this, viewModelFactory).get(FeedViewModel::class.java)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

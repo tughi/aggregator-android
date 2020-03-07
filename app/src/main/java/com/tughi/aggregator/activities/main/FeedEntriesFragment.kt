@@ -2,21 +2,21 @@ package com.tughi.aggregator.activities.main
 
 import android.os.Bundle
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.data.EntriesQueryCriteria
 import com.tughi.aggregator.data.FeedEntriesQueryCriteria
 import com.tughi.aggregator.preferences.EntryListSettings
 
 class FeedEntriesFragment : EntriesFragment() {
 
-    private val feedId by lazy { arguments!!.getLong(ARGUMENT_FEED_ID) }
+    private val feedId by lazy { requireArguments().getLong(ARGUMENT_FEED_ID) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val viewModelFactory = FeedEntriesFragmentViewModel.Factory(feedId)
-        val viewModel = ViewModelProviders.of(this, viewModelFactory).get(FeedEntriesFragmentViewModel::class.java)
-        viewModel.feed.observe(this, Observer { feed ->
+        val viewModel = ViewModelProvider(this, viewModelFactory).get(FeedEntriesFragmentViewModel::class.java)
+        viewModel.feed.observe(viewLifecycleOwner, Observer { feed ->
             if (feed != null) {
                 setTitle(feed.title)
             }
@@ -27,7 +27,7 @@ class FeedEntriesFragment : EntriesFragment() {
         get() = FeedEntriesQueryCriteria(feedId = feedId, sessionTime = System.currentTimeMillis(), showRead = EntryListSettings.showReadEntries, sortOrder = EntryListSettings.entriesSortOrder)
 
     override fun onNavigationClick() {
-        fragmentManager?.popBackStack()
+        parentFragmentManager.popBackStack()
     }
 
     companion object {

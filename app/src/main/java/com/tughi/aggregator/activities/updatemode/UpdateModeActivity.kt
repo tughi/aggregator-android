@@ -46,7 +46,7 @@ class UpdateModeActivity : AppActivity() {
 
         setContentView(R.layout.update_mode_activity)
 
-        val currentUpdateMode = UpdateMode.deserialize(intent.getStringExtra(EXTRA_UPDATE_MODE))
+        val currentUpdateMode = UpdateMode.deserialize(intent.getStringExtra(EXTRA_UPDATE_MODE) ?: "")
 
         val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
 
@@ -88,8 +88,8 @@ class UpdateModeActivity : AppActivity() {
         return result
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item?.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
             android.R.id.home -> {
                 // ignored
             }

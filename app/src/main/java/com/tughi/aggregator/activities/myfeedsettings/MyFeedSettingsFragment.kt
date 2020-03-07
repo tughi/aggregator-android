@@ -15,7 +15,7 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.NOTIFICATION_CHANNEL__MY_FEED
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.tagspicker.TagsPickerActivity
@@ -31,7 +31,7 @@ import com.tughi.aggregator.preferences.MyFeedSettings
 
 class MyFeedSettingsFragment : Fragment() {
 
-    private val viewModel by lazy { ViewModelProviders.of(this).get(MyFeedSettingsViewModel::class.java) }
+    private val viewModel by lazy { ViewModelProvider(this).get(MyFeedSettingsViewModel::class.java) }
 
     private lateinit var notificationSwitch: SwitchCompat
     private lateinit var includedTags: DropDownButton
@@ -46,7 +46,7 @@ class MyFeedSettingsFragment : Fragment() {
         val fragmentView = inflater.inflate(R.layout.my_feed_settings_fragment, container, false)
 
         notificationSwitch = fragmentView.findViewById(R.id.notification)
-        if (NotificationManagerCompat.from(context!!).channelImportance(NOTIFICATION_CHANNEL__MY_FEED) > NotificationManagerCompat.IMPORTANCE_NONE) {
+        if (NotificationManagerCompat.from(requireContext()).channelImportance(NOTIFICATION_CHANNEL__MY_FEED) > NotificationManagerCompat.IMPORTANCE_NONE) {
             notificationSwitch.isChecked = viewModel.newNotificationValue
         } else {
             notificationSwitch.isEnabled = false
@@ -60,7 +60,7 @@ class MyFeedSettingsFragment : Fragment() {
             val includedTagIds = viewModel.newIncludedTagIds.value ?: LongArray(0)
             TagsPickerActivity.startForResult(this, REQUEST_INCLUDED_TAGS, includedTagIds, getString(R.string.my_feed_settings__included_tags))
         }
-        viewModel.includedTags.observe(this, Observer { tags ->
+        viewModel.includedTags.observe(viewLifecycleOwner, Observer { tags ->
             if (tags.isNullOrEmpty()) {
                 includedTags.setText(R.string.my_feed_settings__included_tags__none)
             } else {
@@ -73,7 +73,7 @@ class MyFeedSettingsFragment : Fragment() {
             val excludedTagIds = viewModel.newExcludedTagIds.value ?: LongArray(0)
             TagsPickerActivity.startForResult(this, REQUEST_EXCLUDED_TAGS, excludedTagIds, getString(R.string.my_feed_settings__excluded_tags))
         }
-        viewModel.excludedTags.observe(this, Observer { tags ->
+        viewModel.excludedTags.observe(viewLifecycleOwner, Observer { tags ->
             if (tags.isNullOrEmpty()) {
                 excludedTags.setText(R.string.my_feed_settings__excluded_tags__none)
             } else {
