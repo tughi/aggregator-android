@@ -38,7 +38,7 @@ class TagEntriesFragment : EntriesFragment() {
 
         val viewModelFactory = TagEntriesViewModel.Factory(tagId)
         val viewModel = ViewModelProvider(this, viewModelFactory).get(TagEntriesViewModel::class.java)
-        viewModel.tag.observe(viewLifecycleOwner, Observer { tag ->
+        viewModel.tag.observe(this, Observer { tag ->
             if (tag != null) {
                 setTitle(tag.name)
             }

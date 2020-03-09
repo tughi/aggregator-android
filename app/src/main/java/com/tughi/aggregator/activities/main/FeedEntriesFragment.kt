@@ -16,7 +16,7 @@ class FeedEntriesFragment : EntriesFragment() {
 
         val viewModelFactory = FeedEntriesFragmentViewModel.Factory(feedId)
         val viewModel = ViewModelProvider(this, viewModelFactory).get(FeedEntriesFragmentViewModel::class.java)
-        viewModel.feed.observe(viewLifecycleOwner, Observer { feed ->
+        viewModel.feed.observe(this, Observer { feed ->
             if (feed != null) {
                 setTitle(feed.title)
             }
