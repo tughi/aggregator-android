@@ -30,6 +30,7 @@ import com.tughi.aggregator.preferences.UpdateSettings
 import com.tughi.aggregator.utilities.Failure
 import com.tughi.aggregator.utilities.Http
 import com.tughi.aggregator.utilities.Success
+import com.tughi.aggregator.utilities.content
 import com.tughi.aggregator.utilities.then
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -206,7 +207,7 @@ object FeedUpdateHelper {
                 Database.transaction {
                     response.use {
                         val responseBody = response.body
-                        Xml.parse(responseBody?.charStream(), feedParser.feedContentHandler)
+                        Xml.parse(responseBody?.content(), feedParser.feedContentHandler)
                     }
                 }
             } catch (exception: Exception) {

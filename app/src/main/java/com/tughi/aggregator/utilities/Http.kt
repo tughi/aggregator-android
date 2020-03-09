@@ -8,7 +8,11 @@ import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import okhttp3.ResponseBody
+import okhttp3.internal.readBomAsCharset
 import java.io.IOException
+import java.io.InputStreamReader
+import java.io.Reader
 import java.net.MalformedURLException
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
@@ -59,4 +63,10 @@ object Http {
         }
     }
 
+}
+
+fun ResponseBody.content(): Reader {
+    val source = source()
+    val charset = contentType()?.charset()?.let { if (it == Charsets.UTF_16) Charsets.UTF_16LE else it } ?: Charsets.UTF_8
+    return InputStreamReader(source.inputStream(), source.readBomAsCharset(charset))
 }

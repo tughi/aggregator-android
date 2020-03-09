@@ -6,6 +6,7 @@ import com.tughi.aggregator.feeds.FeedsFinder
 import com.tughi.aggregator.utilities.Failure
 import com.tughi.aggregator.utilities.Http
 import com.tughi.aggregator.utilities.Success
+import com.tughi.aggregator.utilities.content
 import com.tughi.aggregator.utilities.onFailure
 import com.tughi.aggregator.utilities.then
 import kotlinx.coroutines.Dispatchers
@@ -48,15 +49,15 @@ class SubscribeSearchFragmentViewModel : ViewModel() {
     private suspend fun onFindFeeds(url: String) {
         val feeds = arrayListOf<Feed>()
         val stateValue = state.value?.cloneWith(loading = true, feeds = feeds) ?: return
-
         Http.request(url)
-                .then {
-                    if (!it.isSuccessful) {
-                        return@then Failure(IllegalStateException("Server response: ${it.code} ${it.message}"))
+                .then { response ->
+                    if (!response.isSuccessful) {
+                        return@then Failure(IllegalStateException("Server response: ${response.code} ${response.message}"))
                     }
 
-                    val content = it.body?.charStream()
-                    if (content != null) {
+                    val responseBody = response.body
+                    if (responseBody != null) {
+                        val content = responseBody.content()
 
                         val listener = object : FeedsFinder.Listener {
                             override fun onFeedFound(url: String, title: String, link: String?) {
@@ -65,17 +66,16 @@ class SubscribeSearchFragmentViewModel : ViewModel() {
                                         title = title,
                                         link = link
                                 ))
-
                                 state.postValue(stateValue)
                             }
                         }
-                        FeedsFinder(listener).find(content, it.request.url.toString())
+
+                        FeedsFinder(listener).find(content, response.request.url.toString())
 
                         if (feeds.isEmpty()) {
                             return@then Failure(IllegalStateException("No feeds found"))
                         } else {
                             state.postValue(stateValue.cloneWith(loading = false))
-
                             return@then Success(feeds)
                         }
                     } else {
@@ -90,7 +90,6 @@ class SubscribeSearchFragmentViewModel : ViewModel() {
                         cause.message != null -> cause.message
                         else -> "Unexpected error: ${cause::class.java.simpleName}"
                     }
-
                     state.postValue(stateValue.cloneWith(loading = false, message = message))
                 }
     }
