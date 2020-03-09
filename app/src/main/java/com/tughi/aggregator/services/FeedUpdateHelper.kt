@@ -164,7 +164,7 @@ object FeedUpdateHelper {
                             Entries.UPDATE_TIME to updateTime
                     )
 
-                    if (result == 0) {
+                    if (result == 0 && !isOldEntry(publishDate?.time ?: updateTime, feed.cleanupMode)) {
                         val entryId = Entries.insert(
                                 Entries.FEED_ID to feed.id,
                                 Entries.UID to uid,
@@ -188,6 +188,19 @@ object FeedUpdateHelper {
                             }
                         }
                     }
+                }
+
+                private fun isOldEntry(entryTimestamp: Long, cleanupMode: CleanupMode): Boolean = when (cleanupMode) {
+                    DefaultCleanupMode -> isOldEntry(entryTimestamp, UpdateSettings.defaultCleanupMode)
+                    Age3DaysCleanupMode -> Calendar.getInstance().apply { add(Calendar.DATE, -3) }.timeInMillis > entryTimestamp
+                    Age1WeekCleanupMode -> Calendar.getInstance().apply { add(Calendar.DATE, -7) }.timeInMillis > entryTimestamp
+                    Age1MonthCleanupMode -> Calendar.getInstance().apply { add(Calendar.MONTH, -1) }.timeInMillis > entryTimestamp
+                    Age3MonthsCleanupMode -> Calendar.getInstance().apply { add(Calendar.MONTH, -3) }.timeInMillis > entryTimestamp
+                    Age6MonthsCleanupMode -> Calendar.getInstance().apply { add(Calendar.MONTH, -6) }.timeInMillis > entryTimestamp
+                    Age1YearCleanupMode -> Calendar.getInstance().apply { add(Calendar.YEAR, -1) }.timeInMillis > entryTimestamp
+                    Age3YearsCleanupMode -> Calendar.getInstance().apply { add(Calendar.YEAR, -3) }.timeInMillis > entryTimestamp
+                    Age6YearsCleanupMode -> Calendar.getInstance().apply { add(Calendar.YEAR, -6) }.timeInMillis > entryTimestamp
+                    NeverCleanupMode -> false
                 }
 
                 override fun onParsedFeed(title: String, link: String?, language: String?) {
