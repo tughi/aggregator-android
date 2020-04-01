@@ -266,7 +266,7 @@ class EntryTagRuleSettingsActivity : AppActivity() {
                     }
                 }
             } else {
-                newType.value = if (presetFeedId != null) TYPE_FEED else TYPE_GLOBAL
+                newType.value = TYPE_FEED
                 newFeedId.value = presetFeedId
                 newTagId.value = presetTagId
             }
