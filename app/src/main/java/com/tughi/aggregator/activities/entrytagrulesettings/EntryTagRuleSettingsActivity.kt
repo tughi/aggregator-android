@@ -4,17 +4,22 @@ import android.app.Activity
 import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
+import android.text.Spannable
+import android.text.style.ForegroundColorSpan
+import android.text.style.UnderlineSpan
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import androidx.core.database.getLongOrNull
+import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.tughi.aggregator.App
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.feedspicker.FeedsPickerActivity
@@ -26,6 +31,9 @@ import com.tughi.aggregator.data.EntryTagRules
 import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.Tags
 import com.tughi.aggregator.data.UpdateEntryTagRuleCriteria
+import com.tughi.aggregator.entries.conditions.Condition
+import com.tughi.aggregator.entries.conditions.StringToken
+import com.tughi.aggregator.entries.conditions.WordToken
 import com.tughi.aggregator.services.EntryTagRuleHelper
 import com.tughi.aggregator.widgets.DropDownButton
 import kotlinx.coroutines.Dispatchers
@@ -111,6 +119,29 @@ class EntryTagRuleSettingsActivity : AppActivity() {
         }
 
         conditionView = findViewById(R.id.condition)
+        conditionView.doAfterTextChanged {
+            if (it != null && it.isNotEmpty()) {
+                val condition = Condition(it)
+
+                it.getSpans(0, it.length, ForegroundColorSpan::class.java).forEach { span -> it.removeSpan(span) }
+                it.getSpans(0, it.length, UnderlineSpan::class.java).forEach { span -> it.removeSpan(span) }
+
+                condition.tokens.forEach { token ->
+                    when {
+                        token.isUnexpected -> {
+                            it.setSpan(UnderlineSpan(), token.startIndex, token.endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                        }
+                        token is StringToken || (token is WordToken && token.isProperty) -> {
+                            it.setSpan(ForegroundColorSpan(App.accentColor), token.startIndex, token.endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                        }
+                    }
+                }
+
+                viewModel.newCondition.value = condition
+            } else {
+                viewModel.newCondition.value = Condition("")
+            }
+        }
 
         viewModel.newType.observe(this, Observer { type ->
             if (type == TYPE_FEED) {
@@ -132,6 +163,13 @@ class EntryTagRuleSettingsActivity : AppActivity() {
             if (tag != null) {
                 tagView.setText(tag.name)
             }
+            saveButton.isEnabled = viewModel.canSave
+        })
+
+        viewModel.oldCondition.observe(this, Observer { condition ->
+            conditionView.setText(condition.toString())
+        })
+        viewModel.newCondition.observe(this, Observer { text ->
             saveButton.isEnabled = viewModel.canSave
         })
     }
@@ -252,6 +290,9 @@ class EntryTagRuleSettingsActivity : AppActivity() {
             Tags.liveQueryOne(Tags.QueryTagCriteria(newTagId), Tag.QueryHelper)
         }
 
+        val oldCondition = MutableLiveData<Condition>()
+        val newCondition = MutableLiveData<Condition>()
+
         init {
             if (entryTagRuleId != null) {
                 GlobalScope.launch {
@@ -262,6 +303,7 @@ class EntryTagRuleSettingsActivity : AppActivity() {
                             newType.value = if (entryTagRule.feedId != null) TYPE_FEED else TYPE_GLOBAL
                             newFeedId.value = entryTagRule.feedId
                             newTagId.value = entryTagRule.tagId
+                            oldCondition.value = Condition(entryTagRule.condition)
                         }
                     }
                 }
@@ -269,27 +311,29 @@ class EntryTagRuleSettingsActivity : AppActivity() {
                 newType.value = TYPE_FEED
                 newFeedId.value = presetFeedId
                 newTagId.value = presetTagId
+                oldCondition.value = Condition("")
             }
         }
 
         val canSave: Boolean
             get() {
-                val entryTagRule = entryTagRule
-                val newType = newType.value
-                val newTagId = newTagId.value
-                val newFeedId = newFeedId.value
-                return when {
-                    newTagId == null || newType == null || (newType == TYPE_FEED && newFeedId == null) -> false
-                    entryTagRule != null -> entryTagRule.tagId != newTagId || (newType == TYPE_FEED && entryTagRule.feedId != newFeedId) || (newType == TYPE_GLOBAL && entryTagRule.feedId != null)
-                    else -> true
-                }
+                val newTagId = newTagId.value ?: return false
+                val newType = newType.value ?: return false
+                val newFeedId = newFeedId.value ?: if (newType == TYPE_FEED) return false else null
+                val newCondition = newCondition.value ?: return false
+                val entryTagRule = entryTagRule ?: return true
+                if (entryTagRule.tagId != newTagId) return true
+                if (newType == TYPE_FEED && entryTagRule.feedId != newFeedId) return true
+                if (newType == TYPE_GLOBAL && entryTagRule.feedId != null) return true
+                if (oldCondition.value.toString() != newCondition.toString()) return true
+                return false
             }
 
         fun save() {
             val entryTagRuleId = entryTagRuleId
             val feedId = if (newType.value == TYPE_FEED) newFeedId.value else null
             val tagId = newTagId.value ?: return
-            val condition = ""
+            val condition = newCondition.value ?: return
 
             GlobalScope.launch {
                 if (entryTagRuleId != null) {
@@ -297,14 +341,14 @@ class EntryTagRuleSettingsActivity : AppActivity() {
                             UpdateEntryTagRuleCriteria(entryTagRuleId),
                             EntryTagRules.FEED_ID to feedId,
                             EntryTagRules.TAG_ID to tagId,
-                            EntryTagRules.CONDITION to condition
+                            EntryTagRules.CONDITION to condition.toString()
                     )
                     EntryTagRuleHelper.apply(entryTagRuleId, deleteOldTags = true)
                 } else {
                     val id = EntryTagRules.insert(
                             EntryTagRules.FEED_ID to feedId,
                             EntryTagRules.TAG_ID to tagId,
-                            EntryTagRules.CONDITION to condition
+                            EntryTagRules.CONDITION to condition.toString()
                     )
                     EntryTagRuleHelper.apply(id)
                 }

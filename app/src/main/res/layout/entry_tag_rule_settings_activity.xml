@@ -51,7 +51,8 @@
                     android:id="@+id/condition"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="text" />
+                    android:inputType="textMultiLine|textFilter|textNoSuggestions"
+                    android:singleLine="false" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -74,8 +75,8 @@
             android:id="@+id/save"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="8dp"
             android:text="@string/action__save" />
