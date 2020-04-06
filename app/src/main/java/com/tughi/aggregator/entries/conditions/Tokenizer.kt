@@ -85,14 +85,14 @@ class Tokenizer(val condition: CharSequence) {
                     in 'a'..'z', in 'A'..'Z' -> {
                     }
                     else -> return when (val lexeme = condition.substring(tokenStart, tokenEnd)) {
-                        "and" -> WordToken(lexeme, tokenStart, tokenEnd)
-                        "contains" -> WordToken(lexeme, tokenStart, tokenEnd)
-                        "ends" -> WordToken(lexeme, tokenStart, tokenEnd)
-                        "is" -> WordToken(lexeme, tokenStart, tokenEnd)
-                        "or" -> WordToken(lexeme, tokenStart, tokenEnd)
-                        "starts" -> WordToken(lexeme, tokenStart, tokenEnd)
-                        "title" -> WordToken(lexeme, tokenStart, tokenEnd, true)
-                        "with" -> WordToken(lexeme, tokenStart, tokenEnd)
+                        "and" -> AndToken(tokenStart)
+                        "contains" -> ContainsToken(tokenStart)
+                        "ends" -> EndsToken(tokenStart)
+                        "is" -> IsToken(tokenStart)
+                        "or" -> OrToken(tokenStart)
+                        "starts" -> StartsToken(tokenStart)
+                        "title" -> TitleToken(tokenStart)
+                        "with" -> WithToken(tokenStart)
                         else -> UnsupportedToken(lexeme, tokenStart, tokenEnd)
                     }
                 }

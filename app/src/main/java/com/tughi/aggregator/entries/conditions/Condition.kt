@@ -5,6 +5,8 @@ class Condition(val text: CharSequence) {
     var hasUnexpectedTokens = false
         private set
 
+    val expression: Expression
+
     init {
         val tokens = mutableListOf<Token>()
         val tokenizer = Tokenizer(text)
@@ -19,7 +21,14 @@ class Condition(val text: CharSequence) {
             }
         }
         this.tokens = tokens
+
+        expression = try {
+            Parser(tokens).parse()
+        } catch (exception: Parser.UnexpectedTokenException) {
+            hasUnexpectedTokens = true
+            InvalidExpression
+        }
     }
 
-    override fun toString(): String = tokens.joinToString(" ") { it.lexeme }
+    override fun toString(): String = tokens.subList(0, tokens.size - 1).joinToString(" ") { it.lexeme }
 }

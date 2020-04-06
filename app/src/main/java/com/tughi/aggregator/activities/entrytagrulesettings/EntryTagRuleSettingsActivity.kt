@@ -33,7 +33,7 @@ import com.tughi.aggregator.data.Tags
 import com.tughi.aggregator.data.UpdateEntryTagRuleCriteria
 import com.tughi.aggregator.entries.conditions.Condition
 import com.tughi.aggregator.entries.conditions.StringToken
-import com.tughi.aggregator.entries.conditions.WordToken
+import com.tughi.aggregator.entries.conditions.TitleToken
 import com.tughi.aggregator.services.EntryTagRuleHelper
 import com.tughi.aggregator.widgets.DropDownButton
 import kotlinx.coroutines.Dispatchers
@@ -131,7 +131,7 @@ class EntryTagRuleSettingsActivity : AppActivity() {
                         token.isUnexpected -> {
                             it.setSpan(UnderlineSpan(), token.startIndex, token.endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                         }
-                        token is StringToken || (token is WordToken && token.isProperty) -> {
+                        token is StringToken || (token is TitleToken) -> {
                             it.setSpan(ForegroundColorSpan(App.accentColor), token.startIndex, token.endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                         }
                     }
@@ -321,6 +321,7 @@ class EntryTagRuleSettingsActivity : AppActivity() {
                 val newType = newType.value ?: return false
                 val newFeedId = newFeedId.value ?: if (newType == TYPE_FEED) return false else null
                 val newCondition = newCondition.value ?: return false
+                if (newCondition.hasUnexpectedTokens) return false
                 val entryTagRule = entryTagRule ?: return true
                 if (entryTagRule.tagId != newTagId) return true
                 if (newType == TYPE_FEED && entryTagRule.feedId != newFeedId) return true
