@@ -59,6 +59,8 @@ class Parser(private val tokens: List<Token>) {
 
     private fun parseSimpleExpression(): Expression {
         val property = when (val token = consume<Token>()) {
+            is ContentToken -> PropertyExpression.Property.CONTENT
+            is LinkToken -> PropertyExpression.Property.LINK
             is TitleToken -> PropertyExpression.Property.TITLE
             else -> throw UnexpectedTokenException(token)
         }

@@ -32,6 +32,8 @@ import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.Tags
 import com.tughi.aggregator.data.UpdateEntryTagRuleCriteria
 import com.tughi.aggregator.entries.conditions.Condition
+import com.tughi.aggregator.entries.conditions.ContentToken
+import com.tughi.aggregator.entries.conditions.LinkToken
 import com.tughi.aggregator.entries.conditions.StringToken
 import com.tughi.aggregator.entries.conditions.TitleToken
 import com.tughi.aggregator.services.EntryTagRuleHelper
@@ -131,7 +133,7 @@ class EntryTagRuleSettingsActivity : AppActivity() {
                         token.isUnexpected -> {
                             it.setSpan(UnderlineSpan(), token.startIndex, token.endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                         }
-                        token is StringToken || (token is TitleToken) -> {
+                        token is StringToken || token is TitleToken || token is ContentToken || token is LinkToken -> {
                             it.setSpan(ForegroundColorSpan(App.accentColor), token.startIndex, token.endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                         }
                     }

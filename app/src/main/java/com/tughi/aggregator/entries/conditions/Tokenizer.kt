@@ -86,9 +86,11 @@ class Tokenizer(val condition: CharSequence) {
                     }
                     else -> return when (val lexeme = condition.substring(tokenStart, tokenEnd)) {
                         "and" -> AndToken(tokenStart)
+                        "content" -> ContentToken(tokenStart)
                         "contains" -> ContainsToken(tokenStart)
                         "ends" -> EndsToken(tokenStart)
                         "is" -> IsToken(tokenStart)
+                        "link" -> LinkToken(tokenStart)
                         "or" -> OrToken(tokenStart)
                         "starts" -> StartsToken(tokenStart)
                         "title" -> TitleToken(tokenStart)

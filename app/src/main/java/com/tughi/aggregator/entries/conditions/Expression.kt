@@ -7,6 +7,8 @@ object InvalidExpression : Expression()
 
 class PropertyExpression(val property: Property, val operator: Operator, val value: String) : Expression() {
     enum class Property {
+        CONTENT,
+        LINK,
         TITLE,
     }
 

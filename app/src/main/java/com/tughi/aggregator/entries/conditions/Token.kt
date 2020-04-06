@@ -11,6 +11,8 @@ class StringToken(lexeme: String, startIndex: Int, endIndex: Int, val value: Str
 class LeftParenToken(index: Int) : Token("(", index, index + 1)
 class RightParenToken(index: Int) : Token(")", index, index + 1)
 
+class ContentToken(index: Int) : Token("content", index, index + "content".length)
+class LinkToken(index: Int) : Token("link", index, index + "link".length)
 class TitleToken(index: Int) : Token("title", index, index + "title".length)
 
 class AndToken(index: Int) : Token("and", index, index + "and".length)
