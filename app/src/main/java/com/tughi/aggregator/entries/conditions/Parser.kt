@@ -18,9 +18,13 @@ class Parser(private val tokens: List<Token>) {
         if (peek() is EndOfCondition) {
             return EmptyExpression
         }
-        val expression = parseOrExpression()
+        val expression = parseExpression()
         consume<EndOfCondition>()
         return expression
+    }
+
+    private fun parseExpression(): Expression {
+        return parseOrExpression()
     }
 
     private fun parseOrExpression(): Expression {
@@ -34,13 +38,23 @@ class Parser(private val tokens: List<Token>) {
     }
 
     private fun parseAndExpression(): Expression {
-        var expression = parseSimpleExpression()
+        var expression = parseParenExpression()
         while (peek() is AndToken) {
             consume<AndToken>()
-            val secondExpression = parseSimpleExpression()
+            val secondExpression = parseParenExpression()
             expression = BooleanExpression(expression, BooleanExpression.Operator.AND, secondExpression)
         }
         return expression
+    }
+
+    private fun parseParenExpression(): Expression {
+        if (peek() is LeftParenToken) {
+            consume<LeftParenToken>()
+            val expression = parseExpression()
+            consume<RightParenToken>()
+            return expression
+        }
+        return parseSimpleExpression()
     }
 
     private fun parseSimpleExpression(): Expression {
