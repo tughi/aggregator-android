@@ -11,6 +11,12 @@ import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.data.EntryTagRuleQueryCriteria
 import com.tughi.aggregator.data.EntryTagRules
 import com.tughi.aggregator.data.EntryTags
+import com.tughi.aggregator.entries.conditions.BooleanExpression
+import com.tughi.aggregator.entries.conditions.Condition
+import com.tughi.aggregator.entries.conditions.EmptyExpression
+import com.tughi.aggregator.entries.conditions.Expression
+import com.tughi.aggregator.entries.conditions.InvalidExpression
+import com.tughi.aggregator.entries.conditions.PropertyExpression
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -45,7 +51,7 @@ object EntryTagRuleHelper {
 
             val matchedEntryIds = Longs(1000)
 
-            Entries.query(entriesQueryCriteria, object : Entries.QueryHelper<Any>(Entries.ID, Entries.TITLE) {
+            Entries.query(entriesQueryCriteria, object : Entries.QueryHelper<Any>(Entries.ID, Entries.TITLE, Entries.LINK, Entries.CONTENT) {
                 var lastCommitTime = entryTagTime
 
                 override fun createRow(cursor: Cursor): Any {
@@ -55,8 +61,10 @@ object EntryTagRuleHelper {
 
                     val entryId = cursor.getLong(0)
                     val entryTitle = cursor.getString(1)
+                    val entryLink = cursor.getString(2)
+                    val entryContent = cursor.getString(3)
 
-                    if (entryTagRule.matches(entryTitle, null, null)) {
+                    if (entryTagRule.matches(entryTitle, entryLink, entryContent)) {
                         val currentTime = System.currentTimeMillis()
                         if (matchedEntryIds.isFull() || currentTime - lastCommitTime > DateUtils.SECOND_IN_MILLIS) {
                             tagEntries(matchedEntryIds, entryTagRule, entryTagTime)
@@ -121,12 +129,11 @@ object EntryTagRuleHelper {
 class EntryTagRule(
         val id: Long,
         val tagId: Long,
-        val condition: String,
+        val condition: Condition,
         val feedId: Long?
 ) {
     fun matches(title: String?, link: String?, content: String?): Boolean {
-        // TODO: use condition
-        return true
+        return condition.expression.matches(title, link, content)
     }
 
     object QueryHelper : EntryTagRules.QueryHelper<EntryTagRule>(
@@ -138,8 +145,29 @@ class EntryTagRule(
         override fun createRow(cursor: Cursor): EntryTagRule = EntryTagRule(
                 cursor.getLong(0),
                 cursor.getLong(1),
-                cursor.getString(2),
+                Condition(cursor.getString(2)),
                 if (cursor.isNull(3)) null else cursor.getLong(3)
         )
+    }
+}
+
+private fun Expression.matches(title: String?, link: String?, content: String?): Boolean = when (this) {
+    EmptyExpression, InvalidExpression -> true // ignored
+    is PropertyExpression -> {
+        val property = when (property) {
+            PropertyExpression.Property.TITLE -> title ?: ""
+            PropertyExpression.Property.LINK -> link ?: ""
+            PropertyExpression.Property.CONTENT -> content ?: ""
+        }
+        when (operator) {
+            PropertyExpression.Operator.CONTAINS -> property.contains(value)
+            PropertyExpression.Operator.ENDS_WITH -> property.endsWith(value)
+            PropertyExpression.Operator.IS -> property.equals(value)
+            PropertyExpression.Operator.STARTS_WITH -> property.startsWith(value)
+        }
+    }
+    is BooleanExpression -> when (operator) {
+        BooleanExpression.Operator.AND -> left.matches(title, link, content) && right.matches(title, link, content)
+        BooleanExpression.Operator.OR -> left.matches(title, link, content) || right.matches(title, link, content)
     }
 }
