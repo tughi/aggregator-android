@@ -5,13 +5,22 @@ sealed class Expression
 object EmptyExpression : Expression()
 object InvalidExpression : Expression()
 
-sealed class Property
-object TitleProperty : Property()
+class PropertyExpression(val property: Property, val operator: Operator, val value: String) : Expression() {
+    enum class Property {
+        TITLE,
+    }
 
-sealed class Operator
-object ContainsOperator : Operator()
-object EndsWithOperator : Operator()
-object IsOperator : Operator()
-object StartsWithOperator : Operator()
+    enum class Operator {
+        CONTAINS,
+        ENDS_WITH,
+        IS,
+        STARTS_WITH,
+    }
+}
 
-class SimpleExpression(val property: Property, val operator: Operator, val value: String) : Expression()
+class BooleanExpression(val left: Expression, val operator: Operator, val right: Expression) : Expression() {
+    enum class Operator {
+        AND,
+        OR,
+    }
+}
