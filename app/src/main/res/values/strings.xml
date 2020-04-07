@@ -132,9 +132,9 @@
     <string name="tag_settings__name">Name</string>
     <string name="tag_settings__tagged_entries__user">Tagged entries</string>
     <string name="tag_settings__tagged_entries__rule__all_feeds">Tagged entries from any feed</string>
-    <string name="tag_settings__tagged_entries__rule__all_feeds_with_condition">Tagged entries from any feed, where %s</string>
-    <string name="tag_settings__tagged_entries__rule__from_feed">Tagged entries from %s</string>
-    <string name="tag_settings__tagged_entries__rule__from_feed_with_condition">Tagged entries from %s, where %s</string>
+    <string name="tag_settings__tagged_entries__rule__all_feeds_with_condition">Tagged entries from any feed, where: $CONDITION</string>
+    <string name="tag_settings__tagged_entries__rule__from_feed">Tagged entries from $FEED_TITLE</string>
+    <string name="tag_settings__tagged_entries__rule__from_feed_with_condition">Tagged entries from $FEED_TITLE, where: $CONDITION</string>
 
     <string name="tags_item__total_entries">Total entries: %1$d</string>
     <string name="tags_item__unread_entries">Unread entries: %1$d</string>

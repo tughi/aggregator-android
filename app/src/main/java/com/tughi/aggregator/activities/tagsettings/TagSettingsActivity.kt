@@ -31,6 +31,11 @@ import com.tughi.aggregator.data.EntryTags
 import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.TagEntryRulesQueryCriteria
 import com.tughi.aggregator.data.Tags
+import com.tughi.aggregator.entries.conditions.Condition
+import com.tughi.aggregator.entries.conditions.ContentToken
+import com.tughi.aggregator.entries.conditions.LinkToken
+import com.tughi.aggregator.entries.conditions.StringToken
+import com.tughi.aggregator.entries.conditions.TitleToken
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -176,7 +181,41 @@ class TagSettingsActivity : AppActivity() {
         }
     }
 
-    class TagRule(val id: Long, val feedTitle: String?, val condition: String, val taggedEntries: Int) {
+    class TagRule(val id: Long, val feedTitle: String?, val condition: Condition, val taggedEntries: Int) {
+        val label: CharSequence
+
+        init {
+            val hasFeedTitle = feedTitle != null
+            val hasCondition = condition.tokens.size > 1
+            val text = SpannableStringBuilder(App.instance.getString(when {
+                hasFeedTitle && hasCondition -> R.string.tag_settings__tagged_entries__rule__from_feed_with_condition
+                hasFeedTitle -> R.string.tag_settings__tagged_entries__rule__from_feed
+                hasCondition -> R.string.tag_settings__tagged_entries__rule__all_feeds_with_condition
+                else -> R.string.tag_settings__tagged_entries__rule__all_feeds
+            }))
+            if (hasFeedTitle) {
+                val feedTitle = SpannableString(feedTitle).also {
+                    it.setSpan(ForegroundColorSpan(App.accentColor), 0, it.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+                val feedTitleIndex = text.indexOf("\$FEED_TITLE")
+                text.replace(feedTitleIndex, feedTitleIndex + 11, feedTitle)
+            }
+            if (hasCondition) {
+                val condition = SpannableString(condition.text).also {
+                    condition.tokens.forEach { token ->
+                        when (token) {
+                            is StringToken, is TitleToken, is ContentToken, is LinkToken -> {
+                                it.setSpan(ForegroundColorSpan(App.accentColor), token.startIndex, token.endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                            }
+                        }
+                    }
+                }
+                val conditionIndex = text.indexOf("\$CONDITION")
+                text.replace(conditionIndex, conditionIndex + 10, condition)
+            }
+            label = text
+        }
+
         object QueryHelper : EntryTagRules.QueryHelper<TagRule>(
                 EntryTagRules.ID,
                 EntryTagRules.FEED_TITLE,
@@ -186,7 +225,7 @@ class TagSettingsActivity : AppActivity() {
             override fun createRow(cursor: Cursor) = TagRule(
                     id = cursor.getLong(0),
                     feedTitle = cursor.getString(1),
-                    condition = cursor.getString(2),
+                    condition = Condition(cursor.getString(2)),
                     taggedEntries = cursor.getInt(3)
             )
         }
@@ -307,16 +346,8 @@ class TagSettingsActivity : AppActivity() {
             is TagRuleViewHolder -> {
                 val tagRule = tagRules[position - 2]
                 holder.tagRule = tagRule
+                holder.textView.text = tagRule.label
                 holder.countView.text = tagRule.taggedEntries.toString()
-                if (tagRule.feedTitle != null) {
-                    val text = SpannableStringBuilder(getString(R.string.tag_settings__tagged_entries__rule__from_feed))
-                    val chipStart = text.indexOf("%s")
-                    text.replace(chipStart, chipStart + 2, SpannableString(tagRule.feedTitle).also { it.setSpan(ForegroundColorSpan(App.accentColor), 0, it.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE) })
-
-                    holder.textView.text = text
-                } else {
-                    holder.textView.text = getString(R.string.tag_settings__tagged_entries__rule__all_feeds)
-                }
             }
             else -> {
                 throw IllegalArgumentException("Unsupported holder type: ${holder.javaClass.name}")
