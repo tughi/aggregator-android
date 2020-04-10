@@ -1,30 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <color name="dark_theme__background">#212121</color>
-    <color name="dark_theme__primary">#212121</color>
-    <color name="dark_theme__primary_dark">#000000</color>
+    <color name="dark_theme__background">#121212</color>
+    <color name="dark_theme__toolbar">#212121</color>
     <color name="dark_theme__entry_list_header">#323232</color>
     <color name="dark_theme__gray">#616161</color>
 
-    <color name="light_theme__background">#fafafa</color>
-    <color name="light_theme__primary">#fafafa</color>
-    <color name="light_theme__primary_dark">#000000</color>
+    <color name="light_theme__background">#ffffff</color>
+    <color name="light_theme__toolbar">#fafafa</color>
     <color name="light_theme__entry_list_header">#eeeeee</color>
     <color name="light_theme__gray">#9e9e9e</color>
 
-    <color name="fallback__accent">#ff6d00</color>
-    <color name="fallback__popup_background">#ffd180</color>
-
     <color name="accent__blue">#2962ff</color>
-    <color name="accent__blue_popup">#90caf9</color>
+    <color name="accent__blue__dark">#0039cb</color>
+    <color name="accent__blue__light">#768fff</color>
+
     <color name="accent__green">#00c853</color>
-    <color name="accent__green_popup">#a5d6a7</color>
+    <color name="accent__green__dark">#009624</color>
+    <color name="accent__green__light">#5efc82</color>
+
     <color name="accent__orange">#ff6d00</color>
-    <color name="accent__orange_popup">#ffcc80</color>
+    <color name="accent__orange__dark">#c43c00</color>
+    <color name="accent__orange__light">#ff9e40</color>
+
     <color name="accent__purple">#d500f9</color>
-    <color name="accent__purple_popup">#ce93d8</color>
+    <color name="accent__purple__dark">#9e00c5</color>
+    <color name="accent__purple__light">#ff5bff</color>
+
     <color name="accent__red">#ff1744</color>
-    <color name="accent__red_popup">#ef9a9a</color>
+    <color name="accent__red__dark">#c4001d</color>
+    <color name="accent__red__light">#ff616f</color>
 
 </resources>

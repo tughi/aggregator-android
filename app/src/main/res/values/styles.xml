@@ -2,13 +2,16 @@
 
     <style name="DarkTheme" parent="Theme.MaterialComponents">
         <item name="android:colorBackground">@color/dark_theme__background</item>
-        <item name="android:colorEdgeEffect">?colorAccent</item>
-        <item name="colorPrimary">@color/dark_theme__primary</item>
-        <item name="colorPrimaryDark">@color/dark_theme__primary_dark</item>
-        <item name="colorAccent">@color/fallback__accent</item>
-        <item name="colorBottomNavigation">?colorAccent</item>
+        <item name="android:statusBarColor">@color/dark_theme__toolbar</item>
+        <item name="android:navigationBarColor">@color/dark_theme__toolbar</item>
+        <item name="colorPrimary">@color/accent__blue</item>
+        <item name="colorPrimaryVariant">@color/accent__blue__dark</item>
+        <item name="colorOnPrimary">#ffffff</item>
+        <item name="colorOnSecondary">#ffffff</item>
+        <item name="colorSecondary">@color/accent__blue</item>
+        <item name="colorSecondaryVariant">@color/accent__blue__dark</item>
+        <item name="colorBottomNavigation">?colorPrimary</item>
         <item name="colorEntryListHeader">@color/dark_theme__entry_list_header</item>
-        <item name="colorPopupBackground">@color/fallback__popup_background</item>
         <item name="colorGray">@color/dark_theme__gray</item>
         <item name="android:keepScreenOn">@bool/debug</item>
         <item name="toolbarStyle">@style/DarkTheme.Widget.Toolbar</item>
@@ -16,31 +19,37 @@
 
     <style name="DarkTheme.NoActionBar" parent="Theme.MaterialComponents.NoActionBar">
         <item name="android:colorBackground">@color/dark_theme__background</item>
-        <item name="android:colorEdgeEffect">?colorAccent</item>
-        <item name="colorPrimary">@color/dark_theme__primary</item>
-        <item name="colorPrimaryDark">@color/dark_theme__primary_dark</item>
-        <item name="colorAccent">@color/fallback__accent</item>
-        <item name="colorBottomNavigation">?colorAccent</item>
+        <item name="android:statusBarColor">@color/dark_theme__toolbar</item>
+        <item name="android:navigationBarColor">@color/dark_theme__toolbar</item>
+        <item name="colorPrimary">@color/accent__blue</item>
+        <item name="colorPrimaryVariant">@color/accent__blue__dark</item>
+        <item name="colorOnPrimary">#ffffff</item>
+        <item name="colorOnSecondary">#ffffff</item>
+        <item name="colorSecondary">@color/accent__blue</item>
+        <item name="colorSecondaryVariant">@color/accent__blue__dark</item>
+        <item name="colorBottomNavigation">?colorPrimary</item>
         <item name="colorEntryListHeader">@color/dark_theme__entry_list_header</item>
-        <item name="colorPopupBackground">@color/fallback__popup_background</item>
         <item name="colorGray">@color/dark_theme__gray</item>
         <item name="android:keepScreenOn">@bool/debug</item>
         <item name="toolbarStyle">@style/DarkTheme.Widget.Toolbar</item>
     </style>
 
     <style name="DarkTheme.Widget.Toolbar" parent="Widget.MaterialComponents.Toolbar">
-        <item name="popupTheme">@style/PopupTheme</item>
+        <item name="android:background">@color/dark_theme__toolbar</item>
     </style>
 
     <style name="LightTheme" parent="Theme.MaterialComponents.Light">
         <item name="android:colorBackground">@color/light_theme__background</item>
-        <item name="android:colorEdgeEffect">?colorAccent</item>
-        <item name="colorPrimary">@color/light_theme__primary</item>
-        <item name="colorPrimaryDark">@color/light_theme__primary_dark</item>
-        <item name="colorAccent">@color/fallback__accent</item>
-        <item name="colorBottomNavigation">?colorAccent</item>
+        <item name="android:statusBarColor">@color/dark_theme__background</item>
+        <item name="android:navigationBarColor">@color/dark_theme__background</item>
+        <item name="colorPrimary">@color/accent__blue</item>
+        <item name="colorPrimaryVariant">@color/accent__blue__dark</item>
+        <item name="colorOnPrimary">#ffffff</item>
+        <item name="colorOnSecondary">#ffffff</item>
+        <item name="colorSecondary">@color/accent__blue</item>
+        <item name="colorSecondaryVariant">@color/accent__blue__dark</item>
+        <item name="colorBottomNavigation">?colorPrimary</item>
         <item name="colorEntryListHeader">@color/light_theme__entry_list_header</item>
-        <item name="colorPopupBackground">@color/fallback__popup_background</item>
         <item name="colorGray">@color/light_theme__gray</item>
         <item name="android:keepScreenOn">@bool/debug</item>
         <item name="toolbarStyle">@style/LightTheme.Widget.Toolbar</item>
@@ -48,53 +57,72 @@
 
     <style name="LightTheme.NoActionBar" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="android:colorBackground">@color/light_theme__background</item>
-        <item name="android:colorEdgeEffect">?colorAccent</item>
-        <item name="colorPrimary">@color/light_theme__primary</item>
-        <item name="colorPrimaryDark">@color/light_theme__primary_dark</item>
-        <item name="colorAccent">@color/fallback__accent</item>
-        <item name="colorBottomNavigation">?colorAccent</item>
+        <item name="android:statusBarColor">@color/dark_theme__background</item>
+        <item name="android:navigationBarColor">@color/dark_theme__background</item>
+        <item name="colorPrimary">@color/accent__blue</item>
+        <item name="colorPrimaryVariant">@color/accent__blue__dark</item>
+        <item name="colorOnPrimary">#ffffff</item>
+        <item name="colorOnSecondary">#ffffff</item>
+        <item name="colorSecondary">@color/accent__blue</item>
+        <item name="colorSecondaryVariant">@color/accent__blue__dark</item>
+        <item name="colorBottomNavigation">?colorPrimary</item>
         <item name="colorEntryListHeader">@color/light_theme__entry_list_header</item>
-        <item name="colorPopupBackground">@color/fallback__popup_background</item>
         <item name="colorGray">@color/light_theme__gray</item>
         <item name="android:keepScreenOn">@bool/debug</item>
         <item name="toolbarStyle">@style/LightTheme.Widget.Toolbar</item>
     </style>
 
     <style name="LightTheme.Widget.Toolbar" parent="Widget.MaterialComponents.Toolbar">
-        <item name="popupTheme">@style/PopupTheme</item>
-    </style>
-
-    <style name="PopupTheme" parent="ThemeOverlay.MaterialComponents.Light">
-        <item name="android:colorBackground">?colorPopupBackground</item>
+        <item name="android:background">@color/light_theme__toolbar</item>
     </style>
 
     <style name="AccentBlue">
-        <item name="colorAccent">@color/accent__blue</item>
-        <item name="colorPopupBackground">@color/accent__blue_popup</item>
+        <item name="colorPrimary">@color/accent__blue</item>
+        <item name="colorPrimaryVariant">@color/accent__blue__dark</item>
+        <item name="colorOnPrimary">#ffffff</item>
+        <item name="colorOnSecondary">#ffffff</item>
+        <item name="colorSecondary">@color/accent__blue</item>
+        <item name="colorSecondaryVariant">@color/accent__blue__dark</item>
     </style>
 
     <style name="AccentGreen">
-        <item name="colorAccent">@color/accent__green</item>
-        <item name="colorPopupBackground">@color/accent__green_popup</item>
+        <item name="colorPrimary">@color/accent__green</item>
+        <item name="colorPrimaryVariant">@color/accent__green__dark</item>
+        <item name="colorOnPrimary">#ffffff</item>
+        <item name="colorOnSecondary">#ffffff</item>
+        <item name="colorSecondary">@color/accent__green</item>
+        <item name="colorSecondaryVariant">@color/accent__green__dark</item>
     </style>
 
     <style name="AccentOrange">
-        <item name="colorAccent">@color/accent__orange</item>
-        <item name="colorPopupBackground">@color/accent__orange_popup</item>
+        <item name="colorPrimary">@color/accent__orange</item>
+        <item name="colorPrimaryVariant">@color/accent__orange__dark</item>
+        <item name="colorOnPrimary">#ffffff</item>
+        <item name="colorOnSecondary">#ffffff</item>
+        <item name="colorSecondary">@color/accent__orange</item>
+        <item name="colorSecondaryVariant">@color/accent__orange__dark</item>
     </style>
 
     <style name="AccentPurple">
-        <item name="colorAccent">@color/accent__purple</item>
-        <item name="colorPopupBackground">@color/accent__purple_popup</item>
+        <item name="colorPrimary">@color/accent__purple</item>
+        <item name="colorPrimaryVariant">@color/accent__purple__dark</item>
+        <item name="colorOnPrimary">#ffffff</item>
+        <item name="colorOnSecondary">#ffffff</item>
+        <item name="colorSecondary">@color/accent__purple</item>
+        <item name="colorSecondaryVariant">@color/accent__purple__dark</item>
     </style>
 
     <style name="AccentRed">
-        <item name="colorAccent">@color/accent__red</item>
-        <item name="colorPopupBackground">@color/accent__red_popup</item>
+        <item name="colorPrimary">@color/accent__red</item>
+        <item name="colorPrimaryVariant">@color/accent__red__dark</item>
+        <item name="colorOnPrimary">#ffffff</item>
+        <item name="colorOnSecondary">#ffffff</item>
+        <item name="colorSecondary">@color/accent__red</item>
+        <item name="colorSecondaryVariant">@color/accent__red__dark</item>
     </style>
 
     <style name="BottomNavigationAccent">
-        <item name="colorBottomNavigation">?colorAccent</item>
+        <item name="colorBottomNavigation">?colorPrimary</item>
     </style>
 
     <style name="BottomNavigationGray">

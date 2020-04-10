@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <androidx.appcompat.widget.Toolbar
+        <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
@@ -41,7 +41,7 @@
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="8dp"
             android:textAppearance="?textAppearanceBody2"
-            android:textColor="?colorAccent"
+            android:textColor="?colorPrimary"
             android:textStyle="bold" />
 
         <LinearLayout
@@ -51,9 +51,9 @@
             android:layout_gravity="center_vertical"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:orientation="vertical"
-            android:gravity="center_horizontal"
             android:animateLayoutChanges="true"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
             android:visibility="gone">
 
             <TextView

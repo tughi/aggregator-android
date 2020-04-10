@@ -46,7 +46,7 @@
         android:scaleType="fitXY"
         android:src="@drawable/entry_state_pinned"
         android:textAppearance="?textAppearanceBody2"
-        android:tint="?colorAccent" />
+        android:tint="?colorPrimary" />
 
     <com.tughi.aggregator.widgets.InlineImageView
         android:id="@+id/star"
@@ -56,7 +56,7 @@
         android:scaleType="fitXY"
         android:src="@drawable/entry_state_starred"
         android:textAppearance="?textAppearanceBody2"
-        android:tint="?colorAccent" />
+        android:tint="?colorPrimary" />
 
     <TextView
         android:id="@+id/time"
