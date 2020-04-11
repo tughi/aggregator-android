@@ -5,6 +5,9 @@ import java.net.URL
 
 fun String.toAbsoluteUrl(baseUrl: String): String {
     val url = trim()
+    if (url.startsWith("data:")) {
+        return url
+    }
     try {
         val absoluteUrl = URL(url)
         return absoluteUrl.toString()
@@ -17,5 +20,4 @@ fun String.toAbsoluteUrl(baseUrl: String): String {
             throw IllegalStateException("Failed to make '$url' absolute using '$baseUrl'")
         }
     }
-
 }
