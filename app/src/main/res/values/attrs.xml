@@ -4,5 +4,6 @@
         <attr name="colorBottomNavigation" format="color" />
         <attr name="colorEntryListHeader" format="color" />
         <attr name="colorGray" format="color" />
+        <attr name="colorToolbar" format="color" />
     </declare-styleable>
 </resources>

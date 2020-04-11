@@ -3,7 +3,6 @@
     <style name="DarkTheme" parent="Theme.MaterialComponents">
         <item name="android:colorBackground">@color/dark_theme__background</item>
         <item name="android:statusBarColor">@color/dark_theme__toolbar</item>
-        <item name="android:navigationBarColor">@color/dark_theme__toolbar</item>
         <item name="colorPrimary">@color/accent__blue</item>
         <item name="colorPrimaryVariant">@color/accent__blue__dark</item>
         <item name="colorOnPrimary">#ffffff</item>
@@ -13,6 +12,7 @@
         <item name="colorBottomNavigation">?colorPrimary</item>
         <item name="colorEntryListHeader">@color/dark_theme__entry_list_header</item>
         <item name="colorGray">@color/dark_theme__gray</item>
+        <item name="colorToolbar">@color/dark_theme__toolbar</item>
         <item name="android:keepScreenOn">@bool/debug</item>
         <item name="toolbarStyle">@style/DarkTheme.Widget.Toolbar</item>
     </style>
@@ -20,7 +20,6 @@
     <style name="DarkTheme.NoActionBar" parent="Theme.MaterialComponents.NoActionBar">
         <item name="android:colorBackground">@color/dark_theme__background</item>
         <item name="android:statusBarColor">@color/dark_theme__toolbar</item>
-        <item name="android:navigationBarColor">@color/dark_theme__toolbar</item>
         <item name="colorPrimary">@color/accent__blue</item>
         <item name="colorPrimaryVariant">@color/accent__blue__dark</item>
         <item name="colorOnPrimary">#ffffff</item>
@@ -30,6 +29,7 @@
         <item name="colorBottomNavigation">?colorPrimary</item>
         <item name="colorEntryListHeader">@color/dark_theme__entry_list_header</item>
         <item name="colorGray">@color/dark_theme__gray</item>
+        <item name="colorToolbar">@color/dark_theme__toolbar</item>
         <item name="android:keepScreenOn">@bool/debug</item>
         <item name="toolbarStyle">@style/DarkTheme.Widget.Toolbar</item>
     </style>
@@ -40,8 +40,7 @@
 
     <style name="LightTheme" parent="Theme.MaterialComponents.Light">
         <item name="android:colorBackground">@color/light_theme__background</item>
-        <item name="android:statusBarColor">@color/dark_theme__background</item>
-        <item name="android:navigationBarColor">@color/dark_theme__background</item>
+        <item name="android:statusBarColor">@android:color/black</item>
         <item name="colorPrimary">@color/accent__blue</item>
         <item name="colorPrimaryVariant">@color/accent__blue__dark</item>
         <item name="colorOnPrimary">#ffffff</item>
@@ -51,14 +50,14 @@
         <item name="colorBottomNavigation">?colorPrimary</item>
         <item name="colorEntryListHeader">@color/light_theme__entry_list_header</item>
         <item name="colorGray">@color/light_theme__gray</item>
+        <item name="colorToolbar">@color/light_theme__toolbar</item>
         <item name="android:keepScreenOn">@bool/debug</item>
         <item name="toolbarStyle">@style/LightTheme.Widget.Toolbar</item>
     </style>
 
     <style name="LightTheme.NoActionBar" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="android:colorBackground">@color/light_theme__background</item>
-        <item name="android:statusBarColor">@color/dark_theme__background</item>
-        <item name="android:navigationBarColor">@color/dark_theme__background</item>
+        <item name="android:statusBarColor">@android:color/black</item>
         <item name="colorPrimary">@color/accent__blue</item>
         <item name="colorPrimaryVariant">@color/accent__blue__dark</item>
         <item name="colorOnPrimary">#ffffff</item>
@@ -68,6 +67,7 @@
         <item name="colorBottomNavigation">?colorPrimary</item>
         <item name="colorEntryListHeader">@color/light_theme__entry_list_header</item>
         <item name="colorGray">@color/light_theme__gray</item>
+        <item name="colorToolbar">@color/light_theme__toolbar</item>
         <item name="android:keepScreenOn">@bool/debug</item>
         <item name="toolbarStyle">@style/LightTheme.Widget.Toolbar</item>
     </style>

@@ -24,7 +24,7 @@
         android:id="@+id/bottom_sheet"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?colorBackgroundFloating"
+        android:background="?colorToolbar"
         android:clickable="true"
         android:elevation="16dp"
         android:focusable="true"
