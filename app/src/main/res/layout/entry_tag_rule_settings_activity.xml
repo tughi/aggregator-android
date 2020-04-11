@@ -64,7 +64,7 @@
         android:id="@+id/button_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?android:colorBackground"
+        android:background="?colorToolbar"
         android:elevation="8dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
