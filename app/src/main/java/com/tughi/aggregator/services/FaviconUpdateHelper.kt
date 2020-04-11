@@ -2,6 +2,7 @@ package com.tughi.aggregator.services
 
 import android.database.Cursor
 import android.graphics.BitmapFactory
+import android.util.Base64
 import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.utilities.Http
 import com.tughi.aggregator.utilities.getOrNull
@@ -90,23 +91,43 @@ object FaviconUpdateHelper {
 
     private suspend fun downloadIcon(icons: List<Icon>): Icon? {
         for (icon in icons) {
-            val iconResponse = Http.request(icon.url).getOrNull() ?: continue
+            val iconUrl = icon.url
+            if (iconUrl.startsWith("data:")) {
+                val iconDataIndex = iconUrl.indexOf(',')
+                if (iconDataIndex > 0) {
+                    try {
+                        val iconData = Base64.decode(iconUrl.substring(iconDataIndex + 1), Base64.DEFAULT)
+                        if (isImage(iconData)) {
+                            return icon.copy(content = iconData)
+                        }
+                    } catch (exception: Exception) {
+                        // ignored
+                    }
+                }
+            } else {
+                val iconResponse = Http.request(iconUrl).getOrNull() ?: continue
 
-            if (iconResponse.isSuccessful) {
-                val iconResponseBody = iconResponse.body ?: continue
-                val iconData = iconResponseBody.bytes()
-
-                // validate icon
-                val options = BitmapFactory.Options()
-                options.inJustDecodeBounds = true
-                BitmapFactory.decodeByteArray(iconData, 0, iconData.size, options)
-                if (options.outWidth > 0) {
-                    return icon.copy(content = iconData)
+                if (iconResponse.isSuccessful) {
+                    val iconResponseBody = iconResponse.body ?: continue
+                    val iconData = iconResponseBody.bytes()
+                    if (isImage(iconData)) {
+                        return icon.copy(content = iconData)
+                    }
                 }
             }
         }
 
         return null
+    }
+
+    private fun isImage(data: ByteArray): Boolean {
+        val options = BitmapFactory.Options()
+        options.inJustDecodeBounds = true
+        BitmapFactory.decodeByteArray(data, 0, data.size, options)
+        if (options.outWidth > 0) {
+            return true
+        }
+        return false
     }
 
     private data class Icon(val url: String, val content: ByteArray? = null) {
