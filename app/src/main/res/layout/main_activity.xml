@@ -29,7 +29,7 @@
         android:elevation="16dp"
         android:focusable="true"
         android:orientation="vertical"
-        app:behavior_peekHeight="56dp"
+        app:behavior_peekHeight="@dimen/bottom_navigation_item_height"
         app:layout_behavior="@string/bottom_sheet_behavior">
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
@@ -42,119 +42,68 @@
             app:itemTextColor="@color/bottom_navigation_item"
             app:menu="@menu/bottom_navigation" />
 
-        <TextView
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="8dp"
-            android:gravity="center_horizontal"
-            android:text="@string/styling__title"
-            android:textAppearance="?textAppearanceCaption" />
+            android:background="?colorToolbar">
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:orientation="horizontal">
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent=".5" />
 
-            <ImageView
-                android:id="@+id/theme_light"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
+            <com.tughi.aggregator.widgets.BottomSheetOption
+                android:id="@+id/theme"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:background="?selectableItemBackgroundBorderless"
-                android:padding="16dp"
-                android:src="@drawable/theme_light" />
+                app:layout_constraintEnd_toStartOf="@id/guideline"
+                app:layout_constraintTop_toTopOf="parent">
 
-            <ImageView
-                android:id="@+id/theme_dark"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_vertical|center_horizontal"
+                    android:drawableTop="@drawable/action_palette"
+                    android:text="@string/styling__title"
+                    android:textAlignment="center"
+                    android:textAppearance="?textAppearanceCaption" />
+
+            </com.tughi.aggregator.widgets.BottomSheetOption>
+
+            <com.tughi.aggregator.widgets.BottomSheetOption
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:background="?selectableItemBackgroundBorderless"
-                android:padding="16dp"
-                android:src="@drawable/theme_dark" />
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="@id/guideline"
+                app:layout_constraintTop_toTopOf="parent">
 
-        </LinearLayout>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_vertical|center_horizontal"
+                    android:drawableTop="@drawable/action_palette"
+                    android:text="@string/styling__title"
+                    android:textAlignment="center"
+                    android:textAppearance="?textAppearanceCaption" />
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:orientation="horizontal">
+            </com.tughi.aggregator.widgets.BottomSheetOption>
 
-            <ImageView
-                android:id="@+id/theme_accent_purple"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:background="?selectableItemBackgroundBorderless"
-                android:padding="16dp"
-                android:src="@drawable/theme_accent_purple" />
-
-            <ImageView
-                android:id="@+id/theme_accent_red"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:background="?selectableItemBackgroundBorderless"
-                android:padding="16dp"
-                android:src="@drawable/theme_accent_red" />
-
-            <ImageView
-                android:id="@+id/theme_accent_orange"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:background="?selectableItemBackgroundBorderless"
-                android:padding="16dp"
-                android:src="@drawable/theme_accent_orange" />
-
-            <ImageView
-                android:id="@+id/theme_accent_green"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:background="?selectableItemBackgroundBorderless"
-                android:padding="16dp"
-                android:src="@drawable/theme_accent_green" />
-
-            <ImageView
-                android:id="@+id/theme_accent_blue"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:background="?selectableItemBackgroundBorderless"
-                android:padding="16dp"
-                android:src="@drawable/theme_accent_blue" />
-
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
+            android:id="@+id/version"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"
-            android:gravity="center_horizontal"
-            android:text="@string/styling__bottom_navigation"
-            android:textAppearance="?textAppearanceCaption" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:orientation="horizontal">
-
-            <ImageView
-                android:id="@+id/theme_bottom_navigation_accent"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:background="?selectableItemBackgroundBorderless"
-                android:padding="16dp"
-                android:src="@drawable/theme_bottom_navigation_accent" />
-
-            <ImageView
-                android:id="@+id/theme_bottom_navigation_gray"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:background="?selectableItemBackgroundBorderless"
-                android:padding="16dp"
-                android:src="@drawable/theme_bottom_navigation_gray" />
-
-        </LinearLayout>
+            android:textAlignment="center"
+            android:textAppearance="?textAppearanceCaption"
+            android:textColor="?colorPrimary"
+            tools:text="Preview 27" />
 
     </LinearLayout>
 

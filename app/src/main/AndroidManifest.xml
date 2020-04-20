@@ -26,6 +26,10 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".activities.theme.ThemeActivity"
+            android:theme="@style/Theme.Aggregator.Transparent" />
+
         <activity android:name=".activities.reader.ReaderActivity" />
 
         <activity

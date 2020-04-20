@@ -4,6 +4,7 @@
 
     <string name="action__add_star">Add star</string>
     <string name="action__add_rule">Add rule</string>
+    <string name="action__close">Close</string>
     <string name="action__delete">Delete</string>
     <string name="action__invert_selection">Invert selection</string>
     <string name="action__mark_all_read">Mark all as read</string>
@@ -122,7 +123,8 @@
 
     <string name="sharing__share_via">Share via…</string>
 
-    <string name="styling__title">Styling</string>
+    <string name="styling__accent">Accent color</string>
+    <string name="styling__title">Theme</string>
     <string name="styling__bottom_navigation">Bottom navigation</string>
 
     <string name="subscribe_url">Website or feed URL</string>

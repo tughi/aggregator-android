@@ -3,6 +3,7 @@ package com.tughi.aggregator.activities.main
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.TextView
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -10,6 +11,7 @@ import com.tughi.aggregator.App
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.R
+import com.tughi.aggregator.activities.theme.ThemeActivity
 import com.tughi.aggregator.preferences.UpdateSettings
 import com.tughi.aggregator.preferences.User
 import com.tughi.aggregator.services.FeedUpdateHelper
@@ -64,7 +66,7 @@ class MainActivity : AppActivity() {
 
         bottomNavigationView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
 
-        bottomSheetBehavior.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+        bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onSlide(bottomSheet: View, slideOffsey: Float) {
                 scrimView.alpha = slideOffsey
             }
@@ -82,29 +84,12 @@ class MainActivity : AppActivity() {
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         }
 
-        val onThemeClickListener = View.OnClickListener {
-            when (it.id) {
-                R.id.theme_accent_blue -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.BLUE)
-                R.id.theme_accent_green -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.GREEN)
-                R.id.theme_accent_orange -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.ORANGE)
-                R.id.theme_accent_purple -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.PURPLE)
-                R.id.theme_accent_red -> App.style.value = App.style.value?.copy(accent = App.Style.Accent.RED)
-                R.id.theme_dark -> App.style.value = App.style.value?.copy(theme = App.Style.Theme.DARK)
-                R.id.theme_light -> App.style.value = App.style.value?.copy(theme = App.Style.Theme.LIGHT)
-                R.id.theme_bottom_navigation_accent -> App.style.value = App.style.value?.copy(navigationBar = App.Style.NavigationBar.ACCENT)
-                R.id.theme_bottom_navigation_gray -> App.style.value = App.style.value?.copy(navigationBar = App.Style.NavigationBar.GRAY)
-            }
+        bottomSheetView.findViewById<View>(R.id.theme).setOnClickListener {
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+            startActivity(Intent(this, ThemeActivity::class.java))
         }
 
-        bottomSheetView.findViewById<View>(R.id.theme_accent_blue).setOnClickListener(onThemeClickListener)
-        bottomSheetView.findViewById<View>(R.id.theme_accent_green).setOnClickListener(onThemeClickListener)
-        bottomSheetView.findViewById<View>(R.id.theme_accent_orange).setOnClickListener(onThemeClickListener)
-        bottomSheetView.findViewById<View>(R.id.theme_accent_purple).setOnClickListener(onThemeClickListener)
-        bottomSheetView.findViewById<View>(R.id.theme_accent_red).setOnClickListener(onThemeClickListener)
-        bottomSheetView.findViewById<View>(R.id.theme_bottom_navigation_accent).setOnClickListener(onThemeClickListener)
-        bottomSheetView.findViewById<View>(R.id.theme_bottom_navigation_gray).setOnClickListener(onThemeClickListener)
-        bottomSheetView.findViewById<View>(R.id.theme_dark).setOnClickListener(onThemeClickListener)
-        bottomSheetView.findViewById<View>(R.id.theme_light).setOnClickListener(onThemeClickListener)
+        bottomSheetView.findViewById<TextView>(R.id.version).text = BuildConfig.VERSION_NAME
 
         if (savedInstanceState == null) {
             val activeTab: String? = if (intent.action == ACTION_VIEW_MY_FEED) TAB_MY_FEED else App.preferences.getString(PREF_ACTIVE_TAB, null)
