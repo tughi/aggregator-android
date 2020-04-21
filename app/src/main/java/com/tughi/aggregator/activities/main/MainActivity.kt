@@ -28,6 +28,8 @@ class MainActivity : AppActivity() {
         private const val TAB_FEEDS = "feeds"
         private const val TAB_MY_FEED = "my-feed"
         private const val TAB_TAGS = "tags"
+
+        private const val INSTANCE_STATE__BOTTOM_SHEET_EXPANDED = "bottom_sheet_expanded"
     }
 
     private val bottomSheetBehavior by lazy { BottomSheetBehavior.from(bottomSheetView) }
@@ -106,6 +108,12 @@ class MainActivity : AppActivity() {
                     FeedUpdateHelper.updateOutdatedFeeds(true)
                 }
             }
+        } else {
+            if (savedInstanceState.getBoolean(INSTANCE_STATE__BOTTOM_SHEET_EXPANDED, false)) {
+                bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                scrimView.alpha = 1.toFloat()
+                scrimView.visibility = View.VISIBLE
+            }
         }
     }
 
@@ -124,6 +132,12 @@ class MainActivity : AppActivity() {
         if (intent?.action == ACTION_VIEW_MY_FEED) {
             bottomNavigationView.selectedItemId = R.id.navigation_my_feeds
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putBoolean(INSTANCE_STATE__BOTTOM_SHEET_EXPANDED, bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED)
+
+        super.onSaveInstanceState(outState)
     }
 
     override fun onDestroy() {
