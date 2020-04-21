@@ -1,6 +1,7 @@
 package com.tughi.aggregator.activities.main
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
@@ -89,6 +90,11 @@ class MainActivity : AppActivity() {
         bottomSheetView.findViewById<View>(R.id.theme).setOnClickListener {
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
             startActivity(Intent(this, ThemeActivity::class.java))
+        }
+
+        bottomSheetView.findViewById<View>(R.id.support).setOnClickListener {
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://tughi.github.io/aggregator-android/")))
         }
 
         bottomSheetView.findViewById<TextView>(R.id.version).text = BuildConfig.VERSION_NAME

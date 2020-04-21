@@ -45,7 +45,9 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?colorToolbar">
+            android:background="?colorToolbar"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp">
 
             <androidx.constraintlayout.widget.Guideline
                 android:id="@+id/guideline"
@@ -74,10 +76,10 @@
             </com.tughi.aggregator.widgets.BottomSheetOption>
 
             <com.tughi.aggregator.widgets.BottomSheetOption
+                android:id="@+id/support"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="?selectableItemBackgroundBorderless"
-                android:visibility="gone"
                 app:layout_constraintStart_toStartOf="@id/guideline"
                 app:layout_constraintTop_toTopOf="parent">
 
@@ -85,8 +87,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_gravity="center_vertical|center_horizontal"
-                    android:drawableTop="@drawable/action_palette"
-                    android:text="@string/styling__title"
+                    android:drawableTop="@drawable/action_forum"
+                    android:text="@string/support__title"
                     android:textAlignment="center"
                     android:textAppearance="?textAppearanceCaption" />
 
@@ -98,8 +100,7 @@
             android:id="@+id/version"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
+            android:layout_margin="8dp"
             android:textAlignment="center"
             android:textAppearance="?textAppearanceCaption"
             android:textColor="?colorPrimary"
