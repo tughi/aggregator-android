@@ -25,8 +25,12 @@ class FeedsFinder(private val listener: Listener) {
             reader.mark(bufferSize)
             Xml.parse(reader, feedParser.feedContentHandler)
         } catch (exception: Exception) {
-            reader.reset()
-            searchHtmlForFeeds(reader, contentUrl)
+            try {
+                reader.reset()
+                searchHtmlForFeeds(reader, contentUrl)
+            } catch (exception: Exception) {
+                // ignored
+            }
         }
     }
 
