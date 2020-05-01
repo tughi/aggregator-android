@@ -1,7 +1,6 @@
 package com.tughi.aggregator.activities.main
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
@@ -16,6 +15,7 @@ import com.tughi.aggregator.activities.theme.ThemeActivity
 import com.tughi.aggregator.preferences.UpdateSettings
 import com.tughi.aggregator.preferences.User
 import com.tughi.aggregator.services.FeedUpdateHelper
+import com.tughi.aggregator.utilities.openURL
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -94,7 +94,7 @@ class MainActivity : AppActivity() {
 
         bottomSheetView.findViewById<View>(R.id.support).setOnClickListener {
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("http://tughi.github.io/aggregator-android/support")))
+            openURL("http://tughi.github.io/aggregator-android/support")
         }
 
         bottomSheetView.findViewById<TextView>(R.id.version).text = BuildConfig.VERSION_NAME

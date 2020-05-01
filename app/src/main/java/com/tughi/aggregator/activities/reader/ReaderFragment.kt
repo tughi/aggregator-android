@@ -1,6 +1,5 @@
 package com.tughi.aggregator.activities.reader
 
-import android.content.Intent
 import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
@@ -27,6 +26,7 @@ import com.tughi.aggregator.data.EntryTags
 import com.tughi.aggregator.data.Tags
 import com.tughi.aggregator.utilities.Html
 import com.tughi.aggregator.utilities.Language
+import com.tughi.aggregator.utilities.openURL
 import com.tughi.aggregator.utilities.shareLink
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -288,12 +288,11 @@ class ReaderFragment : Fragment() {
 
         private fun shouldOverrideUrlLoading(requestUrl: Uri): Boolean {
             if (requestUrl == ENTRY_LINK_URL) {
-                if (loadedEntryLink != null) {
-                    val entryUrl = Uri.parse(loadedEntryLink)
-                    startActivity(Intent(Intent.ACTION_VIEW, entryUrl))
+                loadedEntryLink?.let {
+                    requireContext().openURL(it)
                 }
             } else {
-                startActivity(Intent(Intent.ACTION_VIEW, requestUrl))
+                requireContext().openURL(requestUrl)
             }
             return true
         }
