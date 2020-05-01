@@ -2,6 +2,11 @@ a {
     color: #ef6c00;
 }
 
+video {
+    max-width: 100%;
+    box-sizing: content-box;
+}
+
 #banner {
     height: 8rem;
     background-image: url('../banner.png');
