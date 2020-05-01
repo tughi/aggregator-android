@@ -1,0 +1,129 @@
+a {
+    color: #ef6c00;
+}
+
+#banner {
+    height: 8rem;
+    background-image: url('../banner.png');
+    background-position: center;
+    background-repeat: no-repeat;
+
+    @media (min-width: 900px) {
+        & {
+            width: 836px;
+            margin: 32px auto;
+            border-radius: 16px;
+        }
+    }
+}
+
+.container {
+    width: auto;
+    max-width: 800px;
+    padding: 0 16px;
+    margin: 32px auto;
+}
+
+body.home {
+    background: #424242;
+    color: white;
+
+    #title {
+        margin-top: 16px;
+        text-align: center;
+    }
+
+    #content {
+        margin: 32px 16px;
+    }
+
+    #screenshot {
+        position: relative;
+        margin: 32px;
+
+        > img {
+            position: relative;
+            width: 90%;
+            margin: 18% 5% 16% 5%;
+            height: auto;
+            z-index: 1;
+        }
+
+        &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 80px;
+
+            background-image: url('../phone.png');
+            background-size: 100%;
+            background-repeat: no-repeat;
+        }
+
+        &::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 90px;
+
+            background-image: url('../phone.png');
+            background-size: 100%;
+            background-position: bottom;
+            background-repeat: no-repeat;
+        }
+    }
+
+    @media (min-width: 432px) {
+        #screenshot {
+            width: 355.56px;
+            margin: 32px auto;
+        }
+    }
+
+    @media (min-width: 600px) {
+        #responsive {
+            display: flex;
+            justify-content: center;
+            padding: 32px;
+
+            #screenshot {
+                width: 50%;
+                max-width: 355.56px;
+                margin: 0;
+                margin-right: 16px;
+            }
+
+            #content {
+                align-self: center;
+                margin: 0;
+                margin-left: 16px;
+            }
+        }
+    }
+
+    #footer {
+        margin: 32px;
+        text-align: center;
+
+        > a {
+            display: inline-block;
+            font-size: 1.25rem;
+            line-height: 3rem;
+            padding: 0 2rem;
+            margin: 0 1rem 1rem 0;
+            white-space: nowrap;
+            background: #212121;
+            color: white;
+            border-radius: 3rem;
+
+            &:hover {
+                color: #ef6c00;
+                text-decoration: none;
+            }
+        }
+    }
+}

@@ -1,0 +1,9 @@
+title: Aggregator
+
+theme: jekyll-theme-primer
+
+plugins:
+  - jekyll-feed
+
+feed:
+  path: news.rss

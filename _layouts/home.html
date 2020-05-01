@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: "en-US" }}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% feed_meta %}
+
+    <title>{{ site.title }}</title>
+    <link rel="icon" type="image/png" href="{{ '/assets/favicon.png' | relative_url }}">
+    <link rel="stylesheet" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
+</head>
+
+<body class="home">
+    <div id="banner"></div>
+    <h1 id="title">{{ site.title }}</h1>
+    <div id="responsive">
+        <div id="screenshot">
+            <img src="{{ '/assets/media/20200430221100.png' | relative_url }}" alt="screenshot" />
+        </div>
+        <div id="content" class="markdown-body">
+            {{ content }}
+        </div>
+    </div>
+    </div>
+    <div id="footer">
+        <a href="https://play.google.com/store/apps/details?id=com.tughi.aggregator.next" target="_blank">Google Play</a>
+        {% assign latest_release = site.tags.release[0] %}
+        <a href="{{ latest_release.url | relative_url }}">{{ latest_release.title }}</a>
+        {% assign pages = site.pages | where_exp: "it", "it.home_link" | sort: "home_link" %}
+        {% for page in pages %}
+        <a href="{{ page.url | relative_url }}">{{ page.title }}</a>
+        {% endfor %}
+    </div>
+</body>
+
+</html>
