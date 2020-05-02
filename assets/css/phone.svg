@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg width="500" height="1500" version="1.1" viewBox="0 0 500 1500" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g>
+  <path d="m0 1250v170c0 80 80 80 215 80h70c135 0 215 0 215-80v-1340c0-80-80-80-215-80h-70c-135 0-215 0-215 80v170z" fill="#bdbdbd"/>
+  <path d="m193 18v13h114v-13h-57z" fill="#424242"/>
+  <path d="m193 15c-121.06 0.47796-187 6.444-187 65v170 1e3 170c0 62 74 65 209 65h35 35c135 0 209-3 209-65v-170-1e3 -170c0-58.556-65.937-64.522-187-65-7 0-7 13-17 13h-40-40c-10 0-10-13-17-13z" fill="#1a1a1a"/>
+  <g fill="#424242">
+   <circle cx="58" cy="50" r="6"/>
+   <circle cx="76" cy="50" r="6"/>
+   <circle cx="428" cy="50" r="10"/>
+  </g>
+  <circle cx="428" cy="50" r="3" fill="#616161"/>
+ </g>
+</svg>
