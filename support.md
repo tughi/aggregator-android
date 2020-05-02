@@ -11,7 +11,7 @@ Please don't use email to request features or report bugs.
 
 ## Feature requests
 
-If you have a feature request, please [check the existing issues]({{ site.github.repository_url }}/issues) first, and if no one else has already requested it, then [create a new issue]({{ site.github.repository_url }}/issues/new).
+If you have a feature request, please [check the existing issues]({{ site.github.repository_url }}/issues) first, and if no one else has already requested it, then [create a new issue]({{ site.github.repository_url }}/issues/new/choose).
 
 ## Bugs
 
