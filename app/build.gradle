@@ -20,7 +20,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 29
 
-        versionName = 'Preview:028'
+        versionName = 'Preview:029'
         versionCode = 299000 + Integer.parseInt(versionName.split(':')[1])
     }
 
@@ -46,7 +46,7 @@ dependencies {
     implementation "androidx.fragment:fragment-ktx:1.2.4"
     implementation 'androidx.lifecycle:lifecycle-livedata:2.2.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel:2.2.0'
-    implementation 'androidx.preference:preference:1.1.0'
+    implementation 'androidx.preference:preference:1.1.1'
     implementation 'androidx.sqlite:sqlite-ktx:2.1.0'
     implementation 'androidx.sqlite:sqlite-framework:2.1.0'
     implementation 'androidx.viewpager:viewpager:1.0.0'
