@@ -26,9 +26,9 @@ object FaviconUpdateHelper {
     }
 
     private val linkPattern = Pattern.compile("<(body)|<link([^>]+)>")
-    private val relIconPattern = Pattern.compile("rel\\s*=\\s*['\"]([sS]hortcut [iI]con|icon)['\"]")
-    private val hrefPattern = Pattern.compile("href\\s*=\\s*['\"]([^'\"]+)['\"]")
-    private val sizesPattern = Pattern.compile("sizes\\s*=\\s*['\"]([^'\"]+)['\"]")
+    private val relIconPattern = Pattern.compile("rel\\s*=\\s*['\"]?([sS]hortcut [iI]con|icon)['\"]?")
+    private val hrefPattern = Pattern.compile("href\\s*=\\s*['\"]?([^'\"]+)['\"]?")
+    private val sizesPattern = Pattern.compile("sizes\\s*=\\s*['\"]?([^'\"]+)['\"]?")
 
     private suspend fun detectWebsiteFavicon(feedLink: String): Icon? {
         val response = Http.request(feedLink).getOrNull() ?: return null
