@@ -26,9 +26,8 @@ object FaviconUpdateHelper {
     }
 
     private val linkPattern = Pattern.compile("<(body)|<link([^>]+)>")
-    private val relIconPattern = Pattern.compile("rel\\s*=\\s*['\"]?([sS]hortcut [iI]con|icon)['\"]?")
-    private val hrefPattern = Pattern.compile("href\\s*=\\s*['\"]?([^'\"]+)['\"]?")
-    private val sizesPattern = Pattern.compile("sizes\\s*=\\s*['\"]?([^'\"]+)['\"]?")
+    private val relIconPattern = Pattern.compile("rel\\s*=\\s*['\"]?([sS]hortcut [iI]con|icon)")
+    private val hrefPattern = Pattern.compile("href\\s*=\\s*('[^']+|\"[^\"]+|[^ ]+)")
 
     private suspend fun detectWebsiteFavicon(feedLink: String): Icon? {
         val response = Http.request(feedLink).getOrNull() ?: return null
@@ -47,26 +46,20 @@ object FaviconUpdateHelper {
             // is it an icon link?
             val relIconMatcher = relIconPattern.matcher(attributes)
             if (relIconMatcher.find()) {
-                val shortcut = relIconMatcher.group(1)!!.toLowerCase().startsWith("shortcut")
+                val shortcut = relIconMatcher.group(1)!!.toLowerCase().contains("shortcut")
 
                 val hrefMatcher = hrefPattern.matcher(attributes)
                 // does the link have the required href?
                 if (hrefMatcher.find()) {
-                    val iconUrl = hrefMatcher.group(1)!!.toAbsoluteUrl(response.request.url.toString())
+                    val href = hrefMatcher.group(1)!!
+                    val iconUrl = when (href[0]) {
+                        '\'', '\"' -> href.substring(1)
+                        else -> href
+                    }.toAbsoluteUrl(response.request.url.toString())
 
                     if (shortcut) {
                         icons.add(0, Icon(iconUrl))
                     } else {
-                        // check size
-                        val sizesMatcher = sizesPattern.matcher(attributes)
-                        if (sizesMatcher.find()) {
-                            val sizes = sizesMatcher.group(1)!!.trim().toLowerCase()
-                            if (sizes == "any" || sizes.split(" ".toRegex()).size > 1) {
-                                // multiple sizes are not supported
-                                continue
-                            }
-                        }
-
                         icons.add(Icon(iconUrl))
                     }
                 }
@@ -81,8 +74,12 @@ object FaviconUpdateHelper {
     private suspend fun detectRootFavicon(url: String): Icon? {
         val matcher = baseUrlPattern.matcher(url)
         if (matcher.matches()) {
-            val faviconUrl = matcher.group(1)!! + "/favicon.ico"
-
+            val baseUrl = matcher.group(1)!!
+            val icon = detectWebsiteFavicon(baseUrl)
+            if (icon != null) {
+                return icon
+            }
+            val faviconUrl = "$baseUrl/favicon.ico"
             return downloadIcon(listOf(Icon(faviconUrl)))
         }
 
