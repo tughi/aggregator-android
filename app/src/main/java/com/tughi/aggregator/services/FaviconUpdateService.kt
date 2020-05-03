@@ -2,6 +2,9 @@ package com.tughi.aggregator.services
 
 import android.app.job.JobParameters
 import android.app.job.JobService
+import android.database.Cursor
+import com.tughi.aggregator.data.Feeds
+import com.tughi.aggregator.data.FeedsWithoutFaviconCriteria
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -14,10 +17,11 @@ class FaviconUpdateService : JobService() {
     private val jobs = mutableMapOf<Int, WeakReference<Job>>()
 
     override fun onStartJob(params: JobParameters): Boolean {
-        val feedId = params.extras.getLong(FaviconUpdateScheduler.FEED_ID)
-
         GlobalScope.launch(Dispatchers.IO) {
-            FaviconUpdateHelper.updateFavicon(feedId)
+            val feeds = Feeds.query(FeedsWithoutFaviconCriteria, Feed.QueryHelper)
+            for (feed in feeds) {
+                FaviconUpdateHelper.updateFavicon(feed.id)
+            }
         }.also { job ->
             jobs[params.jobId] = WeakReference(job)
 
@@ -33,12 +37,19 @@ class FaviconUpdateService : JobService() {
         val jobReference = jobs[params.jobId]
         if (jobReference != null) {
             val job = jobReference.get()
-            if (job != null) {
-                job.cancel()
-            }
+            job?.cancel()
         }
-
         return true
+    }
+
+    class Feed(val id: Long) {
+        object QueryHelper : Feeds.QueryHelper<Feed>(
+                Feeds.ID
+        ) {
+            override fun createRow(cursor: Cursor) = Feed(
+                    id = cursor.getLong(0)
+            )
+        }
     }
 
 }

@@ -48,16 +48,14 @@ fun restoreFeeds() {
                                             Feeds.UpdateRowCriteria(feedId),
                                             Feeds.NEXT_UPDATE_TIME to AutoUpdateScheduler.calculateNextUpdateTime(feedId, feed.updateMode, 0)
                                     )
-
-                                    GlobalScope.launch(Dispatchers.Main) {
-                                        FaviconUpdateScheduler.schedule(feedId)
-                                    }
                                 }
                             }
                         })
                     }
 
                     AutoUpdateScheduler.schedule()
+
+                    FaviconUpdateScheduler.schedule()
                 }
             }
         }

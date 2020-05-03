@@ -112,7 +112,7 @@ class SubscribeFeedFragment : Fragment() {
                     }
 
                     launch(Dispatchers.Main) {
-                        FaviconUpdateScheduler.schedule(feedId)
+                        FaviconUpdateScheduler.schedule()
 
                         activity?.finish()
                     }

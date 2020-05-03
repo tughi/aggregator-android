@@ -149,6 +149,8 @@ class FeedSettingsFragment : Fragment() {
         val updateMode = viewModel.newUpdateMode
 
         viewModel.feed.value?.let { feed ->
+            val faviconUrl = if (url == feed.url) feed.faviconUrl else null
+
             GlobalScope.launch {
                 Database.transaction {
                     Feeds.update(
@@ -156,7 +158,8 @@ class FeedSettingsFragment : Fragment() {
                             Feeds.URL to url,
                             Feeds.CUSTOM_TITLE to if (title.isEmpty() || title == feed.title) null else title,
                             Feeds.CLEANUP_MODE to (cleanupMode ?: feed.cleanupMode).serialize(),
-                            Feeds.UPDATE_MODE to (updateMode ?: feed.updateMode).serialize()
+                            Feeds.UPDATE_MODE to (updateMode ?: feed.updateMode).serialize(),
+                            Feeds.FAVICON_URL to faviconUrl
                     )
                 }
 
@@ -169,7 +172,9 @@ class FeedSettingsFragment : Fragment() {
                 }
 
                 launch(Dispatchers.Main) {
-                    FaviconUpdateScheduler.schedule(feed.id)
+                    if (faviconUrl == null) {
+                        FaviconUpdateScheduler.schedule()
+                    }
 
                     activity?.finish()
                 }
@@ -189,7 +194,8 @@ class FeedSettingsFragment : Fragment() {
             val title: String,
             val customTitle: String?,
             val cleanupMode: CleanupMode,
-            val updateMode: UpdateMode
+            val updateMode: UpdateMode,
+            val faviconUrl: String?
     ) {
         object QueryHelper : Feeds.QueryHelper<Feed>(
                 Feeds.ID,
@@ -197,7 +203,8 @@ class FeedSettingsFragment : Fragment() {
                 Feeds.TITLE,
                 Feeds.CUSTOM_TITLE,
                 Feeds.CLEANUP_MODE,
-                Feeds.UPDATE_MODE
+                Feeds.UPDATE_MODE,
+                Feeds.FAVICON_URL
         ) {
             override fun createRow(cursor: Cursor) = Feed(
                     id = cursor.getLong(0),
@@ -205,7 +212,8 @@ class FeedSettingsFragment : Fragment() {
                     title = cursor.getString(2),
                     customTitle = cursor.getString(3),
                     cleanupMode = CleanupMode.deserialize(cursor.getString(4)),
-                    updateMode = UpdateMode.deserialize(cursor.getString(5))
+                    updateMode = UpdateMode.deserialize(cursor.getString(5)),
+                    faviconUrl = cursor.getString(6)
             )
         }
     }

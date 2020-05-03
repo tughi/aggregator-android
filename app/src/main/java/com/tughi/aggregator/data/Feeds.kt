@@ -93,3 +93,9 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
     }
 
 }
+
+object FeedsWithoutFaviconCriteria : Feeds.QueryCriteria {
+    override fun config(query: Query.Builder) {
+        query.where("f.favicon_url IS NULL", emptyArray())
+    }
+}

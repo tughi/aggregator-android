@@ -122,15 +122,15 @@ class OpmlImportActivity : AppActivity() {
                                         Feeds.UpdateRowCriteria(feedId),
                                         Feeds.NEXT_UPDATE_TIME to AutoUpdateScheduler.calculateNextUpdateTime(feedId, it.updateMode, 0)
                                 )
-
-                                GlobalScope.launch(Dispatchers.Main) {
-                                    FaviconUpdateScheduler.schedule(feedId)
-                                }
                             }
                         }
                     }
 
                     AutoUpdateScheduler.schedule()
+
+                    launch(Dispatchers.Main) {
+                        FaviconUpdateScheduler.schedule()
+                    }
 
                     backupFeeds()
                 }
