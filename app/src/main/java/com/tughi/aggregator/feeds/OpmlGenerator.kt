@@ -35,6 +35,7 @@ object OpmlGenerator {
                     xml.attribute(null, "htmlUrl", feed.link)
                 }
                 xml.attribute(null, "updateMode", feed.updateMode.serialize())
+                xml.attribute(null, "cleanupMode", feed.cleanupMode.serialize())
 
                 xml.endTag(null, "outline")
             }

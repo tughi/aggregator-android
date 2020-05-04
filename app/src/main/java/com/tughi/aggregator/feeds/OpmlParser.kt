@@ -1,6 +1,8 @@
 package com.tughi.aggregator.feeds
 
 import android.util.Xml
+import com.tughi.aggregator.data.CleanupMode
+import com.tughi.aggregator.data.DefaultCleanupMode
 import com.tughi.aggregator.data.DefaultUpdateMode
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.xml.Document
@@ -48,9 +50,16 @@ object OpmlParser {
                     }
                     val feedUrl = attributes.getValue("xmlUrl")
                     if (feedUrl != null) {
-                        val feedUpdateMode = when (val value = attributes.getValue("updateMode")) {
-                            null -> DefaultUpdateMode
-                            else -> UpdateMode.deserialize(value)
+                        val feedCleanupMode: CleanupMode
+                        val feedUpdateMode: UpdateMode
+                        val outlineUpdateMode = attributes.getValue("updateMode")
+                        val outlineCleanupMode = attributes.getValue("cleanupMode")
+                        if (outlineCleanupMode == null || outlineUpdateMode == null) {
+                            feedCleanupMode = DefaultCleanupMode
+                            feedUpdateMode = DefaultUpdateMode
+                        } else {
+                            feedCleanupMode = CleanupMode.deserialize(outlineCleanupMode)
+                            feedUpdateMode = UpdateMode.deserialize(outlineUpdateMode)
                         }
                         val feedCategory = if (path.isEmpty()) null else path[0]
 
@@ -60,7 +69,8 @@ object OpmlParser {
                                 link = feedLink,
                                 category = feedCategory,
                                 customTitle = feedCustomTitle,
-                                updateMode = feedUpdateMode
+                                updateMode = feedUpdateMode,
+                                cleanupMode = feedCleanupMode
                         ))
                     }
                 }
