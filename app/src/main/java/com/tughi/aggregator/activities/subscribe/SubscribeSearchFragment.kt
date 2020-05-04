@@ -16,7 +16,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputLayout
-import com.tughi.aggregator.OpmlImportActivity
+import com.tughi.aggregator.activities.opml.OpmlImportActivity
 import com.tughi.aggregator.R
 
 class SubscribeSearchFragment : Fragment(), SubscribeSearchFragmentAdapterListener {

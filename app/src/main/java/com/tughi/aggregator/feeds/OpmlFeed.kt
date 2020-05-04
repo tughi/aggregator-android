@@ -13,6 +13,7 @@ data class OpmlFeed(
         val category: String? = null,
         val updateMode: UpdateMode,
         val cleanupMode: CleanupMode,
+        val enabled: Boolean = true,
         val excluded: Boolean = false
 ) {
     object QueryHelper : Feeds.QueryHelper<OpmlFeed>(

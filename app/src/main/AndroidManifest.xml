@@ -62,7 +62,7 @@
             android:label="@string/update_mode" />
 
         <activity
-            android:name=".OpmlImportActivity"
+            android:name=".activities.opml.OpmlImportActivity"
             android:label="@string/opml_import__title" />
 
         <service

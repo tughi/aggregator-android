@@ -1,6 +1,7 @@
-package com.tughi.aggregator
+package com.tughi.aggregator.activities.opml
 
 import android.app.Activity
+import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -16,9 +17,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.tughi.aggregator.App
+import com.tughi.aggregator.AppActivity
+import com.tughi.aggregator.R
 import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.feeds.OpmlFeed
 import com.tughi.aggregator.feeds.OpmlParser
@@ -31,18 +33,25 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 
 internal class OpmlImportViewModel : ViewModel() {
-
     val feeds = MutableLiveData<List<OpmlFeed>>()
 
     fun parseOpml(uri: Uri) {
         GlobalScope.launch(Dispatchers.IO) {
+            val subscriptions = Feeds.query(Feeds.AllCriteria, object : Feeds.QueryHelper<String>(Feeds.URL) {
+                override fun createRow(cursor: Cursor): String = cursor.getString(0)
+            }).toSet()
+
             App.instance.contentResolver?.openInputStream(uri)?.use {
                 val feeds = mutableListOf<OpmlFeed>()
 
                 try {
                     OpmlParser.parse(it, object : OpmlParser.Listener {
                         override fun onFeedParsed(feed: OpmlFeed) {
-                            feeds.add(feed)
+                            if (subscriptions.contains(feed.url)) {
+                                feeds.add(feed.copy(enabled = false, excluded = true))
+                            } else {
+                                feeds.add(feed)
+                            }
                         }
                     })
                 } catch (exception: IOException) {
@@ -60,17 +69,7 @@ internal class OpmlImportViewModel : ViewModel() {
         val newFeeds = mutableListOf<OpmlFeed>()
 
         feeds.value?.forEach {
-            newFeeds.add(it.copy(excluded = !it.excluded))
-        }
-
-        feeds.value = newFeeds
-    }
-
-    fun toggleFeed(feed: OpmlFeed) {
-        val newFeeds = mutableListOf<OpmlFeed>()
-
-        feeds.value?.forEach {
-            if (it === feed) {
+            if (it.enabled) {
                 newFeeds.add(it.copy(excluded = !it.excluded))
             } else {
                 newFeeds.add(it)
@@ -80,10 +79,22 @@ internal class OpmlImportViewModel : ViewModel() {
         feeds.value = newFeeds
     }
 
+    fun toggleFeed(feed: OpmlFeed) {
+        val newFeeds = mutableListOf<OpmlFeed>()
+
+        feeds.value?.forEach {
+            if (it === feed && feed.enabled) {
+                newFeeds.add(it.copy(excluded = !it.excluded))
+            } else {
+                newFeeds.add(it)
+            }
+        }
+
+        feeds.value = newFeeds
+    }
 }
 
 class OpmlImportActivity : AppActivity() {
-
     private lateinit var viewModel: OpmlImportViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -141,7 +152,7 @@ class OpmlImportActivity : AppActivity() {
         }
 
         viewModel.feeds.observe(this, Observer { feeds ->
-            feedsAdapter.submitList(feeds)
+            feedsAdapter.feeds = feeds
 
             val feedCount = feeds.size
 
@@ -179,11 +190,9 @@ class OpmlImportActivity : AppActivity() {
 
         return true
     }
-
 }
 
 internal class OpmlFeedViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
     val checkbox: ImageView = itemView.findViewById(R.id.checkbox)
     val title: TextView = itemView.findViewById(R.id.title)
     val url: TextView = itemView.findViewById(R.id.url)
@@ -193,18 +202,37 @@ internal class OpmlFeedViewHolder(itemView: View) : RecyclerView.ViewHolder(item
     fun onBind(feed: OpmlFeed) {
         this.feed = feed
 
+        itemView.isEnabled = feed.enabled
+
+        checkbox.isEnabled = feed.enabled
         if (feed.excluded) {
             checkbox.setImageResource(R.drawable.check_box_unchecked)
         } else {
             checkbox.setImageResource(R.drawable.check_box_checked)
         }
+
+        title.isEnabled = feed.enabled
         title.text = feed.customTitle ?: feed.title
+
+        url.isEnabled = feed.enabled
         url.text = feed.url
     }
-
 }
 
-internal class OpmlFeedsAdapter(val viewModel: OpmlImportViewModel) : ListAdapter<OpmlFeed, OpmlFeedViewHolder>(FeedDiffUtil) {
+internal class OpmlFeedsAdapter(val viewModel: OpmlImportViewModel) : RecyclerView.Adapter<OpmlFeedViewHolder>() {
+    var feeds = emptyList<OpmlFeed>()
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
+
+    init {
+        setHasStableIds(true)
+    }
+
+    override fun getItemCount(): Int = feeds.size
+
+    override fun getItemId(position: Int): Long = position.toLong()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OpmlFeedViewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(R.layout.opml_import_list_item, parent, false)
@@ -218,15 +246,6 @@ internal class OpmlFeedsAdapter(val viewModel: OpmlImportViewModel) : ListAdapte
     }
 
     override fun onBindViewHolder(holder: OpmlFeedViewHolder, position: Int) {
-        holder.onBind(getItem(position))
+        holder.onBind(feeds[position])
     }
-
-}
-
-object FeedDiffUtil : DiffUtil.ItemCallback<OpmlFeed>() {
-
-    override fun areItemsTheSame(oldItem: OpmlFeed, newItem: OpmlFeed) = oldItem === newItem
-
-    override fun areContentsTheSame(oldItem: OpmlFeed, newItem: OpmlFeed) = oldItem == newItem
-
 }
