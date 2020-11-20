@@ -149,11 +149,6 @@
     <string name="subscribe__find_feeds">Find feeds</string>
     <string name="subscribe__load_opml_file">Load OPML file</string>
 
-    <string name="subscribe_feed__title">Title</string>
-    <string name="subscribe_feed__update_mode">Update mode</string>
-    <string name="subscribe_feed__update_mode__default">Default</string>
-    <string name="subscribe_feed__url">URL</string>
-
     <string name="support__title">Support</string>
 
     <string name="unsubscribe_feed__message">Are you sure you want to unsubscribe from this feed and delete all its entries?</string>
