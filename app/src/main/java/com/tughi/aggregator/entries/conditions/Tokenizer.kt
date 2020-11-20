@@ -20,7 +20,7 @@ class Tokenizer(val condition: CharSequence) {
         var state = State.START
         var string: StringBuilder? = null
         while (true) {
-            val char = if (tokenEnd < condition.length) condition[tokenEnd] else 0
+            val char: Char = if (tokenEnd < condition.length) condition[tokenEnd] else 0.toChar()
             when (state) {
                 State.PAREN_LEFT -> {
                     return LeftParenToken(tokenStart)
@@ -45,7 +45,7 @@ class Tokenizer(val condition: CharSequence) {
                     ')' -> {
                         state = State.PAREN_RIGHT
                     }
-                    0 -> {
+                    0.toChar() -> {
                         return EndOfCondition(tokenStart)
                     }
                     else -> {
@@ -59,7 +59,7 @@ class Tokenizer(val condition: CharSequence) {
                     '\\' -> {
                         state = State.STRING_ESCAPE
                     }
-                    0 -> {
+                    0.toChar() -> {
                         return UnsupportedToken(condition.substring(tokenStart, tokenEnd), tokenStart, tokenEnd)
                     }
                     else -> {

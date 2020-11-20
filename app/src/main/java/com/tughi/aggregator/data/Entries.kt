@@ -67,7 +67,7 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
 
     class UpdateFeedEntryCriteria(feedId: Long, uid: String) : UpdateCriteria {
         override val selection = "feed_id = ? AND uid = ?"
-        override val selectionArgs = arrayOf(feedId, uid)
+        override val selectionArgs = arrayOf<Any>(feedId, uid)
     }
 
     class UpdateEntryCriteria(id: Long) : UpdateCriteria {
