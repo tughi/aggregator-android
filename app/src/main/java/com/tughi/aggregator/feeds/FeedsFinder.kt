@@ -11,8 +11,6 @@ import java.util.regex.Pattern
 class FeedsFinder(private val listener: Listener) {
 
     fun find(content: Reader, contentUrl: String) {
-        assert(content.markSupported())
-
         val feedParser = FeedParser(contentUrl, object : FeedParser.Listener() {
             override fun onParsedFeed(title: String, link: String?, language: String?) {
                 listener.onFeedFound(url = contentUrl, title = title, link = link)
