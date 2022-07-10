@@ -23,7 +23,7 @@ class FeedEntriesFragmentViewModel(feedId: Long) : ViewModel() {
 
     class Factory(private val feedId: Long) : ViewModelProvider.Factory {
 
-        override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(FeedEntriesFragmentViewModel::class.java)) {
                 @Suppress("UNCHECKED_CAST")
                 return FeedEntriesFragmentViewModel(feedId) as T

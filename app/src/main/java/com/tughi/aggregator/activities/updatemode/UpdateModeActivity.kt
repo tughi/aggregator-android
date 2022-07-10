@@ -76,7 +76,7 @@ class UpdateModeActivity : AppActivity() {
         recyclerView.adapter = adapter
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         val result = super.onCreateOptionsMenu(menu)
 
         menu?.let {

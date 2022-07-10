@@ -98,7 +98,7 @@ class FeedsPickerActivity : AppActivity() {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         super.onCreateOptionsMenu(menu)
 
         menuInflater.inflate(R.menu.feeds_picker_activity, menu)
@@ -181,7 +181,7 @@ class FeedsPickerActivity : AppActivity() {
         }
 
         class Factory(private val selectedFeedIds: LongArray, private val singleChoice: Boolean) : ViewModelProvider.Factory {
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 if (modelClass.isAssignableFrom(FeedViewModel::class.java)) {
                     @Suppress("UNCHECKED_CAST")
                     return FeedViewModel(selectedFeedIds, singleChoice) as T

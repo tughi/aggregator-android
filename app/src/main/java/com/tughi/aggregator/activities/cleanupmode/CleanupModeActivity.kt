@@ -48,15 +48,15 @@ class CleanupModeActivity : AppActivity() {
         val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
 
         val cleanupModes = mutableListOf(
-                NeverCleanupMode,
-                Age3DaysCleanupMode,
-                Age1WeekCleanupMode,
-                Age1MonthCleanupMode,
-                Age3MonthsCleanupMode,
-                Age6MonthsCleanupMode,
-                Age1YearCleanupMode,
-                Age3YearsCleanupMode,
-                Age6YearsCleanupMode
+            NeverCleanupMode,
+            Age3DaysCleanupMode,
+            Age1WeekCleanupMode,
+            Age1MonthCleanupMode,
+            Age3MonthsCleanupMode,
+            Age6MonthsCleanupMode,
+            Age1YearCleanupMode,
+            Age3YearsCleanupMode,
+            Age6YearsCleanupMode
         )
         if (intent.getBooleanExtra(EXTRA_SHOW_DEFAULT, false)) {
             cleanupModes.add(0, DefaultCleanupMode)
@@ -70,16 +70,13 @@ class CleanupModeActivity : AppActivity() {
         recyclerView.adapter = adapter
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         val result = super.onCreateOptionsMenu(menu)
 
-        menu?.let {
-            menuInflater.inflate(R.menu.cleanup_mode_activity, it)
-            saveMenuItem = it.findItem(R.id.save)
-            return true
-        }
+        menuInflater.inflate(R.menu.cleanup_mode_activity, menu)
+        saveMenuItem = menu.findItem(R.id.save)
 
-        return result
+        return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

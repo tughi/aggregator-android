@@ -111,7 +111,7 @@ class TagsPickerActivity : AppActivity() {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         super.onCreateOptionsMenu(menu)
 
         menuInflater.inflate(R.menu.tags_picker_fragment, menu)
@@ -187,7 +187,7 @@ class TagsPickerActivity : AppActivity() {
         }
 
         class Factory(private val selectedTagIds: LongArray, private val singleChoice: Boolean) : ViewModelProvider.Factory {
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 if (modelClass.isAssignableFrom(TagsPickerViewModel::class.java)) {
                     @Suppress("UNCHECKED_CAST")
                     return TagsPickerViewModel(selectedTagIds, singleChoice) as T

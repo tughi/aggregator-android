@@ -46,11 +46,11 @@ class TagSettingsActivity : AppActivity() {
 
         fun start(context: Context, tagId: Long?) {
             context.startActivity(
-                    Intent(context, TagSettingsActivity::class.java).apply {
-                        if (tagId != null) {
-                            putExtra(EXTRA_TAG_ID, tagId)
-                        }
+                Intent(context, TagSettingsActivity::class.java).apply {
+                    if (tagId != null) {
+                        putExtra(EXTRA_TAG_ID, tagId)
                     }
+                }
             )
         }
     }
@@ -93,7 +93,7 @@ class TagSettingsActivity : AppActivity() {
         })
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         super.onCreateOptionsMenu(menu)
 
         menuInflater.inflate(R.menu.tag_settings_activity, menu)
@@ -101,14 +101,12 @@ class TagSettingsActivity : AppActivity() {
         return true
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         super.onPrepareOptionsMenu(menu)
 
-        if (menu != null) {
-            val tag = viewModel.tag.value
-            menu.findItem(R.id.delete)?.isVisible = tag?.deletable ?: false
-            menu.findItem(R.id.add_rule)?.isVisible = tag != null && tag.id != Tags.ALL
-        }
+        val tag = viewModel.tag.value
+        menu.findItem(R.id.delete)?.isVisible = tag?.deletable ?: false
+        menu.findItem(R.id.add_rule)?.isVisible = tag != null && tag.id != Tags.ALL
 
         return true
     }
@@ -136,12 +134,12 @@ class TagSettingsActivity : AppActivity() {
         GlobalScope.launch {
             if (tag != null) {
                 Tags.update(
-                        Tags.UpdateTagCriteria(tag.id),
-                        Tags.NAME to name
+                    Tags.UpdateTagCriteria(tag.id),
+                    Tags.NAME to name
                 )
             } else {
                 Tags.insert(
-                        Tags.NAME to name
+                    Tags.NAME to name
                 )
             }
         }
@@ -150,33 +148,33 @@ class TagSettingsActivity : AppActivity() {
     }
 
     class Feed(
-            val id: Long,
-            val title: String
+        val id: Long,
+        val title: String
     ) {
         override fun toString() = title
 
         object QueryHelper : Feeds.QueryHelper<Feed>(
-                Feeds.ID,
-                Feeds.CUSTOM_TITLE,
-                Feeds.TITLE
+            Feeds.ID,
+            Feeds.CUSTOM_TITLE,
+            Feeds.TITLE
         ) {
             override fun createRow(cursor: Cursor) = Feed(
-                    id = cursor.getLong(0),
-                    title = cursor.getString(1) ?: cursor.getString(2)
+                id = cursor.getLong(0),
+                title = cursor.getString(1) ?: cursor.getString(2)
             )
         }
     }
 
     class Tag(val id: Long, val name: String, val deletable: Boolean) {
         object QueryHelper : Tags.QueryHelper<Tag>(
-                Tags.ID,
-                Tags.NAME,
-                Tags.EDITABLE
+            Tags.ID,
+            Tags.NAME,
+            Tags.EDITABLE
         ) {
             override fun createRow(cursor: Cursor) = Tag(
-                    id = cursor.getLong(0),
-                    name = cursor.getString(1),
-                    deletable = cursor.getInt(2) != 0
+                id = cursor.getLong(0),
+                name = cursor.getString(1),
+                deletable = cursor.getInt(2) != 0
             )
         }
     }
@@ -187,12 +185,16 @@ class TagSettingsActivity : AppActivity() {
         init {
             val hasFeedTitle = feedTitle != null
             val hasCondition = condition.tokens.size > 1
-            val text = SpannableStringBuilder(App.instance.getString(when {
-                hasFeedTitle && hasCondition -> R.string.tag_settings__tagged_entries__rule__from_feed_with_condition
-                hasFeedTitle -> R.string.tag_settings__tagged_entries__rule__from_feed
-                hasCondition -> R.string.tag_settings__tagged_entries__rule__all_feeds_with_condition
-                else -> R.string.tag_settings__tagged_entries__rule__all_feeds
-            }))
+            val text = SpannableStringBuilder(
+                App.instance.getString(
+                    when {
+                        hasFeedTitle && hasCondition -> R.string.tag_settings__tagged_entries__rule__from_feed_with_condition
+                        hasFeedTitle -> R.string.tag_settings__tagged_entries__rule__from_feed
+                        hasCondition -> R.string.tag_settings__tagged_entries__rule__all_feeds_with_condition
+                        else -> R.string.tag_settings__tagged_entries__rule__all_feeds
+                    }
+                )
+            )
             if (hasFeedTitle) {
                 val feedTitle = SpannableString(feedTitle).also {
                     it.setSpan(ForegroundColorSpan(App.accentColor), 0, it.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
@@ -217,16 +219,16 @@ class TagSettingsActivity : AppActivity() {
         }
 
         object QueryHelper : EntryTagRules.QueryHelper<TagRule>(
-                EntryTagRules.ID,
-                EntryTagRules.FEED_TITLE,
-                EntryTagRules.CONDITION,
-                EntryTagRules.TAGGED_ENTRIES
+            EntryTagRules.ID,
+            EntryTagRules.FEED_TITLE,
+            EntryTagRules.CONDITION,
+            EntryTagRules.TAGGED_ENTRIES
         ) {
             override fun createRow(cursor: Cursor) = TagRule(
-                    id = cursor.getLong(0),
-                    feedTitle = cursor.getString(1),
-                    condition = Condition(cursor.getString(2)),
-                    taggedEntries = cursor.getInt(3)
+                id = cursor.getLong(0),
+                feedTitle = cursor.getString(1),
+                condition = Condition(cursor.getString(2)),
+                taggedEntries = cursor.getInt(3)
             )
         }
     }
@@ -250,12 +252,12 @@ class TagSettingsActivity : AppActivity() {
                 }
                 GlobalScope.launch {
                     manualTags.postValue(
-                            EntryTags.queryCount(
-                                    EntryTags.ManuallyTaggedEntriesQueryCriteria(tagId),
-                                    object : EntryTags.QueryHelper<Any>(EntryTags.ENTRY_ID) {
-                                        override fun createRow(cursor: Cursor) = Unit
-                                    }
-                            )
+                        EntryTags.queryCount(
+                            EntryTags.ManuallyTaggedEntriesQueryCriteria(tagId),
+                            object : EntryTags.QueryHelper<Any>(EntryTags.ENTRY_ID) {
+                                override fun createRow(cursor: Cursor) = Unit
+                            }
+                        )
                     )
                 }
             }
@@ -263,7 +265,7 @@ class TagSettingsActivity : AppActivity() {
 
         class Factory(private val tagId: Long?) : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 if (modelClass.isAssignableFrom(TagSettingsViewModel::class.java)) {
                     return TagSettingsViewModel(tagId) as T
                 }

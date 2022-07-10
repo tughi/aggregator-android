@@ -29,9 +29,9 @@ class FeedEntryTagRulesActivity : AppActivity() {
         fun startForResult(fragment: Fragment, resultCode: Int, feedId: Long) {
             fragment.context?.let { context ->
                 fragment.startActivityForResult(
-                        Intent(context, FeedEntryTagRulesActivity::class.java)
-                                .putExtra(EXTRA_FEED_ID, feedId),
-                        resultCode
+                    Intent(context, FeedEntryTagRulesActivity::class.java)
+                        .putExtra(EXTRA_FEED_ID, feedId),
+                    resultCode
                 )
             }
         }
@@ -74,12 +74,10 @@ class FeedEntryTagRulesActivity : AppActivity() {
         })
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         super.onCreateOptionsMenu(menu)
 
-        if (menu != null) {
-            menuInflater.inflate(R.menu.feed_entry_tag_rules_activity, menu)
-        }
+        menuInflater.inflate(R.menu.feed_entry_tag_rules_activity, menu)
 
         return true
     }
@@ -103,7 +101,7 @@ class FeedEntryTagRulesActivity : AppActivity() {
         val entryTagRules = EntryTagRules.liveQuery(FeedEntryTagRulesQueryCriteria(feedId), EntryTagRule.QueryHelper)
 
         class Factory(private val feedId: Long) : ViewModelProvider.Factory {
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 if (modelClass.isAssignableFrom(FeedEntryTagRulesViewModel::class.java)) {
                     @Suppress("UNCHECKED_CAST")
                     return FeedEntryTagRulesViewModel(feedId) as T
@@ -114,16 +112,16 @@ class FeedEntryTagRulesActivity : AppActivity() {
     }
 
     class EntryTagRule(
-            val id: Long,
-            val tagName: String
+        val id: Long,
+        val tagName: String
     ) {
         object QueryHelper : EntryTagRules.QueryHelper<EntryTagRule>(
-                EntryTagRules.ID,
-                EntryTagRules.TAG_NAME
+            EntryTagRules.ID,
+            EntryTagRules.TAG_NAME
         ) {
             override fun createRow(cursor: Cursor) = EntryTagRule(
-                    cursor.getLong(0),
-                    cursor.getString(1)
+                cursor.getLong(0),
+                cursor.getString(1)
             )
         }
     }
@@ -160,8 +158,8 @@ class FeedEntryTagRulesActivity : AppActivity() {
         override fun getItemCount() = list.size
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = EntryTagRuleViewHolder(
-                LayoutInflater.from(parent.context).inflate(R.layout.entry_tag_rules_item, parent, false),
-                listener
+            LayoutInflater.from(parent.context).inflate(R.layout.entry_tag_rules_item, parent, false),
+            listener
         )
 
         override fun onBindViewHolder(holder: EntryTagRuleViewHolder, position: Int) = holder.onBind(list[position])

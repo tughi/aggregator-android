@@ -267,7 +267,7 @@ class ReaderFragment : Fragment() {
         val entry = Entries.liveQueryOne(Entries.QueryRowCriteria(entryId), Entry.QueryHelper)
 
         class Factory(private val entryId: Long) : ViewModelProvider.Factory {
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 if (modelClass.isAssignableFrom(ReaderViewModel::class.java)) {
                     @Suppress("UNCHECKED_CAST")
                     return ReaderViewModel(entryId) as T

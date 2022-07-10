@@ -55,9 +55,11 @@ class DropDownButton(context: Context, attrs: AttributeSet?) : FrameLayout(conte
     private var detectedClick = false
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        detectedClick = true
-        gestureDetector.onTouchEvent(event)
-        detectedClick = false
+        if (event != null) {
+            detectedClick = true
+            gestureDetector.onTouchEvent(event)
+            detectedClick = false
+        }
 
         return super.onTouchEvent(event)
     }

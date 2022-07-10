@@ -64,7 +64,7 @@ class TagEntriesFragment : EntriesFragment() {
 
         class Factory(private val tagId: Long) : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 if (modelClass.isAssignableFrom(TagEntriesViewModel::class.java)) {
                     return TagEntriesViewModel(tagId) as T
                 }

@@ -23,14 +23,21 @@ class OptionPickerActivity : AppActivity() {
         const val EXTRA_OPTIONS = "options"
         const val EXTRA_SELECTED_OPTION = "selected-option"
 
-        fun startForResult(activity: Activity, requestCode: Int, options: Array<Option>, selectedOption: Option?, title: String? = null, @StringRes titleResource: Int? = null) {
+        fun startForResult(
+            activity: Activity,
+            requestCode: Int,
+            options: Array<Option>,
+            selectedOption: Option?,
+            title: String? = null,
+            @StringRes titleResource: Int? = null
+        ) {
             activity.startActivityForResult(
-                    Intent(activity, OptionPickerActivity::class.java)
-                            .putExtra(EXTRA_OPTIONS, options)
-                            .putExtra(EXTRA_SELECTED_OPTION, selectedOption)
-                            .putExtra(EXTRA_TITLE, title)
-                            .putExtra(EXTRA_TITLE_RESOURCE, titleResource),
-                    requestCode
+                Intent(activity, OptionPickerActivity::class.java)
+                    .putExtra(EXTRA_OPTIONS, options)
+                    .putExtra(EXTRA_SELECTED_OPTION, selectedOption)
+                    .putExtra(EXTRA_TITLE, title)
+                    .putExtra(EXTRA_TITLE_RESOURCE, titleResource),
+                requestCode
             )
         }
     }
@@ -74,29 +81,24 @@ class OptionPickerActivity : AppActivity() {
         recyclerView.adapter = adapter
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        val result = super.onCreateOptionsMenu(menu)
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        super.onCreateOptionsMenu(menu)
 
-        menu?.let {
-            menuInflater.inflate(R.menu.option_picker_activity, it)
-            saveMenuItem = it.findItem(R.id.save)
-            return true
-        }
+        menuInflater.inflate(R.menu.option_picker_activity, menu)
+        saveMenuItem = menu.findItem(R.id.save)
 
-        return result
+        return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        if (item != null) {
-            when (item.itemId) {
-                android.R.id.home -> {
-                    // ignored
-                }
-                R.id.save -> {
-                    setResult(Activity.RESULT_OK, Intent().putExtra(EXTRA_SELECTED_OPTION, adapter.selectedOption))
-                }
-                else -> return super.onOptionsItemSelected(item)
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> {
+                // ignored
             }
+            R.id.save -> {
+                setResult(Activity.RESULT_OK, Intent().putExtra(EXTRA_SELECTED_OPTION, adapter.selectedOption))
+            }
+            else -> return super.onOptionsItemSelected(item)
         }
 
         finish()
@@ -148,8 +150,8 @@ class OptionPickerActivity : AppActivity() {
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = OptionViewHolder(
-                LayoutInflater.from(parent.context).inflate(viewType, parent, false),
-                listener
+            LayoutInflater.from(parent.context).inflate(viewType, parent, false),
+            listener
         )
 
         override fun onBindViewHolder(holder: OptionViewHolder, position: Int) = holder.onBind(options[position])

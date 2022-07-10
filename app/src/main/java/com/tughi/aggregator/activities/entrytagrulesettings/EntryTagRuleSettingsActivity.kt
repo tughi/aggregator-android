@@ -58,11 +58,11 @@ class EntryTagRuleSettingsActivity : AppActivity() {
 
         fun start(activity: Activity, entryTagRuleId: Long? = null, presetFeedId: Long? = null, presetTagId: Long? = null) {
             activity.startActivity(
-                    Intent(activity, EntryTagRuleSettingsActivity::class.java).apply {
-                        if (entryTagRuleId != null) putExtra(EXTRA_ENTRY_TAG_RULE_ID, entryTagRuleId)
-                        if (presetFeedId != null) putExtra(EXTRA_PRESET_FEED_ID, presetFeedId)
-                        if (presetTagId != null) putExtra(EXTRA_PRESET_TAG_ID, presetTagId)
-                    }
+                Intent(activity, EntryTagRuleSettingsActivity::class.java).apply {
+                    if (entryTagRuleId != null) putExtra(EXTRA_ENTRY_TAG_RULE_ID, entryTagRuleId)
+                    if (presetFeedId != null) putExtra(EXTRA_PRESET_FEED_ID, presetFeedId)
+                    if (presetTagId != null) putExtra(EXTRA_PRESET_TAG_ID, presetTagId)
+                }
             )
         }
     }
@@ -94,8 +94,8 @@ class EntryTagRuleSettingsActivity : AppActivity() {
         typeView = findViewById(R.id.type)
         typeView.setOnClickListener {
             val options = arrayOf(
-                    Option(TYPE_FEED, getString(R.string.entry_tag_rule__type__feed), getString(R.string.entry_tag_rule__type__feed__description)),
-                    Option(TYPE_GLOBAL, getString(R.string.entry_tag_rule__type__global), getString(R.string.entry_tag_rule__type__global__description))
+                Option(TYPE_FEED, getString(R.string.entry_tag_rule__type__feed), getString(R.string.entry_tag_rule__type__feed__description)),
+                Option(TYPE_GLOBAL, getString(R.string.entry_tag_rule__type__global), getString(R.string.entry_tag_rule__type__global__description))
             )
             val selectedOption = options[if (viewModel.newType.value == TYPE_FEED) 0 else 1]
             OptionPickerActivity.startForResult(this, REQUEST_TYPE, options, selectedOption, titleResource = R.string.entry_tag_rule__type__title)
@@ -200,13 +200,11 @@ class EntryTagRuleSettingsActivity : AppActivity() {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         super.onCreateOptionsMenu(menu)
 
-        if (menu != null) {
-            menuInflater.inflate(R.menu.entry_tag_rule_settings_activity, menu)
-            menu.findItem(R.id.delete).isVisible = viewModel.entryTagRuleId != null
-        }
+        menuInflater.inflate(R.menu.entry_tag_rule_settings_activity, menu)
+        menu.findItem(R.id.delete).isVisible = viewModel.entryTagRuleId != null
 
         return true
     }
@@ -229,50 +227,50 @@ class EntryTagRuleSettingsActivity : AppActivity() {
     }
 
     internal class EntryTagRule(
-            val id: Long,
-            val feedId: Long?,
-            val tagId: Long,
-            val condition: String
+        val id: Long,
+        val feedId: Long?,
+        val tagId: Long,
+        val condition: String
     ) {
         object QueryHelper : EntryTagRules.QueryHelper<EntryTagRule>(
-                EntryTagRules.ID,
-                EntryTagRules.FEED_ID,
-                EntryTagRules.TAG_ID,
-                EntryTagRules.CONDITION
+            EntryTagRules.ID,
+            EntryTagRules.FEED_ID,
+            EntryTagRules.TAG_ID,
+            EntryTagRules.CONDITION
         ) {
             override fun createRow(cursor: Cursor) = EntryTagRule(
-                    cursor.getLong(0),
-                    cursor.getLongOrNull(1),
-                    cursor.getLong(2),
-                    cursor.getString(3)
+                cursor.getLong(0),
+                cursor.getLongOrNull(1),
+                cursor.getLong(2),
+                cursor.getString(3)
             )
         }
     }
 
     internal class Feed(
-            val title: String
+        val title: String
     ) {
         object QueryHelper : Feeds.QueryHelper<Feed>(
-                Feeds.TITLE,
-                Feeds.CUSTOM_TITLE
+            Feeds.TITLE,
+            Feeds.CUSTOM_TITLE
         ) {
             override fun createRow(cursor: Cursor) = Feed(
-                    cursor.getString(1) ?: cursor.getString(0)
+                cursor.getString(1) ?: cursor.getString(0)
             )
         }
     }
 
     internal class Tag(
-            val id: Long,
-            val name: String
+        val id: Long,
+        val name: String
     ) {
         object QueryHelper : Tags.QueryHelper<Tag>(
-                Tags.ID,
-                Tags.NAME
+            Tags.ID,
+            Tags.NAME
         ) {
             override fun createRow(cursor: Cursor) = Tag(
-                    cursor.getLong(0),
-                    cursor.getString(1)
+                cursor.getLong(0),
+                cursor.getString(1)
             )
         }
     }
@@ -341,17 +339,17 @@ class EntryTagRuleSettingsActivity : AppActivity() {
             GlobalScope.launch {
                 if (entryTagRuleId != null) {
                     EntryTagRules.update(
-                            UpdateEntryTagRuleCriteria(entryTagRuleId),
-                            EntryTagRules.FEED_ID to feedId,
-                            EntryTagRules.TAG_ID to tagId,
-                            EntryTagRules.CONDITION to condition.toString()
+                        UpdateEntryTagRuleCriteria(entryTagRuleId),
+                        EntryTagRules.FEED_ID to feedId,
+                        EntryTagRules.TAG_ID to tagId,
+                        EntryTagRules.CONDITION to condition.toString()
                     )
                     EntryTagRuleHelper.apply(entryTagRuleId, deleteOldTags = true)
                 } else {
                     val id = EntryTagRules.insert(
-                            EntryTagRules.FEED_ID to feedId,
-                            EntryTagRules.TAG_ID to tagId,
-                            EntryTagRules.CONDITION to condition.toString()
+                        EntryTagRules.FEED_ID to feedId,
+                        EntryTagRules.TAG_ID to tagId,
+                        EntryTagRules.CONDITION to condition.toString()
                     )
                     EntryTagRuleHelper.apply(id)
                 }
@@ -359,7 +357,7 @@ class EntryTagRuleSettingsActivity : AppActivity() {
         }
 
         class Factory(private val entryTagRuleId: Long?, private val presetTagId: Long?, private val presetFeedId: Long?) : ViewModelProvider.Factory {
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 if (modelClass.isAssignableFrom(EntryTagRuleViewModel::class.java)) {
                     @Suppress("UNCHECKED_CAST")
                     return EntryTagRuleViewModel(entryTagRuleId, presetTagId, presetFeedId) as T

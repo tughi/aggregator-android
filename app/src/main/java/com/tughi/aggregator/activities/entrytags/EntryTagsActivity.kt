@@ -78,7 +78,7 @@ class EntryTagsActivity : AppActivity() {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         super.onCreateOptionsMenu(menu)
 
         menuInflater.inflate(R.menu.entry_tags_activity, menu)
@@ -163,7 +163,7 @@ class EntryTagsActivity : AppActivity() {
         }
 
         class Factory(private val entryId: Long) : ViewModelProvider.Factory {
-            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 if (modelClass.isAssignableFrom(EntryTagsViewModel::class.java)) {
                     @Suppress("UNCHECKED_CAST")
                     return EntryTagsViewModel(entryId) as T
