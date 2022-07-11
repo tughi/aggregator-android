@@ -15,7 +15,7 @@ class FeedsFragmentViewModel(application: Application) : AndroidViewModel(applic
 
     private val databaseFeeds = Feeds.liveQuery(Feeds.AllCriteria, Feed.QueryHelper)
 
-    private val expandedFeedId = MutableLiveData<Long>()
+    private val expandedFeedId = MutableLiveData<Long?>()
 
     val feeds: LiveData<List<Feed>> = MediatorLiveData<List<Feed>>().also {
         it.addSource(databaseFeeds) { feeds ->

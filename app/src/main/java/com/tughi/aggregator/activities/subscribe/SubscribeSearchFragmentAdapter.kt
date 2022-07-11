@@ -42,7 +42,12 @@ internal class SubscribeSearchFragmentAdapter(private val listener: SubscribeSea
         }
 
         override fun areContentsTheSame(oldItem: Any, newItem: Any): Boolean {
-            return oldItem == newItem
+            return when (oldItem) {
+                is SubscribeSearchFragmentViewModel.Feed -> newItem is SubscribeSearchFragmentViewModel.Feed && oldItem.url == newItem.url && oldItem.title == newItem.title
+                is Boolean -> newItem is Boolean && newItem == oldItem
+                is String -> newItem is String && newItem == oldItem
+                else -> throw IllegalStateException("Unsupported old item")
+            }
         }
     }
 

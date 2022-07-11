@@ -280,14 +280,14 @@ class EntryTagRuleSettingsActivity : AppActivity() {
 
         val newType = MutableLiveData<String>()
 
-        val newFeedId = MutableLiveData<Long>()
+        val newFeedId = MutableLiveData<Long?>()
         val newFeed = Transformations.switchMap(newFeedId) { newFeedId ->
             Feeds.liveQueryOne(Feeds.QueryRowCriteria(newFeedId ?: 0), Feed.QueryHelper)
         }
 
-        val newTagId = MutableLiveData<Long>()
+        val newTagId = MutableLiveData<Long?>()
         val newTag = Transformations.switchMap(newTagId) { newTagId ->
-            Tags.liveQueryOne(Tags.QueryTagCriteria(newTagId), Tag.QueryHelper)
+            Tags.liveQueryOne(Tags.QueryTagCriteria(newTagId ?: 0), Tag.QueryHelper)
         }
 
         val oldCondition = MutableLiveData<Condition>()
