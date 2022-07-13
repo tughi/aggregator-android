@@ -1,3 +1,5 @@
+[![Android CI](https://github.com/tughi/aggregator-android/actions/workflows/android.yml/badge.svg?branch=master)](https://github.com/tughi/aggregator-android/actions/workflows/android.yml)
+
 # Aggregator
 
 > Available on [Google Play](https://play.google.com/store/apps/details?id=com.tughi.aggregator.next).
