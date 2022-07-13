@@ -1,0 +1,6 @@
+This is a feed reader:
+
+* It follows the feeds that you personally choose.
+* It lets you create your personalized feed.
+* It does not throw ads at you.
+* It is open source.

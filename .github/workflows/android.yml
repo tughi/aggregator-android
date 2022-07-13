@@ -11,7 +11,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Build with Gradle
-      run: ./gradlew build
+      - name: Build with Gradle
+        run: ./gradlew build
+
+  metadata:
+    needs: build
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ashutoshgngwr/validate-fastlane-supply-metadata@v2
+        with:
+          fastlaneDir: ./metadata
