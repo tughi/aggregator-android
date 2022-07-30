@@ -21,11 +21,6 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        maven {
-            url {
-                'https://raw.githubusercontent.com/tughi/sax-framework/master/repository'
-            }
-        }
     }
 }
 
