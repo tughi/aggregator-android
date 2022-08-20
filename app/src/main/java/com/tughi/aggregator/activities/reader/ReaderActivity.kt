@@ -18,7 +18,7 @@ import androidx.viewpager.widget.ViewPager
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
 import com.tughi.aggregator.data.Entries
-import kotlinx.coroutines.GlobalScope
+import com.tughi.aggregator.contentScope
 import kotlinx.coroutines.launch
 
 class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
@@ -131,7 +131,7 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
             actionBar.title = (position + 1).toString() + " / " + entries.size
             actionBar.setDisplayShowTitleEnabled(true)
 
-            GlobalScope.launch {
+            contentScope.launch {
                 Entries.update(Entries.UpdateEntryCriteria(entry.id), Entries.READ_TIME to System.currentTimeMillis())
             }
         }
@@ -158,13 +158,13 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
     }
 
     data class Entry(
-            val id: Long
+        val id: Long
     ) {
         object QueryHelper : Entries.QueryHelper<Entry>(
-                Entries.ID
+            Entries.ID
         ) {
             override fun createRow(cursor: Cursor) = Entry(
-                    id = cursor.getLong(0)
+                id = cursor.getLong(0)
             )
         }
     }

@@ -11,11 +11,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.App
 import com.tughi.aggregator.BuildConfig
+import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.data.EntriesQueryCriteria
 import com.tughi.aggregator.data.UnreadEntriesQueryCriteria
 import com.tughi.aggregator.preferences.EntryListSettings
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -121,7 +121,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : Vie
             Log.d(javaClass.name, "Load $queryLimit entries from $queryOffset (range $loadRangeStart:${loadRangeLimit})")
         }
 
-        currentItemsLoaderJob = GlobalScope.launch {
+        currentItemsLoaderJob = contentScope.launch {
             val entries = Entries.query(queryCriteria, Entry.QueryHelper)
 
             if (entries.isNotEmpty() && isActive) {
@@ -220,34 +220,34 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : Vie
     }
 
     data class Entry(
-            override val id: Long,
-            val feedId: Long,
-            val feedTitle: String,
-            val faviconUrl: String?,
-            val title: String?,
-            val link: String?,
-            val author: String?,
-            override val formattedDate: String,
-            val formattedTime: String,
-            val readTime: Long,
-            val pinnedTime: Long,
-            val starredTime: Long,
-            override val numericDate: Int
+        override val id: Long,
+        val feedId: Long,
+        val feedTitle: String,
+        val faviconUrl: String?,
+        val title: String?,
+        val link: String?,
+        val author: String?,
+        override val formattedDate: String,
+        val formattedTime: String,
+        val readTime: Long,
+        val pinnedTime: Long,
+        val starredTime: Long,
+        override val numericDate: Int
     ) : Item {
         val unread = readTime == 0L || pinnedTime != 0L
 
         object QueryHelper : Entries.QueryHelper<Entry>(
-                Entries.ID,
-                Entries.FEED_ID,
-                Entries.AUTHOR,
-                Entries.FEED_FAVICON_URL,
-                Entries.FEED_TITLE,
-                Entries.PUBLISH_TIME,
-                Entries.LINK,
-                Entries.PINNED_TIME,
-                Entries.READ_TIME,
-                Entries.STARRED_TIME,
-                Entries.TITLE
+            Entries.ID,
+            Entries.FEED_ID,
+            Entries.AUTHOR,
+            Entries.FEED_FAVICON_URL,
+            Entries.FEED_TITLE,
+            Entries.PUBLISH_TIME,
+            Entries.LINK,
+            Entries.PINNED_TIME,
+            Entries.READ_TIME,
+            Entries.STARRED_TIME,
+            Entries.TITLE
         ) {
             private val context = App.instance
             private val formattedDates = SparseArrayCompat<String>()
@@ -266,19 +266,19 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : Vie
                 }
 
                 return Entry(
-                        id = cursor.getLong(0),
-                        feedId = cursor.getLong(1),
-                        author = cursor.getString(2),
-                        faviconUrl = cursor.getString(3),
-                        feedTitle = cursor.getString(4),
-                        formattedDate = formattedDate!!,
-                        formattedTime = DateUtils.formatDateTime(context, publishTime, DateUtils.FORMAT_SHOW_TIME),
-                        link = cursor.getString(6),
-                        pinnedTime = cursor.getLong(7),
-                        readTime = cursor.getLong(8),
-                        starredTime = cursor.getLong(9),
-                        title = cursor.getString(10),
-                        numericDate = numericDate
+                    id = cursor.getLong(0),
+                    feedId = cursor.getLong(1),
+                    author = cursor.getString(2),
+                    faviconUrl = cursor.getString(3),
+                    feedTitle = cursor.getString(4),
+                    formattedDate = formattedDate!!,
+                    formattedTime = DateUtils.formatDateTime(context, publishTime, DateUtils.FORMAT_SHOW_TIME),
+                    link = cursor.getString(6),
+                    pinnedTime = cursor.getLong(7),
+                    readTime = cursor.getLong(8),
+                    starredTime = cursor.getLong(9),
+                    title = cursor.getString(10),
+                    numericDate = numericDate
                 )
             }
         }

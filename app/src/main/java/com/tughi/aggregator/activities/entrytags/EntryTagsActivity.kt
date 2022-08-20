@@ -23,8 +23,8 @@ import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.tagsettings.TagSettingsActivity
 import com.tughi.aggregator.data.EntryTags
 import com.tughi.aggregator.data.Tags
+import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.utilities.has
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class EntryTagsActivity : AppActivity() {
@@ -34,8 +34,8 @@ class EntryTagsActivity : AppActivity() {
 
         fun start(context: Context, entryId: Long) {
             context.startActivity(
-                    Intent(context, EntryTagsActivity::class.java)
-                            .putExtra(EXTRA_ENTRY_ID, entryId)
+                Intent(context, EntryTagsActivity::class.java)
+                    .putExtra(EXTRA_ENTRY_ID, entryId)
             )
         }
     }
@@ -97,14 +97,14 @@ class EntryTagsActivity : AppActivity() {
     private fun onSave() {
         val tags = viewModel.tags.value ?: return
 
-        GlobalScope.launch {
+        contentScope.launch {
             for (tag in tags) {
                 if (tag.newEntryTag != tag.oldEntryTag) {
                     if (tag.newEntryTag) {
                         EntryTags.insert(
-                                EntryTags.ENTRY_ID to entryId,
-                                EntryTags.TAG_ID to tag.id,
-                                EntryTags.TAG_TIME to System.currentTimeMillis()
+                            EntryTags.ENTRY_ID to entryId,
+                            EntryTags.TAG_ID to tag.id,
+                            EntryTags.TAG_TIME to System.currentTimeMillis()
                         )
                     } else {
                         EntryTags.delete(EntryTags.DeleteEntryTagCriteria(entryId, tag.id))
@@ -118,22 +118,22 @@ class EntryTagsActivity : AppActivity() {
 
     data class Tag(val id: Long, val name: String, val oldEntryTag: Boolean = false, var newEntryTag: Boolean = false) {
         object QueryHelper : Tags.QueryHelper<Tag>(
-                Tags.ID,
-                Tags.NAME
+            Tags.ID,
+            Tags.NAME
         ) {
             override fun createRow(cursor: Cursor) = Tag(
-                    id = cursor.getLong(0),
-                    name = cursor.getString(1)
+                id = cursor.getLong(0),
+                name = cursor.getString(1)
             )
         }
     }
 
     class EntryTag(val tagId: Long) {
         object QueryHelper : EntryTags.QueryHelper<EntryTag>(
-                EntryTags.TAG_ID
+            EntryTags.TAG_ID
         ) {
             override fun createRow(cursor: Cursor) = EntryTag(
-                    tagId = cursor.getLong(0)
+                tagId = cursor.getLong(0)
             )
         }
     }
@@ -155,8 +155,8 @@ class EntryTagsActivity : AppActivity() {
                 entryTags.isEmpty() -> tags
                 else -> tags.map { tag ->
                     tag.copy(
-                            oldEntryTag = entryTags.has { it.tagId == tag.id },
-                            newEntryTag = entryTags.has { it.tagId == tag.id }
+                        oldEntryTag = entryTags.has { it.tagId == tag.id },
+                        newEntryTag = entryTags.has { it.tagId == tag.id }
                     )
                 }
             }
@@ -188,12 +188,14 @@ class EntryTagsActivity : AppActivity() {
         fun onBind(tag: Tag) {
             this.tag = tag
 
-            faviconView.setImageResource(when (tag.id) {
-                Tags.ALL -> R.drawable.favicon_aggregator
-                Tags.STARRED -> R.drawable.favicon_star
-                Tags.PINNED -> R.drawable.favicon_pin
-                else -> R.drawable.favicon_tag
-            })
+            faviconView.setImageResource(
+                when (tag.id) {
+                    Tags.ALL -> R.drawable.favicon_aggregator
+                    Tags.STARRED -> R.drawable.favicon_star
+                    Tags.PINNED -> R.drawable.favicon_pin
+                    else -> R.drawable.favicon_tag
+                }
+            )
 
             textView.text = tag.name
             textView.isChecked = tag.newEntryTag
@@ -216,8 +218,8 @@ class EntryTagsActivity : AppActivity() {
         override fun getItemId(position: Int): Long = tags[position].id
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = TagViewHolder(
-                LayoutInflater.from(parent.context).inflate(R.layout.entry_tags_item, parent, false),
-                listener
+            LayoutInflater.from(parent.context).inflate(R.layout.entry_tags_item, parent, false),
+            listener
         )
 
         override fun onBindViewHolder(holder: TagViewHolder, position: Int) = holder.onBind(tags[position])

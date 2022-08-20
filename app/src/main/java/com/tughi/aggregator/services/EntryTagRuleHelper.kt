@@ -4,6 +4,7 @@ import android.database.Cursor
 import android.database.SQLException
 import android.text.format.DateUtils
 import androidx.collection.LongSparseArray
+import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.data.AllEntriesQueryCriteria
 import com.tughi.aggregator.data.AllFeedEntriesQueryCriteria
 import com.tughi.aggregator.data.Database
@@ -18,7 +19,6 @@ import com.tughi.aggregator.entries.conditions.Expression
 import com.tughi.aggregator.entries.conditions.InvalidExpression
 import com.tughi.aggregator.entries.conditions.PropertyExpression
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.isActive
@@ -29,7 +29,7 @@ object EntryTagRuleHelper {
     private val activeJobs = LongSparseArray<Job>()
 
     fun apply(entryTagRuleId: Long, deleteOldTags: Boolean = false) {
-        val job = GlobalScope.launch {
+        val job = contentScope.launch {
             val currentJob = coroutineContext[Job]
 
             val oldJob = synchronized(activeJobs) {
@@ -94,10 +94,10 @@ object EntryTagRuleHelper {
                 for (index in 0 until arraySize) {
                     try {
                         EntryTags.insert(
-                                EntryTags.ENTRY_ID to array[index],
-                                EntryTags.TAG_ID to entryTagRule.tagId,
-                                EntryTags.TAG_TIME to entryTagTime,
-                                EntryTags.ENTRY_TAG_RULE_ID to entryTagRule.id
+                            EntryTags.ENTRY_ID to array[index],
+                            EntryTags.TAG_ID to entryTagRule.tagId,
+                            EntryTags.TAG_TIME to entryTagTime,
+                            EntryTags.ENTRY_TAG_RULE_ID to entryTagRule.id
                         )
                     } catch (_: SQLException) {
                         // ignored... probably, entry doesn't exist anymore
@@ -127,26 +127,26 @@ object EntryTagRuleHelper {
 }
 
 class EntryTagRule(
-        val id: Long,
-        val tagId: Long,
-        val condition: Condition,
-        val feedId: Long?
+    val id: Long,
+    val tagId: Long,
+    val condition: Condition,
+    val feedId: Long?
 ) {
     fun matches(title: String?, link: String?, content: String?): Boolean {
         return condition.expression.matches(title, link, content)
     }
 
     object QueryHelper : EntryTagRules.QueryHelper<EntryTagRule>(
-            EntryTagRules.ID,
-            EntryTagRules.TAG_ID,
-            EntryTagRules.CONDITION,
-            EntryTagRules.FEED_ID
+        EntryTagRules.ID,
+        EntryTagRules.TAG_ID,
+        EntryTagRules.CONDITION,
+        EntryTagRules.FEED_ID
     ) {
         override fun createRow(cursor: Cursor): EntryTagRule = EntryTagRule(
-                cursor.getLong(0),
-                cursor.getLong(1),
-                Condition(cursor.getString(2)),
-                if (cursor.isNull(3)) null else cursor.getLong(3)
+            cursor.getLong(0),
+            cursor.getLong(1),
+            Condition(cursor.getString(2)),
+            if (cursor.isNull(3)) null else cursor.getLong(3)
         )
     }
 }

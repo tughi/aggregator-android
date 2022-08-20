@@ -12,12 +12,11 @@ import com.tughi.aggregator.activities.cleanupmode.toString
 import com.tughi.aggregator.activities.updatemode.UpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.startUpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.toString
+import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.data.CleanupMode
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.preferences.UpdateSettings
 import com.tughi.aggregator.services.AutoUpdateScheduler
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class UpdateSettingsFragment : PreferenceFragmentCompat() {
@@ -36,7 +35,7 @@ class UpdateSettingsFragment : PreferenceFragmentCompat() {
         val backgroundUpdatesPreference = findPreference<Preference>(UpdateSettings.PREFERENCE_BACKGROUND_UPDATES)!!
         backgroundUpdatesPreference.setOnPreferenceChangeListener { _, newValue ->
             if (newValue == true) {
-                GlobalScope.launch(Dispatchers.IO) {
+                contentScope.launch {
                     AutoUpdateScheduler.schedule()
                 }
             } else {

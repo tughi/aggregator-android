@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import com.tughi.aggregator.App
 import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.Notifications
+import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.data.Age1MonthCleanupMode
 import com.tughi.aggregator.data.Age1WeekCleanupMode
 import com.tughi.aggregator.data.Age1YearCleanupMode
@@ -32,8 +33,8 @@ import com.tughi.aggregator.utilities.Http
 import com.tughi.aggregator.utilities.Success
 import com.tughi.aggregator.utilities.content
 import com.tughi.aggregator.utilities.then
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -46,6 +47,8 @@ import kotlin.coroutines.suspendCoroutine
 
 
 object FeedUpdateHelper {
+
+    private val scope = CoroutineScope(Dispatchers.Main)
 
     val updatingFeedIds = MutableLiveData<MutableSet<Long>>()
 
@@ -69,7 +72,7 @@ object FeedUpdateHelper {
     }
 
     fun updateOutdatedFeeds(appLaunch: Boolean) {
-        val job = GlobalScope.launch {
+        val job = contentScope.launch {
             val feeds = Feeds.query(Feeds.OutdatedCriteria(System.currentTimeMillis(), appLaunch), Feed.QueryHelper)
 
             val jobs = feeds.map { feed ->
@@ -84,14 +87,14 @@ object FeedUpdateHelper {
         }
 
         job.invokeOnCompletion {
-            GlobalScope.launch {
+            contentScope.launch {
                 AutoUpdateScheduler.schedule()
             }
         }
     }
 
     private suspend fun addUpdatingFeed(feedId: Long): Unit = suspendCoroutine {
-        GlobalScope.launch(Dispatchers.Main) {
+        scope.launch(Dispatchers.Main) {
             val feedIds = updatingFeedIds.value ?: mutableSetOf()
             feedIds.add(feedId)
             updatingFeedIds.value = feedIds
@@ -101,7 +104,7 @@ object FeedUpdateHelper {
     }
 
     private suspend fun removeUpdatingFeed(feedId: Long): Unit = suspendCoroutine {
-        GlobalScope.launch(Dispatchers.Main) {
+        scope.launch(Dispatchers.Main) {
             val feedIds = updatingFeedIds.value
             feedIds?.remove(feedId)
             updatingFeedIds.value = if (feedIds?.size != 0) feedIds else null
@@ -155,35 +158,35 @@ object FeedUpdateHelper {
             val feedParser = FeedParser(feed.url, object : FeedParser.Listener() {
                 override fun onParsedEntry(uid: String, title: String?, link: String?, content: String?, author: String?, publishDate: Date?, publishDateText: String?) {
                     val result = Entries.update(
-                            Entries.UpdateFeedEntryCriteria(feed.id, uid),
+                        Entries.UpdateFeedEntryCriteria(feed.id, uid),
+                        Entries.TITLE to title,
+                        Entries.LINK to link,
+                        Entries.CONTENT to content,
+                        Entries.AUTHOR to author,
+                        Entries.PUBLISH_TIME to publishDate?.time,
+                        Entries.UPDATE_TIME to updateTime
+                    )
+
+                    if (result == 0 && !isOldEntry(publishDate?.time ?: updateTime, feed.cleanupMode)) {
+                        val entryId = Entries.insert(
+                            Entries.FEED_ID to feed.id,
+                            Entries.UID to uid,
                             Entries.TITLE to title,
                             Entries.LINK to link,
                             Entries.CONTENT to content,
                             Entries.AUTHOR to author,
                             Entries.PUBLISH_TIME to publishDate?.time,
+                            Entries.INSERT_TIME to System.currentTimeMillis(),
                             Entries.UPDATE_TIME to updateTime
-                    )
-
-                    if (result == 0 && !isOldEntry(publishDate?.time ?: updateTime, feed.cleanupMode)) {
-                        val entryId = Entries.insert(
-                                Entries.FEED_ID to feed.id,
-                                Entries.UID to uid,
-                                Entries.TITLE to title,
-                                Entries.LINK to link,
-                                Entries.CONTENT to content,
-                                Entries.AUTHOR to author,
-                                Entries.PUBLISH_TIME to publishDate?.time,
-                                Entries.INSERT_TIME to System.currentTimeMillis(),
-                                Entries.UPDATE_TIME to updateTime
                         )
 
                         for (entryTagRule in entryTagRules) {
                             if (entryTagRule.matches(title, link, content)) {
                                 EntryTags.insert(
-                                        EntryTags.ENTRY_ID to entryId,
-                                        EntryTags.TAG_ID to entryTagRule.tagId,
-                                        EntryTags.TAG_TIME to updateTime,
-                                        EntryTags.ENTRY_TAG_RULE_ID to entryTagRule.id
+                                    EntryTags.ENTRY_ID to entryId,
+                                    EntryTags.TAG_ID to entryTagRule.tagId,
+                                    EntryTags.TAG_TIME to updateTime,
+                                    EntryTags.ENTRY_TAG_RULE_ID to entryTagRule.id
                                 )
                             }
                         }
@@ -205,13 +208,13 @@ object FeedUpdateHelper {
 
                 override fun onParsedFeed(title: String, link: String?, language: String?) {
                     updateFeedMetadata(
-                            feed,
-                            updateTime,
-                            Feeds.TITLE to title,
-                            Feeds.LINK to link,
-                            Feeds.LANGUAGE to language,
-                            Feeds.HTTP_ETAG to httpEtag,
-                            Feeds.HTTP_LAST_MODIFIED to httpLastModified
+                        feed,
+                        updateTime,
+                        Feeds.TITLE to title,
+                        Feeds.LINK to link,
+                        Feeds.LANGUAGE to language,
+                        Feeds.HTTP_ETAG to httpEtag,
+                        Feeds.HTTP_LAST_MODIFIED to httpLastModified
                     )
                 }
             })
@@ -235,12 +238,12 @@ object FeedUpdateHelper {
             val nextUpdateTime = AutoUpdateScheduler.calculateNextUpdateTime(feedId, feed.updateMode, updateTime)
 
             Feeds.update(
-                    Feeds.UpdateRowCriteria(feedId),
-                    Feeds.LAST_UPDATE_TIME to updateTime,
-                    Feeds.LAST_UPDATE_ERROR to null,
-                    Feeds.NEXT_UPDATE_TIME to nextUpdateTime,
-                    Feeds.NEXT_UPDATE_RETRY to 0,
-                    *data
+                Feeds.UpdateRowCriteria(feedId),
+                Feeds.LAST_UPDATE_TIME to updateTime,
+                Feeds.LAST_UPDATE_ERROR to null,
+                Feeds.NEXT_UPDATE_TIME to nextUpdateTime,
+                Feeds.NEXT_UPDATE_RETRY to 0,
+                *data
             )
 
             val deleteEntriesCriteria = createDeleteEntriesCriteria(feedId, feed.cleanupMode)
@@ -281,43 +284,43 @@ object FeedUpdateHelper {
             val nextUpdateTime = AutoUpdateScheduler.calculateNextUpdateRetryTime(feed.updateMode, nextUpdateRetry)
 
             Feeds.update(
-                    Feeds.UpdateRowCriteria(feed.id),
-                    Feeds.LAST_UPDATE_ERROR to updateError,
-                    Feeds.NEXT_UPDATE_RETRY to nextUpdateRetry,
-                    Feeds.NEXT_UPDATE_TIME to nextUpdateTime
+                Feeds.UpdateRowCriteria(feed.id),
+                Feeds.LAST_UPDATE_ERROR to updateError,
+                Feeds.NEXT_UPDATE_RETRY to nextUpdateRetry,
+                Feeds.NEXT_UPDATE_TIME to nextUpdateTime
             )
         }
     }
 
     class Feed(
-            val id: Long,
-            val url: String,
-            val updateMode: UpdateMode,
-            val cleanupMode: CleanupMode,
-            val nextUpdateRetry: Int,
-            val httpEtag: String?,
-            val httpLastModified: String?,
-            val lastUpdateTime: Long
+        val id: Long,
+        val url: String,
+        val updateMode: UpdateMode,
+        val cleanupMode: CleanupMode,
+        val nextUpdateRetry: Int,
+        val httpEtag: String?,
+        val httpLastModified: String?,
+        val lastUpdateTime: Long
     ) {
         object QueryHelper : Feeds.QueryHelper<Feed>(
-                Feeds.ID,
-                Feeds.URL,
-                Feeds.UPDATE_MODE,
-                Feeds.CLEANUP_MODE,
-                Feeds.NEXT_UPDATE_RETRY,
-                Feeds.HTTP_ETAG,
-                Feeds.HTTP_LAST_MODIFIED,
-                Feeds.LAST_UPDATE_TIME
+            Feeds.ID,
+            Feeds.URL,
+            Feeds.UPDATE_MODE,
+            Feeds.CLEANUP_MODE,
+            Feeds.NEXT_UPDATE_RETRY,
+            Feeds.HTTP_ETAG,
+            Feeds.HTTP_LAST_MODIFIED,
+            Feeds.LAST_UPDATE_TIME
         ) {
             override fun createRow(cursor: Cursor) = Feed(
-                    id = cursor.getLong(0),
-                    url = cursor.getString(1),
-                    updateMode = UpdateMode.deserialize(cursor.getString(2)),
-                    cleanupMode = CleanupMode.deserialize(cursor.getString(3)),
-                    nextUpdateRetry = cursor.getInt(4),
-                    httpEtag = cursor.getString(5),
-                    httpLastModified = cursor.getString(6),
-                    lastUpdateTime = cursor.getLong(7)
+                id = cursor.getLong(0),
+                url = cursor.getString(1),
+                updateMode = UpdateMode.deserialize(cursor.getString(2)),
+                cleanupMode = CleanupMode.deserialize(cursor.getString(3)),
+                nextUpdateRetry = cursor.getInt(4),
+                httpEtag = cursor.getString(5),
+                httpLastModified = cursor.getString(6),
+                lastUpdateTime = cursor.getLong(7)
             )
         }
     }

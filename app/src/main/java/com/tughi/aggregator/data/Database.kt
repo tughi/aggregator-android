@@ -12,9 +12,8 @@ import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.sqlite.db.transaction
 import com.tughi.aggregator.App
 import com.tughi.aggregator.DATABASE_NAME
+import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.utilities.restoreFeeds
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.BufferedReader
 import java.io.IOException
@@ -24,89 +23,89 @@ import kotlin.system.exitProcess
 object Database {
 
     private val sqlite: SupportSQLiteOpenHelper = FrameworkSQLiteOpenHelperFactory().create(
-            SupportSQLiteOpenHelper.Configuration.builder(App.instance)
-                    .name(DATABASE_NAME)
-                    .callback(object : SupportSQLiteOpenHelper.Callback(23) {
-                        override fun onConfigure(db: SupportSQLiteDatabase) {
-                            db.setForeignKeyConstraintsEnabled(true)
-                            db.enableWriteAheadLogging()
-                        }
+        SupportSQLiteOpenHelper.Configuration.builder(App.instance)
+            .name(DATABASE_NAME)
+            .callback(object : SupportSQLiteOpenHelper.Callback(23) {
+                override fun onConfigure(db: SupportSQLiteDatabase) {
+                    db.setForeignKeyConstraintsEnabled(true)
+                    db.enableWriteAheadLogging()
+                }
 
-                        override fun onCreate(database: SupportSQLiteDatabase) {
-                            executeScript(database, 0)
-                        }
+                override fun onCreate(database: SupportSQLiteDatabase) {
+                    executeScript(database, 0)
+                }
 
-                        override fun onUpgrade(database: SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) {
-                            var databaseVersion = database.version
-                            while (databaseVersion != newVersion) {
-                                executeScript(database, databaseVersion)
+                override fun onUpgrade(database: SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) {
+                    var databaseVersion = database.version
+                    while (databaseVersion != newVersion) {
+                        executeScript(database, databaseVersion)
 
-                                databaseVersion = database.version
-                            }
-                        }
+                        databaseVersion = database.version
+                    }
+                }
 
-                        private fun executeScript(database: SupportSQLiteDatabase, version: Int) {
-                            val scriptVersion = when {
-                                version > 99 -> version.toString()
-                                version > 9 -> "0$version"
-                                else -> "00$version"
-                            }
-                            val scriptFile = "database/$scriptVersion.sql"
-                            val scriptStatements = mutableListOf<String>()
+                private fun executeScript(database: SupportSQLiteDatabase, version: Int) {
+                    val scriptVersion = when {
+                        version > 99 -> version.toString()
+                        version > 9 -> "0$version"
+                        else -> "00$version"
+                    }
+                    val scriptFile = "database/$scriptVersion.sql"
+                    val scriptStatements = mutableListOf<String>()
 
-                            try {
-                                BufferedReader(InputStreamReader(App.instance.assets.open(scriptFile))).use { scriptReader ->
-                                    val statement = StringBuilder()
+                    try {
+                        BufferedReader(InputStreamReader(App.instance.assets.open(scriptFile))).use { scriptReader ->
+                            val statement = StringBuilder()
 
-                                    var line = scriptReader.readLine()
-                                    while (line != null) {
-                                        val trimmedLine = line.trim()
-                                        if (trimmedLine.isNotEmpty()) {
-                                            if (trimmedLine.startsWith("--")) {
-                                                if (statement.isNotEmpty()) {
-                                                    scriptStatements.add(statement.toString())
-                                                }
-                                                statement.clear()
-                                            } else {
-                                                statement.append(line).append('\n')
-                                            }
+                            var line = scriptReader.readLine()
+                            while (line != null) {
+                                val trimmedLine = line.trim()
+                                if (trimmedLine.isNotEmpty()) {
+                                    if (trimmedLine.startsWith("--")) {
+                                        if (statement.isNotEmpty()) {
+                                            scriptStatements.add(statement.toString())
                                         }
-
-                                        line = scriptReader.readLine()
-                                    }
-
-                                    if (statement.isNotEmpty()) {
-                                        scriptStatements.add(statement.toString())
+                                        statement.clear()
+                                    } else {
+                                        statement.append(line).append('\n')
                                     }
                                 }
-                            } catch (exception: IOException) {
-                                dropDatabase(database, "Cannot upgrade database from version $version")
+
+                                line = scriptReader.readLine()
                             }
 
-                            database.transaction {
-                                for (statement in scriptStatements) {
-                                    database.execSQL(statement)
-                                }
+                            if (statement.isNotEmpty()) {
+                                scriptStatements.add(statement.toString())
                             }
                         }
+                    } catch (exception: IOException) {
+                        dropDatabase(database, "Cannot upgrade database from version $version")
+                    }
 
-                        override fun onDowngrade(database: SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) {
-                            dropDatabase(database, "Cannot downgrade from version $oldVersion to $newVersion")
+                    database.transaction {
+                        for (statement in scriptStatements) {
+                            database.execSQL(statement)
                         }
+                    }
+                }
 
-                        private fun dropDatabase(database: SupportSQLiteDatabase, message: String) {
-                            Log.e(javaClass.name, message)
-                            onCorruption(database)
-                            exitProcess(1)
-                        }
+                override fun onDowngrade(database: SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) {
+                    dropDatabase(database, "Cannot downgrade from version $oldVersion to $newVersion")
+                }
 
-                        override fun onOpen(db: SupportSQLiteDatabase) {
-                            GlobalScope.launch(Dispatchers.IO) {
-                                restoreFeeds()
-                            }
-                        }
-                    })
-                    .build()
+                private fun dropDatabase(database: SupportSQLiteDatabase, message: String) {
+                    Log.e(javaClass.name, message)
+                    onCorruption(database)
+                    exitProcess(1)
+                }
+
+                override fun onOpen(db: SupportSQLiteDatabase) {
+                    contentScope.launch {
+                        restoreFeeds()
+                    }
+                }
+            })
+            .build()
     )
 
     private fun insert(table: String, values: ContentValues, conflictAlgorithm: Int): Long {
@@ -251,7 +250,7 @@ object Database {
             }
 
             private fun update() {
-                GlobalScope.launch(Dispatchers.IO) {
+                contentScope.launch {
                     sqlite.readableDatabase.query(query).use { cursor ->
                         val data = transform(cursor)
                         postValue(data)

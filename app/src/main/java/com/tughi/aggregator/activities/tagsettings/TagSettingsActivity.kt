@@ -8,7 +8,6 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -27,6 +26,7 @@ import com.tughi.aggregator.App
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.entrytagrulesettings.EntryTagRuleSettingsActivity
+import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.data.EntryTagRules
 import com.tughi.aggregator.data.EntryTags
 import com.tughi.aggregator.data.Feeds
@@ -37,7 +37,6 @@ import com.tughi.aggregator.entries.conditions.ContentToken
 import com.tughi.aggregator.entries.conditions.LinkToken
 import com.tughi.aggregator.entries.conditions.StringToken
 import com.tughi.aggregator.entries.conditions.TitleToken
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class TagSettingsActivity : AppActivity() {
@@ -132,7 +131,7 @@ class TagSettingsActivity : AppActivity() {
         val tag = viewModel.tag.value
         val name = viewModel.newTagName.value ?: return
 
-        GlobalScope.launch {
+        contentScope.launch {
             if (tag != null) {
                 Tags.update(
                     Tags.UpdateTagCriteria(tag.id),
@@ -248,13 +247,13 @@ class TagSettingsActivity : AppActivity() {
 
         init {
             if (tagId != null) {
-                GlobalScope.launch {
+                contentScope.launch {
                     Tags.queryOne(Tags.QueryTagCriteria(tagId), Tag.QueryHelper)?.let {
                         tag.postValue(it)
                         newTagName.postValue(it.name)
                     }
                 }
-                GlobalScope.launch {
+                contentScope.launch {
                     manualTags.postValue(
                         EntryTags.queryCount(
                             EntryTags.ManuallyTaggedEntriesQueryCriteria(tagId),

@@ -27,7 +27,9 @@ import com.tughi.aggregator.data.EntriesQueryCriteria
 import com.tughi.aggregator.data.EntryTags
 import com.tughi.aggregator.data.TagEntriesQueryCriteria
 import com.tughi.aggregator.data.Tags
-import kotlinx.coroutines.GlobalScope
+import com.tughi.aggregator.contentScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Toolbar.OnMenuItemClickListener {
@@ -135,10 +137,12 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
         ItemTouchHelper(SwipeItemTouchHelper()).attachToRecyclerView(entriesRecyclerView)
 
         toolbar = fragmentView.findViewById(R.id.toolbar)
-        toolbar.setNavigationIcon(when (this) {
-            is MyFeedFragment -> R.drawable.action_menu
-            else -> R.drawable.action_back
-        })
+        toolbar.setNavigationIcon(
+            when (this) {
+                is MyFeedFragment -> R.drawable.action_menu
+                else -> R.drawable.action_back
+            }
+        )
         toolbar.setNavigationOnClickListener { onNavigationClick() }
 
         toolbar.inflateMenu(R.menu.entry_list_fragment)
@@ -182,7 +186,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
             }
             R.id.mark_all_read -> {
                 viewModel.entriesQueryCriteria.value?.let { queryCriteria ->
-                    GlobalScope.launch {
+                    contentScope.launch {
                         Entries.markRead(queryCriteria)
                     }
                 }
@@ -207,21 +211,23 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
     override fun onEntryClicked(entry: EntriesFragmentViewModel.Entry, position: Int) {
         context?.run {
             startActivityForResult(
-                    Intent(this, ReaderActivity::class.java)
-                            .putExtra(ReaderActivity.EXTRA_ENTRIES_QUERY_CRITERIA, viewModel.entriesQueryCriteria.value)
-                            .putExtra(ReaderActivity.EXTRA_ENTRIES_POSITION, position),
-                    REQUEST_ENTRY_POSITION
+                Intent(this, ReaderActivity::class.java)
+                    .putExtra(ReaderActivity.EXTRA_ENTRIES_QUERY_CRITERIA, viewModel.entriesQueryCriteria.value)
+                    .putExtra(ReaderActivity.EXTRA_ENTRIES_POSITION, position),
+                REQUEST_ENTRY_POSITION
             )
         }
     }
 
     private class SwipeItemTouchHelper : ItemTouchHelper.Callback() {
 
+        private val scope = CoroutineScope(Dispatchers.Main)
+
         override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int =
-                when (viewHolder) {
-                    is EntriesFragmentEntryViewHolder -> makeMovementFlags(0, ItemTouchHelper.START or ItemTouchHelper.END)
-                    else -> 0
-                }
+            when (viewHolder) {
+                is EntriesFragmentEntryViewHolder -> makeMovementFlags(0, ItemTouchHelper.START or ItemTouchHelper.END)
+                else -> 0
+            }
 
 
         override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
@@ -231,7 +237,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
             if (viewHolder is EntriesFragmentEntryViewHolder) {
                 val entry = viewHolder.item as EntriesFragmentViewModel.Entry
-                GlobalScope.launch {
+                contentScope.launch {
                     if (entry.readTime == 0L || entry.pinnedTime != 0L) {
                         Database.transaction {
                             val updated = Entries.update(Entries.UpdateEntryCriteria(entry.id), Entries.READ_TIME to System.currentTimeMillis())
@@ -241,9 +247,9 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
                         }
                     } else {
                         EntryTags.insert(
-                                EntryTags.ENTRY_ID to entry.id,
-                                EntryTags.TAG_ID to Tags.PINNED,
-                                EntryTags.TAG_TIME to System.currentTimeMillis()
+                            EntryTags.ENTRY_ID to entry.id,
+                            EntryTags.TAG_ID to Tags.PINNED,
+                            EntryTags.TAG_TIME to System.currentTimeMillis()
                         )
                     }
                 }

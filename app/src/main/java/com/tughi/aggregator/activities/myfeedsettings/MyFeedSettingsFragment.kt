@@ -17,17 +17,17 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.NOTIFICATION_CHANNEL__MY_FEED
+import com.tughi.aggregator.Notifications.channelImportance
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.tagspicker.TagsPickerActivity
 import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.MyFeedTags
 import com.tughi.aggregator.data.Tags
+import com.tughi.aggregator.contentScope
+import com.tughi.aggregator.preferences.MyFeedSettings
 import com.tughi.aggregator.widgets.DropDownButton
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import com.tughi.aggregator.Notifications.channelImportance
-import com.tughi.aggregator.preferences.MyFeedSettings
 
 class MyFeedSettingsFragment : Fragment() {
 
@@ -113,13 +113,13 @@ class MyFeedSettingsFragment : Fragment() {
             MyFeedSettings.notification = viewModel.newNotificationValue
         }
 
-        GlobalScope.launch {
+        contentScope.launch {
             Database.transaction {
                 for (tagId in newIncludedTagIds) {
                     if (!oldIncludedTagIds.contains(tagId)) {
                         MyFeedTags.insert(
-                                MyFeedTags.TAG_ID to tagId,
-                                MyFeedTags.TYPE to MyFeedTags.Type.INCLUDED.value
+                            MyFeedTags.TAG_ID to tagId,
+                            MyFeedTags.TYPE to MyFeedTags.Type.INCLUDED.value
                         )
                     }
                 }
@@ -133,8 +133,8 @@ class MyFeedSettingsFragment : Fragment() {
                 for (tagId in newExcludedTagIds) {
                     if (!oldExcludedTagIds.contains(tagId)) {
                         MyFeedTags.insert(
-                                MyFeedTags.TAG_ID to tagId,
-                                MyFeedTags.TYPE to MyFeedTags.Type.EXCLUDED.value
+                            MyFeedTags.TAG_ID to tagId,
+                            MyFeedTags.TYPE to MyFeedTags.Type.EXCLUDED.value
                         )
                     }
                 }
@@ -156,12 +156,12 @@ class MyFeedSettingsFragment : Fragment() {
         override fun toString(): String = name
 
         object QueryHelper : MyFeedTags.QueryHelper<MyFeedTag>(
-                MyFeedTags.TAG_ID,
-                MyFeedTags.TAG_NAME
+            MyFeedTags.TAG_ID,
+            MyFeedTags.TAG_NAME
         ) {
             override fun createRow(cursor: Cursor) = MyFeedTag(
-                    id = cursor.getLong(0),
-                    name = cursor.getString(1)
+                id = cursor.getLong(0),
+                name = cursor.getString(1)
             )
         }
     }
@@ -170,12 +170,12 @@ class MyFeedSettingsFragment : Fragment() {
         override fun toString(): String = name
 
         object QueryHelper : Tags.QueryHelper<Tag>(
-                Tags.ID,
-                Tags.NAME
+            Tags.ID,
+            Tags.NAME
         ) {
             override fun createRow(cursor: Cursor) = Tag(
-                    id = cursor.getLong(0),
-                    name = cursor.getString(1)
+                id = cursor.getLong(0),
+                name = cursor.getString(1)
             )
         }
     }

@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.App
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
+import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.feeds.OpmlFeed
 import com.tughi.aggregator.feeds.OpmlParser
@@ -28,7 +29,6 @@ import com.tughi.aggregator.services.AutoUpdateScheduler
 import com.tughi.aggregator.services.FaviconUpdateScheduler
 import com.tughi.aggregator.utilities.backupFeeds
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.IOException
 
@@ -36,7 +36,7 @@ internal class OpmlImportViewModel : ViewModel() {
     val feeds = MutableLiveData<List<OpmlFeed>>()
 
     fun parseOpml(uri: Uri) {
-        GlobalScope.launch(Dispatchers.IO) {
+        contentScope.launch {
             val subscriptions = Feeds.query(Feeds.AllCriteria, object : Feeds.QueryHelper<String>(Feeds.URL) {
                 override fun createRow(cursor: Cursor): String = cursor.getString(0)
             }).toSet()
@@ -117,21 +117,21 @@ class OpmlImportActivity : AppActivity() {
 
         subscribeButton.setOnClickListener {
             viewModel.feeds.value?.let { feeds ->
-                GlobalScope.launch(Dispatchers.IO) {
+                contentScope.launch {
                     feeds.forEach {
                         if (!it.excluded) {
                             val feedId = Feeds.insert(
-                                    Feeds.URL to it.url,
-                                    Feeds.LINK to it.link,
-                                    Feeds.TITLE to it.title,
-                                    Feeds.CUSTOM_TITLE to it.customTitle,
-                                    Feeds.UPDATE_MODE to it.updateMode.serialize()
+                                Feeds.URL to it.url,
+                                Feeds.LINK to it.link,
+                                Feeds.TITLE to it.title,
+                                Feeds.CUSTOM_TITLE to it.customTitle,
+                                Feeds.UPDATE_MODE to it.updateMode.serialize()
                             )
 
                             if (feedId > 0) {
                                 Feeds.update(
-                                        Feeds.UpdateRowCriteria(feedId),
-                                        Feeds.NEXT_UPDATE_TIME to AutoUpdateScheduler.calculateNextUpdateTime(feedId, it.updateMode, 0)
+                                    Feeds.UpdateRowCriteria(feedId),
+                                    Feeds.NEXT_UPDATE_TIME to AutoUpdateScheduler.calculateNextUpdateTime(feedId, it.updateMode, 0)
                                 )
                             }
                         }

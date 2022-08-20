@@ -15,11 +15,13 @@ import com.tughi.aggregator.data.MyFeedEntriesQueryCriteria
 import com.tughi.aggregator.data.UnreadEntriesQueryCriteria
 import com.tughi.aggregator.preferences.MyFeedSettings
 import com.tughi.aggregator.preferences.User
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 object Notifications {
+
+    private val scope = CoroutineScope(Dispatchers.Main)
 
     fun setupChannels(context: Context) {
         if (Build.VERSION.SDK_INT >= 26) {
@@ -40,7 +42,7 @@ object Notifications {
         val notificationManager = NotificationManagerCompat.from(context)
 
         if (MyFeedSettings.notification && notificationManager.channelImportance(NOTIFICATION_CHANNEL__MY_FEED) > NotificationManagerCompat.IMPORTANCE_NONE) {
-            GlobalScope.launch {
+            contentScope.launch {
                 val entriesQueryCriteria = MyFeedEntriesQueryCriteria(minInsertTime = User.lastSeen, sessionTime = 0L, showRead = false, sortOrder = Entries.SortOrder.ByDateAscending)
                 val count = Entries.queryCount(UnreadEntriesQueryCriteria(entriesQueryCriteria), Count.QueryHelper)
 
@@ -49,15 +51,15 @@ object Notifications {
                         val intent = Intent(context, NewEntriesActivity::class.java)
 
                         val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL__MY_FEED)
-                                .setSmallIcon(R.drawable.notification)
-                                .setColor(App.accentColor)
-                                .setContentTitle(context.resources.getQuantityString(R.plurals.notification__my_feed__new_entries, count, count))
-                                .setContentText(context.resources.getQuantityString(R.plurals.notification__new_entries__tap, count))
-                                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                                .setContentIntent(PendingIntent.getActivity(context, 0, intent, 0))
-                                .setWhen(System.currentTimeMillis())
-                                .setAutoCancel(true)
-                                .build()
+                            .setSmallIcon(R.drawable.notification)
+                            .setColor(App.accentColor)
+                            .setContentTitle(context.resources.getQuantityString(R.plurals.notification__my_feed__new_entries, count, count))
+                            .setContentText(context.resources.getQuantityString(R.plurals.notification__new_entries__tap, count))
+                            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                            .setContentIntent(PendingIntent.getActivity(context, 0, intent, 0))
+                            .setWhen(System.currentTimeMillis())
+                            .setAutoCancel(true)
+                            .build()
 
                         notificationManager.notify(NOTIFICATION__NEW_ENTRIES__MY_FEED, notification)
                     } else {
@@ -84,4 +86,5 @@ object Notifications {
             override fun createRow(cursor: Cursor) = Count()
         }
     }
+
 }

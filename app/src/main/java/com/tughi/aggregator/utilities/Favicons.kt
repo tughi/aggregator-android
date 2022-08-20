@@ -6,9 +6,9 @@ import android.graphics.BitmapFactory
 import android.widget.ImageView
 import androidx.collection.LruCache
 import com.tughi.aggregator.R
+import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.data.Feeds
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
@@ -41,7 +41,7 @@ object Favicons {
                 if (!faviconUrl.isEmpty()) {
                     val targetReference = WeakReference(target)
 
-                    GlobalScope.launch {
+                    contentScope.launch {
                         val feed = Feeds.queryOne(Feeds.QueryRowCriteria(feedId), Feed.QueryHelper) ?: return@launch
                         val decodedBitmap = when {
                             feed.faviconContent != null -> BitmapFactory.decodeByteArray(feed.faviconContent, 0, feed.faviconContent.size)
@@ -67,10 +67,10 @@ object Favicons {
 
     class Feed(val faviconContent: ByteArray?) {
         object QueryHelper : Feeds.QueryHelper<Feed>(
-                Feeds.FAVICON_CONTENT
+            Feeds.FAVICON_CONTENT
         ) {
             override fun createRow(cursor: Cursor) = Feed(
-                    faviconContent = cursor.getBlob(0)
+                faviconContent = cursor.getBlob(0)
             )
         }
     }

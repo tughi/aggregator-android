@@ -12,11 +12,11 @@ import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.theme.ThemeActivity
+import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.preferences.UpdateSettings
 import com.tughi.aggregator.preferences.User
 import com.tughi.aggregator.services.FeedUpdateHelper
 import com.tughi.aggregator.utilities.openURL
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class MainActivity : AppActivity() {
@@ -51,13 +51,13 @@ class MainActivity : AppActivity() {
 
         supportFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
         supportFragmentManager.beginTransaction()
-                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
-                .replace(R.id.content, fragment)
-                .commit()
+            .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
+            .replace(R.id.content, fragment)
+            .commit()
 
         App.preferences.edit()
-                .putString(PREF_ACTIVE_TAB, tabName)
-                .apply()
+            .putString(PREF_ACTIVE_TAB, tabName)
+            .apply()
 
         return@OnNavigationItemSelectedListener true
     }
@@ -110,7 +110,7 @@ class MainActivity : AppActivity() {
             }
 
             if (UpdateSettings.backgroundUpdates) {
-                GlobalScope.launch {
+                contentScope.launch {
                     FeedUpdateHelper.updateOutdatedFeeds(true)
                 }
             }

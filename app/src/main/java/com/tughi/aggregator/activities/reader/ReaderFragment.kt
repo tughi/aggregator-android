@@ -21,6 +21,7 @@ import com.tughi.aggregator.App
 import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.entrytags.EntryTagsActivity
+import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.data.EntryTags
 import com.tughi.aggregator.data.Tags
@@ -28,7 +29,6 @@ import com.tughi.aggregator.utilities.Html
 import com.tughi.aggregator.utilities.Language
 import com.tughi.aggregator.utilities.openURL
 import com.tughi.aggregator.utilities.shareLink
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.nio.charset.Charset
 
@@ -39,16 +39,16 @@ class ReaderFragment : Fragment() {
         internal const val ARG_ENTRY_ID = "entry_id"
 
         private val ENTRY_LINK_URL = Uri.Builder()
-                .scheme("https")
-                .authority(BuildConfig.APPLICATION_ID)
-                .path("entry-link")
-                .build()
+            .scheme("https")
+            .authority(BuildConfig.APPLICATION_ID)
+            .path("entry-link")
+            .build()
 
         private val entryTemplate by lazy {
             App.instance.resources
-                    .openRawResource(R.raw.entry)
-                    .readBytes()
-                    .toString(Charset.defaultCharset())
+                .openRawResource(R.raw.entry)
+                .readBytes()
+                .toString(Charset.defaultCharset())
         }
     }
 
@@ -114,13 +114,13 @@ class ReaderFragment : Fragment() {
 
                 // TODO: run this in a coroutine
                 val entryHtml = entryTemplate
-                        .replace("#ff6600", style.accentHexColor)
-                        .replace("{{ reader.theme }}", App.style.value?.theme?.name?.toLowerCase() ?: "")
-                        .replace("{{ layout_direction }}", if (Language.isRightToLeft(entryFeedLanguage)) "rtl" else "ltr")
-                        .replace("{{ entry.source }}", if (entryAuthor != null) "$entryFeedTitle — $entryAuthor" else entryFeedTitle)
-                        .replace("{{ entry.date }}", DateUtils.formatDateTime(activity, entryPublished, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_YEAR))
-                        .replace("{{ entry.title }}", entryTitleHtml)
-                        .replace("{{ entry.content }}", entryContent ?: "")
+                    .replace("#ff6600", style.accentHexColor)
+                    .replace("{{ reader.theme }}", App.style.value?.theme?.name?.toLowerCase() ?: "")
+                    .replace("{{ layout_direction }}", if (Language.isRightToLeft(entryFeedLanguage)) "rtl" else "ltr")
+                    .replace("{{ entry.source }}", if (entryAuthor != null) "$entryFeedTitle — $entryAuthor" else entryFeedTitle)
+                    .replace("{{ entry.date }}", DateUtils.formatDateTime(activity, entryPublished, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_YEAR))
+                    .replace("{{ entry.title }}", entryTitleHtml)
+                    .replace("{{ entry.content }}", entryContent ?: "")
 
                 if (entryHtml != loadedEntryHtml) {
                     loadedEntryLink = entryLink
@@ -164,36 +164,36 @@ class ReaderFragment : Fragment() {
         when (item.itemId) {
             R.id.mark_done -> {
                 loadedEntry?.let {
-                    GlobalScope.launch {
+                    contentScope.launch {
                         EntryTags.delete(EntryTags.DeleteEntryTagCriteria(it.id, Tags.PINNED))
                     }
                 }
             }
             R.id.mark_pinned -> {
                 loadedEntry?.let {
-                    GlobalScope.launch {
+                    contentScope.launch {
                         EntryTags.insert(
-                                EntryTags.ENTRY_ID to it.id,
-                                EntryTags.TAG_ID to Tags.PINNED,
-                                EntryTags.TAG_TIME to System.currentTimeMillis()
+                            EntryTags.ENTRY_ID to it.id,
+                            EntryTags.TAG_ID to Tags.PINNED,
+                            EntryTags.TAG_TIME to System.currentTimeMillis()
                         )
                     }
                 }
             }
             R.id.add_star -> {
                 loadedEntry?.let {
-                    GlobalScope.launch {
+                    contentScope.launch {
                         EntryTags.insert(
-                                EntryTags.ENTRY_ID to it.id,
-                                EntryTags.TAG_ID to Tags.STARRED,
-                                EntryTags.TAG_TIME to System.currentTimeMillis()
+                            EntryTags.ENTRY_ID to it.id,
+                            EntryTags.TAG_ID to Tags.STARRED,
+                            EntryTags.TAG_TIME to System.currentTimeMillis()
                         )
                     }
                 }
             }
             R.id.remove_star -> {
                 loadedEntry?.let {
-                    GlobalScope.launch {
+                    contentScope.launch {
                         EntryTags.delete(EntryTags.DeleteEntryTagCriteria(it.id, Tags.STARRED))
                     }
                 }
@@ -219,46 +219,46 @@ class ReaderFragment : Fragment() {
     }
 
     data class Entry(
-            val id: Long,
-            val feedId: Long,
-            val title: String?,
-            val link: String?,
-            val content: String?,
-            val author: String?,
-            val publishTime: Long,
-            val feedTitle: String,
-            val feedLanguage: String?,
-            val readTime: Long,
-            val pinnedTime: Long,
-            val starredTime: Long
+        val id: Long,
+        val feedId: Long,
+        val title: String?,
+        val link: String?,
+        val content: String?,
+        val author: String?,
+        val publishTime: Long,
+        val feedTitle: String,
+        val feedLanguage: String?,
+        val readTime: Long,
+        val pinnedTime: Long,
+        val starredTime: Long
     ) {
         object QueryHelper : Entries.QueryHelper<Entry>(
-                Entries.ID,
-                Entries.FEED_ID,
-                Entries.TITLE,
-                Entries.LINK,
-                Entries.CONTENT,
-                Entries.AUTHOR,
-                Entries.PUBLISH_TIME,
-                Entries.FEED_TITLE,
-                Entries.FEED_LANGUAGE,
-                Entries.READ_TIME,
-                Entries.PINNED_TIME,
-                Entries.STARRED_TIME
+            Entries.ID,
+            Entries.FEED_ID,
+            Entries.TITLE,
+            Entries.LINK,
+            Entries.CONTENT,
+            Entries.AUTHOR,
+            Entries.PUBLISH_TIME,
+            Entries.FEED_TITLE,
+            Entries.FEED_LANGUAGE,
+            Entries.READ_TIME,
+            Entries.PINNED_TIME,
+            Entries.STARRED_TIME
         ) {
             override fun createRow(cursor: Cursor) = Entry(
-                    id = cursor.getLong(0),
-                    feedId = cursor.getLong(1),
-                    title = cursor.getString(2),
-                    link = cursor.getString(3),
-                    content = cursor.getString(4),
-                    author = cursor.getString(5),
-                    publishTime = cursor.getLong(6),
-                    feedTitle = cursor.getString(7),
-                    feedLanguage = cursor.getString(8),
-                    readTime = cursor.getLong(9),
-                    pinnedTime = cursor.getLong(10),
-                    starredTime = cursor.getLong(11)
+                id = cursor.getLong(0),
+                feedId = cursor.getLong(1),
+                title = cursor.getString(2),
+                link = cursor.getString(3),
+                content = cursor.getString(4),
+                author = cursor.getString(5),
+                publishTime = cursor.getLong(6),
+                feedTitle = cursor.getString(7),
+                feedLanguage = cursor.getString(8),
+                readTime = cursor.getLong(9),
+                pinnedTime = cursor.getLong(10),
+                starredTime = cursor.getLong(11)
             )
         }
     }

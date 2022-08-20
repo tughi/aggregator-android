@@ -26,6 +26,7 @@ import com.tughi.aggregator.activities.feedspicker.FeedsPickerActivity
 import com.tughi.aggregator.activities.optionpicker.Option
 import com.tughi.aggregator.activities.optionpicker.OptionPickerActivity
 import com.tughi.aggregator.activities.tagspicker.TagsPickerActivity
+import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.data.EntryTagRuleQueryCriteria
 import com.tughi.aggregator.data.EntryTagRules
 import com.tughi.aggregator.data.Feeds
@@ -39,7 +40,6 @@ import com.tughi.aggregator.entries.conditions.TitleToken
 import com.tughi.aggregator.services.EntryTagRuleHelper
 import com.tughi.aggregator.widgets.DropDownButton
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class EntryTagRuleSettingsActivity : AppActivity() {
@@ -295,7 +295,7 @@ class EntryTagRuleSettingsActivity : AppActivity() {
 
         init {
             if (entryTagRuleId != null) {
-                GlobalScope.launch {
+                contentScope.launch {
                     val entryTagRule = EntryTagRules.queryOne(EntryTagRuleQueryCriteria(entryTagRuleId), EntryTagRule.QueryHelper)
                     if (entryTagRule != null) {
                         launch(Dispatchers.Main) {
@@ -336,7 +336,7 @@ class EntryTagRuleSettingsActivity : AppActivity() {
             val tagId = newTagId.value ?: return
             val condition = newCondition.value ?: return
 
-            GlobalScope.launch {
+            contentScope.launch {
                 if (entryTagRuleId != null) {
                     EntryTagRules.update(
                         UpdateEntryTagRuleCriteria(entryTagRuleId),

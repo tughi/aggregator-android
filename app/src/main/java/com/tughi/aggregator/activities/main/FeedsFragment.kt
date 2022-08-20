@@ -14,10 +14,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.subscribe.SubscribeActivity
 import com.tughi.aggregator.activities.updatesettings.UpdateSettingsActivity
+import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.services.AutoUpdateScheduler
 import com.tughi.aggregator.services.FeedUpdateHelper
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class FeedListFragment : Fragment(), FeedsFragmentFeedAdapterListener {
@@ -81,10 +80,10 @@ class FeedListFragment : Fragment(), FeedsFragmentFeedAdapterListener {
 
     override fun onFeedClicked(feed: FeedsFragmentViewModel.Feed) {
         parentFragmentManager.beginTransaction()
-                .setCustomAnimations(R.anim.slide_in, 0, 0, R.anim.fade_out)
-                .add(id, FeedEntriesFragment.newInstance(feedId = feed.id), TAG)
-                .addToBackStack(null)
-                .commit()
+            .setCustomAnimations(R.anim.slide_in, 0, 0, R.anim.fade_out)
+            .add(id, FeedEntriesFragment.newInstance(feedId = feed.id), TAG)
+            .addToBackStack(null)
+            .commit()
     }
 
     override fun onToggleFeed(feed: FeedsFragmentViewModel.Feed) {
@@ -92,7 +91,7 @@ class FeedListFragment : Fragment(), FeedsFragmentFeedAdapterListener {
     }
 
     override fun onUpdateFeed(feed: FeedsFragmentViewModel.Feed) {
-        GlobalScope.launch(Dispatchers.IO) {
+        contentScope.launch {
             FeedUpdateHelper.updateFeed(feed.id)
 
             AutoUpdateScheduler.schedule()

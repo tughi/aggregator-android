@@ -8,7 +8,7 @@ import androidx.fragment.app.FragmentManager
 import com.tughi.aggregator.R
 import com.tughi.aggregator.data.DeleteEntryTagRuleCriteria
 import com.tughi.aggregator.data.EntryTagRules
-import kotlinx.coroutines.GlobalScope
+import com.tughi.aggregator.contentScope
 import kotlinx.coroutines.launch
 
 class DeleteEntryTagRuleDialogFragment : DialogFragment() {
@@ -19,13 +19,13 @@ class DeleteEntryTagRuleDialogFragment : DialogFragment() {
 
         fun show(fragmentManager: FragmentManager, entryTagRuleId: Long, finishActivity: Boolean) {
             DeleteEntryTagRuleDialogFragment()
-                    .apply {
-                        arguments = Bundle().apply {
-                            putLong(ARG_ENTRY_TAG_RULE_ID, entryTagRuleId)
-                            putBoolean(ARG_FINISH_ACTIVITY, finishActivity)
-                        }
+                .apply {
+                    arguments = Bundle().apply {
+                        putLong(ARG_ENTRY_TAG_RULE_ID, entryTagRuleId)
+                        putBoolean(ARG_FINISH_ACTIVITY, finishActivity)
                     }
-                    .show(fragmentManager, "delete-dialog")
+                }
+                .show(fragmentManager, "delete-dialog")
         }
     }
 
@@ -34,17 +34,17 @@ class DeleteEntryTagRuleDialogFragment : DialogFragment() {
         val entryTagRuleId = arguments.getLong(ARG_ENTRY_TAG_RULE_ID)
         val finishActivity = arguments.getBoolean(ARG_FINISH_ACTIVITY)
         return AlertDialog.Builder(requireContext())
-                .setMessage(R.string.entry_tag_rule__delete__message)
-                .setNegativeButton(R.string.action__no, null)
-                .setPositiveButton(R.string.action__yes) { _, _ ->
-                    GlobalScope.launch {
-                        EntryTagRules.delete(DeleteEntryTagRuleCriteria(entryTagRuleId))
-                    }
-                    if (finishActivity) {
-                        activity?.finish()
-                    }
+            .setMessage(R.string.entry_tag_rule__delete__message)
+            .setNegativeButton(R.string.action__no, null)
+            .setPositiveButton(R.string.action__yes) { _, _ ->
+                contentScope.launch {
+                    EntryTagRules.delete(DeleteEntryTagRuleCriteria(entryTagRuleId))
                 }
-                .create()
+                if (finishActivity) {
+                    activity?.finish()
+                }
+            }
+            .create()
     }
 
 }

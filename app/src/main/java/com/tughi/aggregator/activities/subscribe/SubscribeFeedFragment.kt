@@ -17,6 +17,7 @@ import com.tughi.aggregator.activities.cleanupmode.toString
 import com.tughi.aggregator.activities.updatemode.UpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.startUpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.toString
+import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.data.CleanupMode
 import com.tughi.aggregator.data.DefaultCleanupMode
 import com.tughi.aggregator.data.DefaultUpdateMode
@@ -27,7 +28,6 @@ import com.tughi.aggregator.services.FaviconUpdateScheduler
 import com.tughi.aggregator.utilities.backupFeeds
 import com.tughi.aggregator.widgets.DropDownButton
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class SubscribeFeedFragment : Fragment() {
@@ -53,7 +53,7 @@ class SubscribeFeedFragment : Fragment() {
         val arguments = requireArguments()
 
         viewModel = ViewModelProvider(this, SubscribeFeedFragmentViewModel.Factory())
-                .get(SubscribeFeedFragmentViewModel::class.java)
+            .get(SubscribeFeedFragmentViewModel::class.java)
 
         urlTextView = fragmentView.findViewById(R.id.url)
         urlTextView.text = arguments.getString(ARG_URL)
@@ -87,14 +87,14 @@ class SubscribeFeedFragment : Fragment() {
             val customTitle = titleTextView.text.toString()
             val link = arguments.getString(ARG_LINK)
 
-            GlobalScope.launch(Dispatchers.IO) {
+            contentScope.launch {
                 val feedId = Feeds.insert(
-                        Feeds.URL to urlTextView.text.toString(),
-                        Feeds.TITLE to title,
-                        Feeds.CUSTOM_TITLE to if (customTitle != title) customTitle else null,
-                        Feeds.LINK to link,
-                        Feeds.UPDATE_MODE to (viewModel.updateMode.value ?: DefaultUpdateMode).serialize(),
-                        Feeds.CLEANUP_MODE to (viewModel.cleanupMode.value ?: DefaultCleanupMode).serialize()
+                    Feeds.URL to urlTextView.text.toString(),
+                    Feeds.TITLE to title,
+                    Feeds.CUSTOM_TITLE to if (customTitle != title) customTitle else null,
+                    Feeds.LINK to link,
+                    Feeds.UPDATE_MODE to (viewModel.updateMode.value ?: DefaultUpdateMode).serialize(),
+                    Feeds.CLEANUP_MODE to (viewModel.cleanupMode.value ?: DefaultCleanupMode).serialize()
                 )
 
                 launch {

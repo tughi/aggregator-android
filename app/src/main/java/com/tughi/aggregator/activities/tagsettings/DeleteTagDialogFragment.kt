@@ -6,8 +6,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import com.tughi.aggregator.R
+import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.data.Tags
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class DeleteTagDialogFragment : DialogFragment() {
@@ -19,14 +19,14 @@ class DeleteTagDialogFragment : DialogFragment() {
 
         fun show(fragmentManager: FragmentManager, tagId: Long, tagName: String, finishActivity: Boolean) {
             DeleteTagDialogFragment()
-                    .apply {
-                        arguments = Bundle().apply {
-                            putLong(ARG_TAG_ID, tagId)
-                            putString(ARG_TAG_NAME, tagName)
-                            putBoolean(ARG_FINISH_ACTIVITY, finishActivity)
-                        }
+                .apply {
+                    arguments = Bundle().apply {
+                        putLong(ARG_TAG_ID, tagId)
+                        putString(ARG_TAG_NAME, tagName)
+                        putBoolean(ARG_FINISH_ACTIVITY, finishActivity)
                     }
-                    .show(fragmentManager, "delete-tag-dialog")
+                }
+                .show(fragmentManager, "delete-tag-dialog")
         }
     }
 
@@ -36,18 +36,18 @@ class DeleteTagDialogFragment : DialogFragment() {
         val tagName = arguments.getString(ARG_TAG_NAME)
         val finishActivity = arguments.getBoolean(ARG_FINISH_ACTIVITY)
         return AlertDialog.Builder(requireContext())
-                .setTitle(tagName)
-                .setMessage(R.string.delete_tag__message)
-                .setNegativeButton(R.string.action__no, null)
-                .setPositiveButton(R.string.action__yes) { _, _ ->
-                    GlobalScope.launch {
-                        Tags.delete(Tags.DeleteTagCriteria(tagId))
-                    }
-                    if (finishActivity) {
-                        activity?.finish()
-                    }
+            .setTitle(tagName)
+            .setMessage(R.string.delete_tag__message)
+            .setNegativeButton(R.string.action__no, null)
+            .setPositiveButton(R.string.action__yes) { _, _ ->
+                contentScope.launch {
+                    Tags.delete(Tags.DeleteTagCriteria(tagId))
                 }
-                .create()
+                if (finishActivity) {
+                    activity?.finish()
+                }
+            }
+            .create()
     }
 
 }
