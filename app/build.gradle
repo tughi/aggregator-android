@@ -6,7 +6,7 @@ android {
     compileSdkVersion 32
 
     defaultConfig {
-        applicationId "com.tughi.aggregator.next"
+        applicationId "com.tughi.aggregator"
 
         minSdkVersion 21
         targetSdkVersion 32
@@ -25,6 +25,18 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    flavorDimensions 'store'
+
+    productFlavors {
+        fdroid {
+            dimension 'store'
+        }
+        google {
+            dimension 'store'
+            applicationIdSuffix ".next"
         }
     }
 }
