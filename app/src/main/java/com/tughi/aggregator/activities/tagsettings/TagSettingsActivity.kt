@@ -8,6 +8,7 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -208,6 +209,9 @@ class TagSettingsActivity : AppActivity() {
                         when (token) {
                             is StringToken, is TitleToken, is ContentToken, is LinkToken -> {
                                 it.setSpan(ForegroundColorSpan(App.accentColor), token.startIndex, token.endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                            }
+                            else -> {
+                                // ignored
                             }
                         }
                     }
