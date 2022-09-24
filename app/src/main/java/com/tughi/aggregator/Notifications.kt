@@ -15,13 +15,10 @@ import com.tughi.aggregator.data.MyFeedEntriesQueryCriteria
 import com.tughi.aggregator.data.UnreadEntriesQueryCriteria
 import com.tughi.aggregator.preferences.MyFeedSettings
 import com.tughi.aggregator.preferences.User
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 object Notifications {
-
-    private val scope = CoroutineScope(Dispatchers.Main)
 
     fun setupChannels(context: Context) {
         if (Build.VERSION.SDK_INT >= 26) {
@@ -50,13 +47,16 @@ object Notifications {
                     if (count > 0) {
                         val intent = Intent(context, NewEntriesActivity::class.java)
 
+                        val pendingIntentFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
+                        val pendingIntent = PendingIntent.getActivity(context, 0, intent, pendingIntentFlags)
+
                         val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL__MY_FEED)
                             .setSmallIcon(R.drawable.notification)
                             .setColor(App.accentColor)
                             .setContentTitle(context.resources.getQuantityString(R.plurals.notification__my_feed__new_entries, count, count))
                             .setContentText(context.resources.getQuantityString(R.plurals.notification__new_entries__tap, count))
                             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                            .setContentIntent(PendingIntent.getActivity(context, 0, intent, 0))
+                            .setContentIntent(pendingIntent)
                             .setWhen(System.currentTimeMillis())
                             .setAutoCancel(true)
                             .build()
