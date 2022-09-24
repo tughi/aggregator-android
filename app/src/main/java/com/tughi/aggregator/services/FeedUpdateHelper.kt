@@ -37,7 +37,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import okhttp3.Response
 import java.util.Calendar
@@ -50,6 +53,8 @@ object FeedUpdateHelper {
 
     private val scope = CoroutineScope(Dispatchers.Main)
 
+    private val concurrentFeedUpdates = Semaphore(10)
+
     val updatingFeedIds = MutableLiveData<MutableSet<Long>>()
 
     suspend fun updateFeed(feedId: Long) {
@@ -59,10 +64,13 @@ object FeedUpdateHelper {
 
     suspend fun updateFeed(feed: Feed) {
         addUpdatingFeed(feed.id)
+
         try {
-            when (val result = requestFeed(feed)) {
-                is Success -> parseFeed(feed, result.data)
-                is Failure -> updateFeedMetadata(feed, result.cause)
+            concurrentFeedUpdates.withPermit {
+                when (val result = requestFeed(feed)) {
+                    is Success -> parseFeed(feed, result.data)
+                    is Failure -> updateFeedMetadata(feed, result.cause)
+                }
             }
         } finally {
             withContext(NonCancellable) {
@@ -81,9 +89,7 @@ object FeedUpdateHelper {
                 }
             }
 
-            jobs.forEach {
-                it.await()
-            }
+            jobs.awaitAll()
         }
 
         job.invokeOnCompletion {
