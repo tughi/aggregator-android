@@ -21,7 +21,7 @@ class DropDownButton(context: Context, attrs: AttributeSet?) : FrameLayout(conte
     private val text = view.findViewById<EditText>(R.id.text)
 
     private val gestureDetector = GestureDetectorCompat(context, object : GestureDetector.SimpleOnGestureListener() {
-        override fun onSingleTapUp(e: MotionEvent?): Boolean {
+        override fun onSingleTapUp(e: MotionEvent): Boolean {
             requestFocus()
             return performClick()
         }

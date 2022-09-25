@@ -3,13 +3,13 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion 32
+    compileSdkVersion 33
 
     defaultConfig {
         applicationId "com.tughi.aggregator"
 
         minSdkVersion 21
-        targetSdkVersion 32
+        targetSdkVersion 33
 
         versionName = 'Preview:032'
         versionCode = 299032
@@ -42,18 +42,18 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.5.0'
+    implementation 'androidx.appcompat:appcompat:1.5.1'
     implementation 'androidx.browser:browser:1.4.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.core:core-ktx:1.8.0'
-    implementation 'androidx.fragment:fragment-ktx:1.5.2'
+    implementation 'androidx.core:core-ktx:1.9.0'
+    implementation 'androidx.fragment:fragment-ktx:1.5.3'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.5.1'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1'
     implementation 'androidx.preference:preference-ktx:1.2.0'
     implementation 'androidx.sqlite:sqlite-framework:2.2.0'
     implementation 'androidx.sqlite:sqlite-ktx:2.2.0'
     implementation 'androidx.viewpager:viewpager:1.0.0'
-    implementation 'androidx.webkit:webkit:1.4.0'
+    implementation 'androidx.webkit:webkit:1.5.0'
     implementation 'com.google.android.material:material:1.6.1'
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'
     implementation 'commons-codec:commons-codec:1.13'
