@@ -1,6 +1,8 @@
 package com.tughi.aggregator.activities.tagspicker
 
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
@@ -13,11 +15,11 @@ import android.widget.Button
 import android.widget.CheckedTextView
 import android.widget.ImageView
 import android.widget.ProgressBar
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.annotation.StringRes
 import androidx.collection.LongSparseArray
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
@@ -36,23 +38,12 @@ class TagsPickerActivity : AppActivity() {
 
         fun startForResult(activity: Activity, resultCode: Int, selectedTags: LongArray, singleChoice: Boolean, title: String? = null) {
             activity.startActivityForResult(
-                    Intent(activity, TagsPickerActivity::class.java)
-                            .putExtra(EXTRA_SELECTED_TAGS, selectedTags)
-                            .putExtra(EXTRA_SINGLE_CHOICE, singleChoice)
-                            .putExtra(EXTRA_TITLE, title),
-                    resultCode
+                Intent(activity, TagsPickerActivity::class.java)
+                    .putExtra(EXTRA_SELECTED_TAGS, selectedTags)
+                    .putExtra(EXTRA_SINGLE_CHOICE, singleChoice)
+                    .putExtra(EXTRA_TITLE, title),
+                resultCode
             )
-        }
-
-        fun startForResult(fragment: Fragment, resultCode: Int, selectedTags: LongArray, title: String? = null) {
-            fragment.context?.let { context ->
-                fragment.startActivityForResult(
-                        Intent(context, TagsPickerActivity::class.java)
-                                .putExtra(EXTRA_SELECTED_TAGS, selectedTags)
-                                .putExtra(EXTRA_TITLE, title),
-                        resultCode
-                )
-            }
         }
     }
 
@@ -72,7 +63,7 @@ class TagsPickerActivity : AppActivity() {
 
         val selectedTagIds = intent.getLongArrayExtra(EXTRA_SELECTED_TAGS) ?: LongArray(0)
         val viewModelFactory = TagsPickerViewModel.Factory(selectedTagIds, singleChoice)
-        val viewModel = ViewModelProvider(this, viewModelFactory).get(TagsPickerViewModel::class.java)
+        val viewModel = ViewModelProvider(this, viewModelFactory)[TagsPickerViewModel::class.java]
 
         setContentView(R.layout.tags_picker_activity)
         val recyclerView = findViewById<RecyclerView>(R.id.list)
@@ -86,7 +77,7 @@ class TagsPickerActivity : AppActivity() {
 
         recyclerView.adapter = adapter
 
-        viewModel.tags.observe(this, Observer { tags ->
+        viewModel.tags.observe(this) { tags ->
             if (tags == null) {
                 adapter.tags = emptyList()
                 progressBar.visibility = View.VISIBLE
@@ -94,7 +85,7 @@ class TagsPickerActivity : AppActivity() {
                 adapter.tags = tags
                 progressBar.visibility = View.GONE
             }
-        })
+        }
 
         val selectButton = findViewById<Button>(R.id.select)
         selectButton.setOnClickListener {
@@ -105,9 +96,9 @@ class TagsPickerActivity : AppActivity() {
         }
         if (singleChoice) {
             selectButton.isEnabled = false
-            viewModel.tags.observe(this, Observer { _ ->
+            viewModel.tags.observe(this) { _ ->
                 selectButton.isEnabled = viewModel.tags.value?.has { it.selected } ?: false
-            })
+            }
         }
     }
 
@@ -133,12 +124,12 @@ class TagsPickerActivity : AppActivity() {
 
     data class Tag(val id: Long, val name: String, val selected: Boolean = false) {
         object QueryHelper : Tags.QueryHelper<Tag>(
-                Tags.ID,
-                Tags.NAME
+            Tags.ID,
+            Tags.NAME
         ) {
             override fun createRow(cursor: Cursor) = Tag(
-                    id = cursor.getLong(0),
-                    name = cursor.getString(1)
+                id = cursor.getLong(0),
+                name = cursor.getString(1)
             )
         }
     }
@@ -167,7 +158,7 @@ class TagsPickerActivity : AppActivity() {
                 selectedTags.isEmpty -> tags
                 else -> tags.map { tag ->
                     tag.copy(
-                            selected = selectedTags.get(tag.id, false)
+                        selected = selectedTags.get(tag.id, false)
                     )
                 }
             }
@@ -212,12 +203,14 @@ class TagsPickerActivity : AppActivity() {
         fun onBind(tag: Tag) {
             this.tag = tag
 
-            faviconView.setImageResource(when (tag.id) {
-                Tags.ALL -> R.drawable.favicon_aggregator
-                Tags.STARRED -> R.drawable.favicon_star
-                Tags.PINNED -> R.drawable.favicon_pin
-                else -> R.drawable.favicon_tag
-            })
+            faviconView.setImageResource(
+                when (tag.id) {
+                    Tags.ALL -> R.drawable.favicon_aggregator
+                    Tags.STARRED -> R.drawable.favicon_star
+                    Tags.PINNED -> R.drawable.favicon_pin
+                    else -> R.drawable.favicon_tag
+                }
+            )
 
             textView.text = tag.name
             textView.isChecked = tag.selected
@@ -226,6 +219,7 @@ class TagsPickerActivity : AppActivity() {
 
     class TagsAdapter(private val listener: Listener, private val singleChoice: Boolean) : RecyclerView.Adapter<TagViewHolder>() {
         var tags: List<Tag> = emptyList()
+            @SuppressLint("NotifyDataSetChanged")
             set(value) {
                 field = value
                 notifyDataSetChanged()
@@ -240,14 +234,35 @@ class TagsPickerActivity : AppActivity() {
         override fun getItemId(position: Int): Long = tags[position].id
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = TagViewHolder(
-                LayoutInflater.from(parent.context).inflate(if (singleChoice) R.layout.tags_picker_item__single_choice else R.layout.tags_picker_item__multiple_choice, parent, false),
-                listener
+            LayoutInflater.from(parent.context).inflate(
+                if (singleChoice) R.layout.tags_picker_item__single_choice else R.layout.tags_picker_item__multiple_choice,
+                parent,
+                false
+            ),
+            listener
         )
 
         override fun onBindViewHolder(holder: TagViewHolder, position: Int) = holder.onBind(tags[position])
 
         interface Listener {
             fun onTagClick(tag: Tag)
+        }
+    }
+
+    @Suppress("ArrayInDataClass")
+    data class PickTagsRequest(@StringRes val title: Int, val selectedTags: LongArray?)
+
+    class PickTags : ActivityResultContract<PickTagsRequest, LongArray?>() {
+        override fun createIntent(context: Context, input: PickTagsRequest): Intent =
+            Intent(context, TagsPickerActivity::class.java)
+                .putExtra(EXTRA_SELECTED_TAGS, input.selectedTags)
+                .putExtra(EXTRA_TITLE, input.title)
+
+        override fun parseResult(resultCode: Int, intent: Intent?): LongArray? {
+            if (resultCode != RESULT_OK) {
+                return null
+            }
+            return intent?.getLongArrayExtra(EXTRA_SELECTED_TAGS)
         }
     }
 

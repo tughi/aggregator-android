@@ -1,5 +1,6 @@
 package com.tughi.aggregator.preferences
 
+import androidx.core.app.NotificationManagerCompat
 import com.tughi.aggregator.App
 
 object MyFeedSettings {
@@ -8,7 +9,10 @@ object MyFeedSettings {
 
     var notification: Boolean
         get() {
-            return App.preferences.getBoolean(PREFERENCE_NOTIFICATION, true)
+            if (NotificationManagerCompat.from(App.instance).areNotificationsEnabled()) {
+                return App.preferences.getBoolean(PREFERENCE_NOTIFICATION, false)
+            }
+            return false
         }
         set(value) {
             App.preferences.edit()

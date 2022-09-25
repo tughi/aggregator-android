@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 object Notifications {
 
     fun setupChannels(context: Context) {
-        if (Build.VERSION.SDK_INT >= 26) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
             val notificationChannel = NotificationChannel(NOTIFICATION_CHANNEL__MY_FEED, context.getString(R.string.notification_channel__my_feed), NotificationManager.IMPORTANCE_DEFAULT)
@@ -71,7 +71,7 @@ object Notifications {
     }
 
     fun NotificationManagerCompat.channelImportance(name: String): Int {
-        if (Build.VERSION.SDK_INT < 26) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             return NotificationManagerCompat.IMPORTANCE_DEFAULT
         }
         if (importance == NotificationManagerCompat.IMPORTANCE_NONE) {

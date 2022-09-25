@@ -1,29 +1,29 @@
 package com.tughi.aggregator.activities.myfeedsettings
 
-import android.app.Activity
-import android.content.Intent
+import android.Manifest
+import android.content.pm.PackageManager
 import android.database.Cursor
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.SwitchCompat
-import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.tughi.aggregator.NOTIFICATION_CHANNEL__MY_FEED
-import com.tughi.aggregator.Notifications.channelImportance
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.tagspicker.TagsPickerActivity
+import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.MyFeedTags
 import com.tughi.aggregator.data.Tags
-import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.preferences.MyFeedSettings
 import com.tughi.aggregator.widgets.DropDownButton
 import kotlinx.coroutines.Dispatchers
@@ -31,55 +31,82 @@ import kotlinx.coroutines.launch
 
 class MyFeedSettingsFragment : Fragment() {
 
-    private val viewModel by lazy { ViewModelProvider(this).get(MyFeedSettingsViewModel::class.java) }
+    private val viewModel by lazy { ViewModelProvider(this)[MyFeedSettingsViewModel::class.java] }
 
     private lateinit var notificationSwitch: SwitchCompat
     private lateinit var includedTags: DropDownButton
     private lateinit var excludedTags: DropDownButton
 
-    companion object {
-        private const val REQUEST_INCLUDED_TAGS = 1
-        private const val REQUEST_EXCLUDED_TAGS = 2
+    private val requestIncludedTags = registerForActivityResult(TagsPickerActivity.PickTags()) { selectedTags ->
+        if (selectedTags != null) {
+            viewModel.newIncludedTagIds.value = selectedTags
+        }
+    }
+
+    private val requestExcludedTags = registerForActivityResult(TagsPickerActivity.PickTags()) { selectedTags ->
+        if (selectedTags != null) {
+            viewModel.newExcludedTagIds.value = selectedTags
+        }
+    }
+
+    private val requestPostNotificationsPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        viewModel.newNotificationValue.value = isGranted
+
+        if (!isGranted) {
+            Toast.makeText(requireContext(), R.string.my_feed_settings__notification__denied, Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val fragmentView = inflater.inflate(R.layout.my_feed_settings_fragment, container, false)
 
         notificationSwitch = fragmentView.findViewById(R.id.notification)
-        if (NotificationManagerCompat.from(requireContext()).channelImportance(NOTIFICATION_CHANNEL__MY_FEED) > NotificationManagerCompat.IMPORTANCE_NONE) {
-            notificationSwitch.isChecked = viewModel.newNotificationValue
-        } else {
-            notificationSwitch.isEnabled = false
-        }
+        notificationSwitch.isChecked = viewModel.newNotificationValue.value == true
         notificationSwitch.setOnCheckedChangeListener { _, isChecked ->
-            viewModel.newNotificationValue = isChecked
+            if (isChecked) {
+                if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                    viewModel.newNotificationValue.value = true
+                } else {
+                    notificationSwitch.isChecked = false
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        requestPostNotificationsPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                }
+            } else {
+                viewModel.newNotificationValue.value = false
+            }
+        }
+        viewModel.newNotificationValue.observe(viewLifecycleOwner) {
+            notificationSwitch.isChecked = it
         }
 
         includedTags = fragmentView.findViewById(R.id.included_tags)
         includedTags.setOnClickListener {
-            val includedTagIds = viewModel.newIncludedTagIds.value ?: LongArray(0)
-            TagsPickerActivity.startForResult(this, REQUEST_INCLUDED_TAGS, includedTagIds, getString(R.string.my_feed_settings__included_tags))
+            requestIncludedTags.launch(
+                TagsPickerActivity.PickTagsRequest(R.string.my_feed_settings__included_tags, viewModel.newIncludedTagIds.value)
+            )
         }
-        viewModel.includedTags.observe(viewLifecycleOwner, Observer { tags ->
+        viewModel.includedTags.observe(viewLifecycleOwner) { tags ->
             if (tags.isNullOrEmpty()) {
                 includedTags.setText(R.string.my_feed_settings__included_tags__none)
             } else {
                 includedTags.setText(tags.joinToString())
             }
-        })
+        }
 
         excludedTags = fragmentView.findViewById(R.id.excluded_tags)
         excludedTags.setOnClickListener {
-            val excludedTagIds = viewModel.newExcludedTagIds.value ?: LongArray(0)
-            TagsPickerActivity.startForResult(this, REQUEST_EXCLUDED_TAGS, excludedTagIds, getString(R.string.my_feed_settings__excluded_tags))
+            requestExcludedTags.launch(
+                TagsPickerActivity.PickTagsRequest(R.string.my_feed_settings__excluded_tags, viewModel.newExcludedTagIds.value)
+            )
         }
-        viewModel.excludedTags.observe(viewLifecycleOwner, Observer { tags ->
+        viewModel.excludedTags.observe(viewLifecycleOwner) { tags ->
             if (tags.isNullOrEmpty()) {
                 excludedTags.setText(R.string.my_feed_settings__excluded_tags__none)
             } else {
                 excludedTags.setText(tags.joinToString())
             }
-        })
+        }
 
         fragmentView.findViewById<Button>(R.id.save).setOnClickListener {
             onSave()
@@ -88,30 +115,16 @@ class MyFeedSettingsFragment : Fragment() {
         return fragmentView
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode == Activity.RESULT_OK) {
-            when (requestCode) {
-                REQUEST_INCLUDED_TAGS -> {
-                    val selectedTags = data?.getLongArrayExtra(TagsPickerActivity.EXTRA_SELECTED_TAGS) ?: return
-                    viewModel.newIncludedTagIds.value = selectedTags
-                }
-                REQUEST_EXCLUDED_TAGS -> {
-                    val selectedTags = data?.getLongArrayExtra(TagsPickerActivity.EXTRA_SELECTED_TAGS) ?: return
-                    viewModel.newExcludedTagIds.value = selectedTags
-                }
-            }
-        }
-    }
-
     private fun onSave() {
+        val newNotificationValue = viewModel.newNotificationValue.value == true
+        if (newNotificationValue != viewModel.oldNotificationValue) {
+            MyFeedSettings.notification = newNotificationValue
+        }
+
         val oldIncludedTagIds = viewModel.oldIncludedTagIds
         val newIncludedTagIds = viewModel.newIncludedTagIds.value ?: LongArray(0)
         val oldExcludedTagIds = viewModel.oldExcludedTagIds
         val newExcludedTagIds = viewModel.newExcludedTagIds.value ?: LongArray(0)
-
-        if (viewModel.newNotificationValue != viewModel.oldNotificationValue) {
-            MyFeedSettings.notification = viewModel.newNotificationValue
-        }
 
         contentScope.launch {
             Database.transaction {
@@ -182,7 +195,7 @@ class MyFeedSettingsFragment : Fragment() {
 
     class MyFeedSettingsViewModel : ViewModel() {
         val oldNotificationValue = MyFeedSettings.notification
-        var newNotificationValue = MyFeedSettings.notification
+        var newNotificationValue = MutableLiveData(MyFeedSettings.notification)
 
         var oldIncludedTagIds = LongArray(0)
         var newIncludedTagIds = MutableLiveData<LongArray>()
