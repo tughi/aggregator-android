@@ -11,8 +11,8 @@ android {
         minSdkVersion 21
         targetSdkVersion 32
 
-        versionName = 'Preview:031'
-        versionCode = 299031
+        versionName = 'Preview:032'
+        versionCode = 299032
     }
 
     buildTypes {

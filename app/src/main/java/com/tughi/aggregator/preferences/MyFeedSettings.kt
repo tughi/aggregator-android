@@ -6,16 +6,14 @@ object MyFeedSettings {
 
     private const val PREFERENCE_NOTIFICATION = "my_feed__notification"
 
-    private val preferences = App.preferences
-
     var notification: Boolean
         get() {
-            return preferences.getBoolean(PREFERENCE_NOTIFICATION, true)
+            return App.preferences.getBoolean(PREFERENCE_NOTIFICATION, true)
         }
         set(value) {
-            preferences.edit()
-                    .putBoolean(PREFERENCE_NOTIFICATION, value)
-                    .apply()
+            App.preferences.edit()
+                .putBoolean(PREFERENCE_NOTIFICATION, value)
+                .apply()
         }
 
 }
