@@ -2,9 +2,7 @@
 
 # Aggregator
 
-> Available on [Google Play](https://play.google.com/store/apps/details?id=com.tughi.aggregator.next)
-
-> Also available on [F-Droid](https://f-droid.org/packages/com.tughi.aggregator/)
+> Available on [Google Play](https://play.google.com/store/apps/details?id=com.tughi.aggregator.next) and [F-Droid](https://f-droid.org/packages/com.tughi.aggregator/).
 
 More details are available [here](https://tughi.github.io/aggregator-android).
 
