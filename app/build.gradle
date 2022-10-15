@@ -3,10 +3,12 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 
 android {
+    namespace 'com.tughi.aggregator'
+
     compileSdkVersion 33
 
     defaultConfig {
-        applicationId "com.tughi.aggregator"
+        applicationId 'com.tughi.aggregator'
 
         minSdkVersion 21
         targetSdkVersion 33
