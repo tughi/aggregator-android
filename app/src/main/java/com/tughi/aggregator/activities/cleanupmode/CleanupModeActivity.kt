@@ -1,10 +1,12 @@
 package com.tughi.aggregator.activities.cleanupmode
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
@@ -23,8 +25,8 @@ import com.tughi.aggregator.data.NeverCleanupMode
 class CleanupModeActivity : AppActivity() {
 
     companion object {
-        const val EXTRA_CLEANUP_MODE = "cleanup-mode"
-        const val EXTRA_SHOW_DEFAULT = "show-default"
+        private const val EXTRA_CLEANUP_MODE = "cleanup-mode"
+        private const val EXTRA_SHOW_DEFAULT = "show-default"
     }
 
     private lateinit var adapter: CleanupModeAdapter
@@ -71,7 +73,7 @@ class CleanupModeActivity : AppActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        val result = super.onCreateOptionsMenu(menu)
+        super.onCreateOptionsMenu(menu)
 
         menuInflater.inflate(R.menu.cleanup_mode_activity, menu)
         saveMenuItem = menu.findItem(R.id.save)
@@ -92,6 +94,22 @@ class CleanupModeActivity : AppActivity() {
 
         finish()
         return true
+    }
+
+    data class PickCleanupModeRequest(val currentCleanupMode: CleanupMode, val showDefault: Boolean = true)
+
+    class PickCleanupMode : ActivityResultContract<PickCleanupModeRequest, CleanupMode?>() {
+        override fun createIntent(context: Context, input: PickCleanupModeRequest): Intent =
+            Intent(context, CleanupModeActivity::class.java)
+                .putExtra(EXTRA_CLEANUP_MODE, input.currentCleanupMode.serialize())
+                .putExtra(EXTRA_SHOW_DEFAULT, input.showDefault)
+
+        override fun parseResult(resultCode: Int, intent: Intent?): CleanupMode? {
+            if (resultCode != RESULT_OK) {
+                return null
+            }
+            return CleanupMode.deserialize(intent?.getStringExtra(EXTRA_CLEANUP_MODE))
+        }
     }
 
 }

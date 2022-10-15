@@ -1,10 +1,12 @@
 package com.tughi.aggregator.activities.updatemode
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
@@ -26,8 +28,8 @@ import com.tughi.aggregator.data.UpdateMode
 class UpdateModeActivity : AppActivity() {
 
     companion object {
-        const val EXTRA_UPDATE_MODE = "update-mode"
-        const val EXTRA_SHOW_DEFAULT = "show-default"
+        private const val EXTRA_UPDATE_MODE = "update-mode"
+        private const val EXTRA_SHOW_DEFAULT = "show-default"
     }
 
     private lateinit var adapter: UpdateModeAdapter
@@ -51,18 +53,18 @@ class UpdateModeActivity : AppActivity() {
         val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
 
         val updateModes = mutableListOf(
-                DisabledUpdateMode,
-                AdaptiveUpdateMode,
-                OnAppLaunchUpdateMode,
-                Every15MinutesUpdateMode,
-                Every30MinutesUpdateMode,
-                Every45MinutesUpdateMode,
-                EveryHourUpdateMode,
-                Every2HoursUpdateMode,
-                Every3HoursUpdateMode,
-                Every4HoursUpdateMode,
-                Every6HoursUpdateMode,
-                Every8HoursUpdateMode
+            DisabledUpdateMode,
+            AdaptiveUpdateMode,
+            OnAppLaunchUpdateMode,
+            Every15MinutesUpdateMode,
+            Every30MinutesUpdateMode,
+            Every45MinutesUpdateMode,
+            EveryHourUpdateMode,
+            Every2HoursUpdateMode,
+            Every3HoursUpdateMode,
+            Every4HoursUpdateMode,
+            Every6HoursUpdateMode,
+            Every8HoursUpdateMode
         )
         if (intent.getBooleanExtra(EXTRA_SHOW_DEFAULT, false)) {
             updateModes.add(0, DefaultUpdateMode)
@@ -77,15 +79,12 @@ class UpdateModeActivity : AppActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        val result = super.onCreateOptionsMenu(menu)
+        super.onCreateOptionsMenu(menu)
 
-        menu?.let {
-            menuInflater.inflate(R.menu.update_mode_activity, it)
-            saveMenuItem = it.findItem(R.id.save)
-            return true
-        }
+        menuInflater.inflate(R.menu.update_mode_activity, menu)
+        saveMenuItem = menu.findItem(R.id.save)
 
-        return result
+        return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -101,6 +100,23 @@ class UpdateModeActivity : AppActivity() {
 
         finish()
         return true
+    }
+
+    data class PickUpdateModeRequest(val currentUpdateMode: UpdateMode, val showDefault: Boolean = true)
+
+    class PickUpdateMode : ActivityResultContract<PickUpdateModeRequest, UpdateMode?>() {
+        override fun createIntent(context: Context, input: PickUpdateModeRequest): Intent =
+            Intent(context, UpdateModeActivity::class.java)
+                .putExtra(EXTRA_UPDATE_MODE, input.currentUpdateMode.serialize())
+                .putExtra(EXTRA_SHOW_DEFAULT, input.showDefault)
+
+        override fun parseResult(resultCode: Int, intent: Intent?): UpdateMode? {
+            if (resultCode == RESULT_OK) {
+                val serializedUpdateMode = intent?.getStringExtra(EXTRA_UPDATE_MODE) ?: return null
+                return UpdateMode.deserialize(serializedUpdateMode)
+            }
+            return null
+        }
     }
 
 }

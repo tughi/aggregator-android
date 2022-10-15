@@ -1,8 +1,6 @@
 package com.tughi.aggregator.activities.cleanupmode
 
 import android.content.Context
-import android.content.Intent
-import androidx.fragment.app.Fragment
 import com.tughi.aggregator.R
 import com.tughi.aggregator.data.Age1MonthCleanupMode
 import com.tughi.aggregator.data.Age1WeekCleanupMode
@@ -28,12 +26,4 @@ fun CleanupMode.toString(context: Context): String = when (this) {
     Age3YearsCleanupMode -> context.getString(R.string.cleanup_mode__age__3_years)
     Age6YearsCleanupMode -> context.getString(R.string.cleanup_mode__age__6_years)
     NeverCleanupMode -> context.getString(R.string.cleanup_mode__never)
-}
-
-fun Fragment.startCleanupModeActivity(requestCode: Int, currentCleanupMode: CleanupMode, showDefault: Boolean = true) {
-    val context = context ?: return
-    val intent = Intent(context, CleanupModeActivity::class.java)
-            .putExtra(CleanupModeActivity.EXTRA_CLEANUP_MODE, currentCleanupMode.serialize())
-            .putExtra(CleanupModeActivity.EXTRA_SHOW_DEFAULT, showDefault)
-    startActivityForResult(intent, requestCode)
 }

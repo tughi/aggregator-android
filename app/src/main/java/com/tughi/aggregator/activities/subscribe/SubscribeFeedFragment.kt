@@ -1,7 +1,5 @@
 package com.tughi.aggregator.activities.subscribe
 
-import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,17 +10,13 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.cleanupmode.CleanupModeActivity
-import com.tughi.aggregator.activities.cleanupmode.startCleanupModeActivity
 import com.tughi.aggregator.activities.cleanupmode.toString
 import com.tughi.aggregator.activities.updatemode.UpdateModeActivity
-import com.tughi.aggregator.activities.updatemode.startUpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.toString
 import com.tughi.aggregator.contentScope
-import com.tughi.aggregator.data.CleanupMode
 import com.tughi.aggregator.data.DefaultCleanupMode
 import com.tughi.aggregator.data.DefaultUpdateMode
 import com.tughi.aggregator.data.Feeds
-import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.AutoUpdateScheduler
 import com.tughi.aggregator.services.FaviconUpdateScheduler
 import com.tughi.aggregator.utilities.backupFeeds
@@ -36,9 +30,6 @@ class SubscribeFeedFragment : Fragment() {
         const val ARG_URL = "url"
         const val ARG_TITLE = "title"
         const val ARG_LINK = "link"
-
-        private const val REQUEST_UPDATE_MODE = 1
-        private const val REQUEST_CLEANUP_MODE = 3
     }
 
     private lateinit var viewModel: SubscribeFeedFragmentViewModel
@@ -48,12 +39,23 @@ class SubscribeFeedFragment : Fragment() {
     private lateinit var updateModeView: DropDownButton
     private lateinit var cleanupModeView: DropDownButton
 
+    private val requestCleanupMode = registerForActivityResult(CleanupModeActivity.PickCleanupMode()) { cleanupMode ->
+        if (cleanupMode != null) {
+            viewModel.cleanupMode.value = cleanupMode
+        }
+    }
+
+    private val requestUpdateMode = registerForActivityResult(UpdateModeActivity.PickUpdateMode()) { updateMode ->
+        if (updateMode != null) {
+            viewModel.updateMode.value = updateMode
+        }
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val fragmentView = inflater.inflate(R.layout.subscribe_feed_fragment, container, false)
         val arguments = requireArguments()
 
-        viewModel = ViewModelProvider(this, SubscribeFeedFragmentViewModel.Factory())
-            .get(SubscribeFeedFragmentViewModel::class.java)
+        viewModel = ViewModelProvider(this, SubscribeFeedFragmentViewModel.Factory())[SubscribeFeedFragmentViewModel::class.java]
 
         urlTextView = fragmentView.findViewById(R.id.url)
         urlTextView.text = arguments.getString(ARG_URL)
@@ -64,22 +66,22 @@ class SubscribeFeedFragment : Fragment() {
         updateModeView = fragmentView.findViewById(R.id.update_mode)
         updateModeView.setOnClickListener {
             val currentUpdateMode = viewModel.updateMode.value ?: return@setOnClickListener
-            startUpdateModeActivity(REQUEST_UPDATE_MODE, currentUpdateMode)
+            requestUpdateMode.launch(UpdateModeActivity.PickUpdateModeRequest(currentUpdateMode))
         }
 
-        viewModel.updateMode.observe(viewLifecycleOwner, {
+        viewModel.updateMode.observe(viewLifecycleOwner) {
             updateModeView.setText(it.toString(updateModeView.context))
-        })
+        }
 
         cleanupModeView = fragmentView.findViewById(R.id.cleanup_mode)
         cleanupModeView.setOnClickListener {
             val currentCleanupMode = viewModel.cleanupMode.value ?: return@setOnClickListener
-            startCleanupModeActivity(REQUEST_CLEANUP_MODE, currentCleanupMode)
+            requestCleanupMode.launch(CleanupModeActivity.PickCleanupModeRequest(currentCleanupMode))
         }
 
-        viewModel.cleanupMode.observe(viewLifecycleOwner, {
+        viewModel.cleanupMode.observe(viewLifecycleOwner) {
             cleanupModeView.setText(it.toString(cleanupModeView.context))
-        })
+        }
 
         val subscribeButton = fragmentView.findViewById<Button>(R.id.subscribe)
         subscribeButton.setOnClickListener {
@@ -118,21 +120,6 @@ class SubscribeFeedFragment : Fragment() {
         super.onResume()
 
         activity?.setTitle(R.string.title_add_feed)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode == Activity.RESULT_OK) {
-            when (requestCode) {
-                REQUEST_UPDATE_MODE -> {
-                    val serializedUpdateMode = data?.getStringExtra(UpdateModeActivity.EXTRA_UPDATE_MODE) ?: return
-                    viewModel.updateMode.value = UpdateMode.deserialize(serializedUpdateMode)
-                }
-                REQUEST_CLEANUP_MODE -> {
-                    val serializedCleanupMode = data?.getStringExtra(CleanupModeActivity.EXTRA_CLEANUP_MODE) ?: return
-                    viewModel.cleanupMode.value = CleanupMode.deserialize(serializedCleanupMode)
-                }
-            }
-        }
     }
 
 }

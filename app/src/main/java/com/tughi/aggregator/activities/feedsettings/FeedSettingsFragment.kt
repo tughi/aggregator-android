@@ -1,7 +1,5 @@
 package com.tughi.aggregator.activities.feedsettings
 
-import android.app.Activity
-import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -18,11 +16,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.cleanupmode.CleanupModeActivity
-import com.tughi.aggregator.activities.cleanupmode.startCleanupModeActivity
 import com.tughi.aggregator.activities.cleanupmode.toString
 import com.tughi.aggregator.activities.feedentrytagrules.FeedEntryTagRulesActivity
 import com.tughi.aggregator.activities.updatemode.UpdateModeActivity
-import com.tughi.aggregator.activities.updatemode.startUpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.toString
 import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.data.CleanupMode
@@ -43,8 +39,6 @@ class FeedSettingsFragment : Fragment() {
     companion object {
         const val ARG_FEED_ID = "feed_id"
 
-        const val REQUEST_UPDATE_MODE = 2
-        const val REQUEST_CLEANUP_MODE = 3
         const val REQUEST_ENTRY_RULES = 4
     }
 
@@ -55,6 +49,20 @@ class FeedSettingsFragment : Fragment() {
     private lateinit var entryTagRulesView: DropDownButton
 
     private lateinit var viewModel: FeedSettingsViewModel
+
+    private val requestCleanupMode = registerForActivityResult(CleanupModeActivity.PickCleanupMode()) { cleanupMode ->
+        if (cleanupMode != null) {
+            viewModel.newCleanupMode = cleanupMode
+            cleanupModeView.setText(cleanupMode.toString(requireContext()))
+        }
+    }
+
+    private val requestUpdateMode = registerForActivityResult(UpdateModeActivity.PickUpdateMode()) { updateMode ->
+        if (updateMode != null) {
+            viewModel.newUpdateMode = updateMode
+            updateModeView.setText(updateMode.toString(requireContext()))
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,12 +95,12 @@ class FeedSettingsFragment : Fragment() {
 
         updateModeView.setOnClickListener {
             val feed = viewModel.feed.value ?: return@setOnClickListener
-            startUpdateModeActivity(REQUEST_UPDATE_MODE, viewModel.newUpdateMode ?: feed.updateMode)
+            requestUpdateMode.launch(UpdateModeActivity.PickUpdateModeRequest(viewModel.newUpdateMode ?: feed.updateMode))
         }
 
         cleanupModeView.setOnClickListener {
             val feed = viewModel.feed.value ?: return@setOnClickListener
-            startCleanupModeActivity(REQUEST_CLEANUP_MODE, viewModel.newCleanupMode ?: feed.cleanupMode)
+            requestCleanupMode.launch(CleanupModeActivity.PickCleanupModeRequest(viewModel.newCleanupMode ?: feed.cleanupMode))
         }
 
         entryTagRulesView.setOnClickListener {
@@ -101,7 +109,7 @@ class FeedSettingsFragment : Fragment() {
         }
 
         val feedId = requireArguments().getLong(ARG_FEED_ID)
-        viewModel = ViewModelProvider(this, FeedSettingsViewModel.Factory(feedId)).get(FeedSettingsViewModel::class.java)
+        viewModel = ViewModelProvider(this, FeedSettingsViewModel.Factory(feedId))[FeedSettingsViewModel::class.java]
 
         viewModel.feed.observe(viewLifecycleOwner) { feed ->
             if (feed != null) {
@@ -121,25 +129,6 @@ class FeedSettingsFragment : Fragment() {
         }
 
         return fragmentView
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode == Activity.RESULT_OK) {
-            when (requestCode) {
-                REQUEST_UPDATE_MODE -> {
-                    val serializedUpdateMode = data?.getStringExtra(UpdateModeActivity.EXTRA_UPDATE_MODE) ?: return
-                    viewModel.newUpdateMode = UpdateMode.deserialize(serializedUpdateMode).also { updateMode ->
-                        updateModeView.setText(updateMode.toString(updateModeView.context))
-                    }
-                }
-                REQUEST_CLEANUP_MODE -> {
-                    val serializedCleanupMode = data?.getStringExtra(CleanupModeActivity.EXTRA_CLEANUP_MODE) ?: return
-                    viewModel.newCleanupMode = CleanupMode.deserialize(serializedCleanupMode).also { cleanupMode ->
-                        cleanupModeView.setText(cleanupMode.toString(cleanupModeView.context))
-                    }
-                }
-            }
-        }
     }
 
     private fun onSave() {
