@@ -11,9 +11,9 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tughi.aggregator.R
@@ -24,13 +24,13 @@ import com.tughi.aggregator.activities.feedentrytagrules.FeedEntryTagRulesActivi
 import com.tughi.aggregator.activities.updatemode.UpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.startUpdateModeActivity
 import com.tughi.aggregator.activities.updatemode.toString
+import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.data.CleanupMode
 import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.EntryTagRules
 import com.tughi.aggregator.data.FeedEntryTagRulesQueryCriteria
 import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.UpdateMode
-import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.services.AutoUpdateScheduler
 import com.tughi.aggregator.services.FaviconUpdateScheduler
 import com.tughi.aggregator.utilities.backupFeeds
@@ -59,7 +59,21 @@ class FeedSettingsFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setHasOptionsMenu(true)
+        val activity = requireActivity()
+
+        activity.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.feed_settings_fragment, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                if (menuItem.itemId == R.id.unsubscribe) {
+                    onUnsubscribe()
+                    return true
+                }
+                return false
+            }
+        })
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -89,18 +103,18 @@ class FeedSettingsFragment : Fragment() {
         val feedId = requireArguments().getLong(ARG_FEED_ID)
         viewModel = ViewModelProvider(this, FeedSettingsViewModel.Factory(feedId)).get(FeedSettingsViewModel::class.java)
 
-        viewModel.feed.observe(viewLifecycleOwner, Observer { feed ->
+        viewModel.feed.observe(viewLifecycleOwner) { feed ->
             if (feed != null) {
                 urlEditText.setText(feed.url)
                 titleEditText.setText(feed.customTitle ?: feed.title)
                 updateModeView.setText(feed.updateMode.toString(updateModeView.context))
                 cleanupModeView.setText(feed.cleanupMode.toString(cleanupModeView.context))
             }
-        })
+        }
 
-        viewModel.entryTagRuleCount.observe(viewLifecycleOwner, Observer { count ->
+        viewModel.entryTagRuleCount.observe(viewLifecycleOwner) { count ->
             entryTagRulesView.setText(resources.getQuantityString(R.plurals.feed_settings__entry_tag_rules, count, count))
-        })
+        }
 
         fragmentView.findViewById<View>(R.id.save).setOnClickListener {
             onSave()
@@ -128,20 +142,6 @@ class FeedSettingsFragment : Fragment() {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-
-        inflater.inflate(R.menu.feed_settings_fragment, menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.unsubscribe -> onUnsubscribe()
-            else -> return super.onOptionsItemSelected(item)
-        }
-        return true
-    }
-
     private fun onSave() {
         val url = urlEditText.text.toString().trim()
         val title = titleEditText.text.toString().trim()
@@ -159,7 +159,10 @@ class FeedSettingsFragment : Fragment() {
                         Feeds.CUSTOM_TITLE to if (title.isEmpty() || title == feed.title) null else title,
                         Feeds.CLEANUP_MODE to (cleanupMode ?: feed.cleanupMode).serialize(),
                         Feeds.UPDATE_MODE to (updateMode ?: feed.updateMode).serialize(),
-                        Feeds.FAVICON_URL to faviconUrl
+                        Feeds.FAVICON_URL to faviconUrl,
+                        // clear state to refresh feed on next update
+                        Feeds.HTTP_ETAG to null,
+                        Feeds.HTTP_LAST_MODIFIED to null,
                     )
                 }
 

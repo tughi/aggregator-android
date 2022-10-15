@@ -1,2 +1,3 @@
 * Target SDK 33
 * Request permission to post notifications
+* Clear state of changed feed to refresh it on next update
