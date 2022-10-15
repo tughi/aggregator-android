@@ -1,0 +1,2 @@
+* Target SDK 33
+* Request permission to post notifications
