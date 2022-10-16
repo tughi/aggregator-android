@@ -11,7 +11,6 @@ import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
@@ -26,12 +25,11 @@ class FeedEntryTagRulesActivity : AppActivity() {
     companion object {
         private const val EXTRA_FEED_ID = "feed_id"
 
-        fun startForResult(fragment: Fragment, resultCode: Int, feedId: Long) {
+        fun start(fragment: Fragment, feedId: Long) {
             fragment.context?.let { context ->
-                fragment.startActivityForResult(
+                fragment.startActivity(
                     Intent(context, FeedEntryTagRulesActivity::class.java)
-                        .putExtra(EXTRA_FEED_ID, feedId),
-                    resultCode
+                        .putExtra(EXTRA_FEED_ID, feedId)
                 )
             }
         }
@@ -40,7 +38,7 @@ class FeedEntryTagRulesActivity : AppActivity() {
     private val feedId: Long by lazy { intent.getLongExtra(EXTRA_FEED_ID, 0) }
     private val viewModel: FeedEntryTagRulesViewModel by lazy {
         val viewModelFactory = FeedEntryTagRulesViewModel.Factory(feedId)
-        ViewModelProvider(this, viewModelFactory).get(FeedEntryTagRulesViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory)[FeedEntryTagRulesViewModel::class.java]
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,7 +61,7 @@ class FeedEntryTagRulesActivity : AppActivity() {
         })
         recyclerView.adapter = adapter
 
-        viewModel.entryTagRules.observe(this, Observer { list ->
+        viewModel.entryTagRules.observe(this) { list ->
             if (list == null) {
                 adapter.list = emptyList()
                 progressBar.visibility = View.VISIBLE
@@ -71,7 +69,7 @@ class FeedEntryTagRulesActivity : AppActivity() {
                 adapter.list = list
                 progressBar.visibility = View.GONE
             }
-        })
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -144,6 +142,8 @@ class FeedEntryTagRulesActivity : AppActivity() {
             this.entryTagRule = entryTagRule
 
             tagNameView.text = entryTagRule.tagName
+
+            // TODO: describe rule
             conditionView.setText(R.string.entry_tag_rules__condition__any)
         }
     }

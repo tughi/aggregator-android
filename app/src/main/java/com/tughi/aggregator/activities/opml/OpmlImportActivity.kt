@@ -1,6 +1,8 @@
 package com.tughi.aggregator.activities.opml
 
 import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
@@ -13,8 +15,8 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
@@ -107,7 +109,7 @@ class OpmlImportActivity : AppActivity() {
             setHomeAsUpIndicator(R.drawable.action_back)
         }
 
-        viewModel = ViewModelProvider(this).get(OpmlImportViewModel::class.java)
+        viewModel = ViewModelProvider(this)[OpmlImportViewModel::class.java]
 
         val feedsAdapter = OpmlFeedsAdapter(viewModel)
 
@@ -151,7 +153,7 @@ class OpmlImportActivity : AppActivity() {
             }
         }
 
-        viewModel.feeds.observe(this, Observer { feeds ->
+        viewModel.feeds.observe(this) { feeds ->
             feedsAdapter.feeds = feeds
 
             val feedCount = feeds.size
@@ -164,7 +166,7 @@ class OpmlImportActivity : AppActivity() {
             }
 
             subscribeButton.isEnabled = feedCount != 0 && feedCount != excludedFeedCount
-        })
+        }
 
         if (savedInstanceState == null) {
             intent.data?.let {
@@ -248,4 +250,14 @@ internal class OpmlFeedsAdapter(val viewModel: OpmlImportViewModel) : RecyclerVi
     override fun onBindViewHolder(holder: OpmlFeedViewHolder, position: Int) {
         holder.onBind(feeds[position])
     }
+}
+
+class ImportOpmlResultContract : ActivityResultContract<Uri, Boolean>() {
+    override fun createIntent(context: Context, input: Uri): Intent =
+        Intent(context, OpmlImportActivity::class.java).apply {
+            this.data = input
+        }
+
+    override fun parseResult(resultCode: Int, intent: Intent?): Boolean =
+        resultCode == Activity.RESULT_OK
 }

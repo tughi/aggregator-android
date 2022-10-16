@@ -32,19 +32,9 @@ import com.tughi.aggregator.utilities.has
 class TagsPickerActivity : AppActivity() {
 
     companion object {
-        const val EXTRA_SELECTED_TAGS = "selected_tags"
+        private const val EXTRA_SELECTED_TAGS = "selected_tags"
         private const val EXTRA_SINGLE_CHOICE = "single_choice"
         private const val EXTRA_TITLE = "title"
-
-        fun startForResult(activity: Activity, resultCode: Int, selectedTags: LongArray, singleChoice: Boolean, title: String? = null) {
-            activity.startActivityForResult(
-                Intent(activity, TagsPickerActivity::class.java)
-                    .putExtra(EXTRA_SELECTED_TAGS, selectedTags)
-                    .putExtra(EXTRA_SINGLE_CHOICE, singleChoice)
-                    .putExtra(EXTRA_TITLE, title),
-                resultCode
-            )
-        }
     }
 
     private val singleChoice by lazy { intent.getBooleanExtra(EXTRA_SINGLE_CHOICE, false) }
@@ -250,19 +240,20 @@ class TagsPickerActivity : AppActivity() {
     }
 
     @Suppress("ArrayInDataClass")
-    data class PickTagsRequest(@StringRes val title: Int, val selectedTags: LongArray?)
+    data class PickTagsRequest(val selectedTagIds: LongArray?, val singleChoice: Boolean = false, @StringRes val title: Int? = null)
 
     class PickTags : ActivityResultContract<PickTagsRequest, LongArray?>() {
         override fun createIntent(context: Context, input: PickTagsRequest): Intent =
             Intent(context, TagsPickerActivity::class.java)
-                .putExtra(EXTRA_SELECTED_TAGS, input.selectedTags)
+                .putExtra(EXTRA_SELECTED_TAGS, input.selectedTagIds)
+                .putExtra(EXTRA_SINGLE_CHOICE, input.singleChoice)
                 .putExtra(EXTRA_TITLE, input.title)
 
         override fun parseResult(resultCode: Int, intent: Intent?): LongArray? {
-            if (resultCode != RESULT_OK) {
-                return null
+            if (resultCode == RESULT_OK) {
+                return intent?.getLongArrayExtra(EXTRA_SELECTED_TAGS)
             }
-            return intent?.getLongArrayExtra(EXTRA_SELECTED_TAGS)
+            return null
         }
     }
 

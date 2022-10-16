@@ -1,7 +1,5 @@
 package com.tughi.aggregator.activities.main
 
-import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -14,29 +12,22 @@ import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.reader.ReaderActivity
+import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.data.EntriesQueryCriteria
 import com.tughi.aggregator.data.EntryTags
 import com.tughi.aggregator.data.TagEntriesQueryCriteria
 import com.tughi.aggregator.data.Tags
-import com.tughi.aggregator.contentScope
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Toolbar.OnMenuItemClickListener {
-
-    companion object {
-        private const val REQUEST_ENTRY_POSITION = 1
-    }
 
     private lateinit var viewModel: EntriesFragmentViewModel
 
@@ -45,14 +36,9 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
     private lateinit var entriesRecyclerView: RecyclerView
     private lateinit var entriesLayoutManager: LinearLayoutManager
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_ENTRY_POSITION && resultCode == Activity.RESULT_OK) {
-            val entryPosition = data?.extras?.getInt(ReaderActivity.EXTRA_ENTRIES_POSITION, -1) ?: -1
-            if (entryPosition != -1) {
-                entriesLayoutManager.scrollToPositionWithOffset(entryPosition * 2 + 1, entriesRecyclerView.height / 3)
-            }
-        } else {
-            super.onActivityResult(requestCode, resultCode, data)
+    private val requestReadSession = registerForActivityResult(ReaderActivity.ReadSession()) { position ->
+        if (position >= 0) {
+            entriesLayoutManager.scrollToPositionWithOffset(position * 2 + 1, entriesRecyclerView.height / 3)
         }
     }
 
@@ -60,7 +46,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
         val fragmentView = inflater.inflate(R.layout.entry_list_fragment, container, false)
 
         val viewModelFactory = EntriesFragmentViewModel.Factory(initialQueryCriteria)
-        viewModel = ViewModelProvider(this, viewModelFactory).get(EntriesFragmentViewModel::class.java)
+        viewModel = ViewModelProvider(this, viewModelFactory)[EntriesFragmentViewModel::class.java]
 
         val progressBar = fragmentView.findViewById<ProgressBar>(R.id.progress)
 
@@ -78,7 +64,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
         val adapter = EntriesFragmentEntryAdapter(this)
         entriesRecyclerView.adapter = adapter
 
-        viewModel.items.observe(viewLifecycleOwner, Observer { items ->
+        viewModel.items.observe(viewLifecycleOwner) { items ->
             adapter.items = items
 
             if (items == null) {
@@ -109,7 +95,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
                     emptyView.visibility = View.GONE
                 }
             }
-        })
+        }
 
         entriesRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -148,7 +134,7 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
         toolbar.inflateMenu(R.menu.entry_list_fragment)
         toolbar.setOnMenuItemClickListener(this)
 
-        viewModel.entriesQueryCriteria.observe(viewLifecycleOwner, Observer { entriesQueryCriteria ->
+        viewModel.entriesQueryCriteria.observe(viewLifecycleOwner) { entriesQueryCriteria ->
             toolbar.menu?.let {
                 val sortMenuItemId = when (entriesQueryCriteria.sortOrder) {
                     Entries.SortOrder.ByDateAscending -> R.id.sort_by_date_asc
@@ -159,13 +145,13 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
 
                 it.findItem(R.id.show_read_entries).isChecked = entriesQueryCriteria.showRead
             }
-        })
+        }
 
         val unreadEntriesTextView: TextView = fragmentView.findViewById(R.id.unread_entries)
 
-        viewModel.unreadEntriesCount.observe(viewLifecycleOwner, Observer { unreadEntriesCount ->
+        viewModel.unreadEntriesCount.observe(viewLifecycleOwner) { unreadEntriesCount ->
             unreadEntriesTextView.text = if (unreadEntriesCount > 0) "%d".format(unreadEntriesCount) else ""
-        })
+        }
 
         return fragmentView
     }
@@ -209,19 +195,10 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
     }
 
     override fun onEntryClicked(entry: EntriesFragmentViewModel.Entry, position: Int) {
-        context?.run {
-            startActivityForResult(
-                Intent(this, ReaderActivity::class.java)
-                    .putExtra(ReaderActivity.EXTRA_ENTRIES_QUERY_CRITERIA, viewModel.entriesQueryCriteria.value)
-                    .putExtra(ReaderActivity.EXTRA_ENTRIES_POSITION, position),
-                REQUEST_ENTRY_POSITION
-            )
-        }
+        requestReadSession.launch(ReaderActivity.ReadSessionInput(viewModel.entriesQueryCriteria.value!!, position))
     }
 
     private class SwipeItemTouchHelper : ItemTouchHelper.Callback() {
-
-        private val scope = CoroutineScope(Dispatchers.Main)
 
         override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int =
             when (viewHolder) {

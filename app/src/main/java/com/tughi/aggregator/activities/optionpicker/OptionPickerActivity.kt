@@ -1,6 +1,7 @@
 package com.tughi.aggregator.activities.optionpicker
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,6 +10,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.annotation.StringRes
 import androidx.core.text.HtmlCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -18,28 +20,10 @@ import com.tughi.aggregator.R
 class OptionPickerActivity : AppActivity() {
 
     companion object {
-        const val EXTRA_TITLE = "title"
-        const val EXTRA_TITLE_RESOURCE = "title-resource"
-        const val EXTRA_OPTIONS = "options"
-        const val EXTRA_SELECTED_OPTION = "selected-option"
-
-        fun startForResult(
-            activity: Activity,
-            requestCode: Int,
-            options: Array<Option>,
-            selectedOption: Option?,
-            title: String? = null,
-            @StringRes titleResource: Int? = null
-        ) {
-            activity.startActivityForResult(
-                Intent(activity, OptionPickerActivity::class.java)
-                    .putExtra(EXTRA_OPTIONS, options)
-                    .putExtra(EXTRA_SELECTED_OPTION, selectedOption)
-                    .putExtra(EXTRA_TITLE, title)
-                    .putExtra(EXTRA_TITLE_RESOURCE, titleResource),
-                requestCode
-            )
-        }
+        private const val EXTRA_TITLE = "title"
+        private const val EXTRA_TITLE_RESOURCE = "title-resource"
+        private const val EXTRA_OPTIONS = "options"
+        private const val EXTRA_SELECTED_OPTION = "selected-option"
     }
 
     private lateinit var adapter: OptionsAdapter
@@ -66,8 +50,8 @@ class OptionPickerActivity : AppActivity() {
             setHomeAsUpIndicator(R.drawable.action_cancel)
         }
 
-        val options = intent.getParcelableArrayExtra(EXTRA_OPTIONS)?.map { it as Option }?.toTypedArray() ?: emptyArray()
-        val preselectedOption = intent.getParcelableExtra<Option>(EXTRA_SELECTED_OPTION)
+        val options = intent.getOptionArrayExtra(EXTRA_OPTIONS) ?: emptyArray()
+        val preselectedOption = intent.getOptionExtra(EXTRA_SELECTED_OPTION)
 
         adapter = OptionsAdapter(options, preselectedOption, object : OptionsAdapter.Listener {
             override fun onOptionClicked(option: Option?) {
@@ -160,6 +144,25 @@ class OptionPickerActivity : AppActivity() {
             fun onOptionClicked(option: Option?)
         }
 
+    }
+
+    @Suppress("ArrayInDataClass")
+    data class PickOptionInput(val options: Array<Option>, val selectedOption: Option?, val title: String? = null, @StringRes val titleResource: Int? = null)
+
+    class PickOption : ActivityResultContract<PickOptionInput, Option?>() {
+        override fun createIntent(context: Context, input: PickOptionInput): Intent =
+            Intent(context, OptionPickerActivity::class.java)
+                .putExtra(EXTRA_OPTIONS, input.options)
+                .putExtra(EXTRA_SELECTED_OPTION, input.selectedOption)
+                .putExtra(EXTRA_TITLE, input.title)
+                .putExtra(EXTRA_TITLE_RESOURCE, input.titleResource)
+
+        override fun parseResult(resultCode: Int, intent: Intent?): Option? {
+            if (resultCode == RESULT_OK) {
+                return intent!!.getOptionExtra(EXTRA_SELECTED_OPTION)
+            }
+            return null
+        }
     }
 
 }

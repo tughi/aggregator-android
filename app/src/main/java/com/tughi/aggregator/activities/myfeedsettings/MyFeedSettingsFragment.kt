@@ -37,15 +37,15 @@ class MyFeedSettingsFragment : Fragment() {
     private lateinit var includedTags: DropDownButton
     private lateinit var excludedTags: DropDownButton
 
-    private val requestIncludedTags = registerForActivityResult(TagsPickerActivity.PickTags()) { selectedTags ->
-        if (selectedTags != null) {
-            viewModel.newIncludedTagIds.value = selectedTags
+    private val requestIncludedTags = registerForActivityResult(TagsPickerActivity.PickTags()) { selectedTagIds ->
+        if (selectedTagIds != null) {
+            viewModel.newIncludedTagIds.value = selectedTagIds
         }
     }
 
-    private val requestExcludedTags = registerForActivityResult(TagsPickerActivity.PickTags()) { selectedTags ->
-        if (selectedTags != null) {
-            viewModel.newExcludedTagIds.value = selectedTags
+    private val requestExcludedTags = registerForActivityResult(TagsPickerActivity.PickTags()) { selectedTagIds ->
+        if (selectedTagIds != null) {
+            viewModel.newExcludedTagIds.value = selectedTagIds
         }
     }
 
@@ -83,7 +83,7 @@ class MyFeedSettingsFragment : Fragment() {
         includedTags = fragmentView.findViewById(R.id.included_tags)
         includedTags.setOnClickListener {
             requestIncludedTags.launch(
-                TagsPickerActivity.PickTagsRequest(R.string.my_feed_settings__included_tags, viewModel.newIncludedTagIds.value)
+                TagsPickerActivity.PickTagsRequest(viewModel.newIncludedTagIds.value, title = R.string.my_feed_settings__included_tags)
             )
         }
         viewModel.includedTags.observe(viewLifecycleOwner) { tags ->
@@ -97,7 +97,7 @@ class MyFeedSettingsFragment : Fragment() {
         excludedTags = fragmentView.findViewById(R.id.excluded_tags)
         excludedTags.setOnClickListener {
             requestExcludedTags.launch(
-                TagsPickerActivity.PickTagsRequest(R.string.my_feed_settings__excluded_tags, viewModel.newExcludedTagIds.value)
+                TagsPickerActivity.PickTagsRequest(viewModel.newExcludedTagIds.value, title = R.string.my_feed_settings__excluded_tags)
             )
         }
         viewModel.excludedTags.observe(viewLifecycleOwner) { tags ->

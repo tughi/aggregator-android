@@ -2,12 +2,10 @@ package com.tughi.aggregator.activities.feedsettings
 
 import android.database.Cursor
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import android.widget.EditText
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -34,12 +32,10 @@ import com.tughi.aggregator.widgets.DropDownButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class FeedSettingsFragment : Fragment() {
+class FeedSettingsFragment : Fragment(R.layout.feed_settings_fragment) {
 
     companion object {
         const val ARG_FEED_ID = "feed_id"
-
-        const val REQUEST_ENTRY_RULES = 4
     }
 
     private lateinit var urlEditText: EditText
@@ -84,14 +80,12 @@ class FeedSettingsFragment : Fragment() {
         })
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val fragmentView = inflater.inflate(R.layout.feed_settings_fragment, container, false)
-
-        urlEditText = fragmentView.findViewById(R.id.url)
-        titleEditText = fragmentView.findViewById(R.id.title)
-        updateModeView = fragmentView.findViewById(R.id.update_mode)
-        cleanupModeView = fragmentView.findViewById(R.id.cleanup_mode)
-        entryTagRulesView = fragmentView.findViewById(R.id.entry_tag_rules)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        urlEditText = view.findViewById(R.id.url)
+        titleEditText = view.findViewById(R.id.title)
+        updateModeView = view.findViewById(R.id.update_mode)
+        cleanupModeView = view.findViewById(R.id.cleanup_mode)
+        entryTagRulesView = view.findViewById(R.id.entry_tag_rules)
 
         updateModeView.setOnClickListener {
             val feed = viewModel.feed.value ?: return@setOnClickListener
@@ -105,7 +99,7 @@ class FeedSettingsFragment : Fragment() {
 
         entryTagRulesView.setOnClickListener {
             val feed = viewModel.feed.value ?: return@setOnClickListener
-            FeedEntryTagRulesActivity.startForResult(this, REQUEST_ENTRY_RULES, feedId = feed.id)
+            FeedEntryTagRulesActivity.start(this, feedId = feed.id)
         }
 
         val feedId = requireArguments().getLong(ARG_FEED_ID)
@@ -124,11 +118,9 @@ class FeedSettingsFragment : Fragment() {
             entryTagRulesView.setText(resources.getQuantityString(R.plurals.feed_settings__entry_tag_rules, count, count))
         }
 
-        fragmentView.findViewById<View>(R.id.save).setOnClickListener {
+        view.findViewById<View>(R.id.save).setOnClickListener {
             onSave()
         }
-
-        return fragmentView
     }
 
     private fun onSave() {

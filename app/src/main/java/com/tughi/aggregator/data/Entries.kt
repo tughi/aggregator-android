@@ -84,10 +84,10 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
 
     class DeleteOldFeedEntriesCriteria(feedId: Long, oldMarkerTime: Long) : DeleteCriteria {
         override val selection = "feed_id = ? AND pinned_time = 0 AND starred_time = 0 AND COALESCE(publish_time, update_time) < ?"
-        override val selectionArgs: Array<Any>? = arrayOf(feedId, oldMarkerTime)
+        override val selectionArgs = arrayOf<Any>(feedId, oldMarkerTime)
     }
 
-    interface QueryCriteria : Repository.QueryCriteria<Column> {
+    interface QueryCriteria : Repository.QueryCriteria<Column>, Serializable {
         fun config(query: Query.Builder)
     }
 
@@ -140,12 +140,12 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
             }
 
         override fun createQueryBuilder(criteria: QueryCriteria) = Query.Builder(columns, tables)
-                .also { criteria.config(it) }
+            .also { criteria.config(it) }
     }
 
 }
 
-sealed class EntriesQueryCriteria(private val sessionTime: Long, val showRead: Boolean, val sortOrder: Entries.SortOrder, val minInsertTime: Long?, private val limit: Int, val offset: Int) : Entries.QueryCriteria, Serializable {
+sealed class EntriesQueryCriteria(private val sessionTime: Long, val showRead: Boolean, val sortOrder: Entries.SortOrder, val minInsertTime: Long?, private val limit: Int, val offset: Int) : Entries.QueryCriteria {
     final override fun config(query: Query.Builder) {
         var selection: String
         val selectionArgs = mutableListOf<Any?>()
@@ -188,7 +188,8 @@ class FeedEntriesQueryCriteria(val feedId: Long, sessionTime: Long, showRead: Bo
     override fun copy(sessionTime: Long, showRead: Boolean, sortOrder: Entries.SortOrder, limit: Int, offset: Int) = FeedEntriesQueryCriteria(feedId, sessionTime, showRead, sortOrder, limit, offset)
 }
 
-class MyFeedEntriesQueryCriteria(sessionTime: Long, showRead: Boolean, sortOrder: Entries.SortOrder, minInsertTime: Long? = null, limit: Int = 0, offset: Int = 0) : EntriesQueryCriteria(sessionTime, showRead, sortOrder, minInsertTime, limit, offset) {
+class MyFeedEntriesQueryCriteria(sessionTime: Long, showRead: Boolean, sortOrder: Entries.SortOrder, minInsertTime: Long? = null, limit: Int = 0, offset: Int = 0) :
+    EntriesQueryCriteria(sessionTime, showRead, sortOrder, minInsertTime, limit, offset) {
     override fun firstSelection(query: Query.Builder, selectionArgs: MutableList<Any?>): String {
         query.addObservedTables("my_feed_tag")
         return "e.id IN ($SELECT__MY_FEED_ENTRY_IDS)"

@@ -1,31 +1,34 @@
 package com.tughi.aggregator.activities.reader
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.database.Cursor
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.appcompat.app.ActionBar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager.widget.ViewPager
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
-import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.contentScope
+import com.tughi.aggregator.data.Entries
+import com.tughi.aggregator.data.EntriesQueryCriteria
 import kotlinx.coroutines.launch
 
 class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
 
     companion object {
-        const val EXTRA_ENTRIES_QUERY_CRITERIA = "entries_query_criteria"
-        const val EXTRA_ENTRIES_POSITION = "entries_position"
+        private const val EXTRA_ENTRIES_QUERY_CRITERIA = "entries_query_criteria"
+        private const val EXTRA_ENTRIES_POSITION = "entries_position"
     }
 
     val style by lazy {
@@ -63,12 +66,18 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
 
         adapter = ReaderAdapter()
 
-        val queryCriteria = intent.getSerializableExtra(EXTRA_ENTRIES_QUERY_CRITERIA) as Entries.QueryCriteria
+        val queryCriteria =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent.getSerializableExtra(EXTRA_ENTRIES_QUERY_CRITERIA, Entries.QueryCriteria::class.java)!!
+            } else {
+                @Suppress("DEPRECATION")
+                intent.getSerializableExtra(EXTRA_ENTRIES_QUERY_CRITERIA)!! as Entries.QueryCriteria
+            }
 
         val viewModelFactory = ReaderViewModel.Factory(queryCriteria)
         viewModel = ViewModelProvider(this, viewModelFactory).get(ReaderViewModel::class.java)
 
-        viewModel.entries.observe(this, Observer { entries ->
+        viewModel.entries.observe(this) { entries ->
             this.entries = entries
 
             adapter.notifyDataSetChanged()
@@ -79,7 +88,7 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
             } else {
                 pager.setCurrentItem(entriesPosition, false)
             }
-        })
+        }
 
         setContentView(R.layout.reader_activity)
 
@@ -193,6 +202,22 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
         val accentHexColor = asHexColor(accentColor)
 
         private fun asHexColor(color: Int) = "#%06x".format(color and 0xffffff)
+    }
+
+    data class ReadSessionInput(val entriesQueryCriteria: EntriesQueryCriteria, val position: Int)
+
+    class ReadSession : ActivityResultContract<ReadSessionInput, Int>() {
+        override fun createIntent(context: Context, input: ReadSessionInput): Intent =
+            Intent(context, ReaderActivity::class.java)
+                .putExtra(EXTRA_ENTRIES_QUERY_CRITERIA, input.entriesQueryCriteria)
+                .putExtra(EXTRA_ENTRIES_POSITION, input.position)
+
+        override fun parseResult(resultCode: Int, intent: Intent?): Int {
+            if (resultCode == RESULT_OK) {
+                return intent!!.getIntExtra(EXTRA_ENTRIES_POSITION, -1)
+            }
+            return -1
+        }
     }
 
 }

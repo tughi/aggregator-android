@@ -1,6 +1,7 @@
 package com.tughi.aggregator.activities.feedspicker
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
@@ -13,10 +14,10 @@ import android.widget.Button
 import android.widget.CheckedTextView
 import android.widget.ImageView
 import android.widget.ProgressBar
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.collection.LongSparseArray
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
@@ -30,19 +31,9 @@ import com.tughi.aggregator.utilities.has
 class FeedsPickerActivity : AppActivity() {
 
     companion object {
-        const val EXTRA_SELECTED_FEEDS = "selected_feeds"
+        private const val EXTRA_SELECTED_FEEDS = "selected_feeds"
         private const val EXTRA_SINGLE_CHOICE = "single_choice"
         private const val EXTRA_TITLE = "title"
-
-        fun startForResult(activity: Activity, resultCode: Int, selectedFeeds: LongArray, singleChoice: Boolean, title: String?) {
-            activity.startActivityForResult(
-                    Intent(activity, FeedsPickerActivity::class.java)
-                            .putExtra(EXTRA_SELECTED_FEEDS, selectedFeeds)
-                            .putExtra(EXTRA_SINGLE_CHOICE, singleChoice)
-                            .putExtra(EXTRA_TITLE, title),
-                    resultCode
-            )
-        }
     }
 
     private val singleChoice by lazy { intent.getBooleanExtra(EXTRA_SINGLE_CHOICE, false) }
@@ -50,7 +41,7 @@ class FeedsPickerActivity : AppActivity() {
     private val viewModel by lazy {
         val selectedFeedIds = intent.getLongArrayExtra(EXTRA_SELECTED_FEEDS) ?: LongArray(0)
         val viewModelFactory = FeedViewModel.Factory(selectedFeedIds, singleChoice)
-        return@lazy ViewModelProvider(this, viewModelFactory).get(FeedViewModel::class.java)
+        return@lazy ViewModelProvider(this, viewModelFactory)[FeedViewModel::class.java]
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,7 +64,7 @@ class FeedsPickerActivity : AppActivity() {
 
         recyclerView.adapter = adapter
 
-        viewModel.feeds.observe(this, Observer { feeds ->
+        viewModel.feeds.observe(this) { feeds ->
             if (feeds == null) {
                 adapter.feeds = emptyList()
                 progressBar.visibility = View.VISIBLE
@@ -81,7 +72,7 @@ class FeedsPickerActivity : AppActivity() {
                 adapter.feeds = feeds
                 progressBar.visibility = View.GONE
             }
-        })
+        }
 
         val selectButton = findViewById<Button>(R.id.select)
         selectButton.setOnClickListener {
@@ -92,9 +83,9 @@ class FeedsPickerActivity : AppActivity() {
         }
         if (singleChoice) {
             selectButton.isEnabled = false
-            viewModel.feeds.observe(this, Observer { _ ->
+            viewModel.feeds.observe(this) { _ ->
                 selectButton.isEnabled = viewModel.feeds.value?.has { it.selected } ?: false
-            })
+            }
         }
     }
 
@@ -124,15 +115,15 @@ class FeedsPickerActivity : AppActivity() {
 
     data class Feed(val id: Long, val title: String, val faviconUrl: String?, val selected: Boolean = false) {
         object QueryHelper : Feeds.QueryHelper<Feed>(
-                Feeds.ID,
-                Feeds.CUSTOM_TITLE,
-                Feeds.TITLE,
-                Feeds.FAVICON_URL
+            Feeds.ID,
+            Feeds.CUSTOM_TITLE,
+            Feeds.TITLE,
+            Feeds.FAVICON_URL
         ) {
             override fun createRow(cursor: Cursor) = Feed(
-                    id = cursor.getLong(0),
-                    title = cursor.getString(1) ?: cursor.getString(2),
-                    faviconUrl = cursor.getString(3)
+                id = cursor.getLong(0),
+                title = cursor.getString(1) ?: cursor.getString(2),
+                faviconUrl = cursor.getString(3)
             )
         }
     }
@@ -161,7 +152,7 @@ class FeedsPickerActivity : AppActivity() {
                 selectedFeedIds.isEmpty -> feeds
                 else -> feeds.map { feed ->
                     feed.copy(
-                            selected = selectedFeedIds.get(feed.id, false)
+                        selected = selectedFeedIds.get(feed.id, false)
                     )
                 }
             }
@@ -229,10 +220,29 @@ class FeedsPickerActivity : AppActivity() {
         override fun getItemId(position: Int): Long = feeds[position].id
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = FeedViewHolder(
-                LayoutInflater.from(parent.context).inflate(if (singleChoice) R.layout.feeds_picker_item__single_choice else R.layout.feeds_picker_item__multiple_choice, parent, false)
+            LayoutInflater.from(parent.context).inflate(if (singleChoice) R.layout.feeds_picker_item__single_choice else R.layout.feeds_picker_item__multiple_choice, parent, false)
         )
 
         override fun onBindViewHolder(holder: FeedViewHolder, position: Int) = holder.onBind(feeds[position])
     }
 
+    @Suppress("ArrayInDataClass")
+    data class PickFeedsInput(val selectedFeedIds: LongArray?, val singleChoice: Boolean, val title: String? = null)
+
+    class PickFeeds : ActivityResultContract<PickFeedsInput, LongArray?>() {
+        override fun createIntent(context: Context, input: PickFeedsInput): Intent =
+            Intent(context, FeedsPickerActivity::class.java)
+                .putExtra(EXTRA_SELECTED_FEEDS, input.selectedFeedIds)
+                .putExtra(EXTRA_SINGLE_CHOICE, input.singleChoice)
+                .putExtra(EXTRA_TITLE, input.title)
+
+        override fun parseResult(resultCode: Int, intent: Intent?): LongArray? {
+            if (resultCode == RESULT_OK) {
+                return intent!!.getLongArrayExtra(EXTRA_SELECTED_FEEDS)!!
+            }
+            return null
+        }
+    }
+
 }
+

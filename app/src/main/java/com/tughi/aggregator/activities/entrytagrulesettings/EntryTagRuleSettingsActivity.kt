@@ -15,7 +15,6 @@ import android.widget.EditText
 import androidx.core.database.getLongOrNull
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -49,10 +48,6 @@ class EntryTagRuleSettingsActivity : AppActivity() {
         private const val EXTRA_PRESET_FEED_ID = "preset_feed_id"
         private const val EXTRA_PRESET_TAG_ID = "preset_tag_id"
 
-        private const val REQUEST_TYPE = 1
-        private const val REQUEST_FEED = 2
-        private const val REQUEST_TAGS = 3
-
         private const val TYPE_FEED = "feed"
         private const val TYPE_GLOBAL = "global"
 
@@ -81,6 +76,24 @@ class EntryTagRuleSettingsActivity : AppActivity() {
     private lateinit var tagView: DropDownButton
     private lateinit var conditionView: EditText
 
+    private val requestFeed = registerForActivityResult(FeedsPickerActivity.PickFeeds()) { feedIds ->
+        if (feedIds != null) {
+            viewModel.newFeedId.value = feedIds[0]
+        }
+    }
+
+    private val requestTag = registerForActivityResult(TagsPickerActivity.PickTags()) { tagIds ->
+        if (tagIds != null) {
+            viewModel.newTagId.value = tagIds[0]
+        }
+    }
+
+    private val requestTypeOption = registerForActivityResult(OptionPickerActivity.PickOption()) { option ->
+        if (option != null) {
+            viewModel.newType.value = option.value
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -98,19 +111,21 @@ class EntryTagRuleSettingsActivity : AppActivity() {
                 Option(TYPE_GLOBAL, getString(R.string.entry_tag_rule__type__global), getString(R.string.entry_tag_rule__type__global__description))
             )
             val selectedOption = options[if (viewModel.newType.value == TYPE_FEED) 0 else 1]
-            OptionPickerActivity.startForResult(this, REQUEST_TYPE, options, selectedOption, titleResource = R.string.entry_tag_rule__type__title)
+            requestTypeOption.launch(OptionPickerActivity.PickOptionInput(options, selectedOption, titleResource = R.string.entry_tag_rule__type__title))
         }
 
         feedView = findViewById(R.id.feed)
         feedView.setOnClickListener {
             val feedId = viewModel.newFeedId.value
-            val selectedFeeds = if (feedId != null) longArrayOf(feedId) else longArrayOf()
-            FeedsPickerActivity.startForResult(this, REQUEST_FEED, selectedFeeds, true, null)
+            val selectedFeedIds = if (feedId != null) longArrayOf(feedId) else longArrayOf()
+            requestFeed.launch(FeedsPickerActivity.PickFeedsInput(selectedFeedIds, singleChoice = true))
         }
 
         tagView = findViewById(R.id.tag)
         tagView.setOnClickListener {
-            TagsPickerActivity.startForResult(this, REQUEST_TAGS, selectedTags = longArrayOf(viewModel.newTagId.value ?: 0), singleChoice = true)
+            val tagId = viewModel.newTagId.value
+            val selectedTagIds = if (tagId != null) longArrayOf(tagId) else longArrayOf()
+            requestTag.launch(TagsPickerActivity.PickTagsRequest(selectedTagIds, singleChoice = true))
         }
 
         val saveButton = findViewById<Button>(R.id.save)
@@ -145,7 +160,7 @@ class EntryTagRuleSettingsActivity : AppActivity() {
             }
         }
 
-        viewModel.newType.observe(this, Observer { type ->
+        viewModel.newType.observe(this) { type ->
             if (type == TYPE_FEED) {
                 typeView.setText(R.string.entry_tag_rule__type__feed)
                 feedView.visibility = View.VISIBLE
@@ -154,50 +169,26 @@ class EntryTagRuleSettingsActivity : AppActivity() {
                 feedView.visibility = View.GONE
             }
             saveButton.isEnabled = viewModel.canSave
-        })
+        }
 
-        viewModel.newFeed.observe(this, Observer { feed ->
+        viewModel.newFeed.observe(this) { feed ->
             feedView.setText(feed?.title ?: "")
             saveButton.isEnabled = viewModel.canSave
-        })
+        }
 
-        viewModel.newTag.observe(this, Observer { tag ->
+        viewModel.newTag.observe(this) { tag ->
             if (tag != null) {
                 tagView.setText(tag.name)
             }
             saveButton.isEnabled = viewModel.canSave
-        })
-
-        viewModel.oldCondition.observe(this, Observer { condition ->
-            conditionView.setText(condition.toString())
-        })
-        viewModel.newCondition.observe(this, Observer { text ->
-            saveButton.isEnabled = viewModel.canSave
-        })
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode == Activity.RESULT_OK) {
-            when (requestCode) {
-                REQUEST_FEED -> {
-                    val selectedFeeds = data?.getLongArrayExtra(FeedsPickerActivity.EXTRA_SELECTED_FEEDS) ?: longArrayOf()
-                    viewModel.newFeedId.value = if (selectedFeeds.isNotEmpty()) selectedFeeds[0] else null
-                    return
-                }
-                REQUEST_TAGS -> {
-                    val selectedTags = data?.getLongArrayExtra(TagsPickerActivity.EXTRA_SELECTED_TAGS) ?: return
-                    viewModel.newTagId.value = selectedTags[0]
-                    return
-                }
-                REQUEST_TYPE -> {
-                    val selectedOption: Option = data?.getParcelableExtra(OptionPickerActivity.EXTRA_SELECTED_OPTION) ?: return
-                    viewModel.newType.value = selectedOption.value
-                    return
-                }
-            }
         }
 
-        super.onActivityResult(requestCode, resultCode, data)
+        viewModel.oldCondition.observe(this) { condition ->
+            conditionView.setText(condition.toString())
+        }
+        viewModel.newCondition.observe(this) {
+            saveButton.isEnabled = viewModel.canSave
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
