@@ -68,10 +68,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_gravity="center_vertical|center_horizontal"
-                    android:drawableTop="@drawable/action_palette"
                     android:text="@string/styling__title"
                     android:textAlignment="center"
-                    android:textAppearance="?textAppearanceCaption" />
+                    android:textAppearance="?textAppearanceCaption"
+                    app:drawableTopCompat="@drawable/action_palette" />
 
             </com.tughi.aggregator.widgets.BottomSheetOption>
 
@@ -87,10 +87,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_gravity="center_vertical|center_horizontal"
-                    android:drawableTop="@drawable/action_forum"
                     android:text="@string/support__title"
                     android:textAlignment="center"
-                    android:textAppearance="?textAppearanceCaption" />
+                    android:textAppearance="?textAppearanceCaption"
+                    app:drawableTopCompat="@drawable/action_forum" />
 
             </com.tughi.aggregator.widgets.BottomSheetOption>
 

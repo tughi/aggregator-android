@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/title"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:drawableStart="@drawable/radio_button_checked"
     android:drawablePadding="32dp"
-    android:drawableTint="?colorPrimary"
     android:gravity="center_vertical"
     android:minHeight="?listPreferredItemHeight"
     android:paddingStart="?listPreferredItemPaddingLeft"
     android:paddingEnd="?listPreferredItemPaddingRight"
     android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+    app:drawableStartCompat="@drawable/radio_button_checked"
+    app:drawableTint="?colorPrimary"
     tools:text="@string/update_mode__default" />
 
