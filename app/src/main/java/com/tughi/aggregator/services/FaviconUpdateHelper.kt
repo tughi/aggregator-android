@@ -46,7 +46,7 @@ object FaviconUpdateHelper {
             // is it an icon link?
             val relIconMatcher = relIconPattern.matcher(attributes)
             if (relIconMatcher.find()) {
-                val shortcut = relIconMatcher.group(1)!!.toLowerCase().contains("shortcut")
+                val shortcut = relIconMatcher.group(1)!!.lowercase().contains("shortcut")
 
                 val hrefMatcher = hrefPattern.matcher(attributes)
                 // does the link have the required href?

@@ -4,9 +4,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
+import androidx.activity.addCallback
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.navigation.NavigationBarView
 import com.tughi.aggregator.App
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.BuildConfig
@@ -38,14 +40,14 @@ class MainActivity : AppActivity() {
     private val bottomNavigationView by lazy { bottomSheetView.findViewById<BottomNavigationView>(R.id.bottom_navigation) }
     private val scrimView by lazy { findViewById<View>(R.id.scrim) }
 
-    private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
+    private val onNavigationItemSelectedListener = NavigationBarView.OnItemSelectedListener { item ->
         var tabName: String = TAB_FEEDS
         val fragment = when (item.itemId) {
             R.id.navigation_feeds -> FeedListFragment.newInstance().also { tabName = TAB_FEEDS }
             R.id.navigation_my_feeds -> MyFeedFragment.newInstance().also { tabName = TAB_MY_FEED }
             R.id.navigation_tags -> TagsFragment.newInstance().also { tabName = TAB_TAGS }
             else -> null
-        } ?: return@OnNavigationItemSelectedListener false
+        } ?: return@OnItemSelectedListener false
 
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
 
@@ -59,7 +61,7 @@ class MainActivity : AppActivity() {
             .putString(PREF_ACTIVE_TAB, tabName)
             .apply()
 
-        return@OnNavigationItemSelectedListener true
+        return@OnItemSelectedListener true
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,7 +69,11 @@ class MainActivity : AppActivity() {
 
         setContentView(R.layout.main_activity)
 
-        bottomNavigationView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
+        val onBackPressedCallback = onBackPressedDispatcher.addCallback(this, enabled = false) {
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        }
+
+        bottomNavigationView.setOnItemSelectedListener(onNavigationItemSelectedListener)
 
         bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onSlide(bottomSheet: View, slideOffsey: Float) {
@@ -76,8 +82,10 @@ class MainActivity : AppActivity() {
 
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
+                    onBackPressedCallback.isEnabled = false
                     scrimView.visibility = View.GONE
                 } else {
+                    onBackPressedCallback.isEnabled = true
                     scrimView.visibility = View.VISIBLE
                 }
             }
@@ -150,14 +158,6 @@ class MainActivity : AppActivity() {
         User.lastSeen = System.currentTimeMillis()
 
         super.onDestroy()
-    }
-
-    override fun onBackPressed() {
-        if (bottomSheetBehavior.state != BottomSheetBehavior.STATE_COLLAPSED) {
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-        } else {
-            super.onBackPressed()
-        }
     }
 
     fun openDrawer() {

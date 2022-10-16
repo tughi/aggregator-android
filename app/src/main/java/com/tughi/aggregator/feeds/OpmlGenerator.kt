@@ -57,7 +57,7 @@ object OpmlGenerator {
             var index = 0
             while (index < titleLength) {
                 val codePoint = title.codePointAt(index)
-                if (codePoint > Character.MAX_VALUE.toInt()) {
+                if (codePoint > Character.MAX_VALUE.code) {
                     newTitle.append("�")
                 } else {
                     newTitle.appendCodePoint(codePoint)
