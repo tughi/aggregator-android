@@ -12,11 +12,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
-import android.webkit.WebViewClient
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.webkit.WebViewClientCompat
 import com.tughi.aggregator.App
 import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.R
@@ -33,7 +35,7 @@ import kotlinx.coroutines.launch
 import java.nio.charset.Charset
 
 
-class ReaderFragment : Fragment() {
+class ReaderFragment : Fragment(), MenuProvider {
 
     companion object {
         internal const val ARG_ENTRY_ID = "entry_id"
@@ -64,7 +66,7 @@ class ReaderFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setHasOptionsMenu(true)
+        requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -115,7 +117,7 @@ class ReaderFragment : Fragment() {
                 // TODO: run this in a coroutine
                 val entryHtml = entryTemplate
                     .replace("#ff6600", style.accentHexColor)
-                    .replace("{{ reader.theme }}", App.style.value?.theme?.name?.toLowerCase() ?: "")
+                    .replace("{{ reader.theme }}", App.style.value?.theme?.name?.lowercase() ?: "")
                     .replace("{{ layout_direction }}", if (Language.isRightToLeft(entryFeedLanguage)) "rtl" else "ltr")
                     .replace("{{ entry.source }}", if (entryAuthor != null) "$entryFeedTitle — $entryAuthor" else entryFeedTitle)
                     .replace("{{ entry.date }}", DateUtils.formatDateTime(activity, entryPublished, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_YEAR))
@@ -135,9 +137,7 @@ class ReaderFragment : Fragment() {
         return fragmentView
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-
+    override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.reader_activity, menu)
 
         markDoneMenuItem = menu.findItem(R.id.mark_done)
@@ -146,9 +146,7 @@ class ReaderFragment : Fragment() {
         removeStarMenuItem = menu.findItem(R.id.remove_star)
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu) {
-        super.onPrepareOptionsMenu(menu)
-
+    override fun onPrepareMenu(menu: Menu) {
         val read = loadedEntry?.run { readTime != 0L && pinnedTime == 0L } ?: false
 
         markDoneMenuItem.isVisible = !read
@@ -160,7 +158,7 @@ class ReaderFragment : Fragment() {
         removeStarMenuItem.isVisible = starred
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onMenuItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.mark_done -> {
                 loadedEntry?.let {
@@ -211,7 +209,7 @@ class ReaderFragment : Fragment() {
                 }
             }
             else -> {
-                return super.onOptionsItemSelected(item)
+                return false
             }
         }
 
@@ -277,11 +275,7 @@ class ReaderFragment : Fragment() {
         }
     }
 
-    inner class CustomWebViewClient : WebViewClient() {
-        override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-            return shouldOverrideUrlLoading(Uri.parse(url))
-        }
-
+    inner class CustomWebViewClient : WebViewClientCompat() {
         override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
             return shouldOverrideUrlLoading(request.url)
         }

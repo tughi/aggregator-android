@@ -11,12 +11,14 @@ import android.view.MenuItem
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.appcompat.app.ActionBar
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentStatePagerAdapter
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.viewpager.widget.ViewPager
+import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.MarginPageTransformer
+import androidx.viewpager2.widget.ViewPager2
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
 import com.tughi.aggregator.contentScope
@@ -24,7 +26,7 @@ import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.data.EntriesQueryCriteria
 import kotlinx.coroutines.launch
 
-class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
+class ReaderActivity : AppActivity() {
 
     companion object {
         private const val EXTRA_ENTRIES_QUERY_CRITERIA = "entries_query_criteria"
@@ -52,7 +54,7 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
 
     private lateinit var actionBar: ActionBar
 
-    private lateinit var pager: ViewPager
+    private lateinit var viewPager: ViewPager2
 
     private lateinit var resultData: Intent
 
@@ -64,7 +66,7 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
             setHomeAsUpIndicator(R.drawable.action_back)
         }
 
-        adapter = ReaderAdapter()
+        adapter = ReaderAdapter(this)
 
         val queryCriteria =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -83,22 +85,34 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
             adapter.notifyDataSetChanged()
 
             val entriesPosition = resultData.getIntExtra(EXTRA_ENTRIES_POSITION, 0)
-            if (pager.currentItem == entriesPosition) {
-                onPageSelected(entriesPosition)
-            } else {
-                pager.setCurrentItem(entriesPosition, false)
-            }
+            viewPager.setCurrentItem(entriesPosition, false)
         }
 
         setContentView(R.layout.reader_activity)
 
         actionBar = supportActionBar!!
 
-        pager = findViewById(R.id.pager)
-        pager.addOnPageChangeListener(this)
-        pager.pageMargin = resources.getDimensionPixelSize(R.dimen.reader_pager_margin)
-        pager.setPageMarginDrawable(R.drawable.reader_pager_margin)
-        pager.adapter = adapter
+        viewPager = findViewById(R.id.pager)
+        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                if (entries.size > position) {
+                    val entry = entries[position]
+
+                    // update title
+                    actionBar.setDisplayShowTitleEnabled(false)
+                    actionBar.title = (position + 1).toString() + " / " + entries.size
+                    actionBar.setDisplayShowTitleEnabled(true)
+
+                    contentScope.launch {
+                        Entries.update(Entries.UpdateEntryCriteria(entry.id), Entries.READ_TIME to System.currentTimeMillis())
+                    }
+                }
+
+                resultData.putExtra(EXTRA_ENTRIES_POSITION, position)
+            }
+        })
+        viewPager.setPageTransformer(MarginPageTransformer(resources.getDimensionPixelSize(R.dimen.reader_pager_margin)))
+        viewPager.adapter = adapter
 
         resultData = Intent().putExtra(EXTRA_ENTRIES_POSITION, intent.getIntExtra(EXTRA_ENTRIES_POSITION, 0))
         setResult(RESULT_OK, resultData)
@@ -127,36 +141,10 @@ class ReaderActivity : AppActivity(), ViewPager.OnPageChangeListener {
         return true
     }
 
-    override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
-        // nothing to do here
-    }
+    private inner class ReaderAdapter(fragmentActivity: FragmentActivity) : FragmentStateAdapter(fragmentActivity) {
+        override fun getItemCount(): Int = entries.size
 
-    override fun onPageSelected(position: Int) {
-        if (entries.size > position) {
-            val entry = entries[position]
-
-            // update title
-            actionBar.setDisplayShowTitleEnabled(false)
-            actionBar.title = (position + 1).toString() + " / " + entries.size
-            actionBar.setDisplayShowTitleEnabled(true)
-
-            contentScope.launch {
-                Entries.update(Entries.UpdateEntryCriteria(entry.id), Entries.READ_TIME to System.currentTimeMillis())
-            }
-        }
-
-        resultData.putExtra(EXTRA_ENTRIES_POSITION, position)
-    }
-
-    override fun onPageScrollStateChanged(state: Int) {
-        // nothing to do here
-    }
-
-    @Suppress("DEPRECATION")
-    private inner class ReaderAdapter : FragmentStatePagerAdapter(supportFragmentManager) {
-        override fun getCount(): Int = entries.size
-
-        override fun getItem(position: Int): Fragment {
+        override fun createFragment(position: Int): Fragment {
             val entry = entries[position]
             return ReaderFragment().apply {
                 arguments = Bundle().apply {
