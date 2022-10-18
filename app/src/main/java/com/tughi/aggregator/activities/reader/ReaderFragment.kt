@@ -4,12 +4,10 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
 import android.text.format.DateUtils
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import androidx.core.view.MenuProvider
@@ -34,8 +32,7 @@ import com.tughi.aggregator.utilities.shareLink
 import kotlinx.coroutines.launch
 import java.nio.charset.Charset
 
-
-class ReaderFragment : Fragment(), MenuProvider {
+class ReaderFragment : Fragment(R.layout.reader_entry_fragment), MenuProvider {
 
     companion object {
         internal const val ARG_ENTRY_ID = "entry_id"
@@ -69,16 +66,14 @@ class ReaderFragment : Fragment(), MenuProvider {
         requireActivity().addMenuProvider(this, this, Lifecycle.State.RESUMED)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val fragmentView = inflater.inflate(R.layout.reader_entry_fragment, container, false)
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         arguments?.also { arguments ->
             val entryId = arguments.getLong(ARG_ENTRY_ID)
 
             val viewModelFactory = ReaderViewModel.Factory(entryId)
-            val viewModel = ViewModelProvider(this, viewModelFactory).get(ReaderViewModel::class.java)
+            val viewModel = ViewModelProvider(this, viewModelFactory)[ReaderViewModel::class.java]
 
-            val webView: WebView = fragmentView.findViewById(R.id.content)
+            val webView: WebView = view.findViewById(R.id.content)
             webView.webViewClient = CustomWebViewClient()
 
             webView.settings.apply {
@@ -133,8 +128,6 @@ class ReaderFragment : Fragment(), MenuProvider {
                 activity?.invalidateOptionsMenu()
             })
         }
-
-        return fragmentView
     }
 
     override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
