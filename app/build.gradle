@@ -13,8 +13,8 @@ android {
         minSdkVersion 21
         targetSdkVersion 33
 
-        versionName = 'Preview:032'
-        versionCode = 299032
+        versionName = 'Preview:033'
+        versionCode = 299033
     }
 
     buildTypes {
@@ -56,7 +56,7 @@ dependencies {
     implementation 'androidx.sqlite:sqlite-ktx:2.2.0'
     implementation 'androidx.viewpager2:viewpager2:1.0.0'
     implementation 'androidx.webkit:webkit:1.5.0'
-    implementation 'com.google.android.material:material:1.6.1'
+    implementation 'com.google.android.material:material:1.7.0'
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'
     implementation 'commons-codec:commons-codec:1.13'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
