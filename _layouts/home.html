@@ -26,6 +26,7 @@
     </div>
     <div id="footer">
         <a href="https://play.google.com/store/apps/details?id=com.tughi.aggregator.next" target="_blank">Google Play</a>
+        <a href="https://f-droid.org/packages/com.tughi.aggregator/" target="_blank">F-Droid</a>
         {% assign latest_release = site.tags.release[0] %}
         <a href="{{ latest_release.url | relative_url }}">{{ latest_release.title }}</a>
         {% assign pages = site.pages | where_exp: "it", "it.home_link" | sort: "home_link" %}
