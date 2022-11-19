@@ -5,7 +5,6 @@ import org.xmlpull.v1.XmlSerializer
 import java.io.OutputStream
 
 object OpmlGenerator {
-
     fun generate(feeds: List<OpmlFeed>, outputStream: OutputStream) {
         val xml = Xml.newSerializer()
 
@@ -24,7 +23,7 @@ object OpmlGenerator {
         xml.startTag(null, "body")
 
         feeds.forEach { feed ->
-            if (!feed.excluded) {
+            if (feed.selected) {
                 xml.startTag(null, "outline")
 
                 xml.attribute(null, "type", "rss")
@@ -67,7 +66,5 @@ object OpmlGenerator {
 
             xml.attribute(null, attribute, newTitle.toString())
         }
-
     }
-
 }
