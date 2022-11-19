@@ -1,2 +1,3 @@
 - Changed OPML support
     * allows selection of already aggregated feeds for import
+    * implemented export feature
