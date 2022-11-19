@@ -63,6 +63,10 @@
             android:label="@string/update_mode" />
 
         <activity
+            android:name=".activities.opml.OpmlExportActivity"
+            android:label="@string/opml_export__title" />
+
+        <activity
             android:name=".activities.opml.OpmlImportActivity"
             android:label="@string/opml_import__title" />
 

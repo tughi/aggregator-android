@@ -8,10 +8,10 @@ import android.view.ViewGroup
 import android.widget.Button
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.tughi.aggregator.R
+import com.tughi.aggregator.activities.opml.OpmlExportActivity
 import com.tughi.aggregator.activities.subscribe.SubscribeActivity
 import com.tughi.aggregator.activities.updatesettings.UpdateSettingsActivity
 import com.tughi.aggregator.contentScope
@@ -33,7 +33,7 @@ class FeedListFragment : Fragment(), FeedsFragmentFeedAdapterListener {
         val progressBar = fragmentView.findViewById<View>(R.id.progress)
 
         feedsRecyclerView.adapter = FeedsFragmentFeedAdapter(this).also { adapter ->
-            viewModel.feeds.observe(viewLifecycleOwner, Observer { feeds ->
+            viewModel.feeds.observe(viewLifecycleOwner) { feeds ->
                 adapter.submitList(feeds)
 
                 progressBar.visibility = View.GONE
@@ -44,7 +44,7 @@ class FeedListFragment : Fragment(), FeedsFragmentFeedAdapterListener {
                     emptyView.visibility = View.GONE
                     feedsRecyclerView.visibility = View.VISIBLE
                 }
-            })
+            }
         }
 
         fragmentView.findViewById<Button>(R.id.add).setOnClickListener {
@@ -60,12 +60,13 @@ class FeedListFragment : Fragment(), FeedsFragmentFeedAdapterListener {
         toolbar.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.add -> {
-                    activity?.let { activity ->
-                        SubscribeActivity.start(activity, viaAction = true)
-                    }
+                    SubscribeActivity.start(requireActivity(), viaAction = true)
+                }
+                R.id.export -> {
+                    startActivity(Intent(requireContext(), OpmlExportActivity::class.java))
                 }
                 R.id.update_settings -> {
-                    startActivity(Intent(activity, UpdateSettingsActivity::class.java))
+                    startActivity(Intent(requireContext(), UpdateSettingsActivity::class.java))
                 }
                 else -> {
                     return@setOnMenuItemClickListener false
