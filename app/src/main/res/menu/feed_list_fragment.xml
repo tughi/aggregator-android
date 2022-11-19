@@ -14,4 +14,8 @@
         android:title="@string/action__subscribe"
         app:showAsAction="ifRoom" />
 
+    <item
+        android:id="@+id/export"
+        android:title="@string/action__export" />
+
 </menu>

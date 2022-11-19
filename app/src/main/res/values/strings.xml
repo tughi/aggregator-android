@@ -6,6 +6,7 @@
     <string name="action__add_rule">Add rule</string>
     <string name="action__close">Close</string>
     <string name="action__delete">Delete</string>
+    <string name="action__export">Export</string>
     <string name="action__invert_selection">Invert selection</string>
     <string name="action__mark_all_read">Mark all as read</string>
     <string name="action__mark_done">Mark as done</string>
@@ -119,6 +120,8 @@
         <item quantity="one">Tap to check it out</item>
         <item quantity="other">Tap to check them out</item>
     </plurals>
+
+    <string name="opml_export__title">OPML feeds</string>
 
     <string name="opml_import__title">OPML feeds</string>
 
