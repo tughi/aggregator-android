@@ -1,5 +1,6 @@
 package com.tughi.aggregator.activities.subscribe
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -16,7 +17,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputLayout
 import com.tughi.aggregator.R
-import com.tughi.aggregator.activities.opml.ImportOpmlResultContract
+import com.tughi.aggregator.activities.opml.OpmlImportActivity
 
 class SubscribeSearchFragment : Fragment(), SubscribeSearchFragmentAdapterListener {
 
@@ -31,12 +32,16 @@ class SubscribeSearchFragment : Fragment(), SubscribeSearchFragmentAdapterListen
 
     private val requestDocument = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) {
-            requestOpmlImport.launch(uri)
+            requestOpmlImport.launch(
+                Intent(context, OpmlImportActivity::class.java).apply {
+                    this.data = uri
+                }
+            )
         }
     }
 
-    private val requestOpmlImport = registerForActivityResult(ImportOpmlResultContract()) { done ->
-        if (done) {
+    private val requestOpmlImport = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
             requireActivity().finish()
         }
     }
