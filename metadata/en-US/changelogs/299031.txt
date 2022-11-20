@@ -1,1 +1,1 @@
-* Fixed crash while updating too many feeds at the same time
+- Fixed crash happening while updating too many feeds at the same time
