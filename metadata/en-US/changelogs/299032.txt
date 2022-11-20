@@ -1,3 +1,5 @@
-* Target SDK 33
-* Request permission to post notifications
-* Clear state of changed feed to refresh it on next update
+- Updated for Android 13
+    * requesting permission to post notifications on Android 13+
+
+- Improved feed settings
+    * clearing cached header values (ETag and Last-Modified) to force a clean refresh on next update
