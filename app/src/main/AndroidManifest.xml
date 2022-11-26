@@ -115,6 +115,14 @@
 
         <activity android:name=".activities.optionpicker.OptionPickerActivity" />
 
+        <activity
+            android:name=".activities.backup.BackupActivity"
+            android:label="@string/backup__title" />
+
+        <service
+            android:name=".services.BackupService"
+            android:exported="false" />
+
     </application>
 
 </manifest>

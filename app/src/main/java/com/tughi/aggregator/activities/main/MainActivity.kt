@@ -13,6 +13,7 @@ import com.tughi.aggregator.App
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.R
+import com.tughi.aggregator.activities.backup.BackupActivity
 import com.tughi.aggregator.activities.theme.ThemeActivity
 import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.preferences.UpdateSettings
@@ -98,6 +99,10 @@ class MainActivity : AppActivity() {
         bottomSheetView.findViewById<View>(R.id.theme).setOnClickListener {
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
             startActivity(Intent(this, ThemeActivity::class.java))
+        }
+
+        bottomSheetView.findViewById<View>(R.id.backup).setOnClickListener {
+            startActivity(Intent(this, BackupActivity::class.java))
         }
 
         bottomSheetView.findViewById<View>(R.id.support).setOnClickListener {
