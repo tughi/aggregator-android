@@ -61,7 +61,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="?selectableItemBackgroundBorderless"
-                app:layout_constraintEnd_toStartOf="@id/guideline"
+                app:layout_constraintEnd_toStartOf="@id/backup"
                 app:layout_constraintTop_toTopOf="parent">
 
                 <TextView
@@ -76,11 +76,31 @@
             </com.tughi.aggregator.widgets.BottomSheetOption>
 
             <com.tughi.aggregator.widgets.BottomSheetOption
+                android:id="@+id/backup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?selectableItemBackgroundBorderless"
+                app:layout_constraintEnd_toStartOf="@id/guideline"
+                app:layout_constraintStart_toStartOf="@id/guideline"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_vertical|center_horizontal"
+                    android:text="@string/backup__title"
+                    android:textAlignment="center"
+                    android:textAppearance="?textAppearanceCaption"
+                    app:drawableTopCompat="@drawable/action_backup" />
+
+            </com.tughi.aggregator.widgets.BottomSheetOption>
+
+            <com.tughi.aggregator.widgets.BottomSheetOption
                 android:id="@+id/support"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="?selectableItemBackgroundBorderless"
-                app:layout_constraintStart_toStartOf="@id/guideline"
+                app:layout_constraintStart_toEndOf="@id/backup"
                 app:layout_constraintTop_toTopOf="parent">
 
                 <TextView

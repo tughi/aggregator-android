@@ -32,6 +32,8 @@
     <string name="action__update">Update</string>
     <string name="action__yes">Yes</string>
 
+    <string name="backup__title">Backup</string>
+
     <string name="cleanup_mode">Cleanup mode</string>
     <string name="cleanup_mode__age__3_days">3 days</string>
     <string name="cleanup_mode__age__3_days__description">Deletes entries older than 3 days.</string>

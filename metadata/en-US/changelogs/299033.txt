@@ -1,3 +1,9 @@
 - Changed OPML support
     * allows selection of already aggregated feeds for import
     * implemented export feature
+
+* TODO: Added feature to dump data for loading it on a different device
+* TODO: Remove automatic backup (replaced by dump feature)
+* TODO: The app clears state of affected feeds when the default clean-up mode is changed
+
+* TODO: Fix app-launch updates by using an OnBackPressedCallback to detect when the user leaves the MainActivity
