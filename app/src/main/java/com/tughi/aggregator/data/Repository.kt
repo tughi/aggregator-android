@@ -10,6 +10,8 @@ abstract class Repository<Column : Repository.Column, TableColumn : Repository.T
 
     fun delete(criteria: DeleteCriteria) = Database.delete(tableName, criteria.selection, criteria.selectionArgs)
 
+    fun <Row> forEach(criteria: QueryCriteria, helper: QueryHelper<Column, QueryCriteria, Row>, block: (Row) -> Unit) = Database.forEach(helper.createQuery(criteria), helper::createRow, block)
+
     fun <Row> query(criteria: QueryCriteria, helper: QueryHelper<Column, QueryCriteria, Row>) = Database.query(helper.createQuery(criteria), helper::transform)
 
     fun <Row> liveQuery(criteria: QueryCriteria, helper: QueryHelper<Column, QueryCriteria, Row>) = Database.liveQuery(helper.createQuery(criteria), helper::transform)

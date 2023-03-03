@@ -24,11 +24,16 @@ object MyFeedTags : Repository<MyFeedTags.Column, MyFeedTags.TableColumn, MyFeed
 
     class DeleteMyFeedTagCriteria(tagId: Long, type: Type) : DeleteCriteria {
         override val selection: String = "tag_id = ? AND type = ?"
-        override val selectionArgs: Array<Any>? = arrayOf(tagId, type.value)
+        override val selectionArgs: Array<Any> = arrayOf(tagId, type.value)
     }
 
     interface QueryCriteria : Repository.QueryCriteria<Column> {
         fun config(query: Query.Builder, columns: Array<out Column>)
+    }
+
+    object QueryAllCriteria : QueryCriteria {
+        override fun config(query: Query.Builder, columns: Array<out Column>) {
+        }
     }
 
     class QueryMyFeedTagsCriteria(private val type: Type) : QueryCriteria {
@@ -40,7 +45,7 @@ object MyFeedTags : Repository<MyFeedTags.Column, MyFeedTags.TableColumn, MyFeed
 
     abstract class QueryHelper<Row>(vararg columns: Column) : Repository.QueryHelper<Column, QueryCriteria, Row>(columns) {
         override fun createQueryBuilder(criteria: QueryCriteria) = Query.Builder(columns, "my_feed_tag mft LEFT JOIN tag t ON t.id = mft.tag_id")
-                .also { criteria.config(it, columns) }
+            .also { criteria.config(it, columns) }
     }
 
 }
