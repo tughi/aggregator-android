@@ -200,6 +200,16 @@ object Database {
         }
     }
 
+    fun <T> forEach(sqliteQuery: SupportSQLiteQuery, createRow: (Cursor) -> T, block: (T) -> Unit) {
+        sqlite.readableDatabase.query(sqliteQuery).use { cursor ->
+            if (cursor.moveToFirst()) {
+                do {
+                    block(createRow(cursor))
+                } while (cursor.moveToNext())
+            }
+        }
+    }
+
     fun <T> query(sqliteQuery: SupportSQLiteQuery, transform: (Cursor) -> T): T {
         sqlite.readableDatabase.query(sqliteQuery).use { cursor ->
             return transform(cursor)

@@ -17,16 +17,21 @@ object EntryTags : Repository<EntryTags.Column, EntryTags.TableColumn, EntryTags
 
     class DeleteEntryTagCriteria(entryId: Long, tagId: Long) : DeleteCriteria {
         override val selection: String = "entry_id = ? AND tag_id = ?"
-        override val selectionArgs: Array<Any>? = arrayOf(entryId, tagId)
+        override val selectionArgs: Array<Any> = arrayOf(entryId, tagId)
     }
 
     class DeleteRuleTagsCriteria(entryTagRuleId: Long) : DeleteCriteria {
         override val selection: String = "entry_tag_rule_id = ?"
-        override val selectionArgs: Array<Any>? = arrayOf(entryTagRuleId)
+        override val selectionArgs: Array<Any> = arrayOf(entryTagRuleId)
     }
 
     interface QueryCriteria : Repository.QueryCriteria<Column> {
         fun config(query: Query.Builder, columns: Array<out Column>)
+    }
+
+    object QueryAllCriteria : QueryCriteria {
+        override fun config(query: Query.Builder, columns: Array<out Column>) {
+        }
     }
 
     class QueryEntryTagsCriteria(private val entryId: Long) : QueryCriteria {
@@ -43,7 +48,7 @@ object EntryTags : Repository<EntryTags.Column, EntryTags.TableColumn, EntryTags
 
     abstract class QueryHelper<Row>(vararg columns: Column) : Repository.QueryHelper<Column, QueryCriteria, Row>(columns) {
         override fun createQueryBuilder(criteria: QueryCriteria) = Query.Builder(columns, "entry_tag et")
-                .also { criteria.config(it, columns) }
+            .also { criteria.config(it, columns) }
     }
 
 }

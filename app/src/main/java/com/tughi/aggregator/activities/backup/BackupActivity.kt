@@ -10,13 +10,25 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ProgressBar
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.MutableLiveData
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
 import com.tughi.aggregator.services.BackupService
+import java.util.Date
 import kotlin.math.roundToInt
 
 class BackupActivity : AppActivity() {
+    private val createBackupDocumentRequest = registerForActivityResult(ActivityResultContracts.CreateDocument("*/*")) { uri ->
+        if (uri != null) {
+            startService(
+                Intent(this, BackupService::class.java).apply {
+                    data = uri
+                }
+            )
+        }
+    }
+
     private var service: BackupService? = null
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
@@ -47,7 +59,11 @@ class BackupActivity : AppActivity() {
         val actionsWrapper = findViewById<ViewGroup>(R.id.actions_wrapper)
         val backupButton = actionsWrapper.findViewById<Button>(R.id.backup)
         backupButton.setOnClickListener {
-            startService(Intent(this, BackupService::class.java))
+            createBackupDocumentRequest.launch(
+                Date().let { date ->
+                    "AggregatorData-%tY%tm%td%tH%tM%tS.ion.gz".format(date, date, date, date, date, date)
+                }
+            )
         }
 
         val progressWrapper = findViewById<ViewGroup>(R.id.progress_wrapper)

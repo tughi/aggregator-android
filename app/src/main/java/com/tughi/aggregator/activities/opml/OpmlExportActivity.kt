@@ -20,7 +20,7 @@ class OpmlExportActivity : AppActivity() {
     private val requestDocument = registerForActivityResult(ActivityResultContracts.CreateDocument("text/xml")) { uri ->
         if (uri != null) {
             viewModel.feeds.value?.let { feeds ->
-                contentResolver.openOutputStream(uri)?.let { outputStream ->
+                contentResolver.openOutputStream(uri)?.use { outputStream ->
                     contentScope.launch {
                         OpmlGenerator.generate(feeds, outputStream)
                     }

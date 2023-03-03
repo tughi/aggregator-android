@@ -22,21 +22,26 @@ object EntryTagRules : Repository<EntryTagRules.Column, EntryTagRules.TableColum
         fun config(query: Query.Builder, columns: Array<out Column>)
     }
 
+    object QueryAllCriteria : QueryCriteria {
+        override fun config(query: Query.Builder, columns: Array<out Column>) {
+        }
+    }
+
     abstract class QueryHelper<Row>(vararg columns: Column) : Repository.QueryHelper<Column, QueryCriteria, Row>(columns) {
         override fun createQueryBuilder(criteria: QueryCriteria) = Query.Builder(columns, "entry_tag_rule etr JOIN tag t ON etr.tag_id = t.id LEFT JOIN feed f ON etr.feed_id = f.id")
-                .also { criteria.config(it, columns) }
+            .also { criteria.config(it, columns) }
     }
 
 }
 
 class UpdateEntryTagRuleCriteria(val id: Long) : EntryTagRules.UpdateCriteria {
-    override val selection: String? = "id = ?"
-    override val selectionArgs: Array<Any>? = arrayOf(id)
+    override val selection: String = "id = ?"
+    override val selectionArgs: Array<Any> = arrayOf(id)
 }
 
 class DeleteEntryTagRuleCriteria(val id: Long) : EntryTagRules.DeleteCriteria {
-    override val selection: String? = "id = ?"
-    override val selectionArgs: Array<Any>? = arrayOf(id)
+    override val selection: String = "id = ?"
+    override val selectionArgs: Array<Any> = arrayOf(id)
 }
 
 class EntryTagRuleQueryCriteria(val id: Long) : EntryTagRules.QueryCriteria {
