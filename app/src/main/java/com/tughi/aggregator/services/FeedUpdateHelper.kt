@@ -26,6 +26,7 @@ import com.tughi.aggregator.data.FeedEntryTagRulesQueryCriteria
 import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.NeverCleanupMode
 import com.tughi.aggregator.data.UpdateMode
+import com.tughi.aggregator.entries.EntryTagRule
 import com.tughi.aggregator.feeds.FeedParser
 import com.tughi.aggregator.preferences.UpdateSettings
 import com.tughi.aggregator.utilities.Failure

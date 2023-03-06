@@ -1,8 +1,13 @@
-- Changed OPML support
+- Enhanced OPML support
     * allows selection of already aggregated feeds for import
     * implemented export feature
 
-* TODO: Added feature to dump data for loading it on a different device
+- Added option to backup Aggregator's data
+    * data stored as gzipped ION file
+    * backup file contains all feeds, aggregated entries, configured tags and update settings
+
+- Added option to restore Aggregator's data from a backup file
+
 * TODO: Remove automatic backup (replaced by dump feature)
 * TODO: The app clears state of affected feeds when the default clean-up mode is changed
 

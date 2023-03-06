@@ -31,12 +31,12 @@ import com.tughi.aggregator.data.EntryTagRules
 import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.Tags
 import com.tughi.aggregator.data.UpdateEntryTagRuleCriteria
+import com.tughi.aggregator.entries.EntryTagRuleHelper
 import com.tughi.aggregator.entries.conditions.Condition
 import com.tughi.aggregator.entries.conditions.ContentToken
 import com.tughi.aggregator.entries.conditions.LinkToken
 import com.tughi.aggregator.entries.conditions.StringToken
 import com.tughi.aggregator.entries.conditions.TitleToken
-import com.tughi.aggregator.services.EntryTagRuleHelper
 import com.tughi.aggregator.widgets.DropDownButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

@@ -23,6 +23,18 @@ class BackupActivity : AppActivity() {
         if (uri != null) {
             startService(
                 Intent(this, BackupService::class.java).apply {
+                    action = BackupService.ACTION_CREATE_BACKUP
+                    data = uri
+                }
+            )
+        }
+    }
+
+    private val openBackupDocumentRequest = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            startService(
+                Intent(this, BackupService::class.java).apply {
+                    action = BackupService.ACTION_RESTORE_BACKUP
                     data = uri
                 }
             )
@@ -64,6 +76,11 @@ class BackupActivity : AppActivity() {
                     "AggregatorData-%tY%tm%td%tH%tM%tS.ion.gz".format(date, date, date, date, date, date)
                 }
             )
+        }
+
+        val restoreButton = actionsWrapper.findViewById<Button>(R.id.restore)
+        restoreButton.setOnClickListener {
+            openBackupDocumentRequest.launch(arrayOf("*/*"))
         }
 
         val progressWrapper = findViewById<ViewGroup>(R.id.progress_wrapper)

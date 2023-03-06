@@ -49,6 +49,11 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
 
     interface DeleteCriteria : Repository.DeleteCriteria
 
+    object DeleteAllCriteria : DeleteCriteria {
+        override val selection: String? = null
+        override val selectionArgs: Array<Any>? = null
+    }
+
     class DeleteFeedCriteria(id: Long) : DeleteCriteria {
         override val selection = "id = ?"
         override val selectionArgs = arrayOf<Any>(id)
@@ -89,7 +94,7 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
 
     abstract class QueryHelper<Row>(vararg columns: Column) : Repository.QueryHelper<Column, QueryCriteria, Row>(columns) {
         override fun createQueryBuilder(criteria: QueryCriteria) = Query.Builder(columns, "feed f")
-                .also { criteria.config(it) }
+            .also { criteria.config(it) }
     }
 
 }

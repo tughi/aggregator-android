@@ -1,4 +1,4 @@
-package com.tughi.aggregator.services
+package com.tughi.aggregator.entries
 
 import android.database.Cursor
 import android.database.SQLException

@@ -18,6 +18,11 @@ object EntryTagRules : Repository<EntryTagRules.Column, EntryTagRules.TableColum
 
     interface DeleteCriteria : Repository.DeleteCriteria
 
+    object DeleteAllCriteria : DeleteCriteria {
+        override val selection: String? = null
+        override val selectionArgs: Array<Any>? = null
+    }
+
     interface QueryCriteria : Repository.QueryCriteria<Column> {
         fun config(query: Query.Builder, columns: Array<out Column>)
     }

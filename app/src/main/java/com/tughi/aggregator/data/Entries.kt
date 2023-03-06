@@ -41,8 +41,8 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     object INSERT_TIME : Column("insert_time", "e.insert_time"), TableColumn
     object UPDATE_TIME : Column("update_time", "e.update_time"), TableColumn
     object READ_TIME : Column("read_time", "e.read_time"), TableColumn
-    object PINNED_TIME : Column("pinned_time", "e.pinned_time", arrayOf("entry", "entry_tag"))
-    object STARRED_TIME : Column("starred_time", "e.starred_time", arrayOf("entry", "entry_tag"))
+    object PINNED_TIME : Column("pinned_time", "e.pinned_time", arrayOf("entry", "entry_tag")), TableColumn
+    object STARRED_TIME : Column("starred_time", "e.starred_time", arrayOf("entry", "entry_tag")), TableColumn
 
     fun markRead(criteria: EntriesQueryCriteria): Int {
         val updateCriteria = when (criteria) {
@@ -81,6 +81,11 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
     }
 
     interface DeleteCriteria : Repository.DeleteCriteria
+
+    object DeleteAllCriteria : DeleteCriteria {
+        override val selection: String? = null
+        override val selectionArgs: Array<Any>? = null
+    }
 
     class DeleteOldFeedEntriesCriteria(feedId: Long, oldMarkerTime: Long) : DeleteCriteria {
         override val selection = "feed_id = ? AND pinned_time = 0 AND starred_time = 0 AND COALESCE(publish_time, update_time) < ?"
