@@ -17,7 +17,6 @@ import com.tughi.aggregator.feeds.OpmlFeed
 import com.tughi.aggregator.feeds.OpmlParser
 import com.tughi.aggregator.services.AutoUpdateScheduler
 import com.tughi.aggregator.services.FaviconUpdateScheduler
-import com.tughi.aggregator.utilities.backupFeeds
 import com.tughi.aggregator.utilities.has
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -120,8 +119,6 @@ class OpmlImportActivity : AppActivity() {
             launch(Dispatchers.Main) {
                 FaviconUpdateScheduler.schedule()
             }
-
-            backupFeeds()
         }
 
         setResult(Activity.RESULT_OK)
