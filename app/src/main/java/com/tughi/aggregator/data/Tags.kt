@@ -25,6 +25,11 @@ object Tags : Repository<Tags.Column, Tags.TableColumn, Tags.UpdateCriteria, Tag
 
     interface DeleteCriteria : Repository.DeleteCriteria
 
+    object DeleteAllCriteria : DeleteCriteria {
+        override val selection: String? = null
+        override val selectionArgs: Array<Any>? = null
+    }
+
     class DeleteTagCriteria(tagId: Long) : DeleteCriteria {
         override val selection = "id = ? AND editable = 1"
         override val selectionArgs = arrayOf<Any>(tagId)
@@ -61,9 +66,9 @@ object Tags : Repository<Tags.Column, Tags.TableColumn, Tags.UpdateCriteria, Tag
 
     abstract class QueryHelper<Row>(vararg columns: Column) : Repository.QueryHelper<Column, QueryCriteria, Row>(columns) {
         override fun createQueryBuilder(criteria: QueryCriteria) = Query.Builder(columns, "tag t")
-                .groupBy("t.id")
-                .orderBy("t.name")
-                .also { criteria.config(it, columns) }
+            .groupBy("t.id")
+            .orderBy("t.name")
+            .also { criteria.config(it, columns) }
     }
 
 }

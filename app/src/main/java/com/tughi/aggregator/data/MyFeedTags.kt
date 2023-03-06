@@ -22,6 +22,11 @@ object MyFeedTags : Repository<MyFeedTags.Column, MyFeedTags.TableColumn, MyFeed
 
     interface DeleteCriteria : Repository.DeleteCriteria
 
+    object DeleteAllCriteria : DeleteCriteria {
+        override val selection: String? = null
+        override val selectionArgs: Array<Any>? = null
+    }
+
     class DeleteMyFeedTagCriteria(tagId: Long, type: Type) : DeleteCriteria {
         override val selection: String = "tag_id = ? AND type = ?"
         override val selectionArgs: Array<Any> = arrayOf(tagId, type.value)

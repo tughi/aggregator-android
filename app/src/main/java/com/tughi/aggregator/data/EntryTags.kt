@@ -15,6 +15,11 @@ object EntryTags : Repository<EntryTags.Column, EntryTags.TableColumn, EntryTags
 
     interface DeleteCriteria : Repository.DeleteCriteria
 
+    object DeleteAllCriteria : DeleteCriteria {
+        override val selection: String? = null
+        override val selectionArgs: Array<Any>? = null
+    }
+
     class DeleteEntryTagCriteria(entryId: Long, tagId: Long) : DeleteCriteria {
         override val selection: String = "entry_id = ? AND tag_id = ?"
         override val selectionArgs: Array<Any> = arrayOf(entryId, tagId)
