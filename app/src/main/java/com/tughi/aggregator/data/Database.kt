@@ -13,7 +13,6 @@ import androidx.sqlite.db.transaction
 import com.tughi.aggregator.App
 import com.tughi.aggregator.DATABASE_NAME
 import com.tughi.aggregator.contentScope
-import com.tughi.aggregator.utilities.restoreFeeds
 import kotlinx.coroutines.launch
 import java.io.BufferedReader
 import java.io.IOException
@@ -97,12 +96,6 @@ object Database {
                     Log.e(javaClass.name, message)
                     onCorruption(database)
                     exitProcess(1)
-                }
-
-                override fun onOpen(db: SupportSQLiteDatabase) {
-                    contentScope.launch {
-                        restoreFeeds()
-                    }
                 }
             })
             .build()

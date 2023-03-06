@@ -9,7 +9,6 @@ import com.tughi.aggregator.R
 import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.services.AutoUpdateScheduler
-import com.tughi.aggregator.utilities.backupFeeds
 import kotlinx.coroutines.launch
 
 class UnsubscribeDialogFragment : DialogFragment() {
@@ -46,8 +45,6 @@ class UnsubscribeDialogFragment : DialogFragment() {
                     Feeds.delete(Feeds.DeleteFeedCriteria(feedId))
 
                     AutoUpdateScheduler.schedule()
-
-                    backupFeeds()
                 }
                 if (finishActivity) {
                     activity?.finish()
