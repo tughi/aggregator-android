@@ -5,9 +5,12 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import androidx.lifecycle.MutableLiveData
-import com.amazon.ion.IonType
+import com.amazon.ion.IonStruct
+import com.amazon.ion.IonValue
 import com.amazon.ion.system.IonReaderBuilder
+import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ion.system.IonTextWriterBuilder
+import com.amazon.ion.util.AbstractValueVisitor
 import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.data.AllEntriesQueryCriteria
@@ -25,21 +28,14 @@ import com.tughi.aggregator.ion.EntryTagRule
 import com.tughi.aggregator.ion.Feed
 import com.tughi.aggregator.ion.MyFeedTag
 import com.tughi.aggregator.ion.Tag
-import com.tughi.aggregator.ion.readAggregatorData
-import com.tughi.aggregator.ion.readEntry
-import com.tughi.aggregator.ion.readEntryTag
-import com.tughi.aggregator.ion.readEntryTagRule
-import com.tughi.aggregator.ion.readFeed
-import com.tughi.aggregator.ion.readMyFeedTag
-import com.tughi.aggregator.ion.readTag
-import com.tughi.aggregator.ion.writeAggregatorData
-import com.tughi.aggregator.ion.writeEntry
-import com.tughi.aggregator.ion.writeEntryTag
-import com.tughi.aggregator.ion.writeEntryTagRule
-import com.tughi.aggregator.ion.writeFeed
-import com.tughi.aggregator.ion.writeMyFeedTag
-import com.tughi.aggregator.ion.writeTag
-import com.tughi.aggregator.ion.writeTypedList
+import com.tughi.aggregator.ion.entryData
+import com.tughi.aggregator.ion.entryTagData
+import com.tughi.aggregator.ion.entryTagRuleData
+import com.tughi.aggregator.ion.expectAggregatorData
+import com.tughi.aggregator.ion.feedData
+import com.tughi.aggregator.ion.myFeedTagData
+import com.tughi.aggregator.ion.tagData
+import com.tughi.aggregator.preferences.UpdateSettings
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -100,21 +96,34 @@ class BackupService : Service() {
     private fun backup(output: OutputStream) {
         status.postValue(Status(true))
 
+        val ionSystem = IonSystemBuilder.standard().build()
         val ionWriter = IonTextWriterBuilder.pretty().build(output)
 
         Database.transaction {
-            val data = AggregatorData(
+            val aggregatorData = AggregatorData(
                 version = 1,
-                feedsCount = Feeds.queryCount(Feeds.AllCriteria, Feed.QueryHelper),
-                entriesCount = Entries.queryCount(AllEntriesQueryCriteria(), Entry.QueryHelper),
-                tagsCount = Tags.queryCount(Tags.QueryAllTagsCriteria, Tag.QueryHelper),
-                entryTagRulesCount = EntryTagRules.queryCount(EntryTagRules.QueryAllCriteria, EntryTagRule.QueryHelper),
-                entryTagsCount = EntryTags.queryCount(EntryTags.QueryAllCriteria, EntryTag.QueryHelper),
-                myFeedTagsCount = MyFeedTags.queryCount(MyFeedTags.QueryAllCriteria, MyFeedTag.QueryHelper),
+                application = AggregatorData.Application(
+                    packageName = BuildConfig.APPLICATION_ID,
+                    versionCode = BuildConfig.VERSION_CODE,
+                    versionName = BuildConfig.VERSION_NAME,
+                ),
+                updateSettings = AggregatorData.UpdateSettings(
+                    backgroundUpdates = UpdateSettings.backgroundUpdates,
+                    defaultCleanupMode = UpdateSettings.defaultCleanupMode.serialize(),
+                    defaultUpdateMode = UpdateSettings.defaultUpdateMode.serialize(),
+                ),
+                counters = AggregatorData.Counters(
+                    feeds = Feeds.queryCount(Feeds.AllCriteria, Feed.QueryHelper),
+                    entries = Entries.queryCount(AllEntriesQueryCriteria(), Entry.QueryHelper),
+                    tags = Tags.queryCount(Tags.QueryAllTagsCriteria, Tag.QueryHelper),
+                    entryTagRules = EntryTagRules.queryCount(EntryTagRules.QueryAllCriteria, EntryTagRule.QueryHelper),
+                    entryTags = EntryTags.queryCount(EntryTags.QueryAllCriteria, EntryTag.QueryHelper),
+                    myFeedTags = MyFeedTags.queryCount(MyFeedTags.QueryAllCriteria, MyFeedTag.QueryHelper),
+                ),
             )
-            ionWriter.writeAggregatorData(data)
+            aggregatorData.writeTo(ionWriter, ionSystem)
 
-            val totalRows = (data.feedsCount + data.entriesCount + data.tagsCount + data.entryTagRulesCount + data.entryTagsCount + data.myFeedTagsCount).toFloat()
+            val totalRows = aggregatorData.counters.total.toFloat()
             var processedRows = 0
             fun updateStatus() {
                 if (currentJob!!.isCancelled) {
@@ -125,46 +134,34 @@ class BackupService : Service() {
                 status.postValue(Status(true, processedRows / totalRows))
             }
 
-            ionWriter.writeTypedList(Feeds::class.simpleName!!, data.feedsCount) {
-                Feeds.forEach(Feeds.AllCriteria, Feed.QueryHelper) { feed ->
-                    ionWriter.writeFeed(feed)
-                    updateStatus()
-                }
+            Feeds.forEach(Feeds.AllCriteria, Feed.QueryHelper) { feed ->
+                feed.writeTo(ionWriter, ionSystem)
+                updateStatus()
             }
 
-            ionWriter.writeTypedList(Entries::class.simpleName!!, data.entriesCount) {
-                Entries.forEach(AllEntriesQueryCriteria(), Entry.QueryHelper) { entry ->
-                    ionWriter.writeEntry(entry)
-                    updateStatus()
-                }
+            Entries.forEach(AllEntriesQueryCriteria(), Entry.QueryHelper) { entry ->
+                entry.writeTo(ionWriter, ionSystem)
+                updateStatus()
             }
 
-            ionWriter.writeTypedList(Tags::class.simpleName!!, data.tagsCount) {
-                Tags.forEach(Tags.QueryAllTagsCriteria, Tag.QueryHelper) { tag ->
-                    ionWriter.writeTag(tag)
-                    updateStatus()
-                }
+            Tags.forEach(Tags.QueryAllTagsCriteria, Tag.QueryHelper) { tag ->
+                tag.writeTo(ionWriter, ionSystem)
+                updateStatus()
             }
 
-            ionWriter.writeTypedList(EntryTagRules::class.simpleName!!, data.entryTagRulesCount) {
-                EntryTagRules.forEach(EntryTagRules.QueryAllCriteria, EntryTagRule.QueryHelper) { entryTagRule ->
-                    ionWriter.writeEntryTagRule(entryTagRule)
-                    updateStatus()
-                }
+            EntryTagRules.forEach(EntryTagRules.QueryAllCriteria, EntryTagRule.QueryHelper) { entryTagRule ->
+                entryTagRule.writeTo(ionWriter, ionSystem)
+                updateStatus()
             }
 
-            ionWriter.writeTypedList(EntryTags::class.simpleName!!, data.entryTagsCount) {
-                EntryTags.forEach(EntryTags.QueryAllCriteria, EntryTag.QueryHelper) { entryTag ->
-                    ionWriter.writeEntryTag(entryTag)
-                    updateStatus()
-                }
+            EntryTags.forEach(EntryTags.QueryAllCriteria, EntryTag.QueryHelper) { entryTag ->
+                entryTag.writeTo(ionWriter, ionSystem)
+                updateStatus()
             }
 
-            ionWriter.writeTypedList(MyFeedTags::class.simpleName!!, data.myFeedTagsCount) {
-                MyFeedTags.forEach(MyFeedTags.QueryAllCriteria, MyFeedTag.QueryHelper) { myFeedTag ->
-                    ionWriter.writeMyFeedTag(myFeedTag)
-                    updateStatus()
-                }
+            MyFeedTags.forEach(MyFeedTags.QueryAllCriteria, MyFeedTag.QueryHelper) { myFeedTag ->
+                myFeedTag.writeTo(ionWriter, ionSystem)
+                updateStatus()
             }
         }
 
@@ -178,22 +175,17 @@ class BackupService : Service() {
     private fun restore(input: InputStream) {
         status.postValue(Status(true))
 
+        val ionSystem = IonSystemBuilder.standard().build()
         val ionReader = IonReaderBuilder.standard().build(input)
 
+        val ionValueIterator = ionSystem.iterate(ionReader)
+
+        val aggregatorData = ionValueIterator.expectAggregatorData()
+
+        val totalRows = aggregatorData.counters.total.toFloat()
+        var processedRows = 0
+
         Database.transaction {
-            val data = ionReader.readAggregatorData()
-
-            val totalRows = (data.feedsCount + data.entriesCount + data.tagsCount + data.entryTagRulesCount + data.entryTagsCount + data.myFeedTagsCount).toFloat()
-            var processedRows = 0
-            fun updateStatus() {
-                if (currentJob!!.isCancelled) {
-                    throw CancellationException("Cancelled")
-                }
-
-                processedRows += 1
-                status.postValue(Status(true, processedRows / totalRows))
-            }
-
             MyFeedTags.delete(MyFeedTags.DeleteAllCriteria)
             EntryTags.delete(EntryTags.DeleteAllCriteria)
             EntryTagRules.delete(EntryTagRules.DeleteAllCriteria)
@@ -201,68 +193,37 @@ class BackupService : Service() {
             Entries.delete(Entries.DeleteAllCriteria)
             Feeds.delete(Feeds.DeleteAllCriteria)
 
-            while (ionReader.next() == IonType.LIST) {
-                val typeAnnotations = ionReader.typeAnnotations
-                ionReader.stepIn()
-                when {
-                    typeAnnotations.contains(Entries::class.simpleName!!) -> {
-                        while (ionReader.next() == IonType.STRUCT) {
-                            val entryData = ionReader.readEntry()
-
-                            Entries.insert(*entryData)
-
-                            updateStatus()
-                        }
-                    }
-                    typeAnnotations.contains(EntryTags::class.simpleName!!) -> {
-                        while (ionReader.next() == IonType.STRUCT) {
-                            val entryTagData = ionReader.readEntryTag()
-
-                            EntryTags.insert(*entryTagData)
-
-                            updateStatus()
-                        }
-                    }
-                    typeAnnotations.contains(EntryTagRules::class.simpleName!!) -> {
-                        while (ionReader.next() == IonType.STRUCT) {
-                            val entryTagRuleData = ionReader.readEntryTagRule()
-
-                            EntryTagRules.insert(*entryTagRuleData)
-
-                            updateStatus()
-                        }
-                    }
-                    typeAnnotations.contains(Feeds::class.simpleName!!) -> {
-                        while (ionReader.next() == IonType.STRUCT) {
-                            val feedData = ionReader.readFeed()
-
-                            Feeds.insert(*feedData)
-
-                            updateStatus()
-                        }
-                    }
-                    typeAnnotations.contains(MyFeedTags::class.simpleName!!) -> {
-                        while (ionReader.next() == IonType.STRUCT) {
-                            val myFeedTagData = ionReader.readMyFeedTag()
-
-                            MyFeedTags.insert(*myFeedTagData)
-
-                            updateStatus()
-                        }
-                    }
-                    typeAnnotations.contains(Tags::class.simpleName!!) -> {
-                        while (ionReader.next() == IonType.STRUCT) {
-                            val tagData = ionReader.readTag()
-
-                            Tags.insert(*tagData)
-
-                            updateStatus()
-                        }
-                    }
+            val visitor = object : AbstractValueVisitor() {
+                override fun defaultVisit(ionValue: IonValue) {
+                    throw IllegalStateException("Unsupported value type: $ionValue")
                 }
-                ionReader.stepOut()
+
+                override fun visit(ionStruct: IonStruct) {
+                    when (ionStruct.typeAnnotations?.first()) {
+                        Entry::class.simpleName -> Entries.insert(*entryData(ionStruct))
+                        EntryTag::class.simpleName -> EntryTags.insert(*entryTagData(ionStruct))
+                        EntryTagRule::class.simpleName -> EntryTagRules.insert(*entryTagRuleData(ionStruct))
+                        Feed::class.simpleName -> Feeds.insert(*feedData(ionStruct))
+                        MyFeedTag::class.simpleName -> MyFeedTags.insert(*myFeedTagData(ionStruct))
+                        Tag::class.simpleName -> Tags.insert(*tagData(ionStruct))
+                        else -> super.visit(ionStruct)
+                    }
+
+                    processedRows += 1
+                    status.postValue(Status(true, processedRows / totalRows))
+                }
+            }
+
+            while (ionValueIterator.hasNext()) {
+                if (currentJob!!.isCancelled) {
+                    throw CancellationException("Cancelled")
+                }
+
+                ionValueIterator.next().accept(visitor)
             }
         }
+
+        // TODO: apply update settings
     }
 
     inner class LocalBinder : Binder() {
