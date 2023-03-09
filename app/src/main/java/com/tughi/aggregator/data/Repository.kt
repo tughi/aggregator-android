@@ -6,6 +6,8 @@ abstract class Repository<Column : Repository.Column, TableColumn : Repository.T
 
     fun insert(vararg data: Pair<TableColumn, Any?>): Long = Database.insert(tableName, data.toContentValues())
 
+    fun insert(insertable: Insertable<TableColumn>): Long = Database.insert(tableName, insertable.insertData().toContentValues())
+
     fun update(criteria: UpdateCriteria, vararg data: Pair<TableColumn, Any?>) = Database.update(tableName, data.toContentValues(), criteria.selection, criteria.selectionArgs)
 
     fun delete(criteria: DeleteCriteria) = Database.delete(tableName, criteria.selection, criteria.selectionArgs)
@@ -28,6 +30,10 @@ abstract class Repository<Column : Repository.Column, TableColumn : Repository.T
 
     interface TableColumn {
         val name: String
+    }
+
+    interface Insertable<TableColumn> {
+        fun insertData(): Array<Pair<TableColumn, Any?>>
     }
 
     interface UpdateCriteria {

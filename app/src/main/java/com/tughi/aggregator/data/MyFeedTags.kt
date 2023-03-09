@@ -18,6 +18,8 @@ object MyFeedTags : Repository<MyFeedTags.Column, MyFeedTags.TableColumn, MyFeed
         EXCLUDED(MY_FEED_TAG_TYPE__EXCLUDED)
     }
 
+    interface Insertable : Repository.Insertable<TableColumn>
+
     interface UpdateCriteria : Repository.UpdateCriteria
 
     interface DeleteCriteria : Repository.DeleteCriteria

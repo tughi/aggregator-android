@@ -61,6 +61,8 @@ object Entries : Repository<Entries.Column, Entries.TableColumn, Entries.UpdateC
         }
     }
 
+    interface Insertable : Repository.Insertable<TableColumn>
+
     interface UpdateCriteria : Repository.UpdateCriteria
 
     private class SimpleUpdateCriteria(override val selection: String?, override val selectionArgs: Array<Any>?) : UpdateCriteria

@@ -28,17 +28,14 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
     object HTTP_LAST_MODIFIED : Column("http_last_modified", "f.http_last_modified"), TableColumn
     object UNREAD_ENTRY_COUNT : Column("unread_entry_count", "(SELECT COUNT(1) FROM entry e WHERE f.id = e.feed_id AND (e.read_time = 0 OR e.pinned_time != 0))", arrayOf("feed", "entry", "entry_tag"))
 
-    fun queryAllCount() = Database.query(SimpleSQLiteQuery("SELECT COUNT(1) FROM feed")) { cursor ->
-        cursor.moveToFirst()
-        return@query cursor.getInt(0)
-    }
-
     fun queryFirstNextUpdateTime() = Database.query(SimpleSQLiteQuery("SELECT MIN(next_update_time) FROM feed WHERE next_update_time > 0")) { cursor ->
         if (cursor.moveToFirst()) {
             return@query cursor.getLongOrNull(0)
         }
         return@query null
     }
+
+    interface Insertable : Repository.Insertable<TableColumn>
 
     interface UpdateCriteria : Repository.UpdateCriteria
 

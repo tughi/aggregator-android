@@ -3,26 +3,122 @@ package com.tughi.aggregator.ion
 import android.database.Cursor
 import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
-import com.amazon.ion.IonStruct
-import com.amazon.ion.IonSystem
-import com.amazon.ion.IonWriter
+import com.amazon.ionelement.api.ElementType
+import com.amazon.ionelement.api.StructElement
+import com.amazon.ionelement.api.StructField
+import com.amazon.ionelement.api.field
+import com.amazon.ionelement.api.ionInt
+import com.amazon.ionelement.api.ionString
+import com.amazon.ionelement.api.ionStructOf
 import com.tughi.aggregator.data.Entries
 
-class Entry(
-    val id: Long,
-    val uid: String,
-    val feedId: Long,
-    val title: String?,
-    val link: String?,
-    val content: String?,
-    val author: String?,
-    val publishTime: Long?,
-    val insertTime: Long,
-    val updateTime: Long,
-    val readTime: Long,
-    val pinnedTime: Long,
-    val starredTime: Long,
-) {
+private const val FIELD_ID = "id"
+private const val FIELD_UID = "uid"
+private const val FIELD_FEED_ID = "feedId"
+private const val FIELD_TITLE = "title"
+private const val FIELD_LINK = "link"
+private const val FIELD_CONTENT = "content"
+private const val FIELD_AUTHOR = "author"
+private const val FIELD_PUBLISH_TIME = "publishTime"
+private const val FIELD_INSERT_TIME = "insertTime"
+private const val FIELD_UPDATE_TIME = "updateTime"
+private const val FIELD_READ_TIME = "readTime"
+private const val FIELD_PINNED_TIME = "pinnedTime"
+private const val FIELD_STARRED_TIME = "starredTime"
+
+class Entry private constructor(structElement: StructElement, validate: Boolean) : CustomElement(structElement, validate), Entries.Insertable {
+    constructor(structElement: StructElement) : this(structElement, validate = true)
+
+    constructor(
+        id: Long,
+        uid: String,
+        feedId: Long,
+        title: String?,
+        link: String?,
+        content: String?,
+        author: String?,
+        publishTime: Long?,
+        insertTime: Long,
+        updateTime: Long,
+        readTime: Long,
+        pinnedTime: Long,
+        starredTime: Long,
+    ) : this(
+        ionStructOf(
+            mutableListOf<StructField>().apply {
+                add(field(FIELD_ID, ionInt(id)))
+                add(field(FIELD_UID, ionString(uid)))
+                add(field(FIELD_FEED_ID, ionInt(feedId)))
+                if (title != null) {
+                    add(field(FIELD_TITLE, ionString(title)))
+                }
+                if (link != null) {
+                    add(field(FIELD_LINK, ionString(link)))
+                }
+                if (content != null) {
+                    add(field(FIELD_CONTENT, ionString(content)))
+                }
+                if (author != null) {
+                    add(field(FIELD_AUTHOR, ionString(author)))
+                }
+                if (publishTime != null) {
+                    add(field(FIELD_PUBLISH_TIME, ionInt(publishTime)))
+                }
+                add(field(FIELD_INSERT_TIME, ionInt(insertTime)))
+                add(field(FIELD_UPDATE_TIME, ionInt(updateTime)))
+                add(field(FIELD_READ_TIME, ionInt(readTime)))
+                add(field(FIELD_PINNED_TIME, ionInt(pinnedTime)))
+                add(field(FIELD_STARRED_TIME, ionInt(starredTime)))
+            },
+            annotations = listOf(Entry::class.simpleName!!),
+        ),
+        validate = false,
+    )
+
+    override fun validate() {
+        checkAnnotation(Entry::class.simpleName!!)
+        checkField(FIELD_ID, ElementType.INT)
+        checkField(FIELD_UID, ElementType.STRING)
+        checkField(FIELD_FEED_ID, ElementType.INT)
+        checkOptionalField(FIELD_TITLE, ElementType.STRING)
+        checkOptionalField(FIELD_LINK, ElementType.STRING)
+        checkOptionalField(FIELD_CONTENT, ElementType.STRING)
+        checkOptionalField(FIELD_AUTHOR, ElementType.STRING)
+        checkOptionalField(FIELD_PUBLISH_TIME, ElementType.INT)
+        checkField(FIELD_INSERT_TIME, ElementType.INT)
+        checkField(FIELD_UPDATE_TIME, ElementType.INT)
+        checkField(FIELD_READ_TIME, ElementType.INT)
+        checkField(FIELD_PINNED_TIME, ElementType.INT)
+        checkField(FIELD_STARRED_TIME, ElementType.INT)
+    }
+
+    override fun insertData(): Array<Pair<Entries.TableColumn, Any?>> {
+        val columns = mutableListOf<Pair<Entries.TableColumn, Any?>>()
+
+        for (field in fields) {
+            columns.add(
+                when (field.name) {
+                    FIELD_AUTHOR -> Entries.AUTHOR to field.value.stringValue
+                    FIELD_CONTENT -> Entries.CONTENT to field.value.stringValue
+                    FIELD_FEED_ID -> Entries.FEED_ID to field.value.longValue
+                    FIELD_ID -> Entries.ID to field.value.longValue
+                    FIELD_INSERT_TIME -> Entries.INSERT_TIME to field.value.longValue
+                    FIELD_LINK -> Entries.LINK to field.value.stringValue
+                    FIELD_PINNED_TIME -> Entries.PINNED_TIME to field.value.longValue
+                    FIELD_PUBLISH_TIME -> Entries.PUBLISH_TIME to field.value.longValue
+                    FIELD_READ_TIME -> Entries.READ_TIME to field.value.longValue
+                    FIELD_STARRED_TIME -> Entries.STARRED_TIME to field.value.longValue
+                    FIELD_TITLE -> Entries.TITLE to field.value.stringValue
+                    FIELD_UID -> Entries.UID to field.value.stringValue
+                    FIELD_UPDATE_TIME -> Entries.UPDATE_TIME to field.value.longValue
+                    else -> throw IllegalStateException("Unsupported field: ${field.name}")
+                }
+            )
+        }
+
+        return columns.toTypedArray()
+    }
+
     object QueryHelper : Entries.QueryHelper<Entry>(
         Entries.ID,
         Entries.UID,
@@ -54,60 +150,4 @@ class Entry(
             starredTime = cursor.getLong(12),
         )
     }
-
-    fun writeTo(ionWriter: IonWriter, ionSystem: IonSystem) {
-        ionSystem.newEmptyStruct().apply {
-            setTypeAnnotations(Entry::class.simpleName)
-            add(Entry::id.name, ionSystem.newInt(id))
-            add(Entry::uid.name, ionSystem.newString(uid))
-            add(Entry::feedId.name, ionSystem.newInt(feedId))
-            if (title != null) {
-                add(Entry::title.name, ionSystem.newString(title))
-            }
-            if (link != null) {
-                add(Entry::link.name, ionSystem.newString(link))
-            }
-            if (content != null) {
-                add(Entry::content.name, ionSystem.newString(content))
-            }
-            if (author != null) {
-                add(Entry::author.name, ionSystem.newString(author))
-            }
-            if (publishTime != null) {
-                add(Entry::publishTime.name, ionSystem.newInt(publishTime))
-            }
-            add(Entry::insertTime.name, ionSystem.newInt(insertTime))
-            add(Entry::updateTime.name, ionSystem.newInt(updateTime))
-            add(Entry::readTime.name, ionSystem.newInt(readTime))
-            add(Entry::pinnedTime.name, ionSystem.newInt(pinnedTime))
-            add(Entry::starredTime.name, ionSystem.newInt(starredTime))
-        }.writeTo(ionWriter)
-    }
-}
-
-fun entryData(ionStruct: IonStruct): Array<Pair<Entries.TableColumn, Any?>> {
-    val columns = mutableListOf<Pair<Entries.TableColumn, Any?>>()
-
-    for (ionValue in ionStruct) {
-        columns.add(
-            when (ionValue.fieldName) {
-                Entry::author.name -> Entries.AUTHOR to ionValue.stringValue()
-                Entry::content.name -> Entries.CONTENT to ionValue.stringValue()
-                Entry::feedId.name -> Entries.FEED_ID to ionValue.longValue()
-                Entry::id.name -> Entries.ID to ionValue.longValue()
-                Entry::insertTime.name -> Entries.INSERT_TIME to ionValue.longValue()
-                Entry::link.name -> Entries.LINK to ionValue.stringValue()
-                Entry::pinnedTime.name -> Entries.PINNED_TIME to ionValue.longValue()
-                Entry::publishTime.name -> Entries.PUBLISH_TIME to ionValue.longValue()
-                Entry::readTime.name -> Entries.READ_TIME to ionValue.longValue()
-                Entry::starredTime.name -> Entries.STARRED_TIME to ionValue.longValue()
-                Entry::title.name -> Entries.TITLE to ionValue.stringValue()
-                Entry::uid.name -> Entries.UID to ionValue.stringValue()
-                Entry::updateTime.name -> Entries.UPDATE_TIME to ionValue.longValue()
-                else -> throw IllegalStateException("Unsupported field: ${ionValue.fieldName}")
-            }
-        )
-    }
-
-    return columns.toTypedArray()
 }

@@ -16,6 +16,8 @@ object Tags : Repository<Tags.Column, Tags.TableColumn, Tags.UpdateCriteria, Tag
     object ENTRY_COUNT : Column("entry_count", "(SELECT COUNT(1) FROM entry_fts WHERE tags MATCH t.id)", arrayOf("entry", "entry_tag", "tag"))
     object UNREAD_ENTRY_COUNT : Column("entry_count", "(SELECT COUNT(1) FROM entry_fts ef LEFT JOIN entry e ON ef.docid = e.id WHERE ef.tags MATCH t.id AND (e.read_time = 0 OR e.pinned_time != 0))", arrayOf("entry", "entry_tag", "tag"))
 
+    interface Insertable : Repository.Insertable<TableColumn>
+
     interface UpdateCriteria : Repository.UpdateCriteria
 
     class UpdateTagCriteria(tagId: Long) : UpdateCriteria {
