@@ -11,6 +11,8 @@ object EntryTags : Repository<EntryTags.Column, EntryTags.TableColumn, EntryTags
     object TAG_TIME : Column("tag_time", "et.tag_time"), TableColumn
     object ENTRY_TAG_RULE_ID : Column("entry_tag_rule_id", "et.entry_tag_rule_id"), TableColumn
 
+    interface Insertable : Repository.Insertable<TableColumn>
+
     interface UpdateCriteria : Repository.UpdateCriteria
 
     interface DeleteCriteria : Repository.DeleteCriteria

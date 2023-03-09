@@ -5,12 +5,12 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import androidx.lifecycle.MutableLiveData
-import com.amazon.ion.IonStruct
-import com.amazon.ion.IonValue
 import com.amazon.ion.system.IonReaderBuilder
-import com.amazon.ion.system.IonSystemBuilder
 import com.amazon.ion.system.IonTextWriterBuilder
-import com.amazon.ion.util.AbstractValueVisitor
+import com.amazon.ionelement.api.IonElementLoaderOptions
+import com.amazon.ionelement.api.createIonElementLoader
+import com.amazon.ionelement.api.location
+import com.amazon.ionelement.api.locationToString
 import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.data.AllEntriesQueryCriteria
@@ -28,13 +28,6 @@ import com.tughi.aggregator.ion.EntryTagRule
 import com.tughi.aggregator.ion.Feed
 import com.tughi.aggregator.ion.MyFeedTag
 import com.tughi.aggregator.ion.Tag
-import com.tughi.aggregator.ion.entryData
-import com.tughi.aggregator.ion.entryTagData
-import com.tughi.aggregator.ion.entryTagRuleData
-import com.tughi.aggregator.ion.expectAggregatorData
-import com.tughi.aggregator.ion.feedData
-import com.tughi.aggregator.ion.myFeedTagData
-import com.tughi.aggregator.ion.tagData
 import com.tughi.aggregator.preferences.UpdateSettings
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -96,7 +89,6 @@ class BackupService : Service() {
     private fun backup(output: OutputStream) {
         status.postValue(Status(true))
 
-        val ionSystem = IonSystemBuilder.standard().build()
         val ionWriter = IonTextWriterBuilder.pretty().build(output)
 
         Database.transaction {
@@ -121,7 +113,7 @@ class BackupService : Service() {
                     myFeedTags = MyFeedTags.queryCount(MyFeedTags.QueryAllCriteria, MyFeedTag.QueryHelper),
                 ),
             )
-            aggregatorData.writeTo(ionWriter, ionSystem)
+            aggregatorData.writeTo(ionWriter)
 
             val totalRows = aggregatorData.counters.total.toFloat()
             var processedRows = 0
@@ -135,32 +127,32 @@ class BackupService : Service() {
             }
 
             Feeds.forEach(Feeds.AllCriteria, Feed.QueryHelper) { feed ->
-                feed.writeTo(ionWriter, ionSystem)
+                feed.writeTo(ionWriter)
                 updateStatus()
             }
 
             Entries.forEach(AllEntriesQueryCriteria(), Entry.QueryHelper) { entry ->
-                entry.writeTo(ionWriter, ionSystem)
+                entry.writeTo(ionWriter)
                 updateStatus()
             }
 
             Tags.forEach(Tags.QueryAllTagsCriteria, Tag.QueryHelper) { tag ->
-                tag.writeTo(ionWriter, ionSystem)
+                tag.writeTo(ionWriter)
                 updateStatus()
             }
 
             EntryTagRules.forEach(EntryTagRules.QueryAllCriteria, EntryTagRule.QueryHelper) { entryTagRule ->
-                entryTagRule.writeTo(ionWriter, ionSystem)
+                entryTagRule.writeTo(ionWriter)
                 updateStatus()
             }
 
             EntryTags.forEach(EntryTags.QueryAllCriteria, EntryTag.QueryHelper) { entryTag ->
-                entryTag.writeTo(ionWriter, ionSystem)
+                entryTag.writeTo(ionWriter)
                 updateStatus()
             }
 
             MyFeedTags.forEach(MyFeedTags.QueryAllCriteria, MyFeedTag.QueryHelper) { myFeedTag ->
-                myFeedTag.writeTo(ionWriter, ionSystem)
+                myFeedTag.writeTo(ionWriter)
                 updateStatus()
             }
         }
@@ -175,12 +167,12 @@ class BackupService : Service() {
     private fun restore(input: InputStream) {
         status.postValue(Status(true))
 
-        val ionSystem = IonSystemBuilder.standard().build()
         val ionReader = IonReaderBuilder.standard().build(input)
 
-        val ionValueIterator = ionSystem.iterate(ionReader)
+        val elementLoader = createIonElementLoader(options = IonElementLoaderOptions(includeLocationMeta = true))
 
-        val aggregatorData = ionValueIterator.expectAggregatorData()
+        ionReader.next()
+        val aggregatorData = AggregatorData(elementLoader.loadCurrentElement(ionReader).asStruct())
 
         val totalRows = aggregatorData.counters.total.toFloat()
         var processedRows = 0
@@ -193,37 +185,32 @@ class BackupService : Service() {
             Entries.delete(Entries.DeleteAllCriteria)
             Feeds.delete(Feeds.DeleteAllCriteria)
 
-            val visitor = object : AbstractValueVisitor() {
-                override fun defaultVisit(ionValue: IonValue) {
-                    throw IllegalStateException("Unsupported value type: $ionValue")
+            while (ionReader.next() != null) {
+                if (currentJob!!.isCancelled) {
+                    throw CancellationException("Cancelled")
                 }
 
-                override fun visit(ionStruct: IonStruct) {
-                    when (ionStruct.typeAnnotations?.first()) {
-                        Entry::class.simpleName -> Entries.insert(*entryData(ionStruct))
-                        EntryTag::class.simpleName -> EntryTags.insert(*entryTagData(ionStruct))
-                        EntryTagRule::class.simpleName -> EntryTagRules.insert(*entryTagRuleData(ionStruct))
-                        Feed::class.simpleName -> Feeds.insert(*feedData(ionStruct))
-                        MyFeedTag::class.simpleName -> MyFeedTags.insert(*myFeedTagData(ionStruct))
-                        Tag::class.simpleName -> Tags.insert(*tagData(ionStruct))
-                        else -> super.visit(ionStruct)
+                elementLoader.loadCurrentElement(ionReader).also { element ->
+                    when (element.annotations.let { if (it.isNotEmpty()) it[0] else null }) {
+                        Entry::class.simpleName -> Entries.insert(Entry(element.asStruct()))
+                        EntryTag::class.simpleName -> EntryTags.insert(EntryTag(element.asStruct()))
+                        EntryTagRule::class.simpleName -> EntryTagRules.insert(EntryTagRule(element.asStruct()))
+                        Feed::class.simpleName -> Feeds.insert(Feed(element.asStruct()))
+                        MyFeedTag::class.simpleName -> MyFeedTags.insert(MyFeedTag(element.asStruct()))
+                        Tag::class.simpleName -> Tags.insert(Tag(element.asStruct()))
+                        else -> throw IllegalStateException("${locationToString(element.metas.location)}: Unsupported element: $element")
                     }
 
                     processedRows += 1
                     status.postValue(Status(true, processedRows / totalRows))
                 }
             }
-
-            while (ionValueIterator.hasNext()) {
-                if (currentJob!!.isCancelled) {
-                    throw CancellationException("Cancelled")
-                }
-
-                ionValueIterator.next().accept(visitor)
-            }
         }
 
         // TODO: apply update settings
+        // UpdateSettings.backgroundUpdates = aggregatorData.updateSettings.backgroundUpdates
+        // UpdateSettings.defaultCleanupMode = aggregatorData.updateSettings.defaultCleanupMode
+        // UpdateSettings.defaultUpdateMode = aggregatorData.updateSettings.defaultUpdateMode
     }
 
     inner class LocalBinder : Binder() {

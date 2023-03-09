@@ -14,6 +14,8 @@ object EntryTagRules : Repository<EntryTagRules.Column, EntryTagRules.TableColum
     object CONDITION : Column("condition", "etr.condition"), TableColumn
     object TAGGED_ENTRIES : Column("tagged_entries", "(SELECT COUNT(1) FROM entry_tag et WHERE et.entry_tag_rule_id = etr.id)", arrayOf("entry_tag"))
 
+    interface Insertable : Repository.Insertable<TableColumn>
+
     interface UpdateCriteria : Repository.UpdateCriteria
 
     interface DeleteCriteria : Repository.DeleteCriteria

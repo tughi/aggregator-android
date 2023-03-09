@@ -1,113 +1,153 @@
 package com.tughi.aggregator.ion
 
-import com.amazon.ion.IonStruct
-import com.amazon.ion.IonSystem
-import com.amazon.ion.IonValue
-import com.amazon.ion.IonWriter
-import com.amazon.ion.util.AbstractValueVisitor
+import com.amazon.ionelement.api.ElementType
+import com.amazon.ionelement.api.StructElement
+import com.amazon.ionelement.api.ionBool
+import com.amazon.ionelement.api.ionInt
+import com.amazon.ionelement.api.ionString
+import com.amazon.ionelement.api.ionStructOf
 
-class AggregatorData(
-    val version: Int,
-    val application: Application,
-    val updateSettings: UpdateSettings,
-    val counters: Counters,
-) {
-    class Application(
-        val packageName: String,
-        val versionCode: Int,
-        val versionName: String,
+internal class AggregatorData private constructor(structElement: StructElement, validate: Boolean) : CustomElement(structElement, validate) {
+    val version: Int
+        get() = get(AggregatorData::version.name).longValue.toInt()
+    val application: Application
+        get() = get(AggregatorData::application.name).asStruct().let { if (it is Application) it else Application(it) }
+    val updateSettings: UpdateSettings
+        get() = get(AggregatorData::updateSettings.name).asStruct().let { if (it is UpdateSettings) it else UpdateSettings(it) }
+    val counters: Counters
+        get() = get(AggregatorData::counters.name).asStruct().let { if (it is Counters) it else Counters(it) }
+
+    constructor(structElement: StructElement) : this(structElement, validate = true)
+
+    constructor(
+        version: Int,
+        application: Application,
+        updateSettings: UpdateSettings,
+        counters: Counters,
+    ) : this(
+        ionStructOf(
+            AggregatorData::version.name to ionInt(version.toLong()),
+            AggregatorData::application.name to application,
+            AggregatorData::updateSettings.name to updateSettings,
+            AggregatorData::counters.name to counters,
+            annotations = listOf(AggregatorData::class.simpleName!!),
+        ),
+        validate = false
     )
 
-    class UpdateSettings(
-        val backgroundUpdates: Boolean,
-        val defaultCleanupMode: String,
-        val defaultUpdateMode: String,
-    )
+    override fun validate() {
+        checkAnnotation(AggregatorData::class.simpleName!!)
+        checkField(AggregatorData::version.name, ElementType.INT)
+        application.validate()
+        updateSettings.validate()
+        counters.validate()
+    }
 
-    class Counters(
-        val feeds: Int,
-        val entries: Int,
-        val tags: Int,
-        val entryTagRules: Int,
-        val entryTags: Int,
-        val myFeedTags: Int,
-    ) {
+    class Application private constructor(structElement: StructElement, validate: Boolean) : CustomElement(structElement, validate) {
+        val packageName: String
+            get() = get(Application::packageName.name).stringValue
+        val versionCode: Int
+            get() = get(Application::versionCode.name).longValue.toInt()
+        val versionName: String
+            get() = get(Application::versionName.name).stringValue
+
+        constructor(structElement: StructElement) : this(structElement, validate = true)
+
+        constructor(
+            packageName: String,
+            versionCode: Int,
+            versionName: String,
+        ) : this(
+            ionStructOf(
+                Application::packageName.name to ionString(packageName),
+                Application::versionCode.name to ionInt(versionCode.toLong()),
+                Application::versionName.name to ionString(versionName),
+            ),
+            validate = false,
+        )
+
+        override fun validate() {
+            checkField(Application::packageName.name, ElementType.STRING)
+            checkField(Application::versionCode.name, ElementType.INT)
+            checkField(Application::versionName.name, ElementType.STRING)
+        }
+    }
+
+    class UpdateSettings private constructor(structElement: StructElement, validate: Boolean) : CustomElement(structElement, validate) {
+        val backgroundUpdates: Boolean
+            get() = get(UpdateSettings::backgroundUpdates.name).booleanValue
+        val defaultCleanupMode: String
+            get() = get(UpdateSettings::defaultCleanupMode.name).stringValue
+        val defaultUpdateMode: String
+            get() = get(UpdateSettings::defaultUpdateMode.name).stringValue
+
+        constructor(structElement: StructElement) : this(structElement, validate = true)
+
+        constructor(
+            backgroundUpdates: Boolean,
+            defaultCleanupMode: String,
+            defaultUpdateMode: String,
+        ) : this(
+            ionStructOf(
+                UpdateSettings::backgroundUpdates.name to ionBool(backgroundUpdates),
+                UpdateSettings::defaultCleanupMode.name to ionString(defaultCleanupMode),
+                UpdateSettings::defaultUpdateMode.name to ionString(defaultUpdateMode),
+            ),
+            validate = false,
+        )
+
+        override fun validate() {
+            checkField(UpdateSettings::backgroundUpdates.name, ElementType.BOOL)
+            checkField(UpdateSettings::defaultCleanupMode.name, ElementType.STRING)
+            checkField(UpdateSettings::defaultUpdateMode.name, ElementType.STRING)
+        }
+    }
+
+    class Counters private constructor(structElement: StructElement, validate: Boolean) : CustomElement(structElement, validate) {
+        val feeds: Int
+            get() = get(Counters::feeds.name).longValue.toInt()
+        val entries: Int
+            get() = get(Counters::entries.name).longValue.toInt()
+        val tags: Int
+            get() = get(Counters::tags.name).longValue.toInt()
+        val entryTagRules: Int
+            get() = get(Counters::entryTagRules.name).longValue.toInt()
+        val entryTags: Int
+            get() = get(Counters::entryTags.name).longValue.toInt()
+        val myFeedTags: Int
+            get() = get(Counters::myFeedTags.name).longValue.toInt()
+
         val total: Int
             get() = feeds + entries + tags + entryTagRules + entryTags + myFeedTags
-    }
 
-    fun writeTo(ionWriter: IonWriter, ionSystem: IonSystem) {
-        ionSystem.newEmptyStruct().apply {
-            setTypeAnnotations(AggregatorData::class.simpleName)
-            add(AggregatorData::version.name, ionSystem.newInt(version))
-            add(AggregatorData::application.name, ionSystem.newEmptyStruct().apply {
-                add(Application::packageName.name, ionSystem.newString(application.packageName))
-                add(Application::versionCode.name, ionSystem.newInt(application.versionCode))
-                add(Application::versionName.name, ionSystem.newString(application.versionName))
-            })
-            add(AggregatorData::updateSettings.name, ionSystem.newEmptyStruct().apply {
-                add(UpdateSettings::backgroundUpdates.name, ionSystem.newBool(updateSettings.backgroundUpdates))
-                add(UpdateSettings::defaultCleanupMode.name, ionSystem.newString(updateSettings.defaultCleanupMode))
-                add(UpdateSettings::defaultUpdateMode.name, ionSystem.newString(updateSettings.defaultUpdateMode))
-            })
-            add(AggregatorData::counters.name, ionSystem.newEmptyStruct().apply {
-                add(Counters::feeds.name, ionSystem.newInt(counters.feeds))
-                add(Counters::entries.name, ionSystem.newInt(counters.entries))
-                add(Counters::tags.name, ionSystem.newInt(counters.tags))
-                add(Counters::entryTagRules.name, ionSystem.newInt(counters.entryTagRules))
-                add(Counters::entryTags.name, ionSystem.newInt(counters.entryTags))
-                add(Counters::myFeedTags.name, ionSystem.newInt(counters.myFeedTags))
-            })
-        }.writeTo(ionWriter)
-    }
-}
+        constructor(structElement: StructElement) : this(structElement, validate = true)
 
-private class AggregatorDataVisitor : AbstractValueVisitor() {
-    lateinit var aggregatorData: AggregatorData
-
-    override fun defaultVisit(ionValue: IonValue) {
-        throw IllegalStateException("Not an AggregatorData value: $ionValue")
-    }
-
-    override fun visit(ionValue: IonStruct) {
-        if (!ionValue.hasTypeAnnotation(AggregatorData::class.simpleName)) {
-            super.visit(ionValue)
-        }
-
-        aggregatorData = AggregatorData(
-            version = ionValue.get(AggregatorData::version.name).intValue(),
-            application = ionValue.get(AggregatorData::application.name).structValue().let {
-                AggregatorData.Application(
-                    packageName = it.get(AggregatorData.Application::packageName.name).stringValue(),
-                    versionCode = it.get(AggregatorData.Application::versionCode.name).intValue(),
-                    versionName = it.get(AggregatorData.Application::versionName.name).stringValue(),
-                )
-            },
-            updateSettings = ionValue.get(AggregatorData::updateSettings.name).structValue().let {
-                AggregatorData.UpdateSettings(
-                    backgroundUpdates = it.get(AggregatorData.UpdateSettings::backgroundUpdates.name).booleanValue(),
-                    defaultCleanupMode = it.get(AggregatorData.UpdateSettings::defaultCleanupMode.name).stringValue(),
-                    defaultUpdateMode = it.get(AggregatorData.UpdateSettings::defaultUpdateMode.name).stringValue(),
-                )
-            },
-            counters = ionValue.get(AggregatorData::counters.name).structValue().let {
-                AggregatorData.Counters(
-                    feeds = it.get(AggregatorData.Counters::feeds.name).intValue(),
-                    entries = it.get(AggregatorData.Counters::entries.name).intValue(),
-                    tags = it.get(AggregatorData.Counters::tags.name).intValue(),
-                    entryTagRules = it.get(AggregatorData.Counters::entryTagRules.name).intValue(),
-                    entryTags = it.get(AggregatorData.Counters::entryTags.name).intValue(),
-                    myFeedTags = it.get(AggregatorData.Counters::myFeedTags.name).intValue(),
-                )
-            },
+        constructor(
+            feeds: Int,
+            entries: Int,
+            tags: Int,
+            entryTagRules: Int,
+            entryTags: Int,
+            myFeedTags: Int,
+        ) : this(
+            ionStructOf(
+                Counters::feeds.name to ionInt(feeds.toLong()),
+                Counters::entries.name to ionInt(entries.toLong()),
+                Counters::tags.name to ionInt(tags.toLong()),
+                Counters::entryTagRules.name to ionInt(entryTagRules.toLong()),
+                Counters::entryTags.name to ionInt(entryTags.toLong()),
+                Counters::myFeedTags.name to ionInt(myFeedTags.toLong()),
+            ),
+            validate = false,
         )
+
+        override fun validate() {
+            checkField(Counters::feeds.name, ElementType.INT)
+            checkField(Counters::entries.name, ElementType.INT)
+            checkField(Counters::tags.name, ElementType.INT)
+            checkField(Counters::entryTagRules.name, ElementType.INT)
+            checkField(Counters::entryTags.name, ElementType.INT)
+            checkField(Counters::myFeedTags.name, ElementType.INT)
+        }
     }
-}
-
-fun Iterator<IonValue>.expectAggregatorData(): AggregatorData {
-    val valueVisitor = AggregatorDataVisitor()
-
-    next().accept(valueVisitor)
-
-    return valueVisitor.aggregatorData
 }

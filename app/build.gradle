@@ -57,7 +57,7 @@ dependencies {
     implementation 'androidx.sqlite:sqlite-ktx:2.2.0'
     implementation 'androidx.viewpager2:viewpager2:1.0.0'
     implementation 'androidx.webkit:webkit:1.6.0'
-    implementation 'com.amazon.ion:ion-java:1.9.5'
+    implementation 'com.amazon.ion:ion-element:1.0.0'
     implementation 'com.google.android.material:material:1.8.0'
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'
     implementation 'commons-codec:commons-codec:1.13'
