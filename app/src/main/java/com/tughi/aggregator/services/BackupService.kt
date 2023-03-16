@@ -12,6 +12,7 @@ import com.amazon.ionelement.api.createIonElementLoader
 import com.amazon.ionelement.api.location
 import com.amazon.ionelement.api.locationToString
 import com.tughi.aggregator.BuildConfig
+import com.tughi.aggregator.R
 import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.data.AllEntriesQueryCriteria
 import com.tughi.aggregator.data.CleanupMode
@@ -50,6 +51,7 @@ class BackupService : Service() {
 
     private var currentJob: Job? = null
 
+    val message = MutableLiveData<String>()
     val status = MutableLiveData(Status(false))
 
     override fun onBind(intent: Intent?): IBinder {
@@ -61,6 +63,7 @@ class BackupService : Service() {
             intent?.data?.let { uri ->
                 when (intent.action) {
                     ACTION_CREATE_BACKUP -> {
+                        message.postValue(getString(R.string.backup__backup__message))
                         contentResolver.openOutputStream(uri)?.use {
                             GZIPOutputStream(it).use { output ->
                                 backup(output)
@@ -68,6 +71,7 @@ class BackupService : Service() {
                         }
                     }
                     ACTION_RESTORE_BACKUP -> {
+                        message.postValue(getString(R.string.backup__restore__message))
                         contentResolver.openInputStream(uri)?.use {
                             GZIPInputStream(it).use { input ->
                                 restore(input)

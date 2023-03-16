@@ -4,6 +4,8 @@
 
     <string name="action__add_star">Add star</string>
     <string name="action__add_rule">Add rule</string>
+    <string name="action__backup">Backup</string>
+    <string name="action__cancel">Cancel</string>
     <string name="action__close">Close</string>
     <string name="action__delete">Delete</string>
     <string name="action__export">Export</string>
@@ -17,6 +19,7 @@
     <string name="action__remove">Remove</string>
     <string name="action__remove_star">Remove star</string>
     <string name="action__rename">Rename</string>
+    <string name="action__restore">Restore</string>
     <string name="action__save">Save</string>
     <string name="action__select">Select</string>
     <string name="action__settings">Settings</string>
@@ -33,6 +36,9 @@
     <string name="action__yes">Yes</string>
 
     <string name="backup__title">Backup</string>
+    <string name="backup__description">A backup file contains all feeds, aggregated entries, configured tags and update settings.\n\nUse this option in order to migrate your data to a different device.\n\n<i><b>IMPORTANT:</b> The restore action erases any existing data.</i></string>
+    <string name="backup__backup__message">Backing up …</string>
+    <string name="backup__restore__message">Restoring …</string>
 
     <string name="cleanup_mode">Cleanup mode</string>
     <string name="cleanup_mode__age__3_days">3 days</string>

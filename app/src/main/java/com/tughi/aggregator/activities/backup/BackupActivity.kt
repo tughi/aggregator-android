@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.MutableLiveData
 import com.tughi.aggregator.AppActivity
@@ -45,6 +46,9 @@ class BackupActivity : AppActivity() {
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
             service = (binder as BackupService.LocalBinder).getService().also { service ->
+                service.message.observe(this@BackupActivity) { message ->
+                    serviceMessage.value = message
+                }
                 service.status.observe(this@BackupActivity) { status ->
                     serviceStatus.value = status
                 }
@@ -56,6 +60,7 @@ class BackupActivity : AppActivity() {
         }
     }
 
+    private val serviceMessage = MutableLiveData<String>()
     private val serviceStatus = MutableLiveData<BackupService.Status>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -88,6 +93,11 @@ class BackupActivity : AppActivity() {
         val cancelButton = progressWrapper.findViewById<Button>(R.id.cancel)
         cancelButton.setOnClickListener {
             service?.cancel()
+        }
+
+        val statusText = findViewById<TextView>(R.id.status)
+        serviceMessage.observe(this) { message ->
+            statusText.text = message
         }
 
         serviceStatus.observe(this) { status ->
