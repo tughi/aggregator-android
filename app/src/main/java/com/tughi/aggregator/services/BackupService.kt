@@ -14,6 +14,7 @@ import com.amazon.ionelement.api.locationToString
 import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.data.AllEntriesQueryCriteria
+import com.tughi.aggregator.data.CleanupMode
 import com.tughi.aggregator.data.Database
 import com.tughi.aggregator.data.Entries
 import com.tughi.aggregator.data.EntryTagRules
@@ -21,6 +22,7 @@ import com.tughi.aggregator.data.EntryTags
 import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.MyFeedTags
 import com.tughi.aggregator.data.Tags
+import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.ion.AggregatorData
 import com.tughi.aggregator.ion.Entry
 import com.tughi.aggregator.ion.EntryTag
@@ -207,10 +209,9 @@ class BackupService : Service() {
             }
         }
 
-        // TODO: apply update settings
-        // UpdateSettings.backgroundUpdates = aggregatorData.updateSettings.backgroundUpdates
-        // UpdateSettings.defaultCleanupMode = aggregatorData.updateSettings.defaultCleanupMode
-        // UpdateSettings.defaultUpdateMode = aggregatorData.updateSettings.defaultUpdateMode
+        UpdateSettings.backgroundUpdates = aggregatorData.updateSettings.backgroundUpdates
+        UpdateSettings.defaultCleanupMode = CleanupMode.deserialize(aggregatorData.updateSettings.defaultCleanupMode)
+        UpdateSettings.defaultUpdateMode = UpdateMode.deserialize(aggregatorData.updateSettings.defaultUpdateMode)
     }
 
     inner class LocalBinder : Binder() {

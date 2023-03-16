@@ -14,17 +14,22 @@ object UpdateSettings {
     const val PREFERENCE_DEFAULT_CLEANUP_MODE = "default_cleanup_mode"
     const val PREFERENCE_DEFAULT_UPDATE_MODE = "default_update_mode"
 
-    val backgroundUpdates: Boolean
+    var backgroundUpdates: Boolean
         get() = App.preferences.getBoolean(PREFERENCE_BACKGROUND_UPDATES, true)
+        set(value) {
+            App.preferences.edit()
+                .putBoolean(PREFERENCE_BACKGROUND_UPDATES, value)
+                .apply()
+        }
 
     var defaultCleanupMode: CleanupMode
         get() {
             val value = App.preferences.getString(PREFERENCE_DEFAULT_CLEANUP_MODE, null)
             return CleanupMode.deserialize(value)
         }
-        set(cleanupMode) {
+        set(value) {
             App.preferences.edit()
-                .putString(PREFERENCE_DEFAULT_CLEANUP_MODE, cleanupMode.serialize())
+                .putString(PREFERENCE_DEFAULT_CLEANUP_MODE, value.serialize())
                 .apply()
         }
 
@@ -36,9 +41,9 @@ object UpdateSettings {
             }
             return AdaptiveUpdateMode
         }
-        set(updateMode) {
+        set(value) {
             App.preferences.edit()
-                .putString(PREFERENCE_DEFAULT_UPDATE_MODE, updateMode.serialize())
+                .putString(PREFERENCE_DEFAULT_UPDATE_MODE, value.serialize())
                 .apply()
 
             contentScope.launch {
