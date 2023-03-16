@@ -8,7 +8,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="TODO: Explain why is this feature su great!"
+        android:text="@string/backup__description"
         android:textAppearance="?textAppearanceBody1" />
 
     <LinearLayout
@@ -22,14 +22,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Backup" />
+            android:text="@string/action__backup" />
 
         <Button
             android:id="@+id/restore"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Restore" />
+            android:text="@string/action__restore" />
 
     </LinearLayout>
 
@@ -44,7 +44,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="In progress ..."
+            android:text="@string/backup__backup__message"
             android:textAppearance="?textAppearanceCaption" />
 
         <ProgressBar
@@ -60,7 +60,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Cancel" />
+            android:text="@string/action__cancel" />
 
     </LinearLayout>
 
