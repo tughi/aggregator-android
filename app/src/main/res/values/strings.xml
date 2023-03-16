@@ -39,6 +39,7 @@
     <string name="backup__description">A backup file contains all feeds, aggregated entries, configured tags and update settings.\n\nUse this option in order to migrate your data to a different device.\n\n<i><b>IMPORTANT:</b> The restore action erases any existing data.</i></string>
     <string name="backup__backup__message">Backing up …</string>
     <string name="backup__restore__message">Restoring …</string>
+    <string name="backup__error__unsupported_file_format">Unsupported file format</string>
 
     <string name="cleanup_mode">Cleanup mode</string>
     <string name="cleanup_mode__age__3_days">3 days</string>

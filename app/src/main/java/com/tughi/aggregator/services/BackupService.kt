@@ -4,6 +4,8 @@ import android.app.Service
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
+import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import com.amazon.ion.system.IonReaderBuilder
 import com.amazon.ion.system.IonTextWriterBuilder
@@ -33,6 +35,7 @@ import com.tughi.aggregator.ion.MyFeedTag
 import com.tughi.aggregator.ion.Tag
 import com.tughi.aggregator.preferences.UpdateSettings
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.io.InputStream
@@ -73,8 +76,16 @@ class BackupService : Service() {
                     ACTION_RESTORE_BACKUP -> {
                         message.postValue(getString(R.string.backup__restore__message))
                         contentResolver.openInputStream(uri)?.use {
-                            GZIPInputStream(it).use { input ->
-                                restore(input)
+                            try {
+                                GZIPInputStream(it).use { input ->
+                                    restore(input)
+                                }
+                            } catch (error: Throwable) {
+                                Log.w(this@BackupService::class.qualifiedName, "Unsupported file format", error)
+
+                                launch(Dispatchers.Main) {
+                                    Toast.makeText(this@BackupService, R.string.backup__error__unsupported_file_format, Toast.LENGTH_LONG).show()
+                                }
                             }
                         }
                     }
