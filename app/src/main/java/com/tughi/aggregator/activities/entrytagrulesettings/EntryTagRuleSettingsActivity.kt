@@ -15,9 +15,9 @@ import android.widget.EditText
 import androidx.core.database.getLongOrNull
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.switchMap
 import com.tughi.aggregator.App
 import com.tughi.aggregator.AppActivity
 import com.tughi.aggregator.R
@@ -272,12 +272,12 @@ class EntryTagRuleSettingsActivity : AppActivity() {
         val newType = MutableLiveData<String>()
 
         val newFeedId = MutableLiveData<Long?>()
-        val newFeed = Transformations.switchMap(newFeedId) { newFeedId ->
+        val newFeed = newFeedId.switchMap { newFeedId ->
             Feeds.liveQueryOne(Feeds.QueryRowCriteria(newFeedId ?: 0), Feed.QueryHelper)
         }
 
         val newTagId = MutableLiveData<Long?>()
-        val newTag = Transformations.switchMap(newTagId) { newTagId ->
+        val newTag = newTagId.switchMap { newTagId ->
             Tags.liveQueryOne(Tags.QueryTagCriteria(newTagId ?: 0), Tag.QueryHelper)
         }
 

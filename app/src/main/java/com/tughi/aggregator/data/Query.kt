@@ -7,13 +7,10 @@ import java.util.StringTokenizer
 
 class Query(private val query: String, private val queryArgs: Array<Any?> = emptyArray(), val observedTables: Set<String>) : SupportSQLiteQuery {
 
-    override fun getSql() = query
+    override val sql: String
+        get() = query
 
-    override fun bindTo(statement: SupportSQLiteProgram?) {
-        if (statement == null) {
-            return
-        }
-
+    override fun bindTo(statement: SupportSQLiteProgram) {
         queryArgs.forEachIndexed { index, any ->
             when (any) {
                 null -> statement.bindNull(index + 1)
@@ -27,7 +24,8 @@ class Query(private val query: String, private val queryArgs: Array<Any?> = empt
         }
     }
 
-    override fun getArgCount() = queryArgs.size
+    override val argCount: Int
+        get() = queryArgs.size
 
     class Builder(private val columns: Array<out Repository.Column>, private val from: String) {
         companion object {

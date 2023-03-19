@@ -6,9 +6,9 @@ import android.util.Log
 import androidx.collection.SparseArrayCompat
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.switchMap
 import com.tughi.aggregator.App
 import com.tughi.aggregator.BuildConfig
 import com.tughi.aggregator.contentScope
@@ -30,7 +30,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : Vie
         value = initialQueryCriteria
     }
 
-    val unreadEntriesCount = Transformations.switchMap(entriesQueryCriteria) { entriesQueryCriteria ->
+    val unreadEntriesCount = entriesQueryCriteria.switchMap { entriesQueryCriteria ->
         Entries.liveQueryCount(UnreadEntriesQueryCriteria(entriesQueryCriteria), Entry.QueryHelper)
     }
 
@@ -41,7 +41,7 @@ class EntriesFragmentViewModel(initialQueryCriteria: EntriesQueryCriteria) : Vie
     }
 
     val items = MediatorLiveData<LoadedItems>().also {
-        val liveEntriesCount = Transformations.switchMap(entriesQueryCriteria) { queryCriteria ->
+        val liveEntriesCount = entriesQueryCriteria.switchMap { queryCriteria ->
             Entries.liveQueryCount(queryCriteria, Entry.QueryHelper)
         }
 
