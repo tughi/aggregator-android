@@ -44,6 +44,11 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
         override val selectionArgs = arrayOf<Any>(id)
     }
 
+    class UpdateCleanupModeCriteria(cleanupMode: CleanupMode) : UpdateCriteria {
+        override val selection = "cleanup_mode = ?"
+        override val selectionArgs = arrayOf<Any>(cleanupMode.serialize())
+    }
+
     interface DeleteCriteria : Repository.DeleteCriteria
 
     object DeleteAllCriteria : DeleteCriteria {

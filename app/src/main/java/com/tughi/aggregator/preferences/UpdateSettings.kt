@@ -4,6 +4,9 @@ import com.tughi.aggregator.App
 import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.data.AdaptiveUpdateMode
 import com.tughi.aggregator.data.CleanupMode
+import com.tughi.aggregator.data.Database
+import com.tughi.aggregator.data.DefaultCleanupMode
+import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.data.UpdateMode
 import com.tughi.aggregator.services.AutoUpdateScheduler
 import kotlinx.coroutines.launch
@@ -31,6 +34,17 @@ object UpdateSettings {
             App.preferences.edit()
                 .putString(PREFERENCE_DEFAULT_CLEANUP_MODE, value.serialize())
                 .apply()
+
+            contentScope.launch {
+                // clear state to refresh affected feeds on next update
+                Database.transaction {
+                    Feeds.update(
+                        Feeds.UpdateCleanupModeCriteria(DefaultCleanupMode),
+                        Feeds.HTTP_ETAG to null,
+                        Feeds.HTTP_LAST_MODIFIED to null,
+                    )
+                }
+            }
         }
 
     var defaultUpdateMode: UpdateMode
