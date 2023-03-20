@@ -70,6 +70,14 @@ class MainActivity : AppActivity() {
 
         setContentView(R.layout.main_activity)
 
+        onBackPressedDispatcher.addCallback(this) {
+            if (supportFragmentManager.backStackEntryCount > 0) {
+                supportFragmentManager.popBackStack()
+            } else {
+                finish()
+            }
+        }
+
         val onBackPressedCallback = onBackPressedDispatcher.addCallback(this, enabled = false) {
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         }

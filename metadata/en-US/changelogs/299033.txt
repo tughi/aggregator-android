@@ -2,6 +2,5 @@
 - Added option to backup Aggregator's data
 - Added option to restore Aggregator's data from a backup file
 - Removed automatic OPML backup
+- Fix app-launch updates on Android 13+
 - Clear state of affected feeds when the default clean-up mode is changed
-
-* TODO: Fix app-launch updates by using an OnBackPressedCallback to detect when the user leaves the MainActivity
