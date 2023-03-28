@@ -13,8 +13,8 @@ android {
         minSdkVersion 21
         targetSdkVersion 33
 
-        versionName = 'Preview:033'
-        versionCode = 299033
+        versionName = 'Preview:034'
+        versionCode = 299034
     }
 
     buildTypes {
@@ -49,14 +49,14 @@ dependencies {
     implementation 'androidx.browser:browser:1.5.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.core:core-ktx:1.9.0'
-    implementation 'androidx.fragment:fragment-ktx:1.5.5'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.0'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.0'
+    implementation 'androidx.fragment:fragment-ktx:1.5.6'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.1'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1'
     implementation 'androidx.preference:preference-ktx:1.2.0'
-    implementation 'androidx.sqlite:sqlite-framework:2.3.0'
-    implementation 'androidx.sqlite:sqlite-ktx:2.3.0'
+    implementation 'androidx.sqlite:sqlite-framework:2.3.1'
+    implementation 'androidx.sqlite:sqlite-ktx:2.3.1'
     implementation 'androidx.viewpager2:viewpager2:1.0.0'
-    implementation 'androidx.webkit:webkit:1.6.0'
+    implementation 'androidx.webkit:webkit:1.6.1'
     implementation 'com.amazon.ion:ion-element:1.0.0'
     implementation 'com.google.android.material:material:1.8.0'
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'
