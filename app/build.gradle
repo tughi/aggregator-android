@@ -4,19 +4,21 @@ apply plugin: 'kotlin-kapt'
 
 android {
     namespace 'com.tughi.aggregator'
-
-    compileSdkVersion 33
+    compileSdk 34
 
     defaultConfig {
         applicationId 'com.tughi.aggregator'
 
         minSdkVersion 21
-        targetSdkVersion 33
+        targetSdkVersion 34
 
         versionName = 'Preview:034'
         versionCode = 299034
     }
 
+    buildFeatures {
+        buildConfig true
+    }
     buildTypes {
         debug {
             applicationIdSuffix ".debug"
@@ -30,19 +32,23 @@ android {
         }
     }
 
-    flavorDimensions 'store'
+    flavorDimensions += 'store'
 
     productFlavors {
-        fdroid {
+        create('fdroid') {
             dimension 'store'
         }
-        google {
+        create('google') {
             dimension 'store'
             applicationIdSuffix ".next"
         }
     }
-}
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'

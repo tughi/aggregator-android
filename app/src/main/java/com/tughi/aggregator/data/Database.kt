@@ -30,20 +30,20 @@ object Database {
                     db.enableWriteAheadLogging()
                 }
 
-                override fun onCreate(database: SupportSQLiteDatabase) {
-                    executeScript(database, 0)
+                override fun onCreate(db: SupportSQLiteDatabase) {
+                    executeScript(db, 0)
                 }
 
-                override fun onUpgrade(database: SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) {
-                    var databaseVersion = database.version
+                override fun onUpgrade(db: SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) {
+                    var databaseVersion = db.version
                     while (databaseVersion != newVersion) {
-                        executeScript(database, databaseVersion)
+                        executeScript(db, databaseVersion)
 
-                        databaseVersion = database.version
+                        databaseVersion = db.version
                     }
                 }
 
-                private fun executeScript(database: SupportSQLiteDatabase, version: Int) {
+                private fun executeScript(db: SupportSQLiteDatabase, version: Int) {
                     val scriptVersion = when {
                         version > 99 -> version.toString()
                         version > 9 -> "0$version"
@@ -78,23 +78,23 @@ object Database {
                             }
                         }
                     } catch (exception: IOException) {
-                        dropDatabase(database, "Cannot upgrade database from version $version")
+                        dropDatabase(db, "Cannot upgrade database from version $version")
                     }
 
-                    database.transaction {
+                    db.transaction {
                         for (statement in scriptStatements) {
-                            database.execSQL(statement)
+                            db.execSQL(statement)
                         }
                     }
                 }
 
-                override fun onDowngrade(database: SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) {
-                    dropDatabase(database, "Cannot downgrade from version $oldVersion to $newVersion")
+                override fun onDowngrade(db: SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) {
+                    dropDatabase(db, "Cannot downgrade from version $oldVersion to $newVersion")
                 }
 
-                private fun dropDatabase(database: SupportSQLiteDatabase, message: String) {
+                private fun dropDatabase(db: SupportSQLiteDatabase, message: String) {
                     Log.e(javaClass.name, message)
-                    onCorruption(database)
+                    onCorruption(db)
                     exitProcess(1)
                 }
             })
