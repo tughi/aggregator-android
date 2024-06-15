@@ -28,6 +28,7 @@ object Notifications {
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
             val notificationChannel = NotificationChannel(NOTIFICATION_CHANNEL__MY_FEED, context.getString(R.string.notification_channel__my_feed), NotificationManager.IMPORTANCE_DEFAULT)
+            notificationChannel.enableLights(true)
             notificationManager.createNotificationChannel(notificationChannel)
 
             for (otherNotificationChannel in notificationManager.notificationChannels) {
