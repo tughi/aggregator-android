@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/show_read_entries"
         android:checkable="true"
@@ -21,5 +22,7 @@
     </item>
     <item
         android:id="@+id/mark_all_read"
-        android:title="@string/action__mark_all_read" />
+        android:icon="@drawable/action_mark_all_done"
+        android:title="@string/action__mark_all_read"
+        app:showAsAction="ifRoom" />
 </menu>
