@@ -31,10 +31,15 @@ internal abstract class EntriesFragmentEntryViewHolder(itemView: View, private v
     private val author: TextView = itemView.findViewById(R.id.author)
     private val pin: View = itemView.findViewById(R.id.pin)
     private val star: View = itemView.findViewById(R.id.star)
+    private val selector: View = itemView.findViewById(R.id.selector)
 
     init {
         itemView.setOnClickListener {
-            listener.onEntryClicked(item as EntriesFragmentViewModel.Entry, adapterPosition / 2)
+            listener.onEntryClicked(item as EntriesFragmentViewModel.Entry, bindingAdapterPosition / 2)
+        }
+
+        selector.setOnClickListener {
+            listener.onEntrySelectorClicked(item as EntriesFragmentViewModel.Entry, bindingAdapterPosition / 2)
         }
     }
 

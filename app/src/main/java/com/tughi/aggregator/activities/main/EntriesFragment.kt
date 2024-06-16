@@ -25,6 +25,7 @@ import com.tughi.aggregator.data.EntriesQueryCriteria
 import com.tughi.aggregator.data.EntryTags
 import com.tughi.aggregator.data.TagEntriesQueryCriteria
 import com.tughi.aggregator.data.Tags
+import com.tughi.aggregator.utilities.openURL
 import kotlinx.coroutines.launch
 
 abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Toolbar.OnMenuItemClickListener {
@@ -161,15 +162,19 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
             R.id.show_read_entries -> {
                 viewModel.changeShowRead(!item.isChecked)
             }
+
             R.id.sort_by_date_asc -> {
                 viewModel.changeSortOrder(Entries.SortOrder.ByDateAscending)
             }
+
             R.id.sort_by_date_desc -> {
                 viewModel.changeSortOrder(Entries.SortOrder.ByDateDescending)
             }
+
             R.id.sort_by_title -> {
                 viewModel.changeSortOrder(Entries.SortOrder.ByTitle)
             }
+
             R.id.mark_all_read -> {
                 viewModel.entriesQueryCriteria.value?.let { queryCriteria ->
                     contentScope.launch {
@@ -196,6 +201,16 @@ abstract class EntriesFragment : Fragment(), EntriesFragmentAdapterListener, Too
 
     override fun onEntryClicked(entry: EntriesFragmentViewModel.Entry, position: Int) {
         requestReadSession.launch(ReaderActivity.ReadSessionInput(viewModel.entriesQueryCriteria.value!!, position))
+    }
+
+    override fun onEntrySelectorClicked(entry: EntriesFragmentViewModel.Entry, position: Int) {
+        if (entry.link != null) {
+            requireContext().openURL(entry.link)
+
+            contentScope.launch {
+                Entries.update(Entries.UpdateEntryCriteria(entry.id), Entries.READ_TIME to System.currentTimeMillis())
+            }
+        }
     }
 
     private class SwipeItemTouchHelper : ItemTouchHelper.Callback() {
