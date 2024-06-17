@@ -24,6 +24,8 @@ class SubscribeSearchFragment : Fragment(), SubscribeSearchFragmentAdapterListen
     private lateinit var urlTextInputLayout: TextInputLayout
     private lateinit var urlEditText: EditText
     private lateinit var introView: View
+    private lateinit var subscribeAppFeedHint: View
+    private lateinit var subscribeAppFeedButton: Button
     private lateinit var feedsRecyclerView: RecyclerView
 
     private val adapter = SubscribeSearchFragmentAdapter(this)
@@ -52,6 +54,8 @@ class SubscribeSearchFragment : Fragment(), SubscribeSearchFragmentAdapterListen
         urlTextInputLayout = view.findViewById(R.id.url_wrapper)
         urlEditText = urlTextInputLayout.findViewById(R.id.url)
         introView = view.findViewById(R.id.intro)
+        subscribeAppFeedHint = introView.findViewById(R.id.subscribe_app_feed_hint)
+        subscribeAppFeedButton = introView.findViewById(R.id.subscribe_app_feed)
         feedsRecyclerView = view.findViewById(R.id.feeds)
 
         val activity = activity as SubscribeActivity
@@ -76,6 +80,23 @@ class SubscribeSearchFragment : Fragment(), SubscribeSearchFragmentAdapterListen
 
         view.findViewById<Button>(R.id.import_opml).setOnClickListener {
             requestDocument.launch(arrayOf("*/*"))
+        }
+
+        viewModel.hasNewsFeed.observe(viewLifecycleOwner) { hasNewsFeed ->
+            val visibility = if (hasNewsFeed) View.GONE else View.VISIBLE
+            subscribeAppFeedHint.visibility = visibility
+            subscribeAppFeedButton.visibility = visibility
+        }
+
+        subscribeAppFeedButton.setOnClickListener {
+            val context = requireContext()
+            onFeedClicked(
+                SubscribeSearchFragmentViewModel.Feed(
+                    url = context.getString(R.string.app_feed),
+                    title = context.getString(R.string.app_name),
+                    link = context.getString(R.string.app_site),
+                )
+            )
         }
 
         if (savedInstanceState == null) {

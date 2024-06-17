@@ -16,7 +16,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
-        android:hint="@string/subscribe_url"
+        android:hint="@string/subscribe__url__hint"
         app:hintAnimationEnabled="false">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -44,7 +44,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="@string/subscribe_intro"
+                android:text="@string/subscribe__intro"
                 android:textAppearance="?textAppearanceBody1" />
 
             <Button
@@ -54,6 +54,22 @@
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp"
                 android:text="@string/subscribe__load_opml_file" />
+
+            <TextView
+                android:id="@+id/subscribe_app_feed_hint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/subscribe__app_feed__hint"
+                android:textAppearance="?textAppearanceBody1" />
+
+            <Button
+                android:id="@+id/subscribe_app_feed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:text="@string/subscribe__app_feed" />
 
         </LinearLayout>
 

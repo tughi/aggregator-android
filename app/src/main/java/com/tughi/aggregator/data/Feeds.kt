@@ -94,6 +94,12 @@ object Feeds : Repository<Feeds.Column, Feeds.TableColumn, Feeds.UpdateCriteria,
         }
     }
 
+    class UrlCriteria(val url: String) : QueryCriteria {
+        override fun config(query: Query.Builder) {
+            query.where("f.url = ?", arrayOf(url))
+        }
+    }
+
     abstract class QueryHelper<Row>(vararg columns: Column) : Repository.QueryHelper<Column, QueryCriteria, Row>(columns) {
         override fun createQueryBuilder(criteria: QueryCriteria) = Query.Builder(columns, "feed f")
             .also { criteria.config(it) }

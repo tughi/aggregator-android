@@ -1,6 +1,8 @@
 <resources>
 
     <string name="app_name" translatable="false">Aggregator</string>
+    <string name="app_site" translatable="false">https://tughi.github.io/aggregator-android</string>
+    <string name="app_feed" translatable="false">https://tughi.github.io/aggregator-android/news.rss</string>
 
     <string name="action__add_star">Add star</string>
     <string name="action__add_rule">Add rule</string>
@@ -140,8 +142,12 @@
     <string name="styling__title">Theme</string>
     <string name="styling__bottom_navigation">Bottom navigation</string>
 
-    <string name="subscribe_url">Website or feed URL</string>
-    <string name="subscribe_intro">Content providers, like news sites and blogs, often use feeds as an alternative way to inform readers about new or updated articles.\n\n<b>Aggregator</b> is able to detect if a website is providing such feeds.\n\n\nAdditionally, <b>Aggregator</b> also supports adding feeds from OPML files.</string>
+    <string name="subscribe__app_feed">Add news feed</string>
+    <string name="subscribe__app_feed__hint">Stay up to date with latest <b>Aggregator</b> news.</string>
+    <string name="subscribe__find_feeds">Find feeds</string>
+    <string name="subscribe__intro">Content providers, like news sites and blogs, often use feeds as an alternative way to inform readers about new or updated articles.\n\n<b>Aggregator</b> is able to detect if a website is providing such feeds.\n\n\nAdditionally, <b>Aggregator</b> also supports adding feeds from OPML files.</string>
+    <string name="subscribe__load_opml_file">Load OPML file</string>
+    <string name="subscribe__url__hint">Website or feed URL</string>
 
     <string name="tag_settings">Tag settings</string>
     <string name="tag_settings__name">Name</string>
@@ -158,9 +164,6 @@
     <string name="title_my_feed">My feed</string>
     <string name="title_feeds">Feeds</string>
     <string name="title_tags">Tags</string>
-
-    <string name="subscribe__find_feeds">Find feeds</string>
-    <string name="subscribe__load_opml_file">Load OPML file</string>
 
     <string name="support__title">Support</string>
 

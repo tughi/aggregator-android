@@ -1,8 +1,13 @@
 package com.tughi.aggregator.activities.subscribe
 
+import android.database.Cursor
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.tughi.aggregator.App
+import com.tughi.aggregator.R
 import com.tughi.aggregator.contentScope
+import com.tughi.aggregator.data.Feeds
 import com.tughi.aggregator.feeds.FeedsFinder
 import com.tughi.aggregator.utilities.Failure
 import com.tughi.aggregator.utilities.Http
@@ -23,6 +28,19 @@ class SubscribeSearchFragmentViewModel : ViewModel() {
     }
 
     private var currentFindJob: Job? = null
+
+    val hasNewsFeed = MediatorLiveData(true).apply {
+        addSource(
+            Feeds.liveQueryOne(
+                Feeds.UrlCriteria(App.instance.getString(R.string.app_feed)),
+                object : Feeds.QueryHelper<Long>(Feeds.ID) {
+                    override fun createRow(cursor: Cursor): Long = cursor.getLong(0)
+                },
+            )
+        ) {
+            value = it != null
+        }
+    }
 
     fun findFeeds(url: String) {
         currentFindJob?.cancel()
