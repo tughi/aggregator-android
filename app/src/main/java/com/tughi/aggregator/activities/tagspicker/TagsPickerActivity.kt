@@ -47,8 +47,10 @@ class TagsPickerActivity : AppActivity() {
             setHomeAsUpIndicator(R.drawable.action_back)
         }
 
-        intent.getStringExtra(EXTRA_TITLE)?.let {
-            title = it
+        intent.getIntExtra(EXTRA_TITLE, 0).let {
+            if (it != 0) {
+                setTitle(it)
+            }
         }
 
         val selectedTagIds = intent.getLongArrayExtra(EXTRA_SELECTED_TAGS) ?: LongArray(0)

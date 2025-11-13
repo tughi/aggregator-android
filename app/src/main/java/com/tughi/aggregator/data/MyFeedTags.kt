@@ -3,6 +3,11 @@ package com.tughi.aggregator.data
 const val MY_FEED_TAG_TYPE__INCLUDED = 0
 const val MY_FEED_TAG_TYPE__EXCLUDED = 1
 
+enum class MyFeedTagType(val value: Int) {
+    INCLUDED(MY_FEED_TAG_TYPE__INCLUDED),
+    EXCLUDED(MY_FEED_TAG_TYPE__EXCLUDED)
+}
+
 @Suppress("ClassName")
 object MyFeedTags : Repository<MyFeedTags.Column, MyFeedTags.TableColumn, MyFeedTags.UpdateCriteria, MyFeedTags.DeleteCriteria, MyFeedTags.QueryCriteria>("my_feed_tag") {
 
@@ -12,11 +17,6 @@ object MyFeedTags : Repository<MyFeedTags.Column, MyFeedTags.TableColumn, MyFeed
     object TAG_ID : Column("tag_id", "mft.tag_id"), TableColumn
     object TAG_NAME : Column("tag_name", "t.name", arrayOf("my_feed_tag", "tag")), TableColumn
     object TYPE : Column("type", "mft.type"), TableColumn
-
-    enum class Type(val value: Int) {
-        INCLUDED(MY_FEED_TAG_TYPE__INCLUDED),
-        EXCLUDED(MY_FEED_TAG_TYPE__EXCLUDED)
-    }
 
     interface Insertable : Repository.Insertable<TableColumn>
 
@@ -29,7 +29,7 @@ object MyFeedTags : Repository<MyFeedTags.Column, MyFeedTags.TableColumn, MyFeed
         override val selectionArgs: Array<Any>? = null
     }
 
-    class DeleteMyFeedTagCriteria(tagId: Long, type: Type) : DeleteCriteria {
+    class DeleteMyFeedTagCriteria(tagId: Long, type: MyFeedTagType) : DeleteCriteria {
         override val selection: String = "tag_id = ? AND type = ?"
         override val selectionArgs: Array<Any> = arrayOf(tagId, type.value)
     }
@@ -43,7 +43,7 @@ object MyFeedTags : Repository<MyFeedTags.Column, MyFeedTags.TableColumn, MyFeed
         }
     }
 
-    class QueryMyFeedTagsCriteria(private val type: Type) : QueryCriteria {
+    class QueryMyFeedTagsCriteria(private val type: MyFeedTagType) : QueryCriteria {
         override fun config(query: Query.Builder, columns: Array<out Column>) {
             query.where("mft.type = ?", arrayOf(type.value))
             query.orderBy("t.name")
@@ -56,3 +56,4 @@ object MyFeedTags : Repository<MyFeedTags.Column, MyFeedTags.TableColumn, MyFeed
     }
 
 }
+

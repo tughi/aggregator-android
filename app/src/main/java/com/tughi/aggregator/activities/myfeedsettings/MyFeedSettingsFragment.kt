@@ -22,6 +22,7 @@ import com.tughi.aggregator.R
 import com.tughi.aggregator.activities.tagspicker.TagsPickerActivity
 import com.tughi.aggregator.contentScope
 import com.tughi.aggregator.data.Database
+import com.tughi.aggregator.data.MyFeedTagType
 import com.tughi.aggregator.data.MyFeedTags
 import com.tughi.aggregator.data.Tags
 import com.tughi.aggregator.preferences.MyFeedSettings
@@ -132,14 +133,14 @@ class MyFeedSettingsFragment : Fragment() {
                     if (!oldIncludedTagIds.contains(tagId)) {
                         MyFeedTags.insert(
                             MyFeedTags.TAG_ID to tagId,
-                            MyFeedTags.TYPE to MyFeedTags.Type.INCLUDED.value
+                            MyFeedTags.TYPE to MyFeedTagType.INCLUDED.value
                         )
                     }
                 }
 
                 for (tagId in oldIncludedTagIds) {
                     if (!newIncludedTagIds.contains(tagId)) {
-                        MyFeedTags.delete(MyFeedTags.DeleteMyFeedTagCriteria(tagId, MyFeedTags.Type.INCLUDED))
+                        MyFeedTags.delete(MyFeedTags.DeleteMyFeedTagCriteria(tagId, MyFeedTagType.INCLUDED))
                     }
                 }
 
@@ -147,14 +148,14 @@ class MyFeedSettingsFragment : Fragment() {
                     if (!oldExcludedTagIds.contains(tagId)) {
                         MyFeedTags.insert(
                             MyFeedTags.TAG_ID to tagId,
-                            MyFeedTags.TYPE to MyFeedTags.Type.EXCLUDED.value
+                            MyFeedTags.TYPE to MyFeedTagType.EXCLUDED.value
                         )
                     }
                 }
 
                 for (tagId in oldExcludedTagIds) {
                     if (!newExcludedTagIds.contains(tagId)) {
-                        MyFeedTags.delete(MyFeedTags.DeleteMyFeedTagCriteria(tagId, MyFeedTags.Type.EXCLUDED))
+                        MyFeedTags.delete(MyFeedTags.DeleteMyFeedTagCriteria(tagId, MyFeedTagType.EXCLUDED))
                     }
                 }
             }
@@ -208,7 +209,7 @@ class MyFeedSettingsFragment : Fragment() {
         init {
             val liveTags = Tags.liveQuery(Tags.QueryAllTagsCriteria, Tag.QueryHelper)
 
-            val liveIncludedMyFeedTags = MyFeedTags.liveQuery(MyFeedTags.QueryMyFeedTagsCriteria(MyFeedTags.Type.INCLUDED), MyFeedTag.QueryHelper)
+            val liveIncludedMyFeedTags = MyFeedTags.liveQuery(MyFeedTags.QueryMyFeedTagsCriteria(MyFeedTagType.INCLUDED), MyFeedTag.QueryHelper)
             includedTags.addSource(liveIncludedMyFeedTags) {
                 val includedTagIds = LongArray(it.size) { index -> it[index].id }
                 oldIncludedTagIds = includedTagIds
@@ -219,7 +220,7 @@ class MyFeedSettingsFragment : Fragment() {
             includedTags.addSource(liveTags) { updateMyFeedTags(includedTags, it, newIncludedTagIds.value) }
             includedTags.addSource(newIncludedTagIds) { updateMyFeedTags(includedTags, liveTags.value, it) }
 
-            val liveExcludedMyFeedTags = MyFeedTags.liveQuery(MyFeedTags.QueryMyFeedTagsCriteria(MyFeedTags.Type.EXCLUDED), MyFeedTag.QueryHelper)
+            val liveExcludedMyFeedTags = MyFeedTags.liveQuery(MyFeedTags.QueryMyFeedTagsCriteria(MyFeedTagType.EXCLUDED), MyFeedTag.QueryHelper)
             excludedTags.addSource(liveExcludedMyFeedTags) {
                 val excludedTagIds = LongArray(it.size) { index -> it[index].id }
                 oldExcludedTagIds = excludedTagIds
