@@ -1,7 +1,6 @@
 package com.tughi.aggregator.activities.tagspicker
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.database.Cursor
@@ -82,7 +81,7 @@ class TagsPickerActivity : AppActivity() {
         val selectButton = findViewById<Button>(R.id.select)
         selectButton.setOnClickListener {
             val selectedTags = viewModel.tags.value?.filter { it.selected } ?: emptyList()
-            setResult(Activity.RESULT_OK, Intent().putExtra(EXTRA_SELECTED_TAGS, LongArray(selectedTags.size) { selectedTags[it].id }))
+            setResult(RESULT_OK, Intent().putExtra(EXTRA_SELECTED_TAGS, LongArray(selectedTags.size) { selectedTags[it].id }))
 
             finish()
         }
@@ -147,7 +146,7 @@ class TagsPickerActivity : AppActivity() {
         private fun mergeTags(tags: List<Tag>?, selectedTags: LongSparseArray<Boolean>?) {
             this.tags.value = when {
                 tags == null || selectedTags == null -> emptyList()
-                selectedTags.isEmpty -> tags
+                selectedTags.isEmpty() -> tags
                 else -> tags.map { tag ->
                     tag.copy(
                         selected = selectedTags.get(tag.id, false)

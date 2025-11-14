@@ -1,6 +1,7 @@
 package com.tughi.aggregator.activities.updatesettings
 
 import android.os.Bundle
+import android.view.View
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.tughi.aggregator.R
@@ -62,6 +63,12 @@ class UpdateSettingsFragment : PreferenceFragmentCompat() {
                 return@setOnPreferenceClickListener true
             }
         }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        view.fitsSystemWindows = true
+
+        super.onViewCreated(view, savedInstanceState)
     }
 
 }

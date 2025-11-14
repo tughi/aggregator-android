@@ -153,10 +153,10 @@ class MainActivity : AppActivity() {
         }
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
 
-        if (intent?.action == ACTION_VIEW_MY_FEED) {
+        if (intent.action == ACTION_VIEW_MY_FEED) {
             bottomNavigationView.selectedItemId = R.id.navigation_my_feeds
         }
     }

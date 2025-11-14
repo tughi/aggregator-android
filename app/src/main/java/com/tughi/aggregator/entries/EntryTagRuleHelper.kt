@@ -34,7 +34,7 @@ object EntryTagRuleHelper {
 
             val oldJob = synchronized(activeJobs) {
                 val oldJob = activeJobs.get(entryTagRuleId)
-                activeJobs.put(entryTagRuleId, currentJob)
+                activeJobs.put(entryTagRuleId, currentJob!!)
                 return@synchronized oldJob
             }
 

@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context=".activities.main.MainActivity">
 
     <FrameLayout
@@ -125,6 +126,10 @@
             android:textAppearance="?textAppearanceCaption"
             android:textColor="?colorPrimary"
             tools:text="Preview 27" />
+
+        <com.tughi.aggregator.widgets.BottomInsetsView
+            android:layout_width="wrap_content"
+            android:layout_height="0dp" />
 
     </LinearLayout>
 

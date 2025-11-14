@@ -1,8 +1,9 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="DarkTheme" parent="Theme.MaterialComponents">
         <item name="android:colorBackground">@color/dark_theme__background</item>
-        <item name="android:statusBarColor">@color/dark_theme__toolbar</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="colorPrimary">@color/accent__blue</item>
         <item name="colorPrimaryVariant">@color/accent__blue__dark</item>
         <item name="colorOnPrimary">#ffffff</item>
@@ -19,7 +20,8 @@
 
     <style name="DarkTheme.NoActionBar" parent="Theme.MaterialComponents.NoActionBar">
         <item name="android:colorBackground">@color/dark_theme__background</item>
-        <item name="android:statusBarColor">@color/dark_theme__toolbar</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="colorPrimary">@color/accent__blue</item>
         <item name="colorPrimaryVariant">@color/accent__blue__dark</item>
         <item name="colorOnPrimary">#ffffff</item>
@@ -40,7 +42,9 @@
 
     <style name="LightTheme" parent="Theme.MaterialComponents.Light">
         <item name="android:colorBackground">@color/light_theme__background</item>
-        <item name="android:statusBarColor">@android:color/black</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar" tools:target="m">true</item>
         <item name="colorPrimary">@color/accent__blue</item>
         <item name="colorPrimaryVariant">@color/accent__blue__dark</item>
         <item name="colorOnPrimary">#ffffff</item>
@@ -57,7 +61,9 @@
 
     <style name="LightTheme.NoActionBar" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="android:colorBackground">@color/light_theme__background</item>
-        <item name="android:statusBarColor">@android:color/black</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar" tools:target="m">true</item>
         <item name="colorPrimary">@color/accent__blue</item>
         <item name="colorPrimaryVariant">@color/accent__blue__dark</item>
         <item name="colorOnPrimary">#ffffff</item>

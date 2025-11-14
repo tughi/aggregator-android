@@ -1,6 +1,5 @@
 package com.tughi.aggregator.activities.feedspicker
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.database.Cursor
@@ -77,7 +76,7 @@ class FeedsPickerActivity : AppActivity() {
         val selectButton = findViewById<Button>(R.id.select)
         selectButton.setOnClickListener {
             val selectedFeeds = viewModel.feeds.value?.filter { it.selected } ?: emptyList()
-            setResult(Activity.RESULT_OK, Intent().putExtra(EXTRA_SELECTED_FEEDS, LongArray(selectedFeeds.size) { selectedFeeds[it].id }))
+            setResult(RESULT_OK, Intent().putExtra(EXTRA_SELECTED_FEEDS, LongArray(selectedFeeds.size) { selectedFeeds[it].id }))
 
             finish()
         }
@@ -149,7 +148,7 @@ class FeedsPickerActivity : AppActivity() {
         private fun merge(feeds: List<Feed>?, selectedFeedIds: LongSparseArray<Boolean>?) {
             this.feeds.value = when {
                 feeds == null || selectedFeedIds == null -> emptyList()
-                selectedFeedIds.isEmpty -> feeds
+                selectedFeedIds.isEmpty() -> feeds
                 else -> feeds.map { feed ->
                     feed.copy(
                         selected = selectedFeedIds.get(feed.id, false)
