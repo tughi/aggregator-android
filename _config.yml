@@ -5,5 +5,14 @@ theme: jekyll-theme-primer
 plugins:
   - jekyll-feed
 
+collections:
+  classic:
+    output: true
+    permalink: /classic/:year/:month/:day/:title/
+
 feed:
   path: news.rss
+  collections:
+    classic:
+      path: "classic/feed.atom"
+      title: "Aggregator"

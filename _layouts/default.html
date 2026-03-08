@@ -5,17 +5,27 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    {% feed_meta %}
+    {% if page.tags contains 'classic' %}
+    <link rel="alternate" type="application/rss+xml" title="Aggregator" href="{{ '/classic.rss' | relative_url }}">
+    {% else %}
+    <link rel="alternate" type="application/rss+xml" title="Aggregator" href="{{ '/news.rss' | relative_url }}">
+    {% endif %}
 
     <title>{{ site.title }}</title>
     <link rel="icon" type="image/png" href="{{ '/assets/favicon.png' | relative_url }}">
     <link rel="stylesheet" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
 </head>
 
-<body>
+<body{% if page.tags contains 'classic' %} class="classic"{% endif %}>
     <div id="banner"></div>
     <div class="container markdown-body">
+        {%- unless page.no_breadcrumb %}
+        {%- if page.tags contains 'classic' %}
+        <h1><a href="{{ '/classic' | absolute_url }}">{{ site.title }}</a> &raquo; {{ page.title }}</h1>
+        {%- else %}
         <h1><a href="{{ '/' | absolute_url }}">{{ site.title }}</a> &raquo; {{ page.title }}</h1>
+        {%- endif %}
+        {%- endunless %}
 
         {{ content }}
     </div>

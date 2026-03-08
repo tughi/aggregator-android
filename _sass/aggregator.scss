@@ -29,6 +29,16 @@ video {
     margin: 32px auto;
 }
 
+body.classic {
+    #banner {
+        background-image: url('banner-classic.svg');
+    }
+
+    a {
+        color: #3f51b5;
+    }
+}
+
 body.home {
     background: #424242;
     color: white;
