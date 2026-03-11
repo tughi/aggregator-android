@@ -4,6 +4,7 @@ theme: jekyll-theme-primer
 
 plugins:
   - jekyll-feed
+  - jekyll-redirect-from
 
 collections:
   classic:
