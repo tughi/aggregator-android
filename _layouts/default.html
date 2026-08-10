@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {% if page.tags contains 'classic' %}
-    <link rel="alternate" type="application/rss+xml" title="Aggregator" href="{{ '/classic.rss' | relative_url }}">
+    <link rel="alternate" type="application/rss+xml" title="Aggregator" href="{{ '/classic/feed.atom' | relative_url }}">
     {% else %}
     <link rel="alternate" type="application/rss+xml" title="Aggregator" href="{{ '/news.rss' | relative_url }}">
     {% endif %}
