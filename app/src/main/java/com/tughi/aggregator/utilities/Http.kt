@@ -4,6 +4,7 @@ import com.tughi.aggregator.BuildConfig
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.Call
 import okhttp3.Callback
+import okhttp3.Credentials
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -24,6 +25,7 @@ object Http {
             .connectTimeout(5, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .addInterceptor(UserAgentInterceptor())
+            .addInterceptor(CredentialsInterceptor())
             .build()
 
     suspend fun request(url: String, config: (Request.Builder) -> Unit = {}) = suspendCancellableCoroutine<Result<Response>> {
@@ -61,6 +63,26 @@ object Http {
                     .header("User-Agent", "Aggregator/${BuildConfig.VERSION_NAME}")
                     .build()
             return chain.proceed(request)
+        }
+    }
+
+    /**
+     * Authenticates requests made to URLs that carry credentials (https://user:password@host/feed).
+     */
+    class CredentialsInterceptor : Interceptor {
+        override fun intercept(chain: Interceptor.Chain): Response {
+            val request = chain.request()
+            val url = request.url
+            if (url.username.isEmpty() && url.password.isEmpty()) {
+                return chain.proceed(request)
+            }
+
+            // UTF-8, as recommended by RFC 7617; OkHttp defaults to ISO-8859-1
+            val credentials = Credentials.basic(url.username, url.password, Charsets.UTF_8)
+            val authenticatedRequest = request.newBuilder()
+                    .header("Authorization", credentials)
+                    .build()
+            return chain.proceed(authenticatedRequest)
         }
     }
 

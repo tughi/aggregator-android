@@ -15,6 +15,7 @@ import com.tughi.aggregator.utilities.Success
 import com.tughi.aggregator.utilities.content
 import com.tughi.aggregator.utilities.onFailure
 import com.tughi.aggregator.utilities.then
+import com.tughi.aggregator.utilities.withCredentialsFrom
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.net.MalformedURLException
@@ -63,10 +64,10 @@ class SubscribeSearchFragmentViewModel : ViewModel() {
         return url
     }
 
-    private suspend fun onFindFeeds(url: String) {
+    private suspend fun onFindFeeds(requestUrl: String) {
         val feeds = arrayListOf<Feed>()
         val stateValue = state.value?.cloneWith(loading = true, feeds = feeds) ?: return
-        Http.request(url)
+        Http.request(requestUrl)
             .then { response ->
                 if (!response.isSuccessful) {
                     return@then Failure(IllegalStateException("Server response: ${response.code} ${response.message}"))
@@ -80,7 +81,7 @@ class SubscribeSearchFragmentViewModel : ViewModel() {
                         override fun onFeedFound(url: String, title: String, link: String?) {
                             feeds.add(
                                 Feed(
-                                    url = url,
+                                    url = url.withCredentialsFrom(requestUrl),
                                     title = title,
                                     link = link
                                 )
